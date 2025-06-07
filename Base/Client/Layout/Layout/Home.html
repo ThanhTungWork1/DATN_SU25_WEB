@@ -27,24 +27,19 @@
               <li><a href="#">Tất/Vớ</a></li>
             </ul>
         </li>
-        <!-- <li><a href="#">Giới thiệu</a></li> -->
         <li><a href="#">Liên hệ</a></li>
       </ul>
 
       <div class="icon-group">
-        <!-- Tìm kiếm trong hàng ngang -->
         <div class="search-container">
           <div class="search-toggle" id="searchToggle">&#128269;</div>
           <input type="text" id="searchInput" placeholder="Tìm kiếm..." />
         </div>
 
-        <!-- Tài khoản -->
         <div class="icon-btn" title="Tài khoản">&#128100;</div>
 
-        <!-- Giỏ hàng -->
         <div class="icon-btn" title="Giỏ hàng">&#128722;</div>
 
-        <!-- Đăng nhập -->
         <button class="login-btn">Đăng nhập</button>
       </div>
       
@@ -53,7 +48,6 @@
   </header>
 
 <main>
-  <!-- Banner -->
   <section class="banner">
     <div class="banner-info">
       <h1>Bộ Sưu Tập Quần Áo Mới</h1>
@@ -62,7 +56,6 @@
     </div>
     <img class="banner-img" src="https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/CcnQdpiJAgHxf3wEB4JiQ5lXtngat92T_cover.jpg" alt="Banner Quần Áo">
   </section>
-  <!-- Dải danh mục sản phẩm (topic-block) -->
   <div class="topic-block">
     <button class="topic active">Áo Polo</button>
     <button class="topic">Quần Short</button>
@@ -72,7 +65,6 @@
     <button class="topic">Phụ Kiện</button>
     <button class="topic">Áo Khoác</button>
   </div>
-  <!-- Hàng 1: Card nhỏ BST Xuân Hè -->
   <section class="fashion-section">
     <div class="fashion-head">
       <h2>BST Xuân Hè 2025</h2>
@@ -139,7 +131,6 @@
       </div>
     </div>
   </section>
-  <!-- Hàng 2: Card lớn ngang nổi bật -->
   <section class="big-section">
     <div class="section-head">
       <h2>Sản phẩm nổi bật</h2>
@@ -361,21 +352,18 @@
     themeToggle.onclick = () => {
         body.classList.toggle("light-mode");
 
-        // Đổi icon: mặt trăng ↔ mặt trời
         if (body.classList.contains("light-mode")) {
         themeToggle.textContent = "☀️";
         } else {
         themeToggle.textContent = "🌙";
         }
     };
-    // Lưu theme
     function toggleTheme() {
     const body = document.body;
     const icon = document.getElementById('theme-icon');
 
     body.classList.toggle('light-mode');
 
-    // Đổi icon và lưu trạng thái vào localStorage
     if (body.classList.contains('light-mode')) {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
@@ -387,7 +375,6 @@
     }
   }
 
-  // Khi trang tải xong, kiểm tra trạng thái lưu trong localStorage
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     const body = document.body;
@@ -404,7 +391,6 @@
     }
   });
   </script>
-  <!-- Nút liên hệ -->
   
 <div class="contact-floating">
     <button class="theme-toggle" onclick="toggleTheme()" title="Chuyển chế độ sáng/tối">
