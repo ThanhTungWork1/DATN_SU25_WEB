@@ -542,7 +542,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       letter-spacing: .2px;
     }
     .fashion-section .view-all {
-      background: #b40d0d;
+      background: #0fc8af;
       color: #fff;
       border: none;
       padding: 7px 18px;
@@ -554,7 +554,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       transition: background 0.19s;
     }
     .fashion-section .view-all:hover {
-      background: #670909;
+      background: #25645c;
     }
     .fashion-row {
       display: flex;
@@ -645,7 +645,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
     }
     .fashion-rate { margin-bottom: 3px; }
     .fashion-buy {
-      background: #b40d0d;
+      background: #0fc8af;
       color: #fff;
       border: none;
       padding: 7px 16px;
@@ -656,7 +656,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       font-weight: 500;
       transition: background 0.19s;
     }
-    .fashion-buy:hover { background: #670909; }
+    .fashion-buy:hover { background: #2b665e; }
     .fashion-meta {
       display: flex; align-items: center; justify-content: center; gap:6px; margin: 4px 0 5px 0;
     }
@@ -681,7 +681,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       margin: 0;
     }
     .big-section .section-head a {
-      background: #b40d0d;
+      background: #0fc8af;
       color: #fff;
       border-radius: 8px;
       padding: 7px 18px;
@@ -773,7 +773,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       margin-left: 6px;
     }
     .big-buy {
-      background: #005aff;
+      background: #0fc8af;
       color: #fff;
       border: none;
       padding: 8px 20px;
@@ -786,7 +786,7 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
       box-shadow: 0 2px 8px #005aff19;
       width: 100%;
     }
-    .big-buy:hover { background: #002b62; transform: scale(1.07);}
+    .big-buy:hover { background: #28655d; transform: scale(1.07);}
     @media (max-width: 900px) {
       .fashion-row, .big-row { min-width: 100vw;}
       .fashion-card, .big-card { min-width: 80vw; max-width: 95vw;}
