@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { Variant } from "../../../types/DetailType";
 
 /*
@@ -73,6 +74,23 @@ const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
       </div>
     </div>
   );
+=======
+
+
+const Size = () => {
+    return (
+        <div className="mb-3">
+            <label className="fw-bold">Size:</label>
+            <div className="btn-group" role="group">
+                <button className="btn btn-outline-secondary btn-sm">S</button>
+                <button className="btn btn-outline-secondary btn-sm">M</button>
+                <button className="btn btn-outline-secondary btn-sm">L</button>
+                <button className="btn btn-outline-secondary btn-sm">XL</button>
+                <button className="btn btn-outline-secondary btn-sm">XS</button>
+            </div>
+        </div>
+    );
+>>>>>>> 6a994c6e (giao dien detail)
 };
 
 export default Size;

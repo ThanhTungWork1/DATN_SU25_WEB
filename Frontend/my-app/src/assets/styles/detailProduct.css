@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ===== RESET & BASE ===== */
 body {
   font-family: "Segoe UI", sans-serif;
@@ -329,10 +330,144 @@ body {
 .product-info h2 {
   color: #e30613;
   font-weight: bold;
+=======
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Navbar */
+.navbar {
+    padding: 15px 0;
+    position: relative;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-right: auto;
+}
+
+.navbar-collapse {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar-nav.menu-center {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.navbar-nav.icon-right {
+    display: flex;
+    margin-left: auto;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem !important;
+    margin: 0 10px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: #007bff !important;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .navbar-nav.menu-center {
+        position: static;
+        transform: none;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 10px;
+    }
+    
+    .navbar-nav.icon-right {
+        margin-left: 0;
+        justify-content: center;
+        padding-top: 10px;
+    }
+    
+    .nav-link {
+        margin: 5px 0 !important;
+    }
+}
+
+/* Aside thumbnails */
+.thumbnail-list {
+    max-height: 600px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thumbnail-list::-webkit-scrollbar {
+    width: 6px;
+}
+.thumbnail-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+.thumbnail-list::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 3px;
+}
+.thumbnail-list::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+.thumbnail-list img {
+    cursor: pointer;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border 0.3s;
+}
+.thumbnail-list img:hover {
+    border-color: #e30613;
+}
+
+/* Ảnh chính sản phẩm */
+.product-image {
+    height: 600px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: none;
+    border: none;
+}
+
+/* Thông tin sản phẩm */
+.product-info h2 {
+    color: #e30613;
+    font-weight: bold;
+>>>>>>> 6a994c6e (giao dien detail)
 }
 
 .product-info h5,
 .product-info p {
+<<<<<<< HEAD
   color: #333;
   font-weight: 600;
 }
@@ -943,4 +1078,60 @@ body {
   line-height: 1;
   position: relative;
   top: -1px;
+=======
+    color: #333;
+    font-weight: 600;
+}
+
+/* Màu - Size */
+.color-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+}
+
+.btn-group button {
+    font-weight: 600;
+}
+
+/* Tab & liên quan */
+.tab-content {
+    margin-top: 20px;
+    color: #333;
+}
+
+.related-products .card {
+    border: none;
+}
+
+.related-products .card-title {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+.related-products .price {
+    color: #e30613;
+    font-weight: 600;
+}
+
+/* Footer */
+.footer {
+    background: #222;
+    color: #fff;
+    padding: 40px 0;
+    font-size: 0.9rem;
+}
+
+.footer a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: #fff;
+>>>>>>> 6a994c6e (giao dien detail)
 }

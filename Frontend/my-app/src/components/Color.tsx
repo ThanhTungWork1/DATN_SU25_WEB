@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 import type { ColorProps } from "../types/ColorType";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
@@ -42,6 +43,20 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
       </div>
     </div>
   );
+=======
+
+const Color = () => {
+    return (
+        <div className="mb-3">
+            <label className="fw-bold">Color:</label>
+            <div>
+                <span className="color-circle bg-dark"></span>
+                <span className="color-circle bg-primary"></span>
+                <span className="color-circle bg-warning"></span>
+            </div>
+        </div>
+    );
+>>>>>>> 6a994c6e (giao dien detail)
 };
 
 export default Color;

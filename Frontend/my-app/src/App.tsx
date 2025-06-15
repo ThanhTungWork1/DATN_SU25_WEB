@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import UserProfile from './pages/client/userProfile'
@@ -19,6 +20,15 @@ function App() {
         <Route path='/register' element={<Register/>}/>
     </Routes>
     <Footer/>
+=======
+
+import Index from "./routes/Index";
+
+function App() {
+  return (
+    <>
+      <Index />
+>>>>>>> 6a994c6e (giao dien detail)
     </>
   );
 }

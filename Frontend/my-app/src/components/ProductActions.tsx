@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import "../assets/styles/detailProduct.css";
@@ -50,6 +51,25 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
       <button className="btn-buy-now">Mua ngay</button>
     </div>
   );
+=======
+
+
+const ProductActions = () => {
+    return (
+        <>
+            <div className="input-group mb-3" style={{ width: '150px' }}>
+                <button className="btn btn-outline-secondary">-</button>
+                <input type="text" className="form-control text-center" defaultValue="1" />
+                <button className="btn btn-outline-secondary">+</button>
+            </div>
+
+            <div className="d-flex gap-2">
+                <button className="btn btn-warning text-white">Thêm giỏ hàng</button>
+                <button className="btn btn-outline-secondary">+ Compare</button>
+            </div>
+        </>
+    );
+>>>>>>> 6a994c6e (giao dien detail)
 };
 
 export default ProductActions;

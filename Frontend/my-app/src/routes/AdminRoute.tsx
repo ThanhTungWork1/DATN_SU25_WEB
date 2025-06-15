@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
 import UserList from "../pages/admin/users/UserList";
@@ -20,3 +21,15 @@ const AdminRoute = () => {
 };
 
 export default AdminRoute;
+=======
+import type { RouteObject } from "react-router-dom";
+
+
+const AdminRoute: RouteObject[] = [
+    {
+
+    }
+];
+
+export default AdminRoute
+>>>>>>> 6a994c6e (giao dien detail)
