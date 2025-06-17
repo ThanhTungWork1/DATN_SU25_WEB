@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "@refinedev/antd": "^5.46.1",
     "@refinedev/cli": "^2.16.46",
     "@refinedev/core": "^4.57.9",
@@ -21,9 +22,9 @@
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "antd": "^5.26.0",
+    "axios": "^1.10.0",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "@fortawesome/fontawesome-free": "^6.7.2"
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

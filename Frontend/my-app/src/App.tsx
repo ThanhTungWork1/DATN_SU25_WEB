@@ -1,10 +1,10 @@
 
-import Index from "./routes/Index";
+import ClientRoute from "./routes/ClientRoute";
 
 function App() {
   return (
     <>
-      <Index />
+      <ClientRoute />
     </>
   );
 }

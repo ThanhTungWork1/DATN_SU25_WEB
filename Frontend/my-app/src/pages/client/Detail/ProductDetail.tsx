@@ -1,5 +1,4 @@
 
-// Import các component con
 import Navbar from '../../../components/Navbar';
 import Aside from './Aside';
 import MainImage from './MainImage';

@@ -1,14 +1,15 @@
-import type { RouteObject } from "react-router-dom";
-import ProductDetail from "../pages/client/Detail/ProductDetail";
 
+import { Route, Routes } from "react-router-dom"
+import ProductDetail from "../pages/client/Detail/ProductDetail"
 
-const ClientRoute: RouteObject[] = [
-    {
-        path: "/detail",
-        element: <ProductDetail />,
-    },
-];
+const clientRoute = () => {
+    return (
+        <>
+            <Routes>
+                <Route path="/detail" element={<ProductDetail />} />
+            </Routes>
+        </>
+    )
+}
 
-
-export default ClientRoute
-
+export default clientRoute
