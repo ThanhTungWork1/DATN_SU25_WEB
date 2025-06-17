@@ -1,24 +1,22 @@
 {
   "products": [
     {
-      "id": "b3f7",
+      "product_id": "60f7e8b2c8a4f22b6c8e8e1a",
       "name": "áo khoác nam",
-      "price": "34324"
+      "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
+      "price": 34324,
+      "status": true,
+      "slug": "ao-khoac-nam",
+      "category_id": "60f7e8b2c8a4f22b6c8e8e99"
     },
     {
-      "id": "d0d4",
+      "product_id": "60f7e8b2c8a4f22b6c8e8e1b",
       "name": "dfdsfdf",
-      "price": "1234567"
-    }
-  ],
-  "orders": [
-    {
-      "id": "1",
-      "customerName": "Nguyễn Văn A",
-      "phone": "0123456789",
-      "totalPrice": 300000,
-      "status": "Đang xử lý",
-      "createdAt": "2025-06-16T00:00:00Z"
+      "description": "Sản phẩm phụ kiện thời trang.",
+      "price": 1234567,
+      "status": false,
+      "slug": "dfdsfdf",
+      "category_id": "60f7e8b2c8a4f22b6c8e8e98"
     }
   ]
 }
