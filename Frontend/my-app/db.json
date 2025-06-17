@@ -1,0 +1,24 @@
+{
+  "products": [
+    {
+      "id": "b3f7",
+      "name": "áo khoác nam",
+      "price": "34324"
+    },
+    {
+      "id": "d0d4",
+      "name": "dfdsfdf",
+      "price": "1234567"
+    }
+  ],
+  "orders": [
+    {
+      "id": "1",
+      "customerName": "Nguyễn Văn A",
+      "phone": "0123456789",
+      "totalPrice": 300000,
+      "status": "Đang xử lý",
+      "createdAt": "2025-06-16T00:00:00Z"
+    }
+  ]
+}
