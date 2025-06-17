@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Route, Routes } from "react-router-dom";
 import ProductDetail from "../pages/client/Detail/ProductDetail";
 import { ListProduct } from "../pages/client/ProductsList/ListProduct";
@@ -41,16 +42,24 @@ export default ClientRoute;
 =======
 import type { RouteObject } from "react-router-dom";
 import ProductDetail from "../pages/client/Detail/ProductDetail";
+=======
+>>>>>>> 665c6f9f (Tạm commit để merge main)
 
+import { Route, Routes } from "react-router-dom"
+import ProductDetail from "../pages/client/Detail/ProductDetail"
 
-const ClientRoute: RouteObject[] = [
-    {
-        path: "/detail",
-        element: <ProductDetail />,
-    },
-];
+const clientRoute = () => {
+    return (
+        <>
+            <Routes>
+                <Route path="/detail" element={<ProductDetail />} />
+            </Routes>
+        </>
+    )
+}
 
-
-export default ClientRoute
-
+<<<<<<< HEAD
 >>>>>>> 6a994c6e (giao dien detail)
+=======
+export default clientRoute
+>>>>>>> 665c6f9f (Tạm commit để merge main)
