@@ -1,50 +1,95 @@
 import React, { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "../../../api/product";
 import { useNavigate } from "react-router-dom";
+import { Table, Button, Popconfirm, Space, message, Typography, Badge, Input } from "antd";
+
+const { Title } = Typography;
+const { Search } = Input;
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    setLoading(true);
     const res = await getProducts();
     setProducts(res.data);
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     await deleteProduct(id);
+    message.success("Đã xoá sản phẩm");
     fetchData();
   };
 
+  const filtered = products.filter((item: any) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const columns = [
+    { title: "Tên", dataIndex: "name", key: "name" },
+    { title: "Giá", dataIndex: "price", key: "price", render: (text: number) => `${text} VND` },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status: boolean) => (
+        <Badge
+          status={status ? "success" : "default"}
+          text={status ? "Hiển thị" : "Ẩn"}
+        />
+      ),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_: any, record: any) => (
+        <Space size="middle">
+          <Button onClick={() => navigate(`/admin/products/edit/${record.id}`)}>Sửa</Button>
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xoá?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xoá"
+            cancelText="Huỷ"
+          >
+            <Button danger>Xoá</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <h2>Danh sách sản phẩm</h2>
-      <button onClick={() => navigate("/admin/products/create")}>Thêm mới</button>
-      <table>
-        <thead>
-          <tr>
-            <th>Tên</th>
-            <th>Giá</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((p: any) => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{p.price} VND</td>
-              <td>
-                <button onClick={() => navigate(`/admin/products/edit/${p.id}`)}>Sửa</button>
-                <button onClick={() => handleDelete(p.id)}>Xoá</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Title level={3}>Danh sách sản phẩm</Title>
+      <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
+        <Button type="primary" onClick={() => navigate("/admin/products/create")}>Thêm mới</Button>
+        <Search
+          placeholder="Tìm kiếm theo tên..."
+          onChange={(e) => setSearch(e.target.value)}
+          enterButton
+        />
+      </Space>
+      <Table
+        columns={columns}
+        dataSource={filtered}
+        rowKey="id"
+        loading={loading}
+        pagination={{ pageSize: 5 }}
+      />
     </div>
   );
 }
