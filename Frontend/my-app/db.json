@@ -1,6 +1,7 @@
 {
   "users": [
     {
+<<<<<<< HEAD
       "id": "1",
       "username": "admin",
       "email": "admin@example.com",
@@ -1305,6 +1306,193 @@
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z",
       "content": "Đơn hàng đã xác nhận"
+=======
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "address": "Hà Nội",
+      "status": true,
+      "is_verified": true,
+      "id": "1"
+    },
+    {
+      "id": "4",
+      "name": "Phạm Thị D",
+      "email": "phamthid@example.com",
+      "password": "654321",
+      "phone": "0988123456",
+      "address": "Hải Phòng",
+      "role": "user",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-05-10T07:00:00Z",
+      "updated_at": "2024-06-12T07:00:00Z"
+    },
+    {
+      "id": "5",
+      "name": "Hoàng Văn E",
+      "email": "hoangvane@example.com",
+      "password": "pass123",
+      "phone": "0911223344",
+      "address": "Cần Thơ",
+      "role": "user",
+      "status": false,
+      "is_verified": false,
+      "created_at": "2024-03-18T12:20:00Z",
+      "updated_at": "2024-04-01T12:20:00Z"
+    },
+    {
+      "name": "Nguyễn Thị F",
+      "email": "nguyenthif@example.com",
+      "phone": "0981111111",
+      "address": "Hà Nội",
+      "role": "user",
+      "status": true,
+      "is_verified": false,
+      "id": "6"
+    },
+    {
+      "id": "7",
+      "name": "Trần Văn G",
+      "email": "tranvang@example.com",
+      "password": "abcdefg",
+      "phone": "0972222222",
+      "address": "Hồ Chí Minh",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-02-02T09:00:00Z",
+      "updated_at": "2024-06-12T08:00:00Z"
+    },
+    {
+      "id": "9",
+      "name": "Lê Văn I",
+      "email": "levani@example.com",
+      "password": "pass1234",
+      "phone": "0954444444",
+      "address": "Huế",
+      "role": "moderator",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-04-05T11:30:00Z",
+      "updated_at": "2024-05-01T12:00:00Z"
+    },
+    {
+      "id": "10",
+      "name": "Ngô Thị J",
+      "email": "ngothij@example.com",
+      "password": "qwerty",
+      "phone": "0945555555",
+      "address": "Vĩnh Long",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-03-22T14:00:00Z",
+      "updated_at": "2024-05-21T15:00:00Z"
+    },
+    {
+      "id": "11",
+      "name": "Phan Văn K",
+      "email": "phanvank@example.com",
+      "password": "kpass",
+      "phone": "0936666666",
+      "address": "Bạc Liêu",
+      "role": "user",
+      "status": false,
+      "is_verified": true,
+      "created_at": "2024-05-01T09:00:00Z",
+      "updated_at": "2024-06-01T11:00:00Z"
+    },
+    {
+      "id": "12",
+      "name": "Hồ Thị L",
+      "email": "hothil@example.com",
+      "password": "pass789",
+      "phone": "0927777777",
+      "address": "Ninh Bình",
+      "role": "moderator",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-04-17T10:00:00Z",
+      "updated_at": "2024-06-02T14:00:00Z"
+    },
+    {
+      "id": "14",
+      "name": "Bùi Thị N",
+      "email": "buithin@example.com",
+      "password": "n123456",
+      "phone": "0909999999",
+      "address": "Quảng Ninh",
+      "role": "user",
+      "status": false,
+      "is_verified": false,
+      "created_at": "2024-02-25T08:00:00Z",
+      "updated_at": "2024-03-25T10:00:00Z"
+    },
+    {
+      "id": "16",
+      "name": "Tạ Thị P",
+      "email": "tathep@example.com",
+      "password": "pppppp",
+      "phone": "0881111111",
+      "address": "Bình Dương",
+      "role": "user",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-03-15T08:00:00Z",
+      "updated_at": "2024-06-01T10:00:00Z"
+    },
+    {
+      "id": "18",
+      "name": "Trịnh Thị R",
+      "email": "trinhthir@example.com",
+      "password": "rrrrrr",
+      "phone": "0863333333",
+      "address": "Thái Bình",
+      "role": "moderator",
+      "status": false,
+      "is_verified": false,
+      "created_at": "2024-02-28T11:00:00Z",
+      "updated_at": "2024-05-01T14:00:00Z"
+    },
+    {
+      "id": "19",
+      "name": "Đoàn Văn S",
+      "email": "doanvans@example.com",
+      "password": "ssssss",
+      "phone": "0854444444",
+      "address": "Bình Thuận",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-04-10T10:00:00Z",
+      "updated_at": "2024-06-12T13:00:00Z"
+    },
+    {
+      "id": "20",
+      "name": "Lương Thị T",
+      "email": "luongthit@example.com",
+      "password": "tttttt",
+      "phone": "0845555555",
+      "address": "Bắc Giang",
+      "role": "user",
+      "status": false,
+      "is_verified": false,
+      "created_at": "2024-05-05T09:00:00Z",
+      "updated_at": "2024-06-13T14:00:00Z"
+    },
+    {
+      "id": "7869",
+      "name": "Giầy 1",
+      "email": "bachnxph49262@gmail.com",
+      "password": "123",
+      "phone": "0778234289",
+      "address": "12312",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2025-06-18T14:46:09.457Z",
+      "updated_at": "2025-06-18T14:46:09.457Z"
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
     }
   ]
 }

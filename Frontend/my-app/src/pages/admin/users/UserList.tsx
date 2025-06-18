@@ -4,6 +4,10 @@ import type { IUser } from "../../../types/users";
 import { useState } from "react";
 import { config } from "../../../api/axios"; // Giả sử bạn có axios cấu hình sẵn ở đây
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
+=======
+import { EditOutlined } from "@ant-design/icons";
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
 
 const UserList = () => {
   const { data, isLoading, refetch } = useList({ resource: "users" }); // có thể thêm refetch để reload dữ liệu
@@ -90,13 +94,32 @@ const UserList = () => {
           <Tag color="orange">Chưa xác minh</Tag>
         ),
     },
+<<<<<<< HEAD
+=======
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_: any, record: IUser) => (
+        <Link to={`/admin/users/edit/${record.id}`}>
+          <Button icon={<EditOutlined />} size="small">
+            Sửa
+          </Button>
+        </Link>
+      ),
+    },
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
   ];
 
   const filteredData = dataSource?.filter((user) =>
     user.name.toLowerCase().includes(searchText.toLowerCase()) ||
     user.address.toLowerCase().includes(searchText.toLowerCase()) ||
     user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+<<<<<<< HEAD
     user.phone.toLowerCase().includes(searchText.toLowerCase())
+=======
+    user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchText.toLowerCase())
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
   );
 
   return (

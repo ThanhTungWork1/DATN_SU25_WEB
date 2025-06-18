@@ -9,12 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@ant-design/icons": "^5.6.1",
     "@emotion/hash": "^0.9.2",
     "@emotion/unitless": "^0.10.0",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@hookform/resolvers": "^5.1.1",
     "@reduxjs/toolkit": "^2.8.2",
+=======
+    "@ant-design/icons": "^6.0.0",
+    "@fortawesome/fontawesome-free": "^6.7.2",
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
     "@refinedev/antd": "^5.46.1",
     "@refinedev/cli": "^2.16.46",
     "@refinedev/core": "^4.57.9",
@@ -28,6 +33,7 @@
     "@types/react-dom": "^18.2.18",
     "antd": "^5.26.0",
     "axios": "^1.10.0",
+<<<<<<< HEAD
     "bootstrap": "^5.3.7",
     "dayjs": "^1.11.13",
     "joi": "^17.13.3",
@@ -43,6 +49,10 @@
     "react-router-dom": "^7.6.2",
     "sonner": "^2.0.5",
     "stylis": "^4.3.6"
+=======
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
   },
   "devDependencies": {
     "@types/axios": "^0.9.36",

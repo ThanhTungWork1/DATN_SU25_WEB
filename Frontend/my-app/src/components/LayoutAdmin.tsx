@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import {
+<<<<<<< HEAD
   DesktopOutlined ,
   UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme } from 'antd';
+=======
+  UserOutlined,
+} from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { Breadcrumb, Layout, Menu, theme } from 'antd';
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
 import { Outlet, useNavigate } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -26,8 +33,12 @@ function getItem(
 }
 
 const items: MenuItem[] = [
+<<<<<<< HEAD
   getItem('Dashboard', 'dashboard', <DesktopOutlined  />),
   getItem('Thành viên', '/admin/users', <UserOutlined />, [
+=======
+  getItem('User', '/admin/users', <UserOutlined />, [
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
     getItem('Tất cả người dùng', '/admin/users'),
     // getItem('Hồ sơ', '4'),
   ]),
@@ -49,7 +60,11 @@ const LayoutAdmin: React.FC = () => {
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: '0 16px' }}>
+<<<<<<< HEAD
 
+=======
+          <Breadcrumb style={{ margin: '16px 0' }} items={[{ title: 'User' }, { title: 'Bill' }]} />
+>>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
           <div
             style={{
               padding: 24,
