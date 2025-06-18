@@ -33,5 +33,19 @@
       "status": true,
       "category_id": "quần nam"
     }
+  ],
+  "orders": [
+    {
+      "customer_name": "Nguyễn Văn A",
+      "total": 450000,
+      "status": "Đã giao",
+      "id": "1"
+    },
+    {
+      "id": "2",
+      "customer_name": "Trần Thị B",
+      "total": 1200000,
+      "status": "Đã giao"
+    }
   ]
 }
