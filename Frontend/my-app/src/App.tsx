@@ -30,9 +30,9 @@ function App() {
   <Menu.Item key="2" icon={<ShoppingCartOutlined />}>
     <a href="/admin/orders">Đơn hàng</a>
   </Menu.Item>
-  <Menu.Item key="3" icon={<LoginOutlined />}>
+  {/* <Menu.Item key="3" icon={<LoginOutlined />}>
     <a href="/login">Đăng nhập</a>
-  </Menu.Item>
+  </Menu.Item> */}
 </Menu>
 
         </Sider>

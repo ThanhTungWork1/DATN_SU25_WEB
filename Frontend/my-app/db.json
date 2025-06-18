@@ -1,13 +1,13 @@
 {
   "products": [
     {
-      "id": "60f7e8b2c8a4f22b6c8e8e1a",
-      "name": "áo khoác nam",
-      "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
+      "name": "áo khoác nam 344",
       "price": 34324,
+      "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
       "status": true,
       "slug": "ao-khoac-nam",
-      "category_id": "60f7e8b2c8a4f22b6c8e8e99"
+      "category_id": "60f7e8b2c8a4f22b6c8e8e99",
+      "id": "60f7e8b2c8a4f22b6c8e8e1a"
     },
     {
       "name": "quần thể thao CR7 siuuu",
@@ -24,6 +24,14 @@
       "description": "đẹp, chất mát",
       "status": true,
       "category_id": "bộ quán áo nam"
+    },
+    {
+      "id": "b839",
+      "name": "sds",
+      "price": "13244",
+      "description": "fdfdfg",
+      "status": true,
+      "category_id": "quần nam"
     }
   ]
 }

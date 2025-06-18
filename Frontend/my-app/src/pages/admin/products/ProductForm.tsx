@@ -65,8 +65,8 @@ export default function ProductForm() {
 
         <Form.Item label="Trạng thái" name="status">
           <Select>
-            <Option value={true}>Hiển thị</Option>
-            <Option value={false}>Ẩn</Option>
+            <Option value={true}>Còn hàng</Option>
+            <Option value={false}>Hết hàng</Option>
           </Select>
         </Form.Item>
 
