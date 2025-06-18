@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createOrder, getOrder, updateOrder } from "../../../api/order";
 import { Form, Input, Button, Typography, Select, message } from "antd";
@@ -6,22 +6,29 @@ import { Form, Input, Button, Typography, Select, message } from "antd";
 const { Title } = Typography;
 const { Option } = Select;
 
+// Danh sách trạng thái theo thứ tự luồng xử lý đơn hàng
+const STATUS_LIST = [
+  "Chờ xác nhận",
+  "Đã xác nhận",
+  "Đang giao",
+  "Đã giao",
+  "Đã huỷ"
+];
+
 export default function OrderForm() {
   const [formRef] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const [currentStatus, setCurrentStatus] = useState<string>("");
+
   useEffect(() => {
     if (id) {
       getOrder(id)
         .then((res) => {
-          console.log("📦 Dữ liệu đơn hàng:", res.data); // ✅ Log kiểm tra
-          const data = res.data;
-          if (data && data.customer_name && data.total && data.status) {
-            formRef.setFieldsValue(data);
-          } else {
-            message.warning("Thiếu dữ liệu đơn hàng!");
-          }
+          console.log("Dữ liệu đơn hàng:", res.data);
+          formRef.setFieldsValue(res.data);
+          setCurrentStatus(res.data.status); // lưu trạng thái hiện tại
         })
         .catch(() => {
           message.error("Không tìm thấy đơn hàng");
@@ -39,6 +46,9 @@ export default function OrderForm() {
     }
     navigate("/admin/orders");
   };
+
+  // Xác định trạng thái nào cần disable
+  const statusIndex = STATUS_LIST.indexOf(currentStatus);
 
   return (
     <div>
@@ -66,11 +76,15 @@ export default function OrderForm() {
           rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
         >
           <Select>
-            <Option value="Chờ xác nhận">Chờ xác nhận</Option>
-            <Option value="Đã xác nhận">Đã xác nhận</Option>
-            <Option value="Đang giao">Đang giao</Option>
-            <Option value="Đã giao">Đã giao</Option>
-            <Option value="Đã huỷ">Đã huỷ</Option>
+            {STATUS_LIST.map((status, index) => (
+              <Option
+                key={status}
+                value={status}
+                disabled={id && index < statusIndex}
+              >
+                {status}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

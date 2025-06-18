@@ -38,14 +38,14 @@
     {
       "customer_name": "Nguyễn Văn A",
       "total": 450000,
-      "status": "Đã giao",
+      "status": "Đã xác nhận",
       "id": "1"
     },
     {
-      "id": "2",
       "customer_name": "Trần Thị B",
       "total": 1200000,
-      "status": "Đã giao"
+      "status": "Đang giao",
+      "id": "2"
     }
   ]
 }
