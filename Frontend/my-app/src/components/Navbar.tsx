@@ -2,43 +2,39 @@
 
 const Navbar = () => {
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-            <div className="container">
-                {/* Logo bên trái */}
-                <a className="navbar-brand" href="#">StrideX</a>
+        <nav className="navbar">
+            <div className="logo">MyLogo</div>
 
-                {/* Button mobile */}
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+            <ul className="nav-links" id="navLinks">
+                <li><a href="#">Trang chủ</a></li>
+                <li><a href="#">Nam</a></li>
+                <li><a href="#">Nữ</a></li>
+                <li><a href="#">Trend</a></li>
+                <li className="dropdown">
+                    <a href="#">Phụ kiện ▾</a>
+                    <ul className="dropdown-menu">
+                        <li><a href="#">Giày thể thao</a></li>
+                        <li><a href="#">Mũ</a></li>
+                        <li><a href="#">Kính</a></li>
+                        <li><a href="#">Tất/Vớ</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Liên hệ</a></li>
+            </ul>
 
-                {/* Phần nội dung chính */}
-                <div className="collapse navbar-collapse" id="navbarContent">
-                    {/* Menu căn giữa */}
-                    <div className="navbar-nav mx-auto">
-                        <a className="nav-link" href="#">Trang chủ</a>
-                        <a className="nav-link" href="#">Cửa hàng</a>
-                        <a className="nav-link" href="#">About</a>
-                        <a className="nav-link" href="#">Liên hệ</a>
-                    </div>
-
-                    {/* Các icon bên phải */}
-                    <div className="navbar-nav ms-auto">
-                        <a className="nav-link" href="#" title="Search">
-                            <i className="fas fa-search"></i>
-                        </a>
-                        <a className="nav-link" href="#" title="Wishlist">
-                            <i className="far fa-heart"></i>
-                        </a>
-                        <a className="nav-link" href="#" title="Cart">
-                            <i className="fas fa-shopping-cart"></i>
-                        </a>
-                        <a className="nav-link" href="#" title="Account">
-                            <i className="far fa-user"></i>
-                        </a>
-                    </div>
+            <div className="icon-group">
+                <div className="search-container">
+                    <div className="search-toggle" id="searchToggle">&#128269;</div>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm..." />
                 </div>
+
+                <div className="icon-btn" title="Tài khoản">&#128100;</div>
+                <div className="icon-btn" title="Giỏ hàng">&#128722;</div>
+
+                <button className="login-btn">Đăng nhập</button>
             </div>
+
+            <div className="menu-toggle" id="menuToggle">&#9776;</div>
         </nav>
     );
 };

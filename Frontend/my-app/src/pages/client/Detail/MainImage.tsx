@@ -1,11 +1,12 @@
-const MainImage = () => {
+type MainImageProps = {
+    imageUrl: string;
+};
+
+const MainImage = ({ imageUrl }: MainImageProps) => {
     return (
-        <div className="product-image w-100">
-            <img
-                src="https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0"
-                alt="Main Product"
-                className="img-fluid"
-            />
+        // hiển thị ảnh hi tiết sp
+        <div className="text-center">
+            <img src={imageUrl} alt="Main Product" style={{ width: "100%", maxHeight: 500, objectFit: "contain" }} />
         </div>
     );
 };
