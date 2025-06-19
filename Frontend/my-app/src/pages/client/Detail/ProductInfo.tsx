@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { ProductInfoProps } from "../../../types/ProductInfoType";
 
 // =============================
@@ -75,16 +76,27 @@ const ProductInfo = ({
 
 =======
 const ProductInfo = () => {
+=======
+import type { Product } from '../../../types/DetailType';
+
+type ProductInfoProps = {
+    product: Product;
+};
+
+const ProductInfo = ({ product }: ProductInfoProps) => {
+>>>>>>> f51a0d77 (trang detail hoan thien)
     return (
         <div className="product-info">
-            <h5>Áo Phông Nam</h5>
-            <h2>250.000đ</h2>
-            <p>⭐️⭐️⭐️⭐️⭐️ 5 Đánh giá của khách hàng</p>
-            <p>
-                Áo fom ôm người mặc thoáng mát cho màu hè với chất liệu 100% cotton thấm hút mồ hôi và có nhiều sự sang trọng .
-            </p>
+            {/* tên sp */}
+            <h5>{product.name}</h5>
+            {/* giá sp */}
+            <h2>{product.price.toLocaleString()}đ</h2>
         </div>
     );
 };
+<<<<<<< HEAD
 >>>>>>> 6a994c6e (giao dien detail)
+=======
+
+>>>>>>> f51a0d77 (trang detail hoan thien)
 export default ProductInfo;

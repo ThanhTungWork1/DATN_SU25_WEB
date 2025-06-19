@@ -1,60 +1,228 @@
 {
-<<<<<<< HEAD
-  "users": [
+  "products": [
     {
-      "name": "Thanh Tùng",
-      "email": "thgmail.com",
-      "phone": "111111",
-      "gender": "other",
-      "birthdate": "2005-01-18",
-      "id": "1"
+      "id": 1,
+      "name": "Áo Thun Nam Cotton",
+      "price": 199000,
+      "discount": 159000,
+      "rating": 4.5,
+      "reviews": 120,
+      "description": "Áo thun chất liệu cotton co giãn, thoáng mát. Phù hợp mọi hoạt động.",
+      "sku": "SP001",
+      "category": "Áo Thun",
+      "tags": ["cotton", "basic", "unisex"],
+      "colors": [
+        { "name": "Trắng", "code": "#FFFFFF", "image": "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180" },
+        { "name": "Đen", "code": "#000000", "image": "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300" }
+      ],
+      "variants": [
+        { "size": "S", "stock": 50 },
+        { "size": "M", "stock": 30 },
+        { "size": "L", "stock": 20 }
+      ],
+      "images": [
+        "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180",
+        "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300"
+      ],
+      "detailImages": [
+        "https://tse2.mm.bing.net/th?id=OIP.KZnN_WBS93_JQKWh_I53wAHaE7&pid=Api&P=0&h=180",
+        "https://tse3.mm.bing.net/th?id=OIP._cDJ0PO4C4pM9SxBPPSWJwHaE8&pid=Api&P=0&h=180"
+      ],
+      "details": [
+        "Chất liệu: 100% Cotton",
+        "Co giãn 4 chiều",
+        "Hàng Việt Nam xuất khẩu"
+      ]
     },
     {
-      "id": "e3d8",
-      "name": "Nguyễn Thanh Tùng",
-      "email": "thanhtung19192005@gmail.com",
-      "phone": "0867093967",
-      "address": "04-Xóm chung",
-      "gender": "female",
-      "password": "010910",
-      "confirm": "010910"
+      "id": 2,
+      "name": "Áo Thun Nữ Cotton",
+      "price": 159000,
+      "discount": 159000,
+      "rating": 4.0,
+      "reviews": 150,
+      "description": "Áo thun chất liệu cotton co giãn, thoáng mát. Phù hợp mọi hoạt động thể thao ngoài trời.",
+      "sku": "SP001",
+      "category": "Áo Thun",
+      "tags": ["cotton", "basic", "unisex"],
+      "colors": [
+        { "name": "Trắng", "code": "#FFFFFF", "image": "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180" },
+        { "name": "Đen", "code": "#000000", "image": "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300" }
+      ],
+      "variants": [
+        { "size": "S", "stock": 50 },
+        { "size": "M", "stock": 30 },
+        { "size": "L", "stock": 20 }
+      ],
+      "images": [
+        "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180",
+        "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300"
+      ],
+      "detailImages": [
+        "https://tse2.mm.bing.net/th?id=OIP.KZnN_WBS93_JQKWh_I53wAHaE7&pid=Api&P=0&h=180",
+        "https://tse3.mm.bing.net/th?id=OIP._cDJ0PO4C4pM9SxBPPSWJwHaE8&pid=Api&P=0&h=180"
+      ],
+      "details": [
+        "Chất liệu: 100% Cotton",
+        "Co giãn 4 chiều",
+        "Hàng Việt Nam xuất khẩu"
+      ]
     },
     {
-      "id": "1d60",
-      "email": "thanhtung19192005@gmail.com",
-      "password": "010910"
-    }
-  ]
-}
-=======
-  "order_id": "ord001",
-  "user_id": "u123",
-  "total_amount": 520000,
-  "shipping_fee": 20000,
-  "is_paid": true,
-  "status": "delivered",
-  "created_at": "2024-06-01T10:00:00Z",
-  "orderItems": [
+      "id": 3,
+      "name": "Áo Thun Nữ Cotton",
+      "price": 119000,
+      "discount": 119000,
+      "rating": 3.0,
+      "reviews": 190,
+      "description": "Áo thun chất liệu cotton co giãn, thoáng mát. Phù hợp mọi hoạt động.",
+      "sku": "SP001",
+      "category": "Áo Thun",
+      "tags": ["cotton", "basic", "unisex"],
+      "colors": [
+        { "name": "Trắng", "code": "#FFFFFF", "image": "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180" },
+        { "name": "Đen", "code": "#000000", "image": "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300" }
+      ],
+      "variants": [
+        { "size": "S", "stock": 500 },
+        { "size": "M", "stock": 300 },
+        { "size": "L", "stock": 200 }
+      ],
+      "images": [
+        "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180",
+        "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300"
+      ],
+      "detailImages": [
+        "https://tse2.mm.bing.net/th?id=OIP.KZnN_WBS93_JQKWh_I53wAHaE7&pid=Api&P=0&h=180",
+        "https://tse3.mm.bing.net/th?id=OIP._cDJ0PO4C4pM9SxBPPSWJwHaE8&pid=Api&P=0&h=180"
+      ],
+      "details": [
+        "Chất liệu: 100% Cotton",
+        "Co giãn 4 chiều",
+        "Hàng Việt Nam xuất khẩu"
+      ]
+    },
     {
-      "order_item_id": "itm01",
-      "variant_id": "v1",
-      "quantity": 2,
-      "price": 250000
+      "id": 4,
+      "name": "Áo Thun Nữ Cotton",
+      "price": 279000,
+      "discount": 279000,
+      "rating": 5.0,
+      "reviews": 450,
+      "description": "Áo thun chất liệu cotton co giãn, thoáng mát. Phù hợp mọi hoạt động.",
+      "sku": "SP001",
+      "category": "Áo Thun",
+      "tags": ["cotton", "basic", "unisex"],
+      "colors": [
+        { "name": "Trắng", "code": "#FFFFFF", "image": "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180" },
+        { "name": "Đen", "code": "#000000", "image": "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300" }
+      ],
+      "variants": [
+        { "size": "S", "stock": 550 },
+        { "size": "M", "stock": 350 },
+        { "size": "L", "stock": 250 }
+      ],
+      "images": [
+        "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180",
+        "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300"
+      ],
+      "detailImages": [
+        "https://tse2.mm.bing.net/th?id=OIP.KZnN_WBS93_JQKWh_I53wAHaE7&pid=Api&P=0&h=180",
+        "https://tse3.mm.bing.net/th?id=OIP._cDJ0PO4C4pM9SxBPPSWJwHaE8&pid=Api&P=0&h=180"
+      ],
+      "details": [
+        "Chất liệu: 100% Cotton",
+        "Co giãn 4 chiều",
+        "Hàng Việt Nam xuất khẩu"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Áo Thun Nữ Cotton",
+      "price": 659000,
+      "discount": 659000,
+      "rating": 1.0,
+      "reviews": 340,
+      "description": "Áo thun chất liệu cotton co giãn, thoáng mát. Phù hợp mọi hoạt động.",
+      "sku": "SP001",
+      "category": "Áo Thun",
+      "tags": ["cotton", "basic", "unisex"],
+      "colors": [
+        { "name": "Trắng", "code": "#FFFFFF", "image": "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180" },
+        { "name": "Đen", "code": "#000000", "image": "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300" }
+      ],
+      "variants": [
+        { "size": "S", "stock": 250 },
+        { "size": "M", "stock": 230 },
+        { "size": "L", "stock": 220 }
+      ],
+      "images": [
+        "https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0&h=180",
+        "https://tse4.mm.bing.net/th?id=OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa&pid=Api&P=0&h=180/300x300"
+      ],
+      "detailImages": [
+        "https://tse2.mm.bing.net/th?id=OIP.KZnN_WBS93_JQKWh_I53wAHaE7&pid=Api&P=0&h=180",
+        "https://tse3.mm.bing.net/th?id=OIP._cDJ0PO4C4pM9SxBPPSWJwHaE8&pid=Api&P=0&h=180"
+      ],
+      "details": [
+        "Chất liệu: 100% Cotton",
+        "Co giãn 4 chiều",
+        "Hàng Việt Nam xuất khẩu"
+      ]
     }
   ],
-  "payment": {
-    "payment_id": "pay01",
-    "method": "credit_card",
-    "status": "completed",
-    "amount": 520000,
-    "paid_at": "2024-06-01T11:00:00Z"
-  },
-  "complaints": [
+  "reviews": [
     {
-      "complaint_id": "cmp01",
-      "description": "Áo giao thiếu size",
-      "status": "pending"
+      "id": 1,
+      "productId": 1,
+      "user": "Nguyễn Văn A",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
+    },
+     {
+      "id": 2,
+      "productId": 2,
+      "user": "Nguyễn Văn B",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
+    },
+     {
+      "id": 3,
+      "productId": 3,
+      "user": "Nguyễn Văn C",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
+    },
+     {
+      "id": 4,
+      "productId": 4,
+      "user": "Nguyễn Văn D",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
+    },
+     {
+      "id": 5,
+      "productId": 5,
+      "user": "Nguyễn Văn D",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
+    },
+     {
+      "id": 6,
+      "productId": 6,
+      "user": "Nguyễn Văn D",
+      "rating": 5,
+      "comment": "Áo đẹp, mặc rất mát!",
+      "date": "2023-10-05"
     }
+  ],
+  "categories": [
+    { "id": 1, "name": "Áo Thun" },
+    { "id": 2, "name": "Quần Jeans" }
   ]
 }
->>>>>>> 6a994c6e (giao dien detail)

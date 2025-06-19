@@ -76,17 +76,30 @@ const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
   );
 =======
 
+import type { SizeProps } from '../../../types/DetailType';
 
-const Size = () => {
+const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
+    const sizes = [...new Set(variants.map(v => v.size))];
+
     return (
         <div className="mb-3">
             <label className="fw-bold">Size:</label>
-            <div className="btn-group" role="group">
-                <button className="btn btn-outline-secondary btn-sm">S</button>
-                <button className="btn btn-outline-secondary btn-sm">M</button>
-                <button className="btn btn-outline-secondary btn-sm">L</button>
-                <button className="btn btn-outline-secondary btn-sm">XL</button>
-                <button className="btn btn-outline-secondary btn-sm">XS</button>
+            <div className="btn-group flex-wrap" role="group">
+                {sizes.map((size) => {
+                    const isDisabled = !variants.find(v => v.size === size && v.stock > 0);
+                    const isSelected = selectedSize === size;
+
+                    return (
+                        <button
+                            key={size}
+                            className={`btn btn-sm ${isSelected ? 'btn-dark' : 'btn-outline-secondary'}`}
+                            onClick={() => onSelectSize(size)}
+                            disabled={isDisabled}
+                        >
+                            {size}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

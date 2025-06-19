@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 type MainImageProps = {
   imageUrl: string;
 };
@@ -12,13 +13,17 @@ const MainImage = ({ imageUrl }: MainImageProps) => {
   );
 =======
 const MainImage = () => {
+=======
+type MainImageProps = {
+    imageUrl: string;
+};
+
+const MainImage = ({ imageUrl }: MainImageProps) => {
+>>>>>>> f51a0d77 (trang detail hoan thien)
     return (
-        <div className="product-image w-100">
-            <img
-                src="https://tse3.mm.bing.net/th?id=OIP.GOMpePRjUIIFgc7gCH7_UgHaHa&pid=Api&P=0"
-                alt="Main Product"
-                className="img-fluid"
-            />
+        // hiển thị ảnh hi tiết sp
+        <div className="text-center">
+            <img src={imageUrl} alt="Main Product" style={{ width: "100%", maxHeight: 500, objectFit: "contain" }} />
         </div>
     );
 >>>>>>> 6a994c6e (giao dien detail)

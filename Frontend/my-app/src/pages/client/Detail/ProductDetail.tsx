@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useProductDetail } from "../../../hook/ClientHookDetail";
@@ -191,6 +192,11 @@ const ProductDetail = () => {
   );
 =======
 
+=======
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useProductDetail } from '../../../hook/ClientHookDetail';
+>>>>>>> f51a0d77 (trang detail hoan thien)
 import Navbar from '../../../components/Navbar';
 import Aside from './Aside';
 import MainImage from './MainImage';
@@ -199,43 +205,103 @@ import Size from './Size';
 import Color from '../../../components/Color';
 import ProductActions from '../../../components/ProductActions';
 import ProductMeta from './ProductMeta';
-import ContentTabs from './ContentTabs';
 import ProductTabs from './ProductTabs';
 import RelatedProducts from './RelatedProducts';
 import Footer from '../../../components/Footer';
-import "../../../assets/styles/detailProduct.css";
+import { useProductDetailLogic } from './useProductDetailLogic';
+import '../../../assets/styles/detailProduct.css';
+
+type RouteParams = {
+    id: string;
+};
 
 const ProductDetail = () => {
+    const { id } = useParams<RouteParams>();
+    const { data: product, isLoading, isError } = useProductDetail(id!);
+    const {
+        selectedImage, setSelectedImage,
+        selectedSize, setSelectedSize,
+        selectedColor, setSelectedColor,
+        handleAddToCart, handleBuyNow
+    } = useProductDetailLogic(product);
+
+    useEffect(() => { }, [id]); // giữ để nếu muốn thêm logic khi id đổi
+
+    if (isLoading) return <p>Đang tải...</p>;
+    if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
+
     return (
         <>
             <Navbar />
 
             <div className="container py-5">
                 <div className="row g-4">
-                    {/* Sidebar left */}
                     <div className="col-lg-2 col-md-3 d-none d-md-block">
-                        <Aside />
+                        <Aside
+                            images={product.images}
+                            onSelect={setSelectedImage}
+                            selectedImage={selectedImage}
+                        />
                     </div>
-
-                    {/* Main image */}
                     <div className="col-lg-5 col-md-9 col-12">
-                        <MainImage />
+                        <MainImage imageUrl={selectedImage} />
                     </div>
 
-                    {/* Product info */}
                     <div className="col-lg-5 col-12">
-                        <ProductInfo />
-                        <Size />
-                        <Color />
-                        <ProductActions />
-                        <ProductMeta />
+                        <ProductInfo product={product} />
+
+                        <Size
+                            variants={product.variants}
+                            selectedSize={selectedSize}
+                            onSelectSize={setSelectedSize}
+                        />
+
+                        <Color
+                            colors={product.colors}
+                            selectedColor={selectedColor}
+                            onSelectColor={(color) => {
+                                setSelectedColor(color);
+                                if (color.image) setSelectedImage(color.image);
+                            }}
+                        />
+
+                        <ProductActions
+                            variants={product.variants}
+                            selectedSize={selectedSize}
+                            selectedColor={selectedColor}
+                            onAddToCart={handleAddToCart}
+                            onBuyNow={handleBuyNow}
+                        />
+
+                        <ProductMeta
+                            sku={product.sku}
+                            category={product.category}
+                            tags={product.tags}
+                        />
+
+                        <p className="price">
+                            {product.discount && product.discount > 0 && product.discount < 100 ? (
+                                <>
+                                    <span className="text-decoration-line-through text-muted me-2">
+                                        {product.price.toLocaleString()}đ
+                                    </span>
+                                    <span className="text-danger">
+                                        {Math.max(0, Math.round(product.price * (1 - product.discount / 100))).toLocaleString()}đ
+                                    </span>
+                                </>
+                            ) : (
+                                <span>{product.price.toLocaleString()}đ</span>
+                            )}
+                        </p>
                     </div>
                 </div>
 
-                {/* Tabs and related */}
-                <ContentTabs />
-                <ProductTabs />
-                <RelatedProducts />
+                <ProductTabs key={product.id} product={product} />
+                <RelatedProducts
+                    categoryName={product.category}
+                    tags={product.tags}
+                    price={product.price}
+                />
             </div>
 
             <Footer />
@@ -245,3 +311,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

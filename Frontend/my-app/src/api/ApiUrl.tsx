@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import axios from "axios";
 import type { Product } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
@@ -110,4 +111,18 @@ export const createOrder = async (orderData: {
 export const getOrderById = async (id: number) => {
   const { data } = await axios.get(`http://localhost:3000/orders/${id}`);
   return data;
+=======
+import axios from 'axios';
+import type { Product } from '../types/DetailType';
+
+
+export const getProductById = async (id: string): Promise<Product> => {
+    const { data } = await axios.get(`http://localhost:3000/products/${id}`);
+    return data as Product;
+};
+
+export const getAllProducts = async (): Promise<Product[]> => {
+    const { data } = await axios.get(`http://localhost:3000/products`);
+    return data as Product[];
+>>>>>>> f51a0d77 (trang detail hoan thien)
 };

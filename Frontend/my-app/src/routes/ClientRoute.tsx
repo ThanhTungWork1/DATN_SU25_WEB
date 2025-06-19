@@ -39,27 +39,4 @@ const ClientRoute = () => {
 };
 
 export default ClientRoute;
-=======
-import type { RouteObject } from "react-router-dom";
-import ProductDetail from "../pages/client/Detail/ProductDetail";
-=======
->>>>>>> 665c6f9f (Tạm commit để merge main)
 
-import { Route, Routes } from "react-router-dom"
-import ProductDetail from "../pages/client/Detail/ProductDetail"
-
-const clientRoute = () => {
-    return (
-        <>
-            <Routes>
-                <Route path="/detail" element={<ProductDetail />} />
-            </Routes>
-        </>
-    )
-}
-
-<<<<<<< HEAD
->>>>>>> 6a994c6e (giao dien detail)
-=======
-export default clientRoute
->>>>>>> 665c6f9f (Tạm commit để merge main)
