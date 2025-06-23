@@ -12,59 +12,29 @@ export const useProductDetail = (id: string) => {
 
 export const useRelatedProducts = (
     currentProductId: string,
-    categoryName?: string,
-    tags?: string[],
-    price?: number,
+    categoryId?: number,
     limit: number = 4
 ) => {
     return useQuery({
-        queryKey: ['related-products', currentProductId, categoryName, tags, price],
+        queryKey: ['related-products', currentProductId, categoryId],
         queryFn: async () => {
             const allProducts = await getAllProducts();
             const currentId = parseInt(currentProductId);
-            // 1. Loại trừ sản phẩm hiện tại
+            /* 1. Loại trừ sản phẩm hiện tại */
             let filteredProducts = allProducts.filter((product: Product) => product.id !== currentId);
 
-            // 2. Ưu tiên sản phẩm cùng tag (mẫu)
-            let tagRelated: Product[] = [];
-            if (tags && tags.length > 0) {
-                tagRelated = filteredProducts.filter((product: Product) =>
-                    product.tags.some(tag => tags.includes(tag))
+            /* 2. Lọc sản phẩm cùng category_id */
+            let relatedProducts: Product[] = [];
+            if (categoryId) {
+                relatedProducts = filteredProducts.filter((product: Product) =>
+                    product.category_id === categoryId
                 );
             }
 
-            // 3. Ưu tiên sản phẩm cùng category (nếu muốn giữ logic này)
-            let categoryRelated: Product[] = [];
-            if (categoryName) {
-                categoryRelated = filteredProducts.filter((product: Product) =>
-                    product.category === categoryName
-                );
-            }
-
-            // 4. Sản phẩm còn lại (không trùng tag)
-            let others = filteredProducts.filter((product: Product) =>
-                !(tags && tags.length > 0 && product.tags.some(tag => tags.includes(tag)))
-            );
-
-            // 5. Sắp xếp theo giá gần nhất với sản phẩm hiện tại
-            if (typeof price === 'number') {
-                others = others.sort((a, b) => Math.abs(a.price - price) - Math.abs(b.price - price));
-            }
-
-            // 6. Kết hợp: tag trước, rồi category, rồi theo giá gần nhất, loại trùng lặp
-            const seen = new Set<number>();
-            const result: Product[] = [];
-            for (const arr of [tagRelated, categoryRelated, others]) {
-                for (const p of arr) {
-                    if (!seen.has(p.id)) {
-                        result.push(p);
-                        seen.add(p.id);
-                    }
-                }
-            }
-            return result.slice(0, limit);
+            /* 3. Giới hạn số lượng sản phẩm liên quan */
+            return relatedProducts.slice(0, limit);
         },
-        enabled: !!currentProductId,
+        enabled: !!currentProductId && !!categoryId,
     });
 };
 

@@ -1,9 +1,26 @@
 import { useState } from 'react';
 import type { Product } from '../../../types/DetailType';
 import { useProductReviews } from '../../../hook/useProductReviews';
+import { FaStar } from 'react-icons/fa';
 
 type ProductTabsProps = {
     product: Product;
+};
+
+/* Component để hiển thị các ngôi sao đánh giá */
+const StarRating = ({ rating }: { rating: number }) => {
+    return (
+        <div className="d-flex align-items-center">
+            {[...Array(5)].map((_, index) => (
+                <FaStar
+                    key={index}
+                    color={index < rating ? "#ffc107" : "#e4e5e9"}
+                    size={16}
+                />
+            ))}
+            <span className="ms-2 fw-bold">{rating}.0</span>
+        </div>
+    );
 };
 
 const ProductTabs = ({ product }: ProductTabsProps) => {
@@ -29,23 +46,41 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     );
 
     // Render phần đánh giá
-    const renderReview = () => (
-        <div>
-            {isLoading ? (
-                <p>Đang tải đánh giá...</p>
-            ) : reviews.length === 0 ? (
-                <p>Chưa có đánh giá nào</p>
-            ) : (
-                reviews.map((r) => (
-                    <div key={r.id} className="mb-3 border-bottom pb-2">
-                        <strong>{r.user}</strong> – ⭐ {r.rating}
-                        <p>{r.comment}</p>
-                        <small>{new Date(r.date).toLocaleDateString()}</small>
-                    </div>
-                ))
-            )}
-        </div>
-    );
+    const renderReview = () => {
+        if (isLoading) return <p>Đang tải đánh giá...</p>;
+        if (!reviews || reviews.length === 0) {
+            return <p className="text-muted mt-3">Chưa có đánh giá nào cho sản phẩm này.</p>;
+        }
+
+        return (
+            <div>
+                {reviews.map((review) => {
+                    /*
+                     * =================================================================
+                     * GỠ LỖI: In ra đối tượng review để kiểm tra
+                     * =================================================================
+                     */
+                    console.log("[DEBUG] Dữ liệu của một review:", review);
+                    
+                    const reviewDate = new Date(review.created_at).toLocaleDateString('vi-VN', {
+                        day: '2-digit', month: '2-digit', year: 'numeric'
+                    });
+                    return (
+                        <div key={review.id} className="mb-4 border-bottom pb-3">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <strong className="text-dark">{review.user?.username || 'Người dùng ẩn danh'}</strong>
+                                <small className="text-muted">{reviewDate}</small>
+                            </div>
+                            <div className="my-2">
+                                <StarRating rating={review.rating} />
+                            </div>
+                            <p className="mb-0">{review.content}</p>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
 
     return (
         <>
@@ -70,7 +105,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
             </ul>
 
             {/* Nội dung tab */}
-            <div className="tab-content mt-3">
+            <div className="tab-content mt-3 tab-content-scrollable">
                 {activeTab === 'desc' && <div>{renderDescription()}</div>}
                 {activeTab === 'review' && <div>{renderReview()}</div>}
             </div>
