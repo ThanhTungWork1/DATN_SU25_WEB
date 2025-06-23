@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import UserProfile from './pages/client/userProfile'
@@ -23,12 +24,21 @@ function App() {
 =======
 
 import Index from "./routes/Index";
+=======
+import ClientRoute from "./routes/ClientRoute";
+import { Toaster } from 'sonner'
+>>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
 
 function App() {
   return (
     <>
+<<<<<<< HEAD
       <Index />
 >>>>>>> 6a994c6e (giao dien detail)
+=======
+      <ClientRoute />
+      <Toaster position="top-right" richColors />
+>>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
     </>
   );
 }

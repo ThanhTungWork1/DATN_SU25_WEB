@@ -58,13 +58,13 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
     return (
         <div className="mb-3">
             <label className="fw-bold">Màu:</label>
-            <div className="d-flex gap-2 flex-wrap">
+            <div className="d-flex gap-2 flex-wrap mt-2">
                 {colors.map((color) => {
-                    const isSelected = selectedColor?.name === color.name;
+                    const isSelected = selectedColor?.id === color.id;
 
                     return (
                         <span
-                            key={color.name}
+                            key={color.id}
                             title={color.name}
                             onClick={() => onSelectColor(color)}
                             style={{
@@ -72,10 +72,11 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
                                 width: 28,
                                 height: 28,
                                 borderRadius: '50%',
-                                border: isSelected ? '2px solid #000' : '1px solid #ccc',
+                                border: isSelected ? '2px solid red' : '1px solid #ccc',
                                 display: 'inline-block',
                                 cursor: 'pointer',
-                                boxShadow: isSelected ? '0 0 0 2px #007bff' : 'none',
+                                transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                                transition: 'transform 0.2s ease, border 0.2s ease',
                             }}
                         />
                     );

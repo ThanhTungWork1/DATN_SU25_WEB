@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import SearchBar from "./SearchBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
@@ -165,11 +166,23 @@ const Navbar = () => {
   );
 =======
 
+=======
+import SearchBar from './SearchBar';
+import { useNavigate } from 'react-router-dom';
+>>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
 
 const Navbar = () => {
+    const navigate = useNavigate();
+    const handleSearch = (query: string) => {
+        if (query.trim()) {
+            navigate(`/search?query=${encodeURIComponent(query)}`);
+        }
+    };
     return (
         <nav className="navbar">
-            <div className="logo">MyLogo</div>
+            <div className="logo">
+                <img src="https://i.imgur.com/9Og6FJC.jpeg" alt="Logo Shop" style={{ width: '90px' ,height: '50px', objectFit: 'contain' }} />
+            </div>
 
             <ul className="nav-links" id="navLinks">
                 <li><a href="#">Trang chủ</a></li>
@@ -189,11 +202,7 @@ const Navbar = () => {
             </ul>
 
             <div className="icon-group">
-                <div className="search-container">
-                    <div className="search-toggle" id="searchToggle">&#128269;</div>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm..." />
-                </div>
-
+                <SearchBar onSearch={handleSearch} />
                 <div className="icon-btn" title="Tài khoản">&#128100;</div>
                 <div className="icon-btn" title="Giỏ hàng">&#128722;</div>
 

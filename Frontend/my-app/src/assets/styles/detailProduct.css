@@ -1528,3 +1528,45 @@ body {
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5);
 >>>>>>> f51a0d77 (trang detail hoan thien)
 }
+
+/* Custom styles for tab content */
+.tab-content-scrollable {
+    max-height: 240px; /* Giới hạn chiều cao cố định, đủ cho khoảng 2 bình luận */
+    overflow-y: auto; /* Thêm thanh cuộn dọc khi nội dung vượt quá */
+    padding-right: 15px; /* Thêm một chút không gian để thanh cuộn không che nội dung */
+}
+
+/* Tùy chỉnh thanh cuộn cho Webkit browsers (Chrome, Safari) */
+.tab-content-scrollable::-webkit-scrollbar {
+    width: 5px; /* Chiều rộng thanh cuộn (nhỏ hơn) */
+}
+
+.tab-content-scrollable::-webkit-scrollbar-track {
+    background: transparent; /* Nền rãnh cuộn trong suốt */
+}
+
+.tab-content-scrollable::-webkit-scrollbar-thumb {
+    background: #ccc; /* Màu thanh cuộn (mờ hơn) */
+    border-radius: 10px;
+}
+
+.tab-content-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #aaa; /* Màu thanh cuộn khi hover (đậm hơn một chút) */
+}
+
+.price-original {
+  font-size: 0.85rem;
+  color: #888;
+  text-decoration: line-through;
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+.product-info .price-original {
+  font-size: 1rem;
+}
+
+.related-products .price .price-original {
+  font-size: 0.7rem;
+  margin-left: 6px;
+}
