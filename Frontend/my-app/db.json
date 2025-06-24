@@ -1,0 +1,43 @@
+{
+  "cart": [
+    {
+      "id": 1,
+      "name": "Tai nghe Bluetooth",
+      "price": 300000,
+      "image": "https://example.com/images/tai-nghe.jpg",
+      "quantity": 2
+    },
+    {
+      "id": 2,
+      "name": "Bàn phím cơ",
+      "price": 800000,
+      "image": "https://example.com/images/ban-phim.jpg",
+      "quantity": 1
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "address": "123 Đường ABC, Quận 1, TP.HCM",
+      "items": [
+        {
+          "id": 1,
+          "name": "Tai nghe Bluetooth",
+          "price": 300000,
+          "image": "https://example.com/images/tai-nghe.jpg",
+          "quantity": 2
+        },
+        {
+          "id": 2,
+          "name": "Bàn phím cơ",
+          "price": 800000,
+          "image": "https://example.com/images/ban-phim.jpg",
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 1400000
+    }
+  ]
+}
