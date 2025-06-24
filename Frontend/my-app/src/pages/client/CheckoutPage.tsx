@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
+// Sample data
 const provinces = ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ"];
-const districts = {
+const districts: Record<string, string[]> = {
   "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Tây Hồ", "Cầu Giấy", "Đống Đa"],
   "Hồ Chí Minh": ["Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5"],
   "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn", "Liên Chiểu"],
@@ -14,9 +15,17 @@ const districts = {
 
 const paymentMethods = ["COD", "Chuyển khoản ngân hàng", "Ví điện tử (Momo/ZaloPay)"];
 
+// Optional: Product type (if using TypeScript)
+type Product = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+};
+
 const Checkout = () => {
   const { state } = useLocation();
-  const { selectedProducts, totalAmount } = state || { selectedProducts: [], totalAmount: 0 };
+  const { selectedProducts = [], totalAmount = 0 }: { selectedProducts: Product[]; totalAmount: number } = state || {};
   const navigate = useNavigate();
 
   const [address, setAddress] = useState({
@@ -80,30 +89,72 @@ const Checkout = () => {
                 <p>{(item.price * item.quantity).toLocaleString()} VND</p>
               </div>
             ))}
-            <h5 className="fw-bold mt-3">Tổng tiền: <span className="text-danger">{totalAmount.toLocaleString()} VND</span></h5>
+            <h5 className="fw-bold mt-3">
+              Tổng tiền: <span className="text-danger">{totalAmount.toLocaleString()} VND</span>
+            </h5>
           </div>
+
           <div className="col-lg-6">
             <h4 className="fw-bold">Thông tin giao hàng</h4>
-            <select className="form-select my-2" onChange={(e) => setAddress({ ...address, province: e.target.value, district: "" })}>
+
+            <select
+              className="form-select my-2"
+              value={address.province}
+              onChange={(e) =>
+                setAddress({ province: e.target.value, district: "", street: "" })
+              }
+            >
               <option value="">Chọn Tỉnh/Thành</option>
-              {provinces.map((prov) => <option key={prov} value={prov}>{prov}</option>)}
+              {provinces.map((prov) => (
+                <option key={prov} value={prov}>
+                  {prov}
+                </option>
+              ))}
             </select>
-            <select className="form-select my-2" onChange={(e) => setAddress({ ...address, district: e.target.value })} disabled={!address.province}>
+
+            <select
+              className="form-select my-2"
+              value={address.district}
+              onChange={(e) =>
+                setAddress({ ...address, district: e.target.value })
+              }
+              disabled={!address.province}
+            >
               <option value="">Chọn Quận/Huyện</option>
-              {districts[address.province]?.map((dist) => <option key={dist} value={dist}>{dist}</option>)}
+              {districts[address.province]?.map((dist) => (
+                <option key={dist} value={dist}>
+                  {dist}
+                </option>
+              ))}
             </select>
-            <input 
-              type="text" 
-              className="form-control my-2" 
-              placeholder="Số nhà, đường..." 
-              onChange={(e) => setAddress({ ...address, street: e.target.value })} 
+
+            <input
+              type="text"
+              className="form-control my-2"
+              placeholder="Số nhà, đường..."
+              value={address.street}
+              onChange={(e) =>
+                setAddress({ ...address, street: e.target.value })
+              }
             />
+
             <h4 className="fw-bold mt-3">Phương thức thanh toán</h4>
-            <select className="form-select my-2" onChange={(e) => setPaymentMethod(e.target.value)}>
+            <select
+              className="form-select my-2"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
               <option value="">Chọn phương thức</option>
-              {paymentMethods.map((method) => <option key={method} value={method}>{method}</option>)}
+              {paymentMethods.map((method) => (
+                <option key={method} value={method}>
+                  {method}
+                </option>
+              ))}
             </select>
-            <button className="btn btn-success w-100 mt-3" onClick={handleOrder}>Đặt hàng</button>
+
+            <button className="btn btn-success w-100 mt-3" onClick={handleOrder}>
+              Đặt hàng
+            </button>
           </div>
         </div>
       </div>
