@@ -1,0 +1,346 @@
+body {
+  background-color: #f4f6f8;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.color-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+
+.btn-close:hover {
+  background-color: red;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.offcanvas-start {
+  width: 260px !important;
+  background-color: #fff;
+  color: #333;
+}
+
+body .offcanvas.offcanvas-start {
+  top: 83px !important;
+}
+
+.offcanvas-body {
+  padding: 1rem;
+  max-width: 100%;
+  font-size: 0.95rem;
+}
+
+.offcanvas .filter-group {
+  padding-bottom: 1rem;
+}
+
+.offcanvas input[type="checkbox"] {
+  margin-right: 0.4rem;
+}
+
+.search-wrapper input:focus {
+  box-shadow: none !important;
+  outline: none !important;
+  border-color: #ccc !important;
+}
+
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.search-wrapper input {
+  max-width: 350px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  background-color: #fff;
+  color: #222;
+  padding-bottom: 0.5rem;
+}
+
+.card:hover {
+  transform: translate(1px, -2px);
+  box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.18);
+}
+
+.card-title {
+  font-size: 1.06rem;
+  font-weight: 600;
+  color: #212529;
+
+  display: -webkit-box;             /* cần có */
+  -webkit-box-orient: vertical;     /* cần có */
+  -webkit-line-clamp: 2;            /* cần có */
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  min-height: 2.6em; /* giữ khoảng cao tối thiểu để không bị hụt dòng */
+}
+
+
+.card-text {
+  font-size: 0.9rem;
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.card-text del {
+  font-size: 0.5rem;
+  color: #999;
+  margin-left: 4px;
+}
+
+.card-body .price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e63946;
+}
+
+.card-body .btn-group,
+.card-body .btn + .btn {
+  display: inline-flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-body .sold-text {
+  font-size: 0.7rem;
+  color: #6c757d;
+  text-align: left;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.card-body {
+  padding-bottom: 0.5rem;
+}
+
+.card-img-top {
+  width: 100%;
+  aspect-ratio: 4 / 4;
+  object-fit: cover;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.badge {
+  font-size: 0.6rem;
+  padding: 0.2em 0.4em;
+  border-radius: 0 0.25rem 0.25rem 0;
+  background-color: #ffc107;
+  color: #000;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #00c6ab;
+  color: #fff;
+  border-color: #63e781;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sale-price {
+  color: #e63946;
+  font-size: 1.1rem;
+}
+
+.original-price {
+  color: #999;
+  font-size: 0.75rem;
+  text-decoration: line-through;
+  font-weight: normal;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.button-group .btn {
+  flex: 1;
+  font-size: 0.75rem;
+  padding: 6px 0;
+  text-align: center;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-filter {
+  background-color: #198754;
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.btn-filter:hover {
+  background-color: #157347;
+}
+
+.btn-clear {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.btn-clear:hover {
+  background-color: #bb2d3b;
+}
+
+.btn-filter,
+.btn-clear {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+}
+
+.offcanvas-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+@media (max-width: 576px) {
+  .row-cols-2 .col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .row-cols-sm-3 .col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .row-cols-md-4 .col {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+  }
+}
+
+@media (min-width: 993px) and (max-width: 1200px) {
+  .row-cols-lg-6 .col {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+}
+
+@media (min-width: 1201px) {
+  .row-cols-lg-6 .col {
+    flex: 0 0 16.6667%;
+    max-width: 16.6667%;
+  }
+}
+
+@media (max-width: 768px) {
+  .offcanvas-start {
+  width: 260px !important;
+  background-color: #fff;
+  color: #333;
+  top: 0 !important;
+}
+}
+
+nav.mt-4 {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+nav.mt-4 > ul.pagination {
+  width: 100%;
+  justify-content: center !important;
+  display: flex;
+   margin-left: auto;
+  margin-right: auto;
+}
+
+.pagination {
+  justify-content: center !important;
+}
+
+.card-body .btn-link .fa-heart, .card-body .btn-link .far.fa-heart {
+  font-size: 0.95rem;
+}
+
+.card-body .btn-link .fa-heart,
+.card-body .btn-link .far.fa-heart {
+  font-size: 0.75rem;   /* chỉnh kích thước */
+  color: #e63946;        /* màu khi đã thích */
+}
+.card-body .btn-link .far.fa-heart {
+  color: #bbb;           /* màu khi chưa thích */
+}
+
+.card-body {
+  padding: 0.7rem 1rem 0.7rem 1rem; /* giảm padding trên/dưới */
+}
+
+.card-title {
+  margin-bottom: 0.4rem; /* giảm khoảng cách dưới tên */
+  min-height: unset;      /* bỏ min-height nếu muốn gọn hơn */
+}
+
+.product-price {
+  margin-bottom: 0.3rem;  /* giảm khoảng cách dưới giá */
+}
+
+.button-group {
+  gap: 4px;               /* giảm khoảng cách giữa 2 nút */
+  margin-top: 4px;        /* giảm khoảng cách trên nút */
+  margin-bottom: 0.2rem;  /* giảm khoảng cách dưới nút */
+}
+
+.sold-text {
+  margin-top: 0;          /* giảm khoảng cách trên */
+  margin-bottom: 0;       /* giảm khoảng cách dưới */
+  font-size: 0.8rem;      /* nhỏ lại nếu muốn */
+}
+
+.d-flex.mt-2 {
+  margin-top: 0.2rem !important; /* giảm khoảng cách trên dòng đã bán + tim */
+}
+

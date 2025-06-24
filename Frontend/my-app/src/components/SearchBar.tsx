@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import '../assets/styles/SearchBar.css';
+import React, { useRef, useState, useEffect } from "react";
+import "../assets/styles/SearchBar.css";
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -7,7 +7,7 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -29,23 +29,23 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       }
     }
     if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open]);
 
   // Đóng khi nhấn ESC
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === "Escape") setOpen(false);
     }
     if (open) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
 
@@ -65,14 +65,19 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className={`searchbar-container${open ? ' open' : ''}`} ref={containerRef}>
+    <div
+      className={`searchbar-container${open ? " open" : ""}`}
+      ref={containerRef}
+    >
       <button
         className="searchbar-icon"
         aria-label="Tìm kiếm"
         type="button"
         onClick={handleIconClick}
       >
-        <span role="img" aria-label="search">🔍</span>
+        <span role="img" aria-label="search">
+          🔍
+        </span>
       </button>
       <form className="searchbar-form" onSubmit={handleSubmit}>
         <input
@@ -88,4 +93,4 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   );
 };
 
-export default SearchBar; 
+export default SearchBar;
