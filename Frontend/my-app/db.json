@@ -1,12 +1,12 @@
 {
-  "user": {
-    "id": 1,
-    "username": "thanhtung19192005",
-    "name": "Thanh Tùng",
-    "email": "th*********@gmail.com",
-    "phone": "********61",
-    "gender": "male",
-    "birthdate": "2005-01-01",
-    "avatar": "https://i.imgur.com/jpKzQsx.png"
-  }
+  "users": [
+    {
+      "name": "Thanh Tùng",
+      "email": "thgmail.com",
+      "phone": "6666666555",
+      "gender": "other",
+      "birthdate": "2005-01-18",
+      "id": "1"
+    }
+  ]
 }
