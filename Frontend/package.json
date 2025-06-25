@@ -1,4 +1,6 @@
 {
+  "name": "my-app",
+  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "server": "json-server-auth db.json --watch",
@@ -21,5 +23,12 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.57.0",
     "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0",
+    "typescript": "^4.9.5",
+    "@types/react": "^18.0.38",
+    "@types/react-dom": "^18.0.14",
+    "eslint": "^8.56.0"
   }
 }

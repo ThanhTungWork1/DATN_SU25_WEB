@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const ORDER_API_URL = "http://localhost:3001/orders";
+const ORDER_API_URL = "http://localhost:3000/orders";
 
 export const getOrders = () => axios.get(ORDER_API_URL);
 export const getOrder = (id: string) => axios.get(`${ORDER_API_URL}/${id}`);

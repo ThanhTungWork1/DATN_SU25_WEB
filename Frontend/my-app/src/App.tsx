@@ -8,7 +8,6 @@ import { Layout, Menu } from "antd";
 import {
   ShoppingOutlined,
   ShoppingCartOutlined,
-  LoginOutlined,
 } from "@ant-design/icons";
 
 const { Header, Content, Sider } = Layout;
@@ -40,11 +39,6 @@ function SidebarMenu() {
           icon: <ShoppingCartOutlined />,
           label: <a href="/admin/orders">Đơn hàng</a>,
         },
-        // {
-        //   key: "3",
-        //   icon: <LoginOutlined />,
-        //   label: <a href="/login">Đăng nhập</a>,
-        // },
       ]}
     />
   );

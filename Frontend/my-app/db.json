@@ -3,35 +3,56 @@
     {
       "name": "áo khoác nam 344",
       "price": 34324,
+      "quantity": "3",
       "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
       "status": true,
-      "slug": "ao-khoac-nam",
       "category_id": "60f7e8b2c8a4f22b6c8e8e99",
       "id": "60f7e8b2c8a4f22b6c8e8e1a"
     },
     {
       "name": "quần thể thao CR7 siuuu",
       "price": "100000",
+      "quantity": "1",
       "description": "đẹp ",
       "status": true,
       "category_id": "quần nam",
       "id": "dfd4"
     },
     {
-      "id": "66d7",
       "name": "Bộ thể thao real madrid",
       "price": "200000",
+      "quantity": "4",
       "description": "đẹp, chất mát",
       "status": true,
-      "category_id": "bộ quán áo nam"
+      "category_id": "bộ quán áo nam",
+      "id": "66d7"
     },
     {
-      "id": "b839",
-      "name": "sds",
-      "price": "13244",
-      "description": "fdfdfg",
+      "name": "bộ thể thao adidas",
+      "price": "150000",
+      "description": "aaaaaa",
+      "status": true,
+      "quantity": 9,
+      "category_id": "bộ quần áo nam",
+      "id": "b839"
+    },
+    {
+      "id": "3cdd",
+      "name": "quần dài nam",
+      "price": "233000",
+      "quantity": "15",
+      "description": "egfdgfg",
       "status": true,
       "category_id": "quần nam"
+    },
+    {
+      "id": "2030",
+      "name": "áo mu",
+      "price": "111111",
+      "quantity": "6",
+      "description": "dffgf",
+      "status": true,
+      "category_id": "áo nam"
     }
   ],
   "orders": [
@@ -42,7 +63,7 @@
       "id": "1"
     },
     {
-      "customer_name": "Trần Thị B",
+      "customer_name": "Trần Thị Be",
       "total": 1200000,
       "status": "Đang giao",
       "id": "2"

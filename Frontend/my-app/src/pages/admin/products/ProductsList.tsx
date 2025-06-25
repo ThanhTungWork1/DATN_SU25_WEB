@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "../../../api/product";
 import { useNavigate } from "react-router-dom";
-import { Table, Button, Popconfirm, Space, message, Typography, Badge, Input } from "antd";
+import {
+  Table,
+  Button,
+  Popconfirm,
+  Space,
+  message,
+  Typography,
+  Tag,
+  Input
+} from "antd";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -35,7 +44,12 @@ export default function ProductList() {
 
   const columns = [
     { title: "Tên", dataIndex: "name", key: "name" },
-    { title: "Giá", dataIndex: "price", key: "price", render: (text: number) => `${text} VND` },
+    {
+      title: "Giá",
+      dataIndex: "price",
+      key: "price",
+      render: (text: number | string) => `${Number(text).toLocaleString()} VND`,
+    },
     {
       title: "Mô tả",
       dataIndex: "description",
@@ -44,21 +58,33 @@ export default function ProductList() {
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
       key: "status",
-      render: (status: boolean) => (
-        <Badge
-          status={status ? "success" : "default"}
-          text={status ? "Hiển thị" : "Ẩn"}
-        />
-      ),
+      render: (_: any, record: any) => {
+        return (
+          <Tag color={record.status ? "green" : "red"}>
+            {record.status ? "Còn hàng" : "Hết hàng"}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Tồn kho",
+      key: "quantity",
+      render: (_: any, record: any) => {
+        const { quantity } = record;
+        if (quantity === 0) return <Tag color="red">Hết kho</Tag>;
+        if (quantity <= 4) return <Tag color="gold">Sắp hết</Tag>;
+        return <Tag color="blue">Còn nhiều</Tag>;
+      },
     },
     {
       title: "Hành động",
       key: "action",
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Button onClick={() => navigate(`/admin/products/edit/${record.id}`)}>Sửa</Button>
+          <Button onClick={() => navigate(`/admin/products/edit/${record.id}`)}>
+            Sửa
+          </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xoá?"
             onConfirm={() => handleDelete(record.id)}
@@ -76,7 +102,9 @@ export default function ProductList() {
     <div>
       <Title level={3}>Danh sách sản phẩm</Title>
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
-        <Button type="primary" onClick={() => navigate("/admin/products/create")}>Thêm mới</Button>
+        <Button type="primary" onClick={() => navigate("/admin/products/create")}>
+          Thêm mới
+        </Button>
         <Search
           placeholder="Tìm kiếm theo tên..."
           onChange={(e) => setSearch(e.target.value)}
