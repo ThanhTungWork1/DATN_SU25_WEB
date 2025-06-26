@@ -7,6 +7,21 @@
       "gender": "other",
       "birthdate": "2005-01-18",
       "id": "1"
+    },
+    {
+      "id": "e3d8",
+      "name": "Nguyễn Thanh Tùng",
+      "email": "thanhtung19192005@gmail.com",
+      "phone": "0867093967",
+      "address": "04-Xóm chung",
+      "gender": "female",
+      "password": "010910",
+      "confirm": "010910"
+    },
+    {
+      "id": "1d60",
+      "email": "thanhtung19192005@gmail.com",
+      "password": "010910"
     }
   ]
 }
