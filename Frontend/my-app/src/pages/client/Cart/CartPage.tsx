@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "../../store/store";
-import { removeFromCart, updateQuantity, clearCart } from "../../store/cartSlice";
+import type { RootState } from "../../../store/store";
+import { removeFromCart, updateQuantity, clearCart } from "../../../store/cartSlice";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+import Header from "../../../components/Navbar";
+import Footer from "../../../components/Footer";
 
 const CartPage = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);

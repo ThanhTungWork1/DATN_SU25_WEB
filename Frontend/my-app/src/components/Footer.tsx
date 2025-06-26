@@ -5,9 +5,9 @@ const Footer = () => {
         <div className="row">
           {/* Cột 1: Về Uniqlo */}
           <div className="col-md-3">
-            <h6 className="fw-bold">Về Uniqlo</h6>
+            <h6 className="fw-bold">Về StrideX</h6>
             <ul className="list-unstyled">
-              <li><a href="#" className="text-dark text-decoration-none">Thông tin</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Giới thiệu</a></li>
               <li><a href="#" className="text-dark text-decoration-none">Danh sách cửa hàng</a></li>
               <li><a href="#" className="text-dark text-decoration-none">Cơ hội nghề nghiệp</a></li>
             </ul>
@@ -17,34 +17,40 @@ const Footer = () => {
           <div className="col-md-3">
             <h6 className="fw-bold">Trợ giúp</h6>
             <ul className="list-unstyled">
-              <li><a href="#" className="text-dark text-decoration-none">FAQ</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Hỏi đáp</a></li>
               <li><a href="#" className="text-dark text-decoration-none">Chính sách trả hàng</a></li>
               <li><a href="#" className="text-dark text-decoration-none">Chính sách bảo mật</a></li>
-              <li><a href="#" className="text-dark text-decoration-none">Tiếp cận</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Điều khoản sử dụng</a></li>
             </ul>
           </div>
 
-          {/* Cột 3: Tài khoản */}
+          {/* Cột 3: Danh mục */}
           <div className="col-md-3">
-            <h6 className="fw-bold">Tài khoản</h6>
+            <h6 className="fw-bold">Danh mục</h6>
             <ul className="list-unstyled">
-              <li><a href="#" className="text-dark text-decoration-none">Tư cách thành viên</a></li>
-              <li><a href="#" className="text-dark text-decoration-none">Hồ sơ</a></li>
-              <li><a href="#" className="text-dark text-decoration-none">Coupons</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Giày thể thao</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Quần áo</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Phụ kiện</a></li>
+              <li><a href="#" className="text-dark text-decoration-none">Khuyến mãi</a></li>
             </ul>
           </div>
 
-          {/* Cột 4: Bản tin điện tử */}
+          {/* Cột 4: Bản tin */}
           <div className="col-md-3">
             <h6 className="fw-bold">Bản tin điện tử</h6>
             <p className="small">
-              Đăng ký ngay để nhận thông tin về sản phẩm mới, chương trình khuyến mãi & sự kiện.
+              Đăng ký để nhận thông tin sản phẩm mới, khuyến mãi & sự kiện từ StrideX.
             </p>
             <a href="#" className="fw-bold text-dark">ĐĂNG KÝ NGAY</a>
           </div>
         </div>
 
         <hr className="border-dark my-4" />
+
+        {/* Mô tả thương hiệu */}
+        <div className="footer-desc small mb-3">
+          StrideX – Trang web bán đồ thể thao uy tín với sản phẩm đa dạng như giày chạy bộ, quần áo thể thao, phụ kiện chất lượng từ các thương hiệu hàng đầu. Giao hàng toàn quốc, hỗ trợ đổi trả nhanh chóng.
+        </div>
 
         {/* Tài khoản xã hội */}
         <div className="d-flex justify-content-between align-items-center">
@@ -61,9 +67,15 @@ const Footer = () => {
 
         <hr className="border-dark my-4" />
 
-        {/* Bản quyền */}
-        <div className="text-center">
-          <p className="mb-0 small">BẢN QUYỀN THUỘC CÔNG TY TNHH UNIQLO. BẢO LƯU MỌI QUYỀN.</p>
+        {/* Bản quyền & nút đầu trang */}
+        <div className="d-flex justify-content-between align-items-center">
+          <p className="mb-0 small">&copy; 2024 StrideX. BẢO LƯU MỌI QUYỀN.</p>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="btn btn-outline-dark btn-sm"
+          >
+            ⬆ ĐẦU TRANG
+          </button>
         </div>
       </div>
     </footer>

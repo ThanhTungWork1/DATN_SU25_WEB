@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type{ CartItem, OrderPayload } from "../types";
+import type{ CartItem, OrderPayload } from "../types/DetailType";
 
 type Props = {
   selectedItems: CartItem[];
