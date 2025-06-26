@@ -67,37 +67,39 @@ export type SizeProps = {
 // ORDER TYPES
 // ==========================
 export interface OrderItem {
-  /** Đây là mục giỏ hàng đã đặt */
   id: number;
-  productId: number;
-  name: string;
+  order_id?: number | string;
+  productId?: number;
+  variant_id?: number;
+  name?: string;
   price: number;
-  image?: string;
   quantity: number;
+  image?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface Order {
-  /** Mã đơn hàng */
-  id: number;
-  /** Mã người dùng */
-  userId: number;
-  /** Danh sách sản phẩm đã đặt */
-  items: OrderItem[];
-  /** Tổng tiền đơn hàng */
-  totalAmount: number;
-  /** Phí vận chuyển (nếu có) */
-  paymentMethod: string;
-  /** Địa chỉ giao hàng */
-  address: {
+export type Order = {
+  id: string | number;
+  userId?: number;
+  user_id?: number;
+  items?: OrderItem[];
+  totalAmount?: number;
+  total_amount?: number;
+  shipping_fee?: number;
+  is_paid?: boolean;
+  createdAt?: string;
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+  paymentMethod?: string;
+  address?: {
     province: string;
     district: string;
+    ward?: string;
     street: string;
   };
-  /** Trạng thái đơn */
-  status: string;
-  /** Ngày tạo đơn */
-  createdAt: string;
-}
+};
 
 export interface OrderPayload {
   name: string;

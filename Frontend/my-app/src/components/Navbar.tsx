@@ -38,7 +38,14 @@ const Navbar = () => {
             <li><a href="#">Tất/Vớ</a></li>
           </ul>
         </li>
-        <li><a href="#">Liên hệ</a></li>
+
+        {/* ✅ Thêm mục Đơn hàng */}
+        <li>
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            navigate("/orders");
+          }}>Đơn hàng</a>
+        </li>
       </ul>
 
       <div className="icon-group">
