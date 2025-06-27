@@ -7,13 +7,14 @@ import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
 import ResultProduct from "../pages/client/ResultProduct/ResultProduct";
 import HomePage from "../pages/client/Home";
-import UserProfile from "../pages/client/UserProfile";
+// import UserProfile from "../pages/client/UserProfile";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import '../assets/styles/style.css'
 import LikeProduct from "../pages/client/LikeProduct/LikeProduct";
+import UserProfile from "../pages/client/userProfile";
 
 
 const ClientRoute = () => {

@@ -12,24 +12,25 @@ export const Login = () => {
   const navigate = useNavigate();
   const { mutate } = useLogin({ resource: "login" });
 
-  const onFinish = (formData: any) => {
-    const { email, password } = formData;
-
-    if (email === "admin@gmail.com" && password === "admin123") {
-      messageApi.success("Đăng nhập thành công với tư cách Admin");
+  const onFinish = (formData: { email: string; password: string }) => {
+    // Nếu đăng nhập admin "ảo"
+    if (formData.email === "admin@gmail.com" && formData.password === "admin123") {
       localStorage.setItem("role", "admin");
-      navigate("/admin/dashboard"); // hoặc route bạn muốn
+      messageApi.success("Đăng nhập với tư cách Admin");
+      navigate("/admin/dashboard");
       return;
     }
 
+    // Nếu là user bình thường => gọi API Laravel
     mutate(formData, {
-      onSuccess: () => {
-        messageApi.success("Đăng nhập thành công");
+      onSuccess: (data: any) => {
+        localStorage.setItem("token", data.token);
         localStorage.setItem("role", "user");
+        messageApi.success("Đăng nhập thành công");
         navigate("/");
       },
       onError: (error: any) => {
-        messageApi.error(error?.response?.data || "Đăng nhập thất bại");
+        messageApi.error(error.message || "Đăng nhập thất bại");
       },
     });
   };
@@ -37,9 +38,7 @@ export const Login = () => {
   return (
     <div className="max-w-3xl mx-auto">
       {contextHolder}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Đăng nhập</h1>
-      </div>
+      <h1 className="text-xl font-semibold mb-4">Đăng nhập</h1>
       <Form {...formItemLayout} onFinish={onFinish}>
         <Form.Item
           label="Email"
@@ -51,7 +50,6 @@ export const Login = () => {
         >
           <Input />
         </Form.Item>
-
         <Form.Item
           label="Mật khẩu"
           name="password"
@@ -59,8 +57,7 @@ export const Login = () => {
         >
           <Input.Password />
         </Form.Item>
-
-        <Form.Item label={null}>
+        <Form.Item label=" ">
           <Button type="primary" htmlType="submit">
             Đăng nhập
           </Button>
