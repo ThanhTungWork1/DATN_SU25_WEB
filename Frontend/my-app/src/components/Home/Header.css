@@ -13,7 +13,7 @@ body {
 
 /* Navbar */
 .navbar {
-  background: linear-gradient(90deg, #000000);
+  background: linear-gradient(90deg, #ffffff);
   color: white;
   padding: 16px 30px;
   display: flex;
@@ -55,7 +55,7 @@ body {
 }
 
 .nav-links li a {
-  color: white;
+  color: rgb(0, 0, 0);
   text-decoration: none;
   font-weight: 500;
   padding: 8px 12px;
@@ -362,4 +362,12 @@ body, .navbar, .dropdown-menu, .nav-links li a, .login-btn,
   font-size: 32px;
   font-weight: bold;
   color: #007bff;
+}
+
+#root {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0;
+  padding: 0 !important;
+  box-sizing: border-box;
 }
