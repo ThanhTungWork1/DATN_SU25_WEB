@@ -61,13 +61,6 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     return (
       <div>
         {reviews.map((review) => {
-          /*
-           * =================================================================
-           * GỠ LỖI: In ra đối tượng review để kiểm tra
-           * =================================================================
-           */
-          console.log("[DEBUG] Dữ liệu của một review:", review);
-
           const reviewDate = new Date(review.created_at).toLocaleDateString(
             "vi-VN",
             {

@@ -19,11 +19,7 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
     <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
       {/* Bộ đếm số lượng */}
       <div className="d-flex align-items-center border rounded px-2">
-        <button
-          onClick={decrease}
-          className="btn btn-sm btn-light px-2"
-          type="button"
-        >
+        <button onClick={decrease} className="btn-quantity" type="button">
           −
         </button>
         <input
@@ -40,25 +36,18 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
           className="form-control form-control-sm text-center border-0"
           style={{ width: 60 }}
         />
-        <button
-          onClick={increase}
-          className="btn btn-sm btn-light px-2"
-          type="button"
-        >
+        <button onClick={increase} className="btn-quantity" type="button">
           +
         </button>
       </div>
 
       {/* Nút thêm giỏ hàng */}
-      <button
-        className="btn btn-outline-primary btn-sm d-flex align-items-center"
-        onClick={() => onAddToCart(quantity)}
-      >
+      <button className="btn-add-cart" onClick={() => onAddToCart(quantity)}>
         <FaShoppingCart className="me-1" /> Thêm
       </button>
 
       {/* Nút mua ngay */}
-      <button className="btn btn-danger btn-sm">Mua ngay</button>
+      <button className="btn-buy-now">Mua ngay</button>
     </div>
   );
 };
