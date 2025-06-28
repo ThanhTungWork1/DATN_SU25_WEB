@@ -1,19 +1,10 @@
 import { useRelatedProducts } from "../../../hook/ClientHookDetail";
 import { useParams } from "react-router-dom";
-import { useCart } from "../../../provider/CartProvider";
 import "../../../assets/styles/detailProduct.css";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useRelatedProductsPagination } from "../../../hook/useRelatedProductsPagination";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-
-type RouteParams = {
-  id: string;
-};
-
-interface RelatedProductsProps {
-  categoryId?: number;
-  limit?: number;
-}
+import type { RouteParams, RelatedProductsProps } from "../../../types/RelatedProductsType";
 
 // =============================
 // Component hiển thị danh sách sản phẩm liên quan

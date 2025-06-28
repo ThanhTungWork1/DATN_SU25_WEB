@@ -11,12 +11,12 @@ import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
 import RelatedProducts from "./RelatedProducts";
 import Footer from "../../../components/Footer";
-import { useProductDetailLogic } from "./useProductDetailLogic";
+import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
 import "../../../assets/styles/detailProduct.css";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
-import type { Banner as BannerType } from "../../../api/ApiBanner";
+import type { Banner as BannerType } from "../../../types/BannerType";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -49,12 +49,10 @@ const ProductDetail = () => {
   const [banner2, setBanner2] = useState<BannerType | null>(null);
   useEffect(() => {
     getBanners().then((banners) => {
-      console.log("Banners:", banners);
       const found = banners.find((b) => Number(b.id) === 2);
       setBanner2(found || null);
     });
   }, []);
-  console.log("Banner2:", banner2);
   // Khi id sản phẩm thay đổi, có thể thêm logic ở đây nếu cần
   useEffect(() => {}, [id]);
 
@@ -78,9 +76,7 @@ const ProductDetail = () => {
     (product.colors?.map((color) => color.image).filter(Boolean) as string[]) ||
     [];
 
-  // =============================
   // Render giao diện trang chi tiết sản phẩm
-  // =============================
   return (
     <>
       {/* Navbar đầu trang */}

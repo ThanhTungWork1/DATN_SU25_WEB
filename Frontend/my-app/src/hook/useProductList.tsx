@@ -46,10 +46,17 @@ export const useProductList = (
         categoryRes.forEach((cat) => {
           categoryMap[cat.id] = cat.name;
         });
-        const mappedProducts = (productsData as Product[]).map((p: any) => ({
+        let mappedProducts = (productsData as Product[]).map((p: any) => ({
           ...p,
           categoryName: categoryMap[p.category_id] || "",
         }));
+        // Lọc theo search nếu có
+        if (search && search.trim()) {
+          const lowerSearch = search.trim().toLowerCase();
+          mappedProducts = mappedProducts.filter((p: Product) =>
+            p.name?.toLowerCase().includes(lowerSearch)
+          );
+        }
         setProducts(mappedProducts);
         setCategories(categoryRes);
         setColors(colorRes as { id: number; name: string; code: string }[]);
@@ -57,11 +64,8 @@ export const useProductList = (
         setTotal(mappedProducts.length);
         setTotalPages(Math.ceil(mappedProducts.length / limit));
       })
-      .catch((error) => {
-        setError("Không thể tải sản phẩm");
-      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [search]);
 
   return {
     products,

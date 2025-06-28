@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "../assets/styles/SearchBar.css";
+import { validateSearchQuery } from "../validation/searchValidation";
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -51,14 +52,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch && query.trim()) onSearch(query);
+    if (onSearch && validateSearchQuery(query)) onSearch(query);
     // Không đóng input ở đây
   };
 
   const handleIconClick = () => {
     if (!open) {
       setOpen(true);
-    } else if (query.trim()) {
+    } else if (validateSearchQuery(query)) {
       if (onSearch) onSearch(query);
       // Không đóng input, chỉ tìm kiếm
     }

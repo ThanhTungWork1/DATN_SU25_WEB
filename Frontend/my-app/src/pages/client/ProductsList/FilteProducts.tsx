@@ -41,10 +41,9 @@ export const FilteProducts = ({
   const materialList = [
     "Cotton",
     "Polyester",
-    "Spandex (Elastane)",
-    "Nylon",
+    "Plastic",
     "Spandex",
-    "Nỉ thể thao (Fleece)",
+    "Fleece",
   ];
   const toggleMaterial = (material: string) => {
     setFilter({

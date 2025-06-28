@@ -534,11 +534,15 @@ body {
     color 0.2s,
     box-shadow 0.2s;
 }
-.btn-dark:hover,
+.btn-dark {
+  background: #00c6ab !important;
+  border-color: #00c6ab !important;
+  color: #fff !important;
+}
 .btn-dark:focus {
   border-color: #00c6ab !important;
-  color: #00c6ab !important;
-  background: #232946 !important;
+  color: #fff !important;
+  background: #00c6ab !important;
   box-shadow: 0 0 0 2px rgba(0, 198, 171, 0.08);
   transition:
     border-color 0.2s,

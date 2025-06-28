@@ -11,9 +11,7 @@ const Navbar = () => {
   // Lấy category từ query string
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
-  // Cập nhật logic active cho Nam/Nữ để đúng với cả _ao, _quan
-  const isNam = categoryParam?.startsWith(String(CATEGORY_MENU.NAM));
-  const isNu = categoryParam?.startsWith(String(CATEGORY_MENU.NU));
+  
   const isPhuKien =
     categoryParam === CATEGORY_MENU.PHU_KIEN.join(",") ||
     categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ||
@@ -23,17 +21,6 @@ const Navbar = () => {
     if (query.trim()) {
       navigate(`/products/search?query=${encodeURIComponent(query)}`);
     }
-  };
-
-  // Xử lý click menu Nam
-  const handleClickNam = () => {
-    // Điều hướng sang trang sản phẩm, truyền categoryId qua query string
-    navigate(`/products?category=${CATEGORY_MENU.NAM}`);
-  };
-
-  // Xử lý click menu Nữ
-  const handleClickNu = () => {
-    navigate(`/products?category=${CATEGORY_MENU.NU}`);
   };
 
   // Xử lý click menu Phụ kiện (lọc cả Kính và Mũ)

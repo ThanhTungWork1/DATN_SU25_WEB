@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getBanners } from "../api/ApiBanner";
-import type { Banner } from "../api/ApiBanner";
+import type { Banner } from "../types/BannerType";
 
 export const Section = () => {
   const [bannerUrl, setBannerUrl] = useState<string>("");

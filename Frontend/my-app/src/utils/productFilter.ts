@@ -18,19 +18,48 @@ export function filterProducts(
   filter: ProductFilter,
 ): Product[] {
   let result = products;
-  console.log("[DEBUG] === BẮT ĐẦU LỌC SẢN PHẨM ===");
-  console.log("[DEBUG] Filter input:", JSON.stringify(filter));
-  console.log("[DEBUG] Tổng số sản phẩm đầu vào:", products.length);
 
-  // Lọc theo tên (tìm kiếm mềm, chỉ cần 1 từ trong từ khóa xuất hiện trong tên sản phẩm)
+  // Lọc theo tên (ưu tiên AND, fallback OR nếu không có kết quả)
   if (filter.name) {
+    // Tách từ khóa tìm kiếm thành mảng, loại bỏ khoảng trắng thừa
+    // Ví dụ: "quần nam" => ["quần", "nam"]
     const keyword = normalizeText(filter.name);
     const keywordArr = keyword.split(" ").filter(Boolean);
-    result = result.filter((p) => {
+    // Xác định loại sản phẩm chính từ từ khóa
+    const mainTypes = ['ao', 'quan', 'kinh', 'mu'];
+    const mainTypeInKeyword = mainTypes.find(type => keywordArr.includes(type));
+    let filteredList = result;
+    // Ưu tiên lọc đúng loại sản phẩm chính nếu có
+    if (mainTypeInKeyword) {
+      filteredList = filteredList.filter(p => normalizeText(p.name).includes(mainTypeInKeyword));
+    }
+    // Loại trừ sản phẩm "nam" khi tìm "nữ" và ngược lại
+    const hasNu = keywordArr.includes('nu');
+    const hasNam = keywordArr.includes('nam');
+    if (hasNu) {
+      filteredList = filteredList.filter(p => !normalizeText(p.name).includes('nam'));
+    }
+    if (hasNam) {
+      filteredList = filteredList.filter(p => !normalizeText(p.name).includes('nu'));
+    }
+    // Lọc kiểu AND: tất cả từ đều phải có
+    let filteredByName = filteredList.filter((p) => {
       const nameNorm = normalizeText(p.name);
-      // Chỉ cần 1 từ trong keyword xuất hiện trong tên sản phẩm
-      return keywordArr.some((word) => nameNorm.includes(word));
+      return keywordArr.every((word) => nameNorm.includes(word));
     });
+    // Nếu không có kết quả và có nhiều hơn 1 từ khóa, fallback sang OR với xếp hạng số từ trùng
+    if (filteredByName.length === 0 && keywordArr.length > 1) {
+      let orMatched = filteredList
+        .map((p) => {
+          const nameNorm = normalizeText(p.name);
+          const matchCount = keywordArr.filter((word) => nameNorm.includes(word)).length;
+          return { product: p, matchCount };
+        })
+        .filter((item) => item.matchCount > 0);
+      orMatched.sort((a, b) => b.matchCount - a.matchCount);
+      filteredByName = orMatched.map((item) => item.product);
+    }
+    result = filteredByName;
   }
   // Lọc theo danh mục
   if (filter.categories && filter.categories.length > 0) {
@@ -57,64 +86,76 @@ export function filterProducts(
   }
   // Lọc theo màu
   if (filter.colors && filter.colors.length > 0) {
-    console.log("[DEBUG] Lọc theo màu - filter.colors:", filter.colors);
-    result.forEach((p, idx) => {
-      console.log(`[DEBUG] Sản phẩm #${idx} id=${p.id} colors=`, p.colors);
-    });
-    result = result.filter((p, idx) => {
+    result = result.filter((p) => {
       const productColors = p.colors ? p.colors.map(Number) : [];
       const filterColors = filter.colors!.map(Number);
       const isMatch = productColors.some((colorId) => filterColors.includes(colorId));
-      console.log(`[DEBUG] So sánh màu - Sản phẩm #${idx} id=${p.id}:`, {
-        productColors,
-        filterColors,
-        isMatch,
-      });
       return p.colors && isMatch;
     });
-    console.log("[DEBUG] Số sản phẩm sau khi lọc màu:", result.length);
+    
   }
   // Lọc theo size
   if (filter.sizes && filter.sizes.length > 0) {
-    console.log("[DEBUG] Lọc theo size - filter.sizes:", filter.sizes);
-    result.forEach((p, idx) => {
-      console.log(`[DEBUG] Sản phẩm #${idx} id=${p.id} sizes=`, p.sizes);
-    });
-    result = result.filter((p, idx) => {
+    result = result.filter((p) => {
       const productSizes = p.sizes ? p.sizes.map(Number) : [];
       const filterSizes = filter.sizes!.map(Number);
       const isMatch = productSizes.some((sizeId) => filterSizes.includes(sizeId));
-      console.log(`[DEBUG] So sánh size - Sản phẩm #${idx} id=${p.id}:`, {
-        productSizes,
-        filterSizes,
-        isMatch,
-      });
+      
       return p.sizes && isMatch;
     });
-    console.log("[DEBUG] Số sản phẩm sau khi lọc size:", result.length);
+    
   }
   // Lọc theo chất liệu
   if (filter.materials && filter.materials.length > 0) {
-    console.log("[DEBUG] Lọc theo chất liệu - filter.materials:", filter.materials);
-    result.forEach((p, idx) => {
-      console.log(`[DEBUG] Sản phẩm #${idx} id=${p.id} materials=`, p.materials);
-    });
-    result = result.filter((p, idx) => {
+    result = result.filter((p) => {
       if (p.materials && Array.isArray(p.materials)) {
         const isMatch = p.materials.some((m: string) =>
           filter.materials!.some((fm) => m.toLowerCase() === fm.toLowerCase()),
         );
-        console.log(`[DEBUG] So sánh chất liệu - Sản phẩm #${idx} id=${p.id}:`, {
-          productMaterials: p.materials,
-          filterMaterials: filter.materials,
-          isMatch,
-        });
         return isMatch;
       }
       return false;
     });
-    console.log("[DEBUG] Số sản phẩm sau khi lọc chất liệu:", result.length);
   }
-  console.log("[DEBUG] === KẾT THÚC LỌC SẢN PHẨM === Số sản phẩm còn lại:", result.length);
   return result;
+}
+
+// Toggle color id trong filter
+export function toggleColor(filter: ProductFilter, colorId: number): ProductFilter {
+  return {
+    ...filter,
+    colors: filter.colors?.includes(colorId)
+      ? filter.colors.filter((c) => c !== colorId)
+      : [...(filter.colors || []), colorId],
+  };
+}
+
+// Toggle size id trong filter
+export function toggleSize(filter: ProductFilter, sizeId: number): ProductFilter {
+  return {
+    ...filter,
+    sizes: filter.sizes?.includes(sizeId)
+      ? filter.sizes.filter((s) => s !== sizeId)
+      : [...(filter.sizes || []), sizeId],
+  };
+}
+
+// Toggle material trong filter
+export function toggleMaterial(filter: ProductFilter, material: string): ProductFilter {
+  return {
+    ...filter,
+    materials: filter.materials?.includes(material)
+      ? filter.materials.filter((m) => m !== material)
+      : [...(filter.materials || []), material],
+  };
+}
+
+// Toggle category id trong filter
+export function toggleCategory(filter: ProductFilter, catId: number): ProductFilter {
+  return {
+    ...filter,
+    categories: filter.categories?.includes(catId)
+      ? filter.categories.filter((c) => c !== catId)
+      : [...(filter.categories || []), catId],
+  };
 }

@@ -1,10 +1,4 @@
-import type { Product } from "../../../types/DetailType";
-
-type ProductInfoProps = {
-  product: Product;
-  selectedVariantStock: number | null | undefined;
-  sku: string | undefined;
-};
+import type { ProductInfoProps } from "../../../types/ProductInfoType";
 
 // =============================
 // Component hiển thị thông tin sản phẩm (tên, giá, trạng thái, mã SP...)
