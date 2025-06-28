@@ -5,7 +5,6 @@ import { getList } from "../../provider/dataProvider";
 type useListParams = {
     resource: string;
 }
-// useList({resource: 'users'})
 
 const useList = ({ resource }: useListParams) => {
     return useQuery({

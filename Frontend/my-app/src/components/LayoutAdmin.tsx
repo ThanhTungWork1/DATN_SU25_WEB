@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
+  DesktopOutlined ,
   UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -25,7 +26,8 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem('User', '/admin/users', <UserOutlined />, [
+  getItem('Dashboard', 'dashboard', <DesktopOutlined  />),
+  getItem('Thành viên', '/admin/users', <UserOutlined />, [
     getItem('Tất cả người dùng', '/admin/users'),
     // getItem('Hồ sơ', '4'),
   ]),
@@ -47,7 +49,7 @@ const LayoutAdmin: React.FC = () => {
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: '0 16px' }}>
-          <Breadcrumb style={{ margin: '16px 0' }} items={[{ title: 'User' }, { title: 'Bill' }]} />
+
           <div
             style={{
               padding: 24,
