@@ -1,23 +1,23 @@
 {
   "products": [
     {
-      "name": "áo khoác nam 344",
+      "name": "quần đùi rông 344",
       "price": 34324,
-      "quantity": "3",
+      "quantity": "0",
       "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
       "status": true,
-      "category_id": "60f7e8b2c8a4f22b6c8e8e99",
       "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
+      "category": "quần nam",
       "id": "60f7e8b2c8a4f22b6c8e8e1a"
     },
     {
       "name": "quần thể thao CR7 siuuu",
       "price": "100000",
-      "quantity": "1",
+      "quantity": "4",
       "description": "đẹp ",
       "status": true,
-      "category_id": "quần nam",
       "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
+      "category": "quần nam",
       "id": "dfd4"
     },
     {
@@ -26,29 +26,29 @@
       "quantity": "4",
       "description": "đẹp, chất mát",
       "status": true,
-      "category_id": "bộ quán áo nam",
+      "category": "bộ quán áo nam",
       "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
       "id": "66d7"
     },
     {
       "name": "bộ thể thao adidas",
       "price": "150000",
+      "quantity": "5",
       "description": "aaaaaa",
       "status": true,
-      "quantity": 9,
-      "category_id": "bộ quần áo nam",
       "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
+      "category": "bộ quần áo nam",
       "id": "b839"
     },
     {
-      "id": "3cdd",
       "name": "quần dài nam",
       "price": "233000",
-      "quantity": "15",
+      "quantity": "3",
       "description": "egfdgfg",
       "status": true,
-      "category_id": "quần nam",
-      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg"
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
+      "category": "quần nam",
+      "id": "3cdd"
     },
     {
       "id": "2030",
@@ -57,8 +57,17 @@
       "quantity": "6",
       "description": "dffgf",
       "status": true,
-      "category_id": "áo nam",
+      "category": "áo nam",
       "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg"
+    },
+    {
+      "id": "e4be",
+      "name": "áo đá bóng",
+      "price": "223300",
+      "quantity": "10",
+      "description": "vải chất lượng tốt",
+      "status": true,
+      "category": "áo nam"
     }
   ],
   "orders": [

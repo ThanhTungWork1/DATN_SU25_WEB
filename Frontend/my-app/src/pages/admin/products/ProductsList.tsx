@@ -43,7 +43,12 @@ export default function ProductList() {
   );
 
   const columns = [
-        { title: "Tên", dataIndex: "name", key: "name" },
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      render: (text: string) => `#${text}`,
+    },
     {
       title: "Ảnh",
       dataIndex: "image",
@@ -62,38 +67,39 @@ export default function ProductList() {
         />
       ),
     },
-
-     {
+    { title: "Tên", dataIndex: "name", key: "name" },
+    {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
       ellipsis: true,
     },
-    
     {
       title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (text: number | string) => `${Number(text).toLocaleString()} VND`,
     },
-   
+    {
+      title: "Danh mục",
+      dataIndex: "category",
+      key: "category",
+    },
     {
       title: "Trạng thái",
       key: "status",
-      render: (_: any, record: any) => {
-        return (
-          <Tag color={record.status ? "green" : "red"}>
-            {record.status ? "Còn hàng" : "Hết hàng"}
-          </Tag>
-        );
-      },
+      render: (_: any, record: any) => (
+        <Tag color={record.status ? "green" : "red"}>
+          {record.status ? "Còn hàng" : "Hết hàng"}
+        </Tag>
+      ),
     },
     {
       title: "Tồn kho",
       key: "quantity",
       render: (_: any, record: any) => {
         const { quantity } = record;
-        if (quantity === 0) return <Tag color="red">Hết kho</Tag>;
+        if (quantity == 0) return <Tag color="red">Hết kho</Tag>;
         if (quantity <= 4) return <Tag color="gold">Sắp hết</Tag>;
         return <Tag color="blue">Còn nhiều</Tag>;
       },
