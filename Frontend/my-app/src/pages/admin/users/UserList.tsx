@@ -4,7 +4,6 @@ import type { IUser } from "../../../types/users";
 import { useState } from "react";
 import { config } from "../../../api/axios"; // Giả sử bạn có axios cấu hình sẵn ở đây
 import { Link } from "react-router-dom";
-import { EditOutlined } from "@ant-design/icons";
 
 const UserList = () => {
   const { data, isLoading, refetch } = useList({ resource: "users" }); // có thể thêm refetch để reload dữ liệu
@@ -90,17 +89,6 @@ const UserList = () => {
         ) : (
           <Tag color="orange">Chưa xác minh</Tag>
         ),
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_: any, record: IUser) => (
-        <Link to={`/admin/users/edit/${record.id}`}>
-          <Button icon={<EditOutlined />} size="small">
-            Sửa
-          </Button>
-        </Link>
-      ),
     },
   ];
 

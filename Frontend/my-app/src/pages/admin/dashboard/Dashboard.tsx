@@ -1,7 +1,9 @@
 import React from 'react'
 import { useDashboardStats } from '../../../hook/dashboards/useDashboardStats'
 import { Card, Col, Row, Statistic } from 'antd';
-import { AppstoreOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, ShoppingOutlined, UserOutlined } from '@ant-design/icons';
+
+import UserChart from '../../../components/dashboard/UserChart';
 import UserGrowthCard from '../../../components/dashboard/UserGrowthCard';
 
 const Dashboard = () => {
@@ -13,7 +15,19 @@ const Dashboard = () => {
   return (
     <Row gutter={[16, 16]}>
       <Col span={6}>
-        <UserGrowthCard />
+        <Card>
+          <Statistic
+            title="Người dùng"
+            value={data?.users}
+            prefix={<UserOutlined />}
+          />
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <UserGrowthCard />
+            </Col>
+          </Row>
+          <UserChart />
+        </Card>
       </Col>
       <Col span={6}>
         <Card>

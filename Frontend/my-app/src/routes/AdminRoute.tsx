@@ -1,7 +1,6 @@
 import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
 import UserList from "../pages/admin/users/UserList";
-import UserEdit from "../pages/admin/users/UserEdit";
 import UserAdd from "../pages/admin/users/AddUser";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 
@@ -26,10 +25,6 @@ const AdminRoute: RouteObject[] = [
           {
             index: true,
             element:<UserList/>
-          },
-          {
-            path: "edit/:id",
-            element: <UserEdit/>
           },
           {
             path: "create",
