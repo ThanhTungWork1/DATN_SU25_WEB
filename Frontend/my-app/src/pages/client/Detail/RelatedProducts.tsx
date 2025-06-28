@@ -1,14 +1,27 @@
 import { useParams } from "react-router-dom";
+<<<<<<< HEAD
 import { useRelatedProducts } from "../../../hook/ClientHookDetail";
+=======
+import "../../../assets/styles/detailProduct.css";
+import { BoxProduct } from "../../../components/BoxProduct";
+>>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 import { useRelatedProductsPagination } from "../../../hook/useRelatedProductsPagination";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useCart } from "../../../provider/CartProvider";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+<<<<<<< HEAD
 import { toast } from "sonner";
 import type {
   RouteParams,
   RelatedProductsProps,
 } from "../../../types/RelatedProductsType";
+=======
+import type { RouteParams, RelatedProductsProps } from "../../../types/RelatedProductsType";
+
+// =============================
+// Component hiển thị danh sách sản phẩm liên quan
+// =============================
+>>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 
 const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
   const { id } = useParams<RouteParams>();

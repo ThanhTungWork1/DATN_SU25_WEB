@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getProductDetail } from "../api/ApiProduct";
 import type { Product } from "../types/DetailType";
+import { getAllProducts } from "../api/ApiUrl";
 
-/**
- * Hook lấy chi tiết sản phẩm theo ID từ backend thật.
- */
 export const useProductDetail = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
@@ -13,12 +11,6 @@ export const useProductDetail = (id: string) => {
   });
 };
 
-/**
- * Hook lấy danh sách sản phẩm liên quan.
- * - Loại trừ sản phẩm hiện tại.
- * - Lọc theo `category_id`.
- * - Giới hạn số lượng kết quả trả về.
- */
 export const useRelatedProducts = (
   currentProductId: string,
   categoryId?: number,

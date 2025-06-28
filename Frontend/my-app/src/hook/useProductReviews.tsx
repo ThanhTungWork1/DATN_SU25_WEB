@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { getProductReviews } from "../api/ApiUrl";
+=======
+import { getProductReviews, getAllUsers } from "../api/ApiUrl";
+>>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 import type { Review } from "../types/ReviewType";
 
 export const useProductReviews = (productId: number) => {

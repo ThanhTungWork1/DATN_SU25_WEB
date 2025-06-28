@@ -8,6 +8,7 @@ const Navbar = () => {
 
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
+<<<<<<< HEAD
 
   // Xác định active cho từng menu
   // Sản phẩm: chỉ active khi path là /products và không có category thuộc Nam/Nữ/Phụ kiện
@@ -24,6 +25,13 @@ const Navbar = () => {
     CATEGORY_MENU.PHU_KIEN_KINH,
     CATEGORY_MENU.PHU_KIEN_MU
   ].includes(Number(categoryParam));
+=======
+  
+  const isPhuKien =
+    categoryParam === CATEGORY_MENU.PHU_KIEN.join(",") ||
+    categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ||
+    categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU);
+>>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -31,6 +39,10 @@ const Navbar = () => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  // Xử lý click menu Phụ kiện (lọc cả Kính và Mũ)
+>>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
   const handleClickPhuKien = () => {
     navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
   };
