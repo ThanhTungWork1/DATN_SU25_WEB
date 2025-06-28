@@ -9,7 +9,7 @@ import {
   message,
   Typography,
   Tag,
-  Input
+  Input,
 } from "antd";
 
 const { Title } = Typography;
@@ -43,19 +43,40 @@ export default function ProductList() {
   );
 
   const columns = [
-    { title: "Tên", dataIndex: "name", key: "name" },
+        { title: "Tên", dataIndex: "name", key: "name" },
+    {
+      title: "Ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (url: string) => (
+        <img
+          src={url || "https://via.placeholder.com/50"}
+          alt="ảnh sản phẩm"
+          style={{
+            width: 50,
+            height: 50,
+            objectFit: "cover",
+            borderRadius: 4,
+            border: "1px solid #eee",
+          }}
+        />
+      ),
+    },
+
+     {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+    },
+    
     {
       title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (text: number | string) => `${Number(text).toLocaleString()} VND`,
     },
-    {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
+   
     {
       title: "Trạng thái",
       key: "status",
@@ -102,7 +123,10 @@ export default function ProductList() {
     <div>
       <Title level={3}>Danh sách sản phẩm</Title>
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
-        <Button type="primary" onClick={() => navigate("/admin/products/create")}>
+        <Button
+          type="primary"
+          onClick={() => navigate("/admin/products/create")}
+        >
           Thêm mới
         </Button>
         <Search

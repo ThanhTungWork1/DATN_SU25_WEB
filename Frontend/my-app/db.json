@@ -7,6 +7,7 @@
       "description": "Áo khoác nam chất liệu cao cấp, giữ ấm tốt.",
       "status": true,
       "category_id": "60f7e8b2c8a4f22b6c8e8e99",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
       "id": "60f7e8b2c8a4f22b6c8e8e1a"
     },
     {
@@ -16,6 +17,7 @@
       "description": "đẹp ",
       "status": true,
       "category_id": "quần nam",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
       "id": "dfd4"
     },
     {
@@ -25,6 +27,7 @@
       "description": "đẹp, chất mát",
       "status": true,
       "category_id": "bộ quán áo nam",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
       "id": "66d7"
     },
     {
@@ -34,6 +37,7 @@
       "status": true,
       "quantity": 9,
       "category_id": "bộ quần áo nam",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg",
       "id": "b839"
     },
     {
@@ -43,7 +47,8 @@
       "quantity": "15",
       "description": "egfdgfg",
       "status": true,
-      "category_id": "quần nam"
+      "category_id": "quần nam",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg"
     },
     {
       "id": "2030",
@@ -52,7 +57,8 @@
       "quantity": "6",
       "description": "dffgf",
       "status": true,
-      "category_id": "áo nam"
+      "category_id": "áo nam",
+      "image": "http://zeanus.com/upload/product/abs-001/bo-quan-ao-big-size-the-thao-cho-nguoi-bung-bu.jpg"
     }
   ],
   "orders": [
