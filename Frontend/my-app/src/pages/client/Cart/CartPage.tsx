@@ -10,16 +10,12 @@ const CartPage = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // State lưu checkbox sản phẩm được chọn
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
 
-  // Toggle chọn sản phẩm
   const toggleSelectItem = (id: number) => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Tính toán sản phẩm được chọn
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
   const totalAmount = selectedProducts.reduce((total, item) => total + item.price * item.quantity, 0);
 
@@ -33,7 +29,6 @@ const CartPage = () => {
           <p className="text-center text-muted">Giỏ hàng trống.</p>
         ) : (
           <div className="row">
-            {/* Danh sách sản phẩm */}
             <div className="col-lg-8">
               {cartItems.map((item) => (
                 <div key={item.id} className="d-flex align-items-center border-bottom py-3">
@@ -65,8 +60,6 @@ const CartPage = () => {
                 </div>
               ))}
             </div>
-
-            {/* Tóm tắt đơn hàng */}
             <div className="col-lg-4">
               <div className="p-4 bg-light rounded shadow">
                 <h4 className="fw-bold">Tóm tắt đơn hàng</h4>

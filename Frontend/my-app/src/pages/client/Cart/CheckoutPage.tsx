@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import axios from "axios";
-import momoQR from "../../../public/qr-momo.png"; // ảnh QR Momo
+import momoQR from "../../../public/qr-momo.png"; 
 
 type Ward = { code: number; name: string };
 type District = { code: number; name: string; wards: Ward[] };
