@@ -27,7 +27,7 @@ const UserProfile = () => {
     if (data?.data) {
       form.setFieldsValue({
         ...data.data,
-        birthdate: data.data.birthdate ? dayjs(data.data.birthdate) : undefined,
+        // birthdate: data.data.birthdate ? dayjs(data.data.birthdate) : undefined,
       });
     }
   }, [data, form]);
@@ -71,7 +71,7 @@ const UserProfile = () => {
 
         <div className="field-static">
           <div className="field-static-label">Tên đăng nhập</div>
-          <div className="field-static-value">{data?.data?.username || "Không có"}</div>
+          {/* <div className="field-static-value">{data?.data?.username || "Không có"}</div> */}
         </div>
 
         <Form form={form} onFinish={onFinish} layout="vertical">

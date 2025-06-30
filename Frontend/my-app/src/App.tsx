@@ -1,3 +1,5 @@
+import ClientRoute from "./routes/ClientRoute";
+import { Toaster } from "sonner";
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import UserProfile from './pages/client/userProfile'
@@ -11,16 +13,10 @@ function App() {
 
   return (
     <>
-    <Header/>
-    <Routes>
-        <Route path='/' element={<HomePage/>}/>
-        <Route path="/users/:id" element={<UserProfile />} />
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/register' element={<Register/>}/>
-    </Routes>
-    <Footer/>
+      <ClientRoute />
+      <Toaster position="top-right" richColors />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
