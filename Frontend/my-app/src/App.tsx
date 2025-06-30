@@ -8,6 +8,7 @@ import Register from './pages/auth/Register'
 import HomePage from './pages/client/Home'
 import Header from './components/Home/Header'
 import Footer from './components/Home/Footer'
+import AdminRoute from './routes/AdminRoute'
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
     <>
       <ClientRoute />
       <Toaster position="top-right" richColors />
+    <AdminRoute/>
     </>
   );
 }
