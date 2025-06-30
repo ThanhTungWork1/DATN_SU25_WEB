@@ -1,71 +1,93 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Order;
 
 class UserController extends Controller
 {
-    // GET /api/user
     public function index()
     {
-        return response()->json(User::all(), 200);
+        return User::all();
     }
 
-    // GET /api/user/{id}
     public function show($id)
     {
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        return response()->json($user, 200);
+        return User::findOrFail($id);
     }
 
-    // POST /api/user/add
-    public function add(Request $request)
+    public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'username' => 'required|unique:users',
-            'password' => 'required',
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'status' => 'required|string',
+            'is_paid' => 'required|boolean',
+            'total_amount' => 'required|numeric',
+            'shipping_fee' => 'required|numeric',
+            'items' => 'required|array',
+            'items.*.variant_id' => 'required|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'required|numeric',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 0,
+        $order = Order::create([
+            'user_id' => $data['user_id'],
+            'status' => $data['status'],
+            'is_paid' => $data['is_paid'],
+            'total_amount' => $data['total_amount'],
+            'shipping_fee' => $data['shipping_fee']
         ]);
 
-        return response()->json($user, 201);
+        foreach ($data['items'] as $item) {
+            \App\Models\OrderItem::create([
+                'order_id' => $order->id,
+                'variant_id' => $item['variant_id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price']
+            ]);
+        }
+
+        return response()->json($order->load('items'), 201);
     }
 
-    // PUT /api/user/update/{id}
+
     public function update(Request $request, $id)
     {
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        $user = User::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'role' => 'sometimes|in:0,1',
+            'status' => 'nullable|boolean',
+            'is_verified' => 'nullable|boolean',
+            'password' => 'nullable|min:6'
+        ]);
+
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         }
 
-        $user->update($request->only(['name', 'email', 'username', 'role']));
-        return response()->json($user, 200);
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'data' => $user
+        ]);
     }
 
-    // DELETE /api/user/delete/{id}
     public function destroy($id)
     {
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+        User::destroy($id);
 
-        $user->delete();
-        return response()->json(['message' => 'User deleted'], 200);
+        return response()->json([
+            'message' => 'User deleted successfully'
+        ]);
     }
 }

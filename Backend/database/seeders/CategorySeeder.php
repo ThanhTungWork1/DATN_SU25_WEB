@@ -3,27 +3,16 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Category;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = [
-            'Laptop',
-            'PC Gaming',
-            'Linh kiện',
-            'Phụ kiện',
-        ];
-
-        foreach ($categories as $category) {
-            Category::create([
-                'name' => $category,
-                'slug' => Str::slug($category),
-                'description' => 'Mô tả cho ' . $category,
-            ]);
-        }
+        DB::table('categories')->insert([
+            ['name' => 'Electronics', 'status' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Clothing', 'status' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Books', 'status' => true, 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }
-
