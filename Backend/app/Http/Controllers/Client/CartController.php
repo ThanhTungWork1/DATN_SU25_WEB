@@ -4,68 +4,107 @@ namespace App\Http\Controllers\Client;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\CartItem;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends \App\Http\Controllers\Controller
 {
+    // Lấy giỏ hàng
     public function index(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->first();
 
-        return response()->json(['cart' => $cart]);
+        $items = [];
+        if ($cart) {
+            $items = CartItem::with('product')->where('cart_id', $cart->id)->get();
+        }
+
+        return response()->json(['cart_items' => $items]);
     }
 
+    // Thêm sản phẩm vào giỏ hàng
     public function add(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
         ]);
-        $product = Product::findOrFail($request->product_id);
-        $cart = session()->get('cart', []);
+        $userId = Auth::id();
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity'] += $request->quantity;
+        // Tìm hoặc tạo cart cho user
+        $cart = Cart::firstOrCreate(['user_id' => $userId]);
+
+        // Kiểm tra sản phẩm đã có trong cart chưa
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        $product = Product::findOrFail($request->product_id);
+
+        if ($cartItem) {
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
         } else {
-            $cart[$product->id] = [
-                "name" => $product->name,
-                "price" => $product->price,
-                "quantity" => $request->quantity,
-            ];
+            CartItem::create([
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+                'quantity' => $request->quantity,
+                'price' => $product->price,
+            ]);
         }
 
-        session()->put('cart', $cart);
-        return response()->json(['message' => 'Đã thêm vào giỏ hàng!', 'cart' => $cart]);
+        $items = CartItem::with('product')->where('cart_id', $cart->id)->get();
+
+        return response()->json(['message' => 'Đã thêm vào giỏ hàng!', 'cart_items' => $items]);
     }
 
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
     public function update(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
         ]);
-        $cart = session()->get('cart', []);
-        $productId = $request->product_id;
-        $quantity = $request->quantity;
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->first();
 
-        if (isset($cart[$productId])) {
-            $cart[$productId]['quantity'] = $quantity;
-            session()->put('cart', $cart);
+        if (!$cart) {
+            return response()->json(['message' => 'Giỏ hàng trống!'], 404);
         }
-        return response()->json(['message' => 'Cập nhật giỏ hàng thành công!', 'cart' => $cart]);
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($cartItem) {
+            $cartItem->quantity = $request->quantity;
+            $cartItem->save();
+        }
+
+        $items = CartItem::with('product')->where('cart_id', $cart->id)->get();
+
+        return response()->json(['message' => 'Cập nhật giỏ hàng thành công!', 'cart_items' => $items]);
     }
 
+    // Xóa sản phẩm khỏi giỏ hàng
     public function remove(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
-        $cart = session()->get('cart', []);
-        $productId = $request->product_id;
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->first();
 
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session()->put('cart', $cart);
+        if ($cart) {
+            CartItem::where('cart_id', $cart->id)
+                ->where('product_id', $request->product_id)
+                ->delete();
         }
-        return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng!', 'cart' => $cart]);
+
+        $items = $cart ? CartItem::with('product')->where('cart_id', $cart->id)->get() : [];
+
+        return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng!', 'cart_items' => $items]);
     }
 }
