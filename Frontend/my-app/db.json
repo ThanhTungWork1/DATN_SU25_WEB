@@ -1,98 +1,97 @@
 {
-"users": [
-  {
-    "id": "1",
-    "name": "Nguyễn Văn A",
-    "email": "nguyenvana@example.com",
-    "password": "123456",
-    "phone": "0987654321",
-    "address": "Hà Nội",
-    "role": "user",
-    "status": true,
-    "is_verified": true,
-    "created_at": "2024-01-10T07:00:00Z",
-    "updated_at": "2024-01-15T07:00:00Z"
-  },
-  {
-    "id": "2",
-    "name": "Trần Thị B",
-    "email": "tranthib@example.com",
-    "password": "abcdef",
-    "phone": "0911222333",
-    "address": "Đà Nẵng",
-    "role": "user",
-    "status": true,
-    "is_verified": false,
-    "created_at": "2024-02-20T07:00:00Z",
-    "updated_at": "2024-02-25T07:00:00Z"
-  },
-  {
-    "id": "3",
-    "name": "Lê Văn C",
-    "email": "levanc@example.com",
-    "password": "123abc",
-    "phone": "0909888777",
-    "address": "TP. Hồ Chí Minh",
-    "role": "user",
-    "status": false,
-    "is_verified": true,
-    "created_at": "2024-03-15T07:00:00Z",
-    "updated_at": "2024-03-20T07:00:00Z"
-  },
-  {
-    "id": "4",
-    "name": "Phạm Thị D",
-    "email": "phamthid@example.com",
-    "password": "654321",
-    "phone": "0988123456",
-    "address": "Hải Phòng",
-    "role": "admin",
-    "status": true,
-    "is_verified": true,
-    "created_at": "2024-04-05T07:00:00Z",
-    "updated_at": "2024-04-15T07:00:00Z"
-  },
-  {
-    "id": "5",
-    "name": "Đỗ Mạnh E",
-    "email": "domanhe@example.com",
-    "password": "password",
-    "phone": "0909777666",
-    "address": "Cần Thơ",
-    "role": "user",
-    "status": true,
-    "is_verified": false,
-    "created_at": "2024-05-10T07:00:00Z",
-    "updated_at": "2024-05-20T07:00:00Z"
-  },
-  {
-    "id": "6",
-    "name": "Vũ Thị F",
-    "email": "vuthif@example.com",
-    "password": "qwerty",
-    "phone": "0911333555",
-    "address": "Huế",
-    "role": "user",
-    "status": true,
-    "is_verified": true,
-    "created_at": "2024-06-01T07:00:00Z",
-    "updated_at": "2024-06-15T07:00:00Z"
-  }
-  ,
-  {
-    "id": "7",
-    "name": "Vũ Thị F",
-    "email": "vuthif@example.com",
-    "password": "qwerty",
-    "phone": "0911333555",
-    "address": "Huế",
-    "role": "user",
-    "status": true,
-    "is_verified": true,
-    "created_at": "2024-06-01T07:00:00Z",
-    "updated_at": "2024-06-15T07:00:00Z"
-  }
-],
+  "users": [
+    {
+      "id": "1",
+      "name": "Nguyễn Văn A",
+      "email": "nguyenvana@example.com",
+      "password": "123456",
+      "phone": "0987654321",
+      "address": "Hà Nội",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-01-10T07:00:00Z",
+      "updated_at": "2024-01-15T07:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Trần Thị B",
+      "email": "tranthib@example.com",
+      "password": "abcdef",
+      "phone": "0911222333",
+      "address": "Đà Nẵng",
+      "role": "user",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-02-20T07:00:00Z",
+      "updated_at": "2024-02-25T07:00:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Lê Văn C",
+      "email": "levanc@example.com",
+      "password": "123abc",
+      "phone": "0909888777",
+      "address": "TP. Hồ Chí Minh",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-03-15T07:00:00Z",
+      "updated_at": "2024-03-20T07:00:00Z"
+    },
+    {
+      "id": "4",
+      "name": "Phạm Thị D",
+      "email": "phamthid@example.com",
+      "password": "654321",
+      "phone": "0988123456",
+      "address": "Hải Phòng",
+      "role": "admin",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-04-05T07:00:00Z",
+      "updated_at": "2024-04-15T07:00:00Z"
+    },
+    {
+      "id": "5",
+      "name": "Đỗ Mạnh E",
+      "email": "domanhe@example.com",
+      "password": "password",
+      "phone": "0909777666",
+      "address": "Cần Thơ",
+      "role": "user",
+      "status": true,
+      "is_verified": false,
+      "created_at": "2024-05-10T07:00:00Z",
+      "updated_at": "2024-05-20T07:00:00Z"
+    },
+    {
+      "id": "6",
+      "name": "Vũ Thị F",
+      "email": "vuthif@example.com",
+      "password": "qwerty",
+      "phone": "0911333555",
+      "address": "Huế",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-06-01T07:00:00Z",
+      "updated_at": "2024-06-15T07:00:00Z"
+    },
+    {
+      "id": "7",
+      "name": "Vũ Thị F",
+      "email": "vuthif@example.com",
+      "password": "qwerty",
+      "phone": "0911333555",
+      "address": "Huế",
+      "role": "user",
+      "status": true,
+      "is_verified": true,
+      "created_at": "2024-06-01T07:00:00Z",
+      "updated_at": "2024-06-15T07:00:00Z"
+    }
+  ],
   "products": [
     {
       "product_id": "p1",
@@ -103,7 +102,8 @@
       "slug": "ao-thun-nam-basic",
       "category_id": "c1",
       "created_at": "2024-06-01T07:00:00Z",
-      "updated_at": "2024-06-10T07:00:00Z"
+      "updated_at": "2024-06-10T07:00:00Z",
+      "id": "b744"
     },
     {
       "product_id": "p2",
@@ -114,7 +114,8 @@
       "slug": "quan-jeans-nu",
       "category_id": "c2",
       "created_at": "2024-06-03T07:00:00Z",
-      "updated_at": "2024-06-10T07:00:00Z"
+      "updated_at": "2024-06-10T07:00:00Z",
+      "id": "a735"
     }
   ],
   "orders": [
@@ -126,7 +127,8 @@
       "is_paid": true,
       "status": "delivered",
       "created_at": "2024-06-15T07:00:00Z",
-      "updated_at": "2024-06-17T07:00:00Z"
+      "updated_at": "2024-06-17T07:00:00Z",
+      "id": "4655"
     },
     {
       "order_id": "o2",
@@ -136,7 +138,8 @@
       "is_paid": true,
       "status": "delivered",
       "created_at": "2024-06-18T07:00:00Z",
-      "updated_at": "2024-06-18T07:00:00Z"
+      "updated_at": "2024-06-18T07:00:00Z",
+      "id": "ab3a"
     }
   ]
 }
