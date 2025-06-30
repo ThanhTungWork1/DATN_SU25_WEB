@@ -3,77 +3,84 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Cart\CreateCartRequest;
+use App\Models\Cart;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
-use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(
+        protected Cart $model,
+        protected CartItem $cartItemModel,
+    ) {}
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        $cart = session()->get('cart', []);
-        return response()->json(['cart' => $cart]);
+        //
     }
 
-    public function add(Request $request)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(CreateCartRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-        $product = Product::findOrFail($request->product_id);
-        $cart = session()->get('cart', []);
+        return DB::transaction(function () use ($request) {
+            $data = $request->validated();
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity'] += $request->quantity;
-        } else {
-            $cart[$product->id] = [
-                "name" => $product->name,
-                "price" => $product->price,
-                "quantity" => $request->quantity,
+            $cart = [
+                'user_id' => Auth::id(),
             ];
-        }
 
-        session()->put('cart', $cart);
-        return response()->json(['message' => 'Đã thêm vào giỏ hàng!', 'cart' => $cart]);
+            $record = $this->model->create($cart);
+
+            $cartItem = collect($data['cartItems'])->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ];
+            })->toArray();
+
+            $record->cartItems()->createMany($cartItem);
+
+            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
+        });
     }
 
-    public function update(Request $request)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-        $cart = session()->get('cart', []);
-        $productId = $request->product_id;
-        $quantity = $request->quantity;
-
-        if (isset($cart[$productId])) {
-            $cart[$productId]['quantity'] = $quantity;
-            session()->put('cart', $cart);
-        }
-
-        return response()->json(['message' => 'Cập nhật giỏ hàng thành công!', 'cart' => $cart]);
+        //
     }
 
-    public function remove(Request $request)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-        ]);
-        $cart = session()->get('cart', []);
-        $productId = $request->product_id;
-
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session()->put('cart', $cart);
-        }
-
-        return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng!', 'cart' => $cart]);
+        //
     }
 
-    public function clear(Request $request)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
     {
-        session()->forget('cart');
-        return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng!', 'cart' => []]);
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }

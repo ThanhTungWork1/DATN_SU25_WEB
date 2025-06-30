@@ -19,7 +19,8 @@ Route::post('/login', [AuthenticationController::class, 'postLogin']);
 Route::post('/logout', [AuthenticationController::class, 'postLogout'])->middleware('auth:sanctum');
 
 // ADMIN routes (quản trị)
-Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
+Route::prefix('admin')->group(function () {
+
     Route::apiResource('users', UserController::class);
     Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
@@ -66,8 +67,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Cart API (client)
-    Route::get('/cart', [CartController::class, 'index']);
-    Route::post('/cart/add', [CartController::class, 'add']);
-    Route::put('/cart/update', [CartController::class, 'update']);
-    Route::delete('/cart/remove', [CartController::class, 'remove']);
+    Route::apiResource('/cart', CartController::class);
 });
