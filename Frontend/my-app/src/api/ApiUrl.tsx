@@ -4,10 +4,7 @@ import { processProductDetail } from "../utils/productDetailHelper";
 /*
  * =================================================================
  * HÀM LẤY DỮ LIỆU CHI TIẾT SẢN PHẨM (getProductById)
- * =================================================================
- * Mục tiêu: Lấy đầy đủ thông tin cho một sản phẩm, bao gồm cả các
- * biến thể (variants), màu sắc (colors), và kích cỡ (sizes) của nó.
- */
+ * ============================================================ */
 export const getProductById = async (id: string): Promise<Product> => {
   try {
     const [
@@ -39,7 +36,7 @@ export const getProductById = async (id: string): Promise<Product> => {
       allCategories,
     );
   } catch (error) {
-    console.error("Lỗi nghiêm trọng khi lấy dữ liệu chi tiết sản phẩm:", error);
+    console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
     throw error;
   }
 };
@@ -55,10 +52,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
  * Mục tiêu: Lấy tất cả đánh giá (comments) của một sản phẩm theo product_id
  */
 export const getProductReviews = async (productId: number) => {
-  // Trả về promise dữ liệu comments cho sản phẩm
-  return await axios.get(
-    `http://localhost:3000/comments?product_id=${productId}`,
-  );
+  return await axios.get(`http://localhost:3000/comments?product_id=${productId}`);
 };
 /*
  * =================================================================
@@ -67,6 +61,53 @@ export const getProductReviews = async (productId: number) => {
  * Mục tiêu: Lấy tất cả user để join vào đánh giá
  */
 export const getAllUsers = async () => {
-  // Trả về promise dữ liệu user
   return await axios.get(`http://localhost:3000/users`);
+};
+
+/* ============================================================
+ * GIỎ HÀNG - CART
+ * ============================================================ */
+export const getCart = async () => {
+  const { data } = await axios.get("http://localhost:3000/cart");
+  return data;
+};
+
+export const addToCart = async (item: {
+  productId: number;
+  quantity: number;
+  color?: string;
+  size?: string;
+}) => {
+  return await axios.post("http://localhost:3000/cart", item);
+};
+
+export const updateCartItem = async (id: number, quantity: number) => {
+  return await axios.patch(`http://localhost:3000/cart/${id}`, { quantity });
+};
+
+export const removeCartItem = async (id: number) => {
+  return await axios.delete(`http://localhost:3000/cart/${id}`);
+};
+
+/* ============================================================
+ * ĐƠN HÀNG - ORDER
+ * ============================================================ */
+export const getAllOrders = async () => {
+  const { data } = await axios.get("http://localhost:3000/orders");
+  return data;
+};
+
+export const createOrder = async (orderData: {
+  userId: number;
+  items: any[];
+  total: number;
+  address: string;
+  phone: string;
+}) => {
+  return await axios.post("http://localhost:3000/orders", orderData);
+};
+
+export const getOrderById = async (id: number) => {
+  const { data } = await axios.get(`http://localhost:3000/orders/${id}`);
+  return data;
 };

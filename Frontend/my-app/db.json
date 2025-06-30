@@ -794,6 +794,20 @@
       "status": "pending",
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": "e072",
+      "userId": 6,
+      "items": [],
+      "totalAmount": 0,
+      "address": {
+        "province": "Hà Nội",
+        "district": "Ba Đình",
+        "street": "10"
+      },
+      "paymentMethod": "Ví điện tử (Momo/ZaloPay)",
+      "status": "Chờ xử lý",
+      "createdAt": "2025-06-24T14:46:30.839Z"
     }
   ],
   "orderItems": [
@@ -847,6 +861,7 @@
       "order_id": 1,
       "message": "Đơn hàng của bạn đã được xác nhận",
       "is_read": false,
+      "content": "Đơn hàng đã xác nhận",
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z",
       "content": "Đơn hàng đã xác nhận"

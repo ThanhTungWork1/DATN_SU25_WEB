@@ -41,11 +41,11 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="logo">
+      <div className="logo" onClick={() => navigate("/")}>
         <img
           src="https://i.imgur.com/9Og6FJC.jpeg"
           alt="Logo Shop"
-          style={{ width: "90px", height: "50px", objectFit: "contain" }}
+          style={{ width: "90px", height: "50px", objectFit: "contain", cursor: "pointer" }}
         />
       </div>
 
@@ -133,17 +133,24 @@ const Navbar = () => {
             </li>
           </ul>
         </li>
+
+        {/* ✅ Thêm mục Đơn hàng */}
         <li>
-          <a href="#">Liên hệ</a>
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            navigate("/orders");
+          }}>Đơn hàng</a>
         </li>
       </ul>
 
       <div className="icon-group">
         <SearchBar onSearch={handleSearch} />
+        
         <div className="icon-btn" title="Tài khoản">
           &#128100;
         </div>
-        <div className="icon-btn" title="Giỏ hàng">
+
+        <div className="icon-btn" title="Giỏ hàng" onClick={goToCart} style={{ cursor: "pointer" }}>
           &#128722;
         </div>
 
