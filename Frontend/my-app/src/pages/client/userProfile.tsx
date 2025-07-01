@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Form, Input, Radio, DatePicker, Button, message } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
 import useOne from "../../hook/useOne";
 import useProfile from "../../hook/useProfile";
 import "../../layouts/Client/UserProfile.css";

@@ -66,8 +66,6 @@ const ProductDetail = () => {
 
   return (
     <>
-      <Navbar />
-
       {/* Breadcrumb */}
       <div className="container py-2 breadcrumb-container-detail">
         <Breadcrumb
@@ -158,8 +156,6 @@ const ProductDetail = () => {
           <RelatedProducts categoryId={product.category_id} />
         </div>
       </div>
-
-      <Footer />
     </>
   );
 };

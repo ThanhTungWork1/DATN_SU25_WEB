@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { FilteProducts } from "./FilteProducts";
+import { FilterProducts } from "./FilterProducts";
 import { BoxProduct } from "../../../components/BoxProduct";
 import "../../../assets/styles/ListProducts.css";
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
 import { Pagination } from "./Pagination";
 import { useProductList } from "../../../hook/useProductList";
 import { useLocation } from "react-router-dom";
@@ -65,8 +63,6 @@ export const ListProduct = () => {
 
   return (
     <>
-      <Navbar />
-
       {/* Bộ lọc offcanvas */}
       <div
         className="offcanvas offcanvas-start border-end"
@@ -75,7 +71,7 @@ export const ListProduct = () => {
         tabIndex={-1}
         id="offcanvasFilter"
       >
-        <FilteProducts
+        <FilterProducts
           filter={filter}
           setFilter={setFilter}
           onApply={applyFilter}
@@ -144,8 +140,6 @@ export const ListProduct = () => {
           </>
         )}
       </div>
-
-      <Footer />
     </>
   );
 };

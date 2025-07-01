@@ -1,26 +1,25 @@
-
 import { Route, Routes } from "react-router-dom";
 import ProductDetail from "../pages/client/Detail/ProductDetail";
 import { ListProduct } from "../pages/client/ProductsList/ListProduct";
 import CartPage from "../pages/client/Cart/CartPage";
 import CheckoutPage from "../pages/client/Cart/CheckoutPage";
-import OrderHistory from "../pages/client/Oders/OrderHistory";  
-import OrderDetail from "../pages/client/Oders/OrderDetail";     
+import OrderHistory from "../pages/client/Orders/OrderHistory";
+import OrderDetail from "../pages/client/Orders/OrderDetail";
 import ResultProduct from "../pages/client/ResultProduct/ResultProduct";
 import HomePage from "../pages/client/Home";
-import UserProfile from "../pages/client/userProfile";
+import UserProfile from "../pages/client/UserProfile";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-import Header from "../components/Home/Header";
 import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 
 const ClientRoute = () => {
   return (
 
     <>
-    <Header/>
+    <Navbar/>
       <Routes>
-          <Route path='/' element={<HomePage/>}/>
+        <Route path='/' element={<HomePage/>}/>
         <Route path="/users/:id" element={<UserProfile />} />
         <Route path='/login' element={<Login/>}/>
         <Route path='/register' element={<Register/>}/>

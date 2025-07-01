@@ -1,4 +1,4 @@
-export const SerchProducts = () => {
+export const SearchProducts = () => {
   return (
     <>
       <div className="row mb-3">
