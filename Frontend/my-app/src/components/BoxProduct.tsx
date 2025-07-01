@@ -61,7 +61,7 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
                 <img
                   src={hoverImage}
                   className="card-img-top product-image hover-product-image"
-                  alt={product.name + " hover"}
+                  alt={product.name + "hover"}
                 />
               )}
             </div>

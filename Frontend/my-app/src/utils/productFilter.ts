@@ -12,7 +12,7 @@ function normalizeText(str: string) {
     .replace(/\s+/g, " ")
     .trim();
 }
-
+// hàm lọc sp
 export function filterProducts(
   products: Product[],
   filter: ProductFilter,

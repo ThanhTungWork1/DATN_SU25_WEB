@@ -53,7 +53,7 @@ export const getAllColors = async () => {
 };
 
 /**
- * Lấy toàn bộ kích cỡ
+ * Lấy toàn bộ kích cỡ size
  */
 export const getAllSizes = async () => {
   const { data } = await axios.get("http://localhost:3000/sizes");

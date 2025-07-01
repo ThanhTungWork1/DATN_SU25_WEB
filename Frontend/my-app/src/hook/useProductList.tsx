@@ -19,12 +19,8 @@ export const useProductList = (
   search?: string,
 ) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    [],
-  );
-  const [colors, setColors] = useState<
-    { id: number; name: string; code: string }[]
-  >([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [colors, setColors] = useState<{ id: number; name: string; code: string }[]>([]);
   const [sizes, setSizes] = useState<{ id: number; name: string }[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);

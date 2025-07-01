@@ -52,7 +52,7 @@ export const ListProduct = () => {
     if (hasFilter) {
       applyFilter();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [
     filter.categories,
     filter.name,

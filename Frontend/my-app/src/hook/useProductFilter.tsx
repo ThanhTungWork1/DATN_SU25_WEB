@@ -14,7 +14,7 @@ export function useProductFilter(products: Product[], PAGE_SIZE: number) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Lấy categoryId và loại sản phẩm (áo/quần) từ query string
+  // Lấy categoryId và loại sản phẩm (áo/quần) từ db.json
   useEffect(() => {
     /**
      * Khi URL có query ?category=ID hoặc ?category=ID_ao,ID_quan
@@ -37,7 +37,7 @@ export function useProductFilter(products: Product[], PAGE_SIZE: number) {
     } else {
       setFilter((prev) => ({ ...prev, categories: [], type: undefined }));
     }
-    // eslint-disable-next-line
+    
   }, [location.search]);
 
   // Tự động lọc lại khi filter thay đổi
@@ -54,7 +54,7 @@ export function useProductFilter(products: Product[], PAGE_SIZE: number) {
     } else {
       setFilteredProducts(null);
     }
-    // eslint-disable-next-line
+    
   }, [
     filter.categories,
     filter.name,
@@ -76,7 +76,7 @@ export function useProductFilter(products: Product[], PAGE_SIZE: number) {
     if (hasFilter) {
       applyFilter();
     }
-    // eslint-disable-next-line
+    
   }, [products]);
 
   // Hàm lọc sản phẩm
