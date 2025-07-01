@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import SearchBar from "./SearchBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
@@ -170,49 +171,87 @@ const Navbar = () => {
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+import SearchBar from "./SearchBar";
+import { useNavigate } from "react-router-dom";
+>>>>>>> a8244187 (giao dien list sp)
 
 const Navbar = () => {
-    const navigate = useNavigate();
-    const handleSearch = (query: string) => {
-        if (query.trim()) {
-            navigate(`/search?query=${encodeURIComponent(query)}`);
-        }
-    };
-    return (
-        <nav className="navbar">
-            <div className="logo">
-                <img src="https://i.imgur.com/9Og6FJC.jpeg" alt="Logo Shop" style={{ width: '90px' ,height: '50px', objectFit: 'contain' }} />
-            </div>
+  const navigate = useNavigate();
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?query=${encodeURIComponent(query)}`);
+    }
+  };
+  return (
+    <nav className="navbar">
+      <div className="logo">
+        <img
+          src="https://i.imgur.com/9Og6FJC.jpeg"
+          alt="Logo Shop"
+          style={{ width: "90px", height: "50px", objectFit: "contain" }}
+        />
+      </div>
 
-            <ul className="nav-links" id="navLinks">
-                <li><a href="#">Trang chủ</a></li>
-                <li><a href="#">Nam</a></li>
-                <li><a href="#">Nữ</a></li>
-                <li><a href="#">Trend</a></li>
-                <li className="dropdown">
-                    <a href="#">Phụ kiện ▾</a>
-                    <ul className="dropdown-menu">
-                        <li><a href="#">Giày thể thao</a></li>
-                        <li><a href="#">Mũ</a></li>
-                        <li><a href="#">Kính</a></li>
-                        <li><a href="#">Tất/Vớ</a></li>
-                    </ul>
-                </li>
-                <li><a href="#">Liên hệ</a></li>
-            </ul>
+      <ul className="nav-links" id="navLinks">
+        <li>
+          <a href="#">Trang chủ</a>
+        </li>
+        <li>
+          <a href="#">Nam</a>
+        </li>
+        <li>
+          <a href="#">Nữ</a>
+        </li>
+        <li>
+          <a href="#">Trend</a>
+        </li>
+        <li className="dropdown">
+          <a href="#">Phụ kiện ▾</a>
+          <ul className="dropdown-menu">
+            <li>
+              <a href="#">Giày thể thao</a>
+            </li>
+            <li>
+              <a href="#">Mũ</a>
+            </li>
+            <li>
+              <a href="#">Kính</a>
+            </li>
+            <li>
+              <a href="#">Tất/Vớ</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">Liên hệ</a>
+        </li>
+      </ul>
 
-            <div className="icon-group">
-                <SearchBar onSearch={handleSearch} />
-                <div className="icon-btn" title="Tài khoản">&#128100;</div>
-                <div className="icon-btn" title="Giỏ hàng">&#128722;</div>
+      <div className="icon-group">
+        <SearchBar onSearch={handleSearch} />
+        <div className="icon-btn" title="Tài khoản">
+          &#128100;
+        </div>
+        <div className="icon-btn" title="Giỏ hàng">
+          &#128722;
+        </div>
 
-                <button className="login-btn">Đăng nhập</button>
-            </div>
+        <button className="login-btn">Đăng nhập</button>
+      </div>
 
+<<<<<<< HEAD
             <div className="menu-toggle" id="menuToggle">&#9776;</div>
         </nav>
     );
 >>>>>>> 6a994c6e (giao dien detail)
+=======
+      <div className="menu-toggle" id="menuToggle">
+        &#9776;
+      </div>
+    </nav>
+  );
+>>>>>>> a8244187 (giao dien list sp)
 };
 
 export default Navbar;

@@ -22,12 +22,18 @@
   top: 50%;
   transform: translateY(-50%);
 <<<<<<< HEAD
+<<<<<<< HEAD
   transition:
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s;
 =======
   transition: width 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+  transition:
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s;
+>>>>>>> a8244187 (giao dien list sp)
   width: 0;
   opacity: 0;
   overflow: hidden;
@@ -48,14 +54,19 @@
   font-size: 1rem;
   background: #fff;
 <<<<<<< HEAD
+<<<<<<< HEAD
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 =======
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+>>>>>>> a8244187 (giao dien list sp)
   transition: box-shadow 0.2s;
 }
 
 .searchbar-input:focus {
+<<<<<<< HEAD
 <<<<<<< HEAD
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   border-color: #1abc9c;
@@ -65,3 +76,8 @@
   border-color: #1abc9c;
 } 
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1abc9c;
+}
+>>>>>>> a8244187 (giao dien list sp)

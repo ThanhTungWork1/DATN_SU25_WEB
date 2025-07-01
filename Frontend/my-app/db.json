@@ -40,7 +40,7 @@
       "end_date": "2024-07-01T00:00:00Z",
       "status": true
     },
-     {
+    {
       "id": 2,
       "title": "Giảm giá 20%",
       "code": "SALE10",
@@ -74,7 +74,7 @@
       "name": "Áo thun nữ",
       "description": "Áo thun nữ chất liệu cotton",
       "price": 288000,
-       "old_price": 359000,
+      "old_price": 359000,
       "status": "hết hàng",
       "slug": "ao-thun-nu",
       "category_id": 2,
@@ -89,7 +89,7 @@
       "name": "Áo thun nam",
       "description": "Áo thun nam chất liệu cotton",
       "price": 399000,
-       "old_price": 459000,
+      "old_price": 459000,
       "status": "còn hàng",
       "slug": "ao-thun-nam",
       "category_id": 1,
@@ -98,12 +98,13 @@
       "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsEZ3kVA-dM9KBdkRoAZDgw46ZRPj3Tce_og&s",
       "material": "cotton",
       "sold": 2900
-    },{
+    },
+    {
       "id": 4,
       "name": "Giày Snacker thể thao",
       "description": "Giày thể thao",
       "price": 199000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "giay-th-thao",
       "category_id": 4,
@@ -118,7 +119,7 @@
       "name": "Dép nam",
       "description": "Dép nam chất liệu da bò sang xịn mịn ",
       "price": 199000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "dep-nam",
       "category_id": 5,
@@ -133,7 +134,7 @@
       "name": "Thắt lưng nam",
       "description": "Thắt lưng nam chất liệu da bò napan",
       "price": 299000,
-       "old_price": 359000,
+      "old_price": 359000,
       "status": "còn hàng",
       "slug": "ao-thun-nam",
       "category_id": 9,
@@ -148,7 +149,7 @@
       "name": "Mũ LV nam",
       "description": "Mũ LV nam chất liệu cotton",
       "price": 199000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "ao-thun-nam",
       "category_id": 8,
@@ -163,7 +164,7 @@
       "name": "Kính LV nam",
       "description": "Kính LV nam luxury phong cách sang trọng quý tộc ",
       "price": 199000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "ao-thun-nam",
       "category_id": 7,
@@ -178,7 +179,7 @@
       "name": "Áo thun nam",
       "description": "Áo thun nam chất liệu cotton",
       "price": 199000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "ao-thun-nam",
       "category_id": 1,
@@ -193,7 +194,7 @@
       "name": "Áo thun nữ",
       "description": "Áo thun nữ chất liệu cotton",
       "price": 1299000,
-       "old_price": 259000,
+      "old_price": 259000,
       "status": "còn hàng",
       "slug": "ao-thun-nu",
       "category_id": 2,
@@ -263,28 +264,28 @@
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     },
-     {
+    {
       "id": 5,
       "name": "Dép nam",
       "status": true,
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     },
-     {
+    {
       "id": 6,
       "name": "Dép nữ",
       "status": true,
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     },
-     {
+    {
       "id": 7,
       "name": "Kính nam",
       "status": true,
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     },
-     {
+    {
       "id": 8,
       "name": "Mũ lưỡi chai",
       "status": true,

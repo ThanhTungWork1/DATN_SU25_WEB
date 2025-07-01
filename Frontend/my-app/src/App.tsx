@@ -26,8 +26,12 @@ function App() {
 import Index from "./routes/Index";
 =======
 import ClientRoute from "./routes/ClientRoute";
+<<<<<<< HEAD
 import { Toaster } from 'sonner'
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+import { Toaster } from "sonner";
+>>>>>>> a8244187 (giao dien list sp)
 
 function App() {
   return (

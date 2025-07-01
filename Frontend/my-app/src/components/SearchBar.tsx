@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import React, { useRef, useState, useEffect } from "react";
 import "../assets/styles/SearchBar.css";
 import { validateSearchQuery } from "../validation/searchValidation";
@@ -6,6 +7,10 @@ import { validateSearchQuery } from "../validation/searchValidation";
 import React, { useRef, useState, useEffect } from 'react';
 import '../assets/styles/SearchBar.css';
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+import React, { useRef, useState, useEffect } from "react";
+import "../assets/styles/SearchBar.css";
+>>>>>>> a8244187 (giao dien list sp)
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -14,10 +19,14 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [open, setOpen] = useState(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [query, setQuery] = useState("");
 =======
   const [query, setQuery] = useState('');
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+  const [query, setQuery] = useState("");
+>>>>>>> a8244187 (giao dien list sp)
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -40,6 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     }
     if (open) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
@@ -50,12 +60,19 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+>>>>>>> a8244187 (giao dien list sp)
     };
   }, [open]);
 
   // Đóng khi nhấn ESC
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+<<<<<<< HEAD
 <<<<<<< HEAD
       if (event.key === "Escape") setOpen(false);
     }
@@ -66,13 +83,20 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       document.removeEventListener("keydown", handleKeyDown);
 =======
       if (event.key === 'Escape') setOpen(false);
+=======
+      if (event.key === "Escape") setOpen(false);
+>>>>>>> a8244187 (giao dien list sp)
     }
     if (open) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
+<<<<<<< HEAD
       document.removeEventListener('keydown', handleKeyDown);
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+      document.removeEventListener("keydown", handleKeyDown);
+>>>>>>> a8244187 (giao dien list sp)
     };
   }, [open]);
 
@@ -101,13 +125,19 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a8244187 (giao dien list sp)
     <div
       className={`searchbar-container${open ? " open" : ""}`}
       ref={containerRef}
     >
+<<<<<<< HEAD
 =======
     <div className={`searchbar-container${open ? ' open' : ''}`} ref={containerRef}>
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+>>>>>>> a8244187 (giao dien list sp)
       <button
         className="searchbar-icon"
         aria-label="Tìm kiếm"
@@ -115,12 +145,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         onClick={handleIconClick}
       >
 <<<<<<< HEAD
+<<<<<<< HEAD
         <span role="img" aria-label="search">
           🔍
         </span>
 =======
         <span role="img" aria-label="search">🔍</span>
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+        <span role="img" aria-label="search">
+          🔍
+        </span>
+>>>>>>> a8244187 (giao dien list sp)
       </button>
       <form className="searchbar-form" onSubmit={handleSubmit}>
         <input
@@ -137,7 +173,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export default SearchBar;
 =======
 export default SearchBar; 
 >>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
+=======
+export default SearchBar;
+>>>>>>> a8244187 (giao dien list sp)

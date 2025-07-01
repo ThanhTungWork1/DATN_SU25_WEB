@@ -3,6 +3,7 @@
 /* ===== RESET & BASE ===== */
 body {
   font-family: "Segoe UI", sans-serif;
+<<<<<<< HEAD
   background-color: #f5f7fa;
   color: #333;
   transition:
@@ -337,9 +338,13 @@ body {
 >>>>>>> f51a0d77 (trang detail hoan thien)
 body {
   font-family: 'Segoe UI', sans-serif;
+=======
+>>>>>>> a8244187 (giao dien list sp)
   background-color: #f5f7fa;
   color: #333;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 
 /* ===== NAVBAR ===== */
@@ -389,7 +394,9 @@ body {
   font-weight: 500;
   padding: 8px 12px;
   border-radius: 4px;
-  transition: color 0.3s, transform 0.3s;
+  transition:
+    color 0.3s,
+    transform 0.3s;
 }
 
 .nav-links li a:hover {
@@ -445,7 +452,6 @@ body {
   color: white;
 }
 
-
 /* ===== ICONS & BUTTONS ===== */
 .icon-group {
   display: flex;
@@ -457,7 +463,9 @@ body {
   font-size: 22px;
   cursor: pointer;
   color: white;
-  transition: transform 0.2s ease, color 0.4s ease;
+  transition:
+    transform 0.2s ease,
+    color 0.4s ease;
 }
 
 .icon-btn:hover {
@@ -472,7 +480,9 @@ body {
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.3s ease;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
 }
 
 .login-btn:hover {
@@ -1290,7 +1300,7 @@ body {
   background-color: #0f0f13;
   color: #fff;
   padding: 40px 20px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   font-size: 14px;
   text-align: center;
 }
@@ -1310,7 +1320,8 @@ body {
   color: #ffffff;
 }
 
-.footer-links, .footer-menu {
+.footer-links,
+.footer-menu {
   margin-bottom: 20px;
   display: flex;
   justify-content: center;
@@ -1354,7 +1365,9 @@ body {
   border-radius: 10px;
   cursor: pointer;
   font-size: 12px;
-  transition: background 0.3s ease, transform 0.3s ease;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
 }
 
 .scroll-top:hover {
@@ -1466,7 +1479,9 @@ body {
   border: none;
   border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
@@ -1531,27 +1546,27 @@ body {
 
 /* Custom styles for tab content */
 .tab-content-scrollable {
-    max-height: 240px; /* Giới hạn chiều cao cố định, đủ cho khoảng 2 bình luận */
-    overflow-y: auto; /* Thêm thanh cuộn dọc khi nội dung vượt quá */
-    padding-right: 15px; /* Thêm một chút không gian để thanh cuộn không che nội dung */
+  max-height: 240px; /* Giới hạn chiều cao cố định, đủ cho khoảng 2 bình luận */
+  overflow-y: auto; /* Thêm thanh cuộn dọc khi nội dung vượt quá */
+  padding-right: 15px; /* Thêm một chút không gian để thanh cuộn không che nội dung */
 }
 
 /* Tùy chỉnh thanh cuộn cho Webkit browsers (Chrome, Safari) */
 .tab-content-scrollable::-webkit-scrollbar {
-    width: 5px; /* Chiều rộng thanh cuộn (nhỏ hơn) */
+  width: 5px; /* Chiều rộng thanh cuộn (nhỏ hơn) */
 }
 
 .tab-content-scrollable::-webkit-scrollbar-track {
-    background: transparent; /* Nền rãnh cuộn trong suốt */
+  background: transparent; /* Nền rãnh cuộn trong suốt */
 }
 
 .tab-content-scrollable::-webkit-scrollbar-thumb {
-    background: #ccc; /* Màu thanh cuộn (mờ hơn) */
-    border-radius: 10px;
+  background: #ccc; /* Màu thanh cuộn (mờ hơn) */
+  border-radius: 10px;
 }
 
 .tab-content-scrollable::-webkit-scrollbar-thumb:hover {
-    background: #aaa; /* Màu thanh cuộn khi hover (đậm hơn một chút) */
+  background: #aaa; /* Màu thanh cuộn khi hover (đậm hơn một chút) */
 }
 
 .price-original {
