@@ -1,85 +1,91 @@
-<<<<<<< HEAD
-/**
- * Component phân trang chuẩn
- * @param currentPage Trang hiện tại
- * @param totalPages Tổng số trang
- * @param onPageChange Callback khi đổi trang
- */
+type PaginationProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
+
 export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) => {
-  // Tạo mảng số trang để render
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+}: PaginationProps) => {
+  if (totalPages <= 1) return null; // Không cần phân trang nếu chỉ có 1 trang
 
-  // Nếu chỉ có 1 trang thì không hiển thị phân trang
-  if (totalPages <= 1) return null;
+  const handlePageClick = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      onPageChange(page);
+    }
+  };
+
+  // Hiển thị tối đa 5 trang: [1] ... [4][5][6] ... [10]
+  const generatePages = () => {
+    const pages = [];
+    const range = 2; // số trang ở 2 bên currentPage
+    const minPage = Math.max(1, currentPage - range);
+    const maxPage = Math.min(totalPages, currentPage + range);
+
+    if (minPage > 1) pages.push(1);
+    if (minPage > 2) pages.push("...");
+
+    for (let i = minPage; i <= maxPage; i++) {
+      pages.push(i);
+    }
+
+    if (maxPage < totalPages - 1) pages.push("...");
+    if (maxPage < totalPages) pages.push(totalPages);
+
+    return pages;
+  };
+
+  const pages = generatePages();
 
   return (
     <nav className="mt-4">
       <ul className="pagination justify-content-center">
-        <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
+        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
           <button
             className="page-link"
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={() => handlePageClick(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            «
+            &laquo;
           </button>
         </li>
-        {pages.map((page) => (
+
+        {pages.map((page, index) => (
           <li
-            key={page}
-            className={`page-item${page === currentPage ? " active" : ""}`}
+            key={index}
+            className={`page-item ${
+              page === currentPage ? "active" : ""
+            } ${page === "..." ? "disabled" : ""}`}
           >
-            <button className="page-link" onClick={() => onPageChange(page)}>
-              {page}
-            </button>
+            {page === "..." ? (
+              <span className="page-link">...</span>
+            ) : (
+              <button
+                className="page-link"
+                onClick={() => handlePageClick(page as number)}
+              >
+                {page}
+              </button>
+            )}
           </li>
         ))}
+
         <li
-          className={`page-item${currentPage === totalPages ? " disabled" : ""}`}
+          className={`page-item ${
+            currentPage === totalPages ? "disabled" : ""
+          }`}
         >
           <button
             className="page-link"
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={() => handlePageClick(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            »
+            &raquo;
           </button>
         </li>
       </ul>
     </nav>
-=======
-export const Pagination = () => {
-  return (
-    <>
-      {/* Phân trang */}
-      <nav className="mt-4">
-        <ul className="pagination justify-content-center">
-          <li className="page-item disabled">
-            <a className="page-link" href="#">
-              «
-            </a>
-          </li>
-          <li className="page-item active">
-            <a className="page-link" href="#">
-              1
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              »
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </>
->>>>>>> a8244187 (giao dien list sp)
   );
 };

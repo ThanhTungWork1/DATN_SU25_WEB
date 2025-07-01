@@ -9,7 +9,6 @@ body {
   height: 20px;
   border-radius: 50%;
   border: 1px solid #ccc;
-<<<<<<< HEAD
   transition:
     border 0.2s,
     box-shadow 0.2s,
@@ -23,8 +22,6 @@ input[type="checkbox"]:checked + .color-circle {
   height: 26px;
   border: 2.5px solid orange;
   box-shadow: 0 0 0 2px #ffe0b2;
-=======
->>>>>>> a8244187 (giao dien list sp)
 }
 
 .btn-close:hover {
@@ -43,7 +40,6 @@ input[type="checkbox"]:checked + .color-circle {
 
 body .offcanvas.offcanvas-start {
   top: 83px !important;
-<<<<<<< HEAD
   transition:
     transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.18s;
@@ -59,8 +55,6 @@ body .offcanvas.offcanvas-start:not(.show) {
 body .offcanvas.offcanvas-start.show {
   transform: translateX(0);
   opacity: 1;
-=======
->>>>>>> a8244187 (giao dien list sp)
 }
 
 .offcanvas-body {
@@ -85,11 +79,7 @@ body .offcanvas.offcanvas-start.show {
 
 .search-wrapper {
   display: flex;
-<<<<<<< HEAD
   justify-content: flex-start;
-=======
-  justify-content: center;
->>>>>>> a8244187 (giao dien list sp)
   margin-bottom: 1rem;
   width: 100%;
 }
@@ -105,11 +95,7 @@ body .offcanvas.offcanvas-start.show {
 .card {
   display: flex;
   flex-direction: column;
-<<<<<<< HEAD
   border-radius: 18px;
-=======
-  border-radius: 10px;
->>>>>>> a8244187 (giao dien list sp)
   box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.12);
   transition:
     transform 0.3s ease,
@@ -124,7 +110,6 @@ body .offcanvas.offcanvas-start.show {
   box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.18);
 }
 
-<<<<<<< HEAD
 .card-title,
 .product-title {
   font-family: "Montserrat", Arial, sans-serif;
@@ -145,23 +130,6 @@ body .offcanvas.offcanvas-start.show {
   letter-spacing: 0.01em;
 }
 
-=======
-.card-title {
-  font-size: 1.06rem;
-  font-weight: 600;
-  color: #212529;
-
-  display: -webkit-box;             /* cần có */
-  -webkit-box-orient: vertical;     /* cần có */
-  -webkit-line-clamp: 2;            /* cần có */
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  min-height: 2.6em; /* giữ khoảng cao tối thiểu để không bị hụt dòng */
-}
-
-
->>>>>>> a8244187 (giao dien list sp)
 .card-text {
   font-size: 0.9rem;
   color: #dc3545;
@@ -200,21 +168,12 @@ body .offcanvas.offcanvas-start.show {
   padding-bottom: 0.5rem;
 }
 
-<<<<<<< HEAD
 .card-img-top,
 .product-image {
   width: 100%;
   object-fit: cover;
   border-radius: 7px !important;
   display: block;
-=======
-.card-img-top {
-  width: 100%;
-  aspect-ratio: 4 / 4;
-  object-fit: cover;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
->>>>>>> a8244187 (giao dien list sp)
 }
 
 .badge {
@@ -225,7 +184,6 @@ body .offcanvas.offcanvas-start.show {
   color: #000;
 }
 
-<<<<<<< HEAD
 .pagination .page-item .page-link {
   border: none !important;
   box-shadow: none !important;
@@ -257,12 +215,6 @@ body .offcanvas.offcanvas-start.show {
 .sale-price a,
 .original-price a {
   text-decoration: none !important;
-=======
-.pagination .page-item.active .page-link {
-  background-color: #00c6ab;
-  color: #fff;
-  border-color: #63e781;
->>>>>>> a8244187 (giao dien list sp)
 }
 
 .product-price {
@@ -271,11 +223,8 @@ body .offcanvas.offcanvas-start.show {
   display: flex;
   align-items: baseline;
   gap: 6px;
-<<<<<<< HEAD
   margin-bottom: 0.2em;
   margin-top: 0;
-=======
->>>>>>> a8244187 (giao dien list sp)
 }
 
 .sale-price {
@@ -292,12 +241,7 @@ body .offcanvas.offcanvas-start.show {
 
 .button-group {
   display: flex;
-<<<<<<< HEAD
   gap: 4px;
-=======
-  justify-content: space-between;
-  gap: 6px;
->>>>>>> a8244187 (giao dien list sp)
   margin-top: 8px;
 }
 
@@ -378,42 +322,20 @@ body .offcanvas.offcanvas-start.show {
   }
 }
 
-<<<<<<< HEAD
 @media (min-width: 993px) {
   .row-cols-lg-5 .col {
     flex: 0 0 20%;
     max-width: 20%;
-=======
-@media (min-width: 993px) and (max-width: 1200px) {
-  .row-cols-lg-6 .col {
-    flex: 0 0 25%;
-    max-width: 25%;
-  }
-}
-
-@media (min-width: 1201px) {
-  .row-cols-lg-6 .col {
-    flex: 0 0 16.6667%;
-    max-width: 16.6667%;
->>>>>>> a8244187 (giao dien list sp)
   }
 }
 
 @media (max-width: 768px) {
   .offcanvas-start {
-<<<<<<< HEAD
     width: 260px !important;
     background-color: #fff;
     color: #333;
     top: 0 !important;
   }
-=======
-  width: 260px !important;
-  background-color: #fff;
-  color: #333;
-  top: 0 !important;
-}
->>>>>>> a8244187 (giao dien list sp)
 }
 
 nav.mt-4 {
@@ -426,11 +348,7 @@ nav.mt-4 > ul.pagination {
   width: 100%;
   justify-content: center !important;
   display: flex;
-<<<<<<< HEAD
   margin-left: auto;
-=======
-   margin-left: auto;
->>>>>>> a8244187 (giao dien list sp)
   margin-right: auto;
 }
 
@@ -438,18 +356,13 @@ nav.mt-4 > ul.pagination {
   justify-content: center !important;
 }
 
-<<<<<<< HEAD
 .card-body .btn-link .fa-heart,
 .card-body .btn-link .far.fa-heart {
-=======
-.card-body .btn-link .fa-heart, .card-body .btn-link .far.fa-heart {
->>>>>>> a8244187 (giao dien list sp)
   font-size: 0.95rem;
 }
 
 .card-body .btn-link .fa-heart,
 .card-body .btn-link .far.fa-heart {
-<<<<<<< HEAD
   font-size: 0.75rem;
   color: #e63946;
 }
@@ -1037,41 +950,3 @@ body.dark-theme .breadcrumb-link:hover {
   transform: translateY(-2px) scale(1.02);
   z-index: 2;
 }
-=======
-  font-size: 0.75rem;   /* chỉnh kích thước */
-  color: #e63946;        /* màu khi đã thích */
-}
-.card-body .btn-link .far.fa-heart {
-  color: #bbb;           /* màu khi chưa thích */
-}
-
-.card-body {
-  padding: 0.7rem 1rem 0.7rem 1rem; /* giảm padding trên/dưới */
-}
-
-.card-title {
-  margin-bottom: 0.4rem; /* giảm khoảng cách dưới tên */
-  min-height: unset;      /* bỏ min-height nếu muốn gọn hơn */
-}
-
-.product-price {
-  margin-bottom: 0.3rem;  /* giảm khoảng cách dưới giá */
-}
-
-.button-group {
-  gap: 4px;               /* giảm khoảng cách giữa 2 nút */
-  margin-top: 4px;        /* giảm khoảng cách trên nút */
-  margin-bottom: 0.2rem;  /* giảm khoảng cách dưới nút */
-}
-
-.sold-text {
-  margin-top: 0;          /* giảm khoảng cách trên */
-  margin-bottom: 0;       /* giảm khoảng cách dưới */
-  font-size: 0.8rem;      /* nhỏ lại nếu muốn */
-}
-
-.d-flex.mt-2 {
-  margin-top: 0.2rem !important; /* giảm khoảng cách trên dòng đã bán + tim */
-}
-
->>>>>>> a8244187 (giao dien list sp)
