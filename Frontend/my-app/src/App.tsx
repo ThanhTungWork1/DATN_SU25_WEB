@@ -1,15 +1,13 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Toaster } from "sonner";
+import ClientRoute from "./routes/ClientRoute";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
+      <ClientRoute />
+      <Toaster position="top-right" richColors />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -25,11 +25,19 @@ class UserController extends Controller
                 'password' => 'required|string|min:6',
                 'phone' => 'nullable|string|max:20',
                 'address' => 'required|string|max:255',
+<<<<<<< HEAD
                 'role' => 'nullable|integer', // Cho phép role là tùy chọn
             ]);
 
             $data['password'] = Hash::make($data['password']);
             $data['role'] = $data['role'] ?? 0; // Đặt mặc định là 0 nếu không gửi
+=======
+                'role' => 'nullable|integer',
+            ]);
+
+            $data['password'] = Hash::make($data['password']);
+            $data['role'] = $data['role'] ?? 0;
+>>>>>>> origin/feat/auth
 
             $user = User::create($data);
 
@@ -66,4 +74,10 @@ class UserController extends Controller
     {
         return User::destroy($id);
     }
+<<<<<<< HEAD
+=======
+    public function listUsers() {
+        return 'listUsers test';
+    }
+>>>>>>> origin/feat/auth
 }
