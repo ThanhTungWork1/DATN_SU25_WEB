@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { FilterProducts } from "./FilterProducts";
 import { BoxProduct } from "../../../components/BoxProduct";
-import "../../../assets/styles/ListProducts.css";
 import { Pagination } from "./Pagination";
 import { useProductList } from "../../../hook/useProductList";
 import { useLocation } from "react-router-dom";

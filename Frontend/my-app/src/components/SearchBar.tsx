@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-import "../assets/styles/SearchBar.css";
 import { validateSearchQuery } from "../validation/searchValidation";
 
 interface SearchBarProps {

@@ -1,4 +1,4 @@
-// components/dashboard/UserChart.tsx
+
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Card } from "antd";
 import { useUserByMonth } from "../../hook/analytics/useUserByMonth";

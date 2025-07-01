@@ -12,6 +12,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import '../assets/styles/style.css'
 
 const ClientRoute = () => {
   return (

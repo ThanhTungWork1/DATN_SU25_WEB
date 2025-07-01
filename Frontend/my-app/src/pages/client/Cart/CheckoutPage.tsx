@@ -3,8 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import axios from "axios";
-// import momoQR from "../../../public/qr-momo.png";
-const momoQR = "/qr-momo.png";
 
 type Ward = { code: number; name: string };
 type District = { code: number; name: string; wards: Ward[] };
@@ -193,14 +191,13 @@ const CheckoutPage = () => {
               <div className="mt-4 text-center">
                 <h5>QR thanh toán ví Momo</h5>
                 <img
-                  src={momoQR}
+                  src="/qr-momo.png"
                   alt="QR Momo"
                   style={{ width: 200, height: 200 }}
                 />
                 <p className="mt-3">
-                  <b>SĐT:</b> {momoPhone} <br />
-                  <b>Tên:</b> {momoName} <br />
-                  <b>Ghi chú:</b> Thanh toán đơn hàng #{Date.now()}
+                  <b>Số điện thoại:</b> {momoPhone} <br />
+                  <b>Chủ ví:</b> {momoName}
                 </p>
               </div>
             )}

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
-import "../assets/styles/detailProduct.css";
 
 type ProductActionsProps = {
   onAddToCart: (quantity: number) => void;

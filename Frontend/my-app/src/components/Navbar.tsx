@@ -46,9 +46,13 @@ const Navbar = () => {
         />
       </div>
 
-      <ul className="nav-links" id="navLinks">
+      <ul className="menu-links" id="navLinks">
         <li>
           <button onClick={() => navigate("/")}>Trang chủ</button>
+        </li>
+
+         <li>
+          <button onClick={() => navigate("/products")}>Sản phẩm</button>
         </li>
 
         <li className="dropdown">

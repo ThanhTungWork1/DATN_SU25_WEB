@@ -1,4 +1,4 @@
-import type { ColorType } from "../types/DetailType";
+import type { ColorType } from "../types/ColorType";
 import type { ColorProps } from "../types/ColorType";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {

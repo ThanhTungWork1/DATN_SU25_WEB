@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useProductDetail } from "../../../hook/ClientHookDetail";
-import Navbar from "../../../components/Navbar";
 import Aside from "./Aside";
 import MainImage from "./MainImage";
 import ProductInfo from "./ProductInfo";
@@ -9,10 +8,8 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-import RelatedProducts from "./RelatedProducts";
-import Footer from "../../../components/Footer";
+import RelatedProducts from "./RelatedProducts"
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
-import "../../../assets/styles/detailProduct.css";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
