@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Giỏ hàng</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+            rel="stylesheet">
+
+        <link rel="stylesheet" href="cart.css">
+
+    </head>
+    <body>
+
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-light py-3">
+                <div class="container">
+                    <!-- Logo -->
+                    <a class="navbar-brand fw-bold" href="#"
+                        style="color: #00d1b2;">MyLogo</a>
+
+                    <!-- Toggle menu mobile -->
+                    <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#navbarHeader"
+                        aria-controls="navbarHeader" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <!-- Navbar content -->
+                    <div class="collapse navbar-collapse" id="navbarHeader">
+                        <!-- Navigation links -->
+                        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3">
+                            <li class="nav-item"><a
+                                    class="nav-link fw-semibold text-black"
+                                    href="#">Trang chủ</a></li>
+                            <li class="nav-item"><a
+                                    class="nav-link fw-semibold text-black"
+                                    href="#">Nam</a></li>
+                            <li class="nav-item"><a
+                                    class="nav-link fw-semibold text-black"
+                                    href="#">Nữ</a></li>
+                            <li class="nav-item"><a
+                                    class="nav-link fw-semibold text-black"
+                                    href="#">Trend</a></li>
+                            <li class="nav-item dropdown dropdown-hover">
+                                <a
+                                    class="nav-link dropdown-toggle fw-semibold text-black"
+                                    href="#" role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Phụ kiện ▾
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Giày
+                                            thể thao</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="#">Mũ</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="#">Kính</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="#">Tất/Vớ</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item"><a
+                                    class="nav-link fw-semibold text-black"
+                                    href="#">Liên hệ</a></li>
+                        </ul>
+
+                        <!-- Right icons and login -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="search-container position-relative">
+                                <i class="bi bi-search text-info fs-5"
+                                    id="searchToggle"
+                                    style="cursor:pointer;"></i>
+                                <div class="search-input-box" id="searchBox">
+                                    <input type="text"
+                                        class="form-control form-control-sm"
+                                        placeholder="Tìm kiếm...">
+                                </div>
+                            </div>
+                            <a href="#" title="Tài khoản"><i
+                                    class="bi bi-person-fill text-purple fs-5"></i></a>
+                            <a href="#" title="Giỏ hàng"><i
+                                    class="bi bi-cart text-light fs-5"></i></a>
+                            <button class="btn btn-sm"
+                                style="background-color: #00d1b2; color: white;">Đăng
+                                nhập</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="container py-4">
+            <!-- Thông báo vận chuyển -->
+            <div class="alert-shipping">
+                Miễn phí vận chuyển với cho hóa đơn từ 500.000 VNĐ trở lên trên
+                toàn quốc
+            </div>
+
+            <div class="row">
+                <!-- Giỏ hàng -->
+                <div class="col-lg-8">
+                    <div class="cart-title">SẢN PHẨM</div>
+
+                    <div class="cart-item d-flex">
+                        <div class="me-3">
+                            <img
+                                src="https://product.hstatic.net/200000099191/product/aays071-3_3c07973b13e142d7bfc8b5e018c40fd0.jpg"
+                                alt="Sản phẩm">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="cart-item-name">SẢN PHẨM 1<br><small
+                                    class="text-muted">MÀU: XANH &nbsp; SIZE:
+                                    M</small></div>
+                        </div>
+                        <div class="text-end">
+                            <div>250.000 VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <div class="input-group input-group-sm">
+                                <button
+                                    class="btn btn-outline-secondary btn-qty"
+                                    data-action="decrease">-</button>
+                                <input type="text"
+                                    class="form-control text-center quantity-input"
+                                    value="1" style="max-width: 45px;">
+                                <button
+                                    class="btn btn-outline-secondary btn-qty"
+                                    data-action="increase">+</button>
+                            </div>
+                        </div>
+                        <div class="ms-3 text-end">
+                            <div>250.000 VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <button
+                                class="btn btn-outline-danger btn-sm">🗑</button>
+                        </div>
+                    </div>
+
+                    <div class="cart-buttons d-flex gap-3">
+                        <a href="#" class="btn btn-outline-dark">← TIẾP TỤC XEM
+                            SẢN PHẨM</a>
+                        <button class="btn btn-update">CẬP NHẬT GIỎ
+                            HÀNG</button>
+                    </div>
+                </div>
+
+                <!-- Cộng giỏ hàng -->
+                <div class="col-lg-4 summary-box">
+                    <div class="summary-title">CỘNG GIỎ HÀNG</div>
+                    <div class="summary-line">
+                        <span>Tạm tính</span>
+                        <strong>250.000 VNĐ</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span>Mã giảm giá đã áp dụng</span>
+                        <strong>-0VNĐ</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span class="text-sm"> Phí giao hàng</span>
+                        <span class="text-sm text-muted">Nhập địa chỉ để xem tùy
+                            chọn</span>
+                    </div>
+                    <!-- <div class="summary-line text-danger text-sm">
+        <a href="#" class="text-decoration-underline">Tính phí giao hàng</a>
+      </div> -->
+                    <hr>
+                    <div class="summary-line fs-5 fw-bold">
+                        <span>Tổng</span>
+                        <span>250.000 VNĐ</span>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="checkout.html"> <button
+                                class="btn btn-checkout">TIẾN HÀNH THANH
+                                TOÁN</button></a>
+                    </div>
+
+                    <!-- Mã giảm giá -->
+                    <div class="coupon-box">
+                        <div class="form-label fw-bold">🎟️ Phiếu ưu đãi</div>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control"
+                                placeholder="Mã giảm giá">
+                            <button class="btn btn-outline-secondary">Áp
+                                dụng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <footer class="footer bg-dark text-white pt-5 pb-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <h5 class="text-uppercase fw-bold">Đăng Ký Nhận Khuyến
+                            Mãi</h5>
+                        <p>Nhận thông tin về sản phẩm mới và các chương trình ưu
+                            đãi đặc biệt.</p>
+                        <form class="d-flex">
+                            <input type="email" class="form-control me-2"
+                                placeholder="Nhập Email của bạn">
+                            <button type="submit" class="btn btn-danger">Đăng
+                                ký</button>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h5 class="text-uppercase fw-bold">Hỗ trợ</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="footer-link">Hỏi đáp</a></li>
+                            <li><a href="#" class="footer-link">Chính sách bảo
+                                    mật</a></li>
+                            <li><a href="#" class="footer-link">Điều khoản sử
+                                    dụng</a></li>
+                            <li><a href="#" class="footer-link">Liên hệ</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h5 class="text-uppercase fw-bold">Sản phẩm</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="footer-link">Giày thể
+                                    thao</a></li>
+                            <li><a href="#" class="footer-link">Quần áo</a></li>
+                            <li><a href="#" class="footer-link">Phụ
+                                    kiện</a></li>
+                            <li><a href="#" class="footer-link">Khuyến
+                                    mãi</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <h5 class="text-uppercase fw-bold">Về StrideX</h5>
+                        <p>StrideX – Trang web bán đồ thể thao uy tín với sản
+                            phẩm đa dạng như giày chạy bộ, quần áo thể thao, phụ
+                            kiện chất lượng từ các thương hiệu hàng đầu.</p>
+                    </div>
+                </div>
+                <div class="text-center pt-3 border-top border-secondary">
+                    <p>&copy; 2025 StrideX.</p>
+                </div>
+            </div>
+        </footer>
+        <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.cart-item').forEach(function (item) {
+      const input = item.querySelector('.quantity-input');
+      const minusBtn = item.querySelector('[data-action="decrease"]');
+      const plusBtn = item.querySelector('[data-action="increase"]');
+      const unitPriceText = item.querySelectorAll('div.text-end')[0];
+      const totalPriceText = item.querySelectorAll('div.text-end')[1];
+
+      // Chuyển giá từ string => số
+      const parsePrice = (text) => {
+        return parseInt(text.replace(/[^\d]/g, ''), 10);
+      }
+
+      const formatPrice = (number) => {
+        return number.toLocaleString('vi-VN') + ' VNĐ';
+      }
+
+      const updateTotal = () => {
+        let quantity = parseInt(input.value);
+        if (isNaN(quantity) || quantity < 1) quantity = 1;
+        input.value = quantity;
+
+        const unitPrice = parsePrice(unitPriceText.textContent);
+        const total = unitPrice * quantity;
+        totalPriceText.textContent = formatPrice(total);
+
+        // Cập nhật tổng giỏ hàng
+        document.querySelectorAll('.summary-line strong')[0].textContent = formatPrice(total);
+        document.querySelectorAll('.summary-line.fs-5 span')[1].textContent = formatPrice(total);
+      }
+
+      minusBtn.addEventListener('click', function () {
+        let qty = parseInt(input.value);
+        if (qty > 1) {
+          input.value = qty - 1;
+          updateTotal();
+        }
+      });
+
+      plusBtn.addEventListener('click', function () {
+        let qty = parseInt(input.value);
+        input.value = qty + 1;
+        updateTotal();
+      });
+
+      input.addEventListener('change', function () {
+        updateTotal();
+      });
+
+      updateTotal(); // Gọi lần đầu để đồng bộ
+    });
+  });
+</script>
+
+        <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('searchToggle');
+    const box = document.getElementById('searchBox');
+
+    toggle.addEventListener('click', function () {
+      box.classList.toggle('show');
+    });
+
+    // Đóng khi click ra ngoài
+    document.addEventListener('click', function (e) {
+      if (!toggle.contains(e.target) && !box.contains(e.target)) {
+        box.classList.remove('show');
+      }
+    });
+  });
+</script>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    </body>
+
+</html>

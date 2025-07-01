@@ -1,0 +1,368 @@
+/* Global Styles */
+:root {
+    --primary-color: #FF6B6B;
+    --secondary-color: #4A4A4A;
+    --background-color: #FFFFFF;
+    --text-color: #333333;
+    --border-color: #E8E8E8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #fff;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+}
+
+/* Header Styles */
+header {
+    background: #fff;
+    box-shadow: none;
+    padding: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0 0 0;
+    background: none;
+}
+
+.logo h1 {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #222;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #222;
+    font-size: 1.1em;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: #CC0000;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-icons a {
+    color: #222;
+    text-decoration: none;
+    font-size: 1.2em;
+    transition: color 0.2s;
+}
+
+.nav-icons a:hover {
+    color: #CC0000;
+}
+
+/* Hero Section Styles */
+.hero-section {
+    padding: 56px 0 32px 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 2.8em;
+    font-weight: bold;
+    color: #CC0000;
+    margin-bottom: 8px;
+}
+
+.hero-subtitle {
+    font-size: 1.6em;
+    color: #222;
+    margin-bottom: 12px;
+}
+
+.hero-desc {
+    color: #666;
+    font-size: 1.1em;
+    margin-bottom: 0;
+}
+
+/* Product Grid Section */
+.product-grid-section {
+    padding: 24px 0 0 0;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.product-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 24px 18px;
+    text-align: center;
+}
+
+.product-card h3 {
+    color: #CC0000;
+    font-size: 1.2em;
+    margin-bottom: 8px;
+}
+
+.product-card p {
+    color: #444;
+    font-size: 1em;
+}
+
+/* Timeline Section */
+.timeline-section {
+    padding: 32px 0 0 0;
+}
+
+.timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 32px 0 0 0;
+    position: relative;
+    padding: 24px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #CC0000;
+    z-index: 1;
+}
+
+.timeline-item {
+    background: #fff;
+    padding: 12px 0;
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
+    color: #CC0000;
+    font-size: 1.1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* Values Grid Section */
+.values-section {
+    background: #fff;
+    padding: 48px 0 0 0;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.value-card {
+    padding: 24px 16px;
+    border-radius: 12px;
+    background: #f8f8f8;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.value-card h3 {
+    color: #CC0000;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.value-card p {
+    color: #444;
+    font-size: 1em;
+}
+
+.section-title {
+    color: #CC0000;
+    text-align: center;
+    margin: 0 0 24px 0;
+    font-size: 1.6em;
+    font-weight: bold;
+}
+
+/* Mission Section */
+.mission-section {
+    padding: 48px 0 0 0;
+}
+
+.mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.mission-card {
+    background: #fff;
+    padding: 24px 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    text-align: center;
+}
+
+.mission-card h3 {
+    color: #CC0000;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.mission-card p {
+    color: #444;
+    font-size: 1em;
+}
+
+/* Footer Styles */
+footer {
+    background: #2D2323;
+    color: #fff;
+    padding: 48px 0 0 0;
+    margin-top: 64px;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 64px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px;
+}
+
+.footer-brand, .footer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.footer-section ul, .footer-section p {
+    width: 100%;
+}
+
+.footer-brand h3 {
+    font-size: 1.5em;
+    margin-bottom: 18px;
+    font-weight: bold;
+}
+
+.footer-section h4 {
+    font-size: 1.1em;
+    margin-bottom: 18px;
+    font-weight: bold;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section a {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-section a:hover {
+    color: #CC0000;
+}
+
+.footer-section p {
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: #fff;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 1em;
+    color: #fff;
+    margin-top: 32px;
+}
+
+@media (max-width: 1200px) {
+    .footer-content {
+        gap: 32px;
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 900px) {
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0 8px;
+    }
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 8px;
+    }
+    nav {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 0 0 0;
+    }
+    .nav-links {
+        gap: 18px;
+    }
+    .nav-icons {
+        gap: 12px;
+    }
+} 

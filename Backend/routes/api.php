@@ -3,35 +3,31 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Middleware\CheckAdminMiddleware;
-use App\Http\Middleware\CheckRole;
-use App\Http\Controllers\Api\VoucherController;
-use App\Http\Controllers\Api\PaymentController;
 
-// Kiểm tra API hoạt động
-Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+Route::get('test', function () {
+    return response()->json([
+        'status' => 'success',
+    ], 200);
+});
 
 // Auth
 Route::post('/login', [AuthenticationController::class, 'postLogin']);
 Route::post('/logout', [AuthenticationController::class, 'postLogout'])->middleware('auth:sanctum');
 
-// ADMIN routes (quản trị)
-Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
-    Route::apiResource('users', UserController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('orders', OrderController::class);
-    Route::get('dashboard', [DashboardController::class, 'index']);
-});
 
-// USER routes (khách hàng)
-Route::middleware(['auth:sanctum'])->group(function () {
 
-    // Products - cho user
-    Route::prefix('product')->group(function () {
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix("product")->group(function () {
         Route::get('/', [ProductController::class, 'index']);
+        Route::get('/search', [ProductController::class, 'search']); // API tìm kiếm và lọc
+        Route::get('/featured', [ProductController::class, 'featured']); // Sản phẩm nổi bật
+        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']); // Sản phẩm theo danh mục
         Route::get('/{id}', [ProductController::class, 'show']);
     });
 
@@ -65,4 +61,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Cart API (client)
+    Route::apiResource('/cart', CartController::class);
 });

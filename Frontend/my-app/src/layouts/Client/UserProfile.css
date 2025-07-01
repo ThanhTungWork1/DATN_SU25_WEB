@@ -1,0 +1,56 @@
+.profile-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.profile-left {
+  flex: 1;
+  margin-right: 40px;
+}
+
+.profile-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.profile-subtitle {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.order-history-btn {
+  margin-bottom: 24px;
+}
+
+.field-static {
+  margin-bottom: 24px;
+}
+
+.field-static-label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.field-static-value {
+  color: #333;
+  font-size: 16px;
+}
+
+.profile-right {
+  width: 200px;
+  text-align: center;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}

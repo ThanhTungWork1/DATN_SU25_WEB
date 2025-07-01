@@ -17,4 +17,12 @@ class Size extends Model
     {
         return $this->hasMany(ProductVariant::class);
     }
+<<<<<<< HEAD
+=======
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+>>>>>>> origin/feat/auth
 }

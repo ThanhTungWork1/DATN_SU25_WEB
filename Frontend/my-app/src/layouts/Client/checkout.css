@@ -1,0 +1,160 @@
+
+        body {
+            background-color: #f8f9fa;
+        }
+        .main-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        .main-header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+  /* Checkout Page Styles */
+        .form-label .required {
+            color: red;
+        }
+        .order-summary {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            padding: 1.5rem;
+            border-radius: 0.25rem;
+        }
+        .order-summary h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .order-summary .product-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .order-summary .product-item:last-of-type {
+            border-bottom: none;
+        }
+        .order-summary .product-image img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .order-summary .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        .order-summary .summary-row.total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #d9534f;
+            border-top: 2px solid #dee2e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        .payment-methods {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .payment-methods .form-check {
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.25rem;
+        }
+         .payment-methods .form-check:not(:last-child) {
+            margin-bottom: 0.75rem;
+        }
+        .btn-place-order {
+            background-color: #d9534f;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.8rem;
+            width: 100%;
+            border: none;
+        }
+        .btn-place-order:hover {
+            background-color: #c9302c;
+            color: #fff;
+        }
+        .terms {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+
+      /* Footer Styles */
+.footer {
+    background-color: #212529;
+    color: #adb5bd;
+}
+.footer h5 {
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+.footer .footer-link {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+.footer .footer-link:hover {
+    color: #ffffff;
+}
+.footer form .form-control {
+    background-color: #343a40;
+    border-color: #495057;
+    color: white;
+}
+.footer form .form-control::placeholder {
+    color: #adb5bd;
+}
+.footer form .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    white-space: nowrap;
+}
+
+/* Dropdown mở khi hover */
+.dropdown-hover:hover .dropdown-menu {
+  display: block;
+  margin-top: 0;
+}
+
+/* Ngăn nhấp chuột gây lỗi */
+.dropdown-hover > .dropdown-toggle::after {
+  display: none;
+}
+
+
+.search-container {
+  position: relative;
+}
+
+.search-input-box {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.search-input-box input {
+  width: 180px;
+}
+
+.search-input-box.show {
+  width: 200px;
+}
+
