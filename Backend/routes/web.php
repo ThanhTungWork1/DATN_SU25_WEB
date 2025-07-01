@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\UserControl;
+use App\Http\Controllers\Admin\UserController;
 
 // Admin
 Route::group([
@@ -15,7 +15,10 @@ Route::group([
             'as' => 'users',
         ],
         function () {
-            Route::get('list-users', [UserControl::class, 'listUsers'])->name('listUsers');
+            Route::get('list-users', [UserController::class, 'listUsers'])->name('listUsers');
         }
     );
+});
+Route::get('/', function () {
+    return view('welcome');
 });
