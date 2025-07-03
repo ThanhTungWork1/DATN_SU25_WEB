@@ -10,7 +10,8 @@ class Color extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'hex_code'
     ];
 
     public function productVariants()

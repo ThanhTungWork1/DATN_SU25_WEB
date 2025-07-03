@@ -14,7 +14,6 @@ class Order extends Model
         'shipping_fee'
     ];
 
-
     public function items()
     {
         return $this->hasMany(\App\Models\OrderItem::class);
