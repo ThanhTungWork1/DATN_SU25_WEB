@@ -11,6 +11,7 @@ const ProductInfo = ({
 }: ProductInfoProps) => {
   // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
   const originalPrice = product.original_price || (product as any).old_price;
+
   return (
     <div className="product-info">
       {/* Tên sản phẩm */}
@@ -45,6 +46,7 @@ const ProductInfo = ({
             <span className="text-muted"> Vui lòng chọn Size / Màu</span>
           )}
         </p>
+
         {/* Số lượng tồn kho */}
         <p className="mb-0">
           Số lượng:
@@ -53,6 +55,7 @@ const ProductInfo = ({
             {selectedVariantStock ?? "N/A"}
           </span>
         </p>
+
         {/* Đã bán */}
         {product.sold !== undefined && (
           <p className="mb-0">
@@ -60,6 +63,7 @@ const ProductInfo = ({
             <span className="text-dark fw-medium"> {product.sold}</span>
           </p>
         )}
+
         {/* Mã sản phẩm (SKU) */}
         {sku && (
           <p className="mb-0 mt-1">

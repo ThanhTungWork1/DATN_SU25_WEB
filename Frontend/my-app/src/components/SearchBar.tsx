@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-import "../assets/styles/SearchBar.css";
 import { validateSearchQuery } from "../validation/searchValidation";
 
 interface SearchBarProps {
@@ -29,6 +28,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         setOpen(false);
       }
     }
+
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -40,8 +40,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   // Đóng khi nhấn ESC
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
     }
+
     if (open) {
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -52,16 +55,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch && validateSearchQuery(query)) onSearch(query);
-    // Không đóng input ở đây
+    if (onSearch && validateSearchQuery(query)) {
+      onSearch(query);
+    }
   };
 
   const handleIconClick = () => {
     if (!open) {
       setOpen(true);
     } else if (validateSearchQuery(query)) {
-      if (onSearch) onSearch(query);
-      // Không đóng input, chỉ tìm kiếm
+      if (onSearch) {
+        onSearch(query);
+      }
     }
   };
 
@@ -76,9 +81,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         type="button"
         onClick={handleIconClick}
       >
-        <span role="img" aria-label="search">
-          🔍
-        </span>
+        <span role="img" aria-label="search">🔍</span>
       </button>
       <form className="searchbar-form" onSubmit={handleSubmit}>
         <input

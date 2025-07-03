@@ -9,7 +9,7 @@ import type { ColorType } from "../types/DetailType";
  */
 export function validateProductDetail(
   selectedSize: string | null,
-  selectedColor: ColorType | null,
+  selectedColor: ColorType | null
 ) {
   if (!selectedSize || !selectedColor) {
     return {

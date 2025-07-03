@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\UserControl;
+use App\Http\Controllers\Admin\UserController;
 
 // Admin
 Route::group([

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Category;
 
 class Product extends Model
 {
@@ -18,10 +19,19 @@ class Product extends Model
         'status',
         'category_id'
     ];
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-}
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+}

@@ -7,16 +7,10 @@ import {
 } from "../api/ApiProduct";
 import type { Product } from "../types/ProductType";
 
-/**
- * Hook lấy danh sách sản phẩm có phân trang
- * @param page Trang hiện tại
- * @param limit Số sản phẩm mỗi trang
- * @param search Từ khóa tìm kiếm (tùy chọn)
- */
 export const useProductList = (
   page: number,
   limit: number,
-  search?: string,
+  search?: string
 ) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
@@ -37,22 +31,23 @@ export const useProductList = (
       getAllSizes(),
     ])
       .then(([productsData, categoryRes, colorRes, sizeRes]) => {
-        // Map categoryName cho từng sản phẩm
         const categoryMap: Record<number, string> = {};
         categoryRes.forEach((cat) => {
           categoryMap[cat.id] = cat.name;
         });
+
         let mappedProducts = (productsData as Product[]).map((p: any) => ({
           ...p,
           categoryName: categoryMap[p.category_id] || "",
         }));
-        // Lọc theo search nếu có
+
         if (search && search.trim()) {
           const lowerSearch = search.trim().toLowerCase();
           mappedProducts = mappedProducts.filter((p: Product) =>
             p.name?.toLowerCase().includes(lowerSearch)
           );
         }
+
         setProducts(mappedProducts);
         setCategories(categoryRes);
         setColors(colorRes as { id: number; name: string; code: string }[]);
@@ -61,7 +56,7 @@ export const useProductList = (
         setTotalPages(Math.ceil(mappedProducts.length / limit));
       })
       .finally(() => setLoading(false));
-  }, [search]);
+  }, [page, limit, search]);
 
   return {
     products,

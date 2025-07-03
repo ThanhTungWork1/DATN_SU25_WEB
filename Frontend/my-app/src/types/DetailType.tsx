@@ -44,3 +44,26 @@ export type SizeProps = {
   selectedSize: string | null;
   onSelectSize: (size: string) => void;
 };
+
+export interface Order {
+  id: number;
+  createdAt?: string;
+  created_at?: string;
+  status: string;
+  paymentMethod?: string;
+  totalAmount?: number;
+  total_amount?: number;
+  address?: {
+    street?: string;
+    ward?: string;
+    district?: string;
+    province?: string;
+  };
+  items?: {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  // Thêm các trường khác nếu cần
+}

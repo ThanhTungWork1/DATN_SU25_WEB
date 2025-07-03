@@ -1,4 +1,4 @@
-
+import type { ColorType } from "../types/ColorType";
 import type { ColorProps } from "../types/ColorType";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
@@ -8,17 +8,13 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
       <div className="d-flex gap-2 flex-wrap mt-2">
         {colors.map((color) => {
           const isSelected = selectedColor?.id === color.id;
-          let borderStyle = "1px solid #ccc";
-          if (isSelected) {
-            if (
-              color.code === "#ff0000" ||
-              color.code.toLowerCase() === "red"
-            ) {
-              borderStyle = "2.5px solid red";
-            } else {
-              borderStyle = "1.5px solid #00c6ab";
-            }
-          }
+
+          const borderStyle =
+            isSelected
+              ? color.code.toLowerCase() === "#ff0000" || color.code.toLowerCase() === "red"
+                ? "2.5px solid red"
+                : "1.5px solid #00c6ab"
+              : "1px solid #ccc";
 
           return (
             <span

@@ -3,6 +3,7 @@ import type { Product } from "../types/ProductType";
 import { Link } from "react-router-dom";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
+import { useWishlistContext } from "../provider/WishlistContext";
 
 interface BoxProductProps {
   product: Product;
@@ -13,9 +14,10 @@ interface BoxProductProps {
  * @param product Sản phẩm cần hiển thị
  */
 export const BoxProduct = ({ product }: BoxProductProps) => {
-  const [liked, setLiked] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+  const liked = isInWishlist(product.id);
 
   // Lấy ảnh chính và ảnh hover
   const mainImage =
@@ -104,11 +106,11 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
             <span className="sold-text">Đã bán {product.sold ?? 0}</span>
             <button
               className="btn btn-link p-0 m-0"
-              style={{ color: liked ? "#e63946" : "#bbb" }}
+              style={{ color: liked ? "#e63946" : "#00c6ab" }}
               title="Yêu thích"
               onClick={(e) => {
                 e.preventDefault();
-                setLiked((l) => !l);
+                liked ? removeFromWishlist(product.id) : addToWishlist(product.id);
               }}
             >
               <i className={liked ? "fas fa-heart" : "far fa-heart"}></i>

@@ -1,5 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { CartItem, CartContextType } from "../types/CartType";
+
+export type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  color?: string;
+  size?: string;
+};
+
+type CartContextType = {
+  cartItems: CartItem[];
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: number) => void;
+  clearCart: () => void;
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -25,13 +41,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCartItems((prev) => {
       const exist = prev.find(
         (i) =>
-          i.id === item.id && i.color === item.color && i.size === item.size,
+          i.id === item.id && i.color === item.color && i.size === item.size
       );
       if (exist) {
         return prev.map((i) =>
           i.id === item.id && i.color === item.color && i.size === item.size
             ? { ...i, quantity: i.quantity + item.quantity }
-            : i,
+            : i
         );
       }
       return [...prev, item];
