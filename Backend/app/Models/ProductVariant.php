@@ -16,7 +16,8 @@ class ProductVariant extends Model
         'color_id',
         'size_id',
         'stock',
-        'price'
+        'price',
+        'old_price'
     ];
 
     public function product()
@@ -37,5 +38,9 @@ class ProductVariant extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class, 'variant_id');
+    }
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
     }
 }

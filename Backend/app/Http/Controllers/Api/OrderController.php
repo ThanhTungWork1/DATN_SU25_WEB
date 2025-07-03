@@ -5,10 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
-<<<<<<< HEAD
-=======
 use App\Services\OrderService;
->>>>>>> origin/feat/auth
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -16,16 +13,13 @@ class OrderController extends Controller
 
     public function __construct(
         protected OrderService $orderService
-    ) {}
+    ) {
+    }
 
     public function index()
     {
-<<<<<<< HEAD
-        return Order::with('items.variant.product')->get();
-=======
 
         return Order::with('items.variant.product')->paginate();
->>>>>>> origin/feat/auth
     }
     public function add(Request $request)
     {
@@ -46,8 +40,6 @@ class OrderController extends Controller
             'items.*.price' => 'required|numeric'
         ]);
 
-<<<<<<< HEAD
-=======
         // Kiểm tra tồn kho cho từng sản phẩm
         foreach ($data['items'] as $item) {
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
@@ -62,7 +54,6 @@ class OrderController extends Controller
         }
 
         // Tạo đơn hàng
->>>>>>> origin/feat/auth
         $order = Order::create([
             'user_id' => $data['user_id'],
             'status' => $data['status'],
@@ -72,14 +63,11 @@ class OrderController extends Controller
         ]);
 
         foreach ($data['items'] as $item) {
-<<<<<<< HEAD
-=======
             // Trừ tồn kho
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
             $variant->stock -= $item['quantity'];
             $variant->save();
 
->>>>>>> origin/feat/auth
             OrderItem::create([
                 'order_id' => $order->id,
                 'variant_id' => $item['variant_id'],

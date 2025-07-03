@@ -14,10 +14,6 @@ class Order extends Model
         'shipping_fee'
     ];
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/feat/auth
     public function items()
     {
         return $this->hasMany(\App\Models\OrderItem::class);

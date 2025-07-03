@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
             ComplaintSeeder::class,
             CommentSeeder::class,
             NotificationSeeder::class,
+            CartSeeder::class,
+            CartItemSeeder::class,
+            BannerSeeder::class,
+            ProductVariantSeeder::class,
         ]);
     }
 }
