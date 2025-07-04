@@ -7,17 +7,31 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
-
-
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ComplaintController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\SizeController;
+use App\Http\Controllers\Api\ColorController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\ProductVariantController;
 use App\Http\Middleware\CheckAdminMiddleware;
+
 use App\Http\Middleware\CheckRole;
 
 // Kiểm tra API hoạt động
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('/colors', [ColorController::class, 'index']);
+Route::get('/sizes', [SizeController::class, 'index']);
+Route::get('/banners', [BannerController::class, 'index']);
+Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
+Route::get('/comments/product/{product_id}', [CommentController::class, 'getByProduct']);
 // Auth
 Route::post('/login', [AuthenticationController::class, 'postLogin']);
 Route::post('/logout', [AuthenticationController::class, 'postLogout'])->middleware('auth:sanctum');
@@ -51,8 +65,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     // ✅ Favorites - sản phẩm yêu thích
     Route::prefix('favorites')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\FavoriteController::class, 'index']); // lấy danh sách sp yêu thích
-        Route::post('/{product_id}', [\App\Http\Controllers\Api\FavoriteController::class, 'toggle']); // toggle yêu thích
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
     });
 
     // ✅ Orders - cho user
@@ -87,7 +101,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     Route::apiResource('/cart', CartController::class);
+    Route::post('/comments', [CommentController::class, 'store']);
+    Route::post('/complaints', [ComplaintController::class, 'store']);
 
+    Route::get('/notifications', [NotificationController::class, 'index']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
