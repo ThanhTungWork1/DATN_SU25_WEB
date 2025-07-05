@@ -280,21 +280,40 @@ body {
 }
 
 .product-image {
-  height: 600px;
   width: 100%;
+  display: block;
+}
+
+.product-image-wrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: #f8f9fa;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 0;
+  margin: 0;
 }
-
-.product-image img {
+.product-image-inner {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+  background: #fff;
   display: block;
-  background: none;
-  border: none;
 }
 
 .thumbnail {
@@ -391,12 +410,25 @@ body {
 }
 
 .color-circle {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border 0.2s ease;
   border: 1px solid #ccc;
+  margin-right: 6px;
+}
+.color-circle--selected {
+  border: 1.5px solid #00c6ab;
+  transform: scale(1.15);
+}
+.color-circle--white {
+  background-color: #f5f5f5 !important;
+  border: 1.5px solid #888 !important;
+}
+.color-circle--red {
+  border: 2.5px solid red !important;
 }
 
 .btn-group button {
@@ -474,18 +506,25 @@ body {
   color: #10dedb;
 }
 
-.btn-buy-now {
-  background: #10dedb;
-  color: #fff;
-  border: none;
-  padding: 6px 18px;
+button.btn-buy-now {
+  background: #dc3545 !important;
+  color: #fff !important;
+  border: none !important;
+  font-size: 0.95rem;
   border-radius: 6px;
+  height: 32px;
+  padding: 0.25rem 0.6rem;
+  min-width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
   font-weight: 500;
-  margin-left: 8px;
-  transition: 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
-.btn-buy-now:hover {
-  background: #0bbdbb;
+button.btn-buy-now:hover, button.btn-buy-now:focus {
+  background: #b52a37 !important;
+  color: #fff !important;
 }
 
 .btn-quantity {
@@ -974,15 +1013,14 @@ body {
 }
 
 .color-circle {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s ease, border 0.2s ease;
   border: 1px solid #ccc;
-  transition:
-    border 0.2s,
-    box-shadow 0.2s,
-    width 0.2s,
-    height 0.2s;
+  margin-right: 6px;
 }
 
 /* Khi checkbox màu được chọn, làm to hơn và viền cam */
@@ -1140,8 +1178,38 @@ body .offcanvas.offcanvas-start.show {
 .card-img-top,
 .product-image {
   width: 100%;
+  display: block;
+}
+
+.product-image-wrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: #f8f9fa;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+.product-image-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box-product-image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 7px !important;
+  object-position: center center;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+  background: #fff;
   display: block;
 }
 
@@ -1369,61 +1437,26 @@ nav.mt-4 > ul.pagination {
   margin-top: 0.2rem !important;
 }
 
-.product-image-wrapper {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  border-radius: 7px 7px 0 0;
-  background: #f8f9fa;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin: 0;
-}
-.product-image-inner {
-  position: relative;
-  width: 100%;
-  height: 200px;
-}
-.main-product-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 7px 7px 0 0;
-  transition: opacity 0.6s;
-  padding: 0;
-  margin: 0;
-  background: none;
-  display: block;
-  opacity: 1;
-  z-index: 1;
-}
-
+.main-product-image,
 .hover-product-image {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 7px 7px 0 0;
-  transition: opacity 0.6s;
-  padding: 0;
-  margin: 0;
-  background: none;
+  object-fit: contain !important;
+  object-position: center center;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  transition: opacity 0.6s, transform 0.3s;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
   display: block;
-  opacity: 0;
-  z-index: 2;
 }
 
-/* Hiệu ứng hover: ẩn main, hiện hover */
+.hover-product-image {
+  opacity: 0;
+}
+
 .product-image-wrapper:hover .main-product-image {
   opacity: 0;
 }
@@ -1541,18 +1574,31 @@ nav.mt-4 > ul.pagination {
   gap: 8px;
 }
 
-.btn-add-cart,
+.btn-add-to-cart,
 .btn-buy-now {
-  font-size: 12px;
-  padding: 2px 8px;
+  font-size: 0.95rem;
   border-radius: 6px;
-  min-width: 0;
-  height: 28px;
+  height: 32px;
+  padding: 0.25rem 0.6rem;
+  min-width: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none !important;
-  line-height: 1;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.btn-buy-now {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+  font-family: inherit;
+  font-weight: 500;
+}
+.btn-buy-now:hover, .btn-buy-now:focus {
+  background: #b52a37;
+  color: #fff;
 }
 
 /* Riêng nút Thêm */
@@ -1781,41 +1827,6 @@ img.card-img-top.product-image {
   border-radius: 7px !important;
 }
 
-.product-image-wrapper {
-  width: 100%;
-  height: 200px;
-  min-height: 200px;
-  overflow: hidden;
-  border-radius: 7px 7px 0 0;
-  background: #f8f9fa;
-  position: relative;
-  display: block;
-  padding: 0;
-  margin: 0;
-}
-.product-image-inner {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  min-height: 200px;
-}
-.main-product-image,
-.hover-product-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 7px 7px 0 0;
-  transition: opacity 0.6s;
-  padding: 0;
-  margin: 0;
-  background: none;
-  display: block;
-}
-
 .cart-icon-overlay {
   position: absolute;
   top: 50%;
@@ -2019,4 +2030,85 @@ body.dark-theme .breadcrumb-link:hover {
 }
 .icon-favorite-navbar i {
   font-size: 1em;
+}
+
+/* Số lượng */
+.quantity-control {
+  display: flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #555;
+  overflow: hidden;
+  min-width: 80px;
+  height: 32px;
+  padding: 0 4px;
+}
+
+.quantity-btn {
+  background: transparent;
+  border: none;
+  color: #ddd;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+}
+.quantity-btn:hover, .quantity-btn:focus {
+  background: #444;
+  color: #00c6ab;
+}
+
+.quantity-value {
+  width: 34px;
+  height: 32px;
+  text-align: center;
+  font-size: 15px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding: 0;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ẩn spinner input number trên Chrome, Safari, Edge */
+.quantity-value::-webkit-outer-spin-button,
+.quantity-value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ẩn spinner input number trên Firefox */
+.quantity-value[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Nút Thêm */
+.btn-add-to-cart {
+  background: #00c6ab;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.95rem;
+  min-width: 70px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-add-to-cart svg {
+  font-size: 1em;
+  margin-right: 4px;
+}
+.btn-add-to-cart:hover, .btn-add-to-cart:focus {
+  background: #009e8e;
+  color: #fff;
 }

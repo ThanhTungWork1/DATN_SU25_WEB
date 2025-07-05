@@ -17,10 +17,10 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
   return (
     <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
       {/* Bộ đếm số lượng */}
-      <div className="d-flex align-items-center border rounded px-2">
+      <div className="quantity-control">
         <button
           onClick={decrease}
-          className="btn btn-sm btn-light px-2"
+          className="quantity-btn"
           type="button"
         >
           −
@@ -36,12 +36,11 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
               setQuantity(Math.min(Math.max(val, 1), maxQuantity));
             }
           }}
-          className="form-control form-control-sm text-center border-0"
-          style={{ width: 60 }}
+          className="quantity-value"
         />
         <button
           onClick={increase}
-          className="btn btn-sm btn-light px-2"
+          className="quantity-btn"
           type="button"
         >
           +
@@ -50,14 +49,14 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
 
       {/* Nút thêm giỏ hàng */}
       <button
-        className="btn btn-outline-primary btn-sm d-flex align-items-center"
+        className="btn-add-to-cart d-flex align-items-center"
         onClick={() => onAddToCart(quantity)}
       >
         <FaShoppingCart className="me-1" /> Thêm
       </button>
 
       {/* Nút mua ngay */}
-      <button className="btn btn-danger btn-sm">Mua ngay</button>
+      <button className="btn-buy-now">Mua ngay</button>
     </div>
   );
 };

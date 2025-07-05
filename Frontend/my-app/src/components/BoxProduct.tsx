@@ -49,20 +49,20 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
         >
           {product.discount && (
             <span className="badge bg-warning position-absolute top-0 start-0">
-              Giảm {product.discount}%
+              Giảm {Math.round(product.discount)}%
             </span>
           )}
           <Link to={`/products/${product.id}`}>
             <div className="product-image-inner">
               <img
                 src={mainImage}
-                className={`card-img-top product-image${hasHoverImage ? " main-product-image" : ""}`}
+                className={`card-img-top product-image box-product-image${hasHoverImage ? " main-product-image" : ""}`}
                 alt={product.name}
               />
               {hoverImage && (
                 <img
                   src={hoverImage}
-                  className="card-img-top product-image hover-product-image"
+                  className="card-img-top product-image box-product-image hover-product-image"
                   alt={product.name + "hover"}
                 />
               )}
@@ -92,11 +92,11 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
           <p className="product-price">
             <Link to={`/products/${product.id}`}>
               <span className="sale-price">
-                {product.price.toLocaleString()}đ
+                {Number(product.price * 1000).toLocaleString('vi-VN')}đ
               </span>
-              {product.old_price && product.old_price > product.price && (
+              {product.old_price && (
                 <span className="original-price">
-                  {product.old_price.toLocaleString()}đ
+                  {Number(product.old_price * 1000).toLocaleString('vi-VN')}đ
                 </span>
               )}
             </Link>

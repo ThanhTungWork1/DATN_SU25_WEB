@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BoxProduct } from "../../../components/BoxProduct";
-import { useProductList } from "../../../hook/useProductList";
-import { filterProducts } from "../../../utils/productFilter";
-import type { Product } from "../../../types/ProductType";
+import { useProductPagination } from "../../../hook/useProductList";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { Section } from "../../../components/Section";
@@ -15,25 +13,18 @@ const ResultProduct = () => {
   const params = new URLSearchParams(location.search);
   const query = params.get("query")?.trim() || "";
 
-  // Lấy toàn bộ sản phẩm (có thể dùng custom hook, không phân trang)
-  // Nếu muốn tối ưu, có thể fetch riêng API search ở đây
-  const { products, loading, error } = useProductList(1, 9999); // lấy tất cả sản phẩm
+  // State page
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
-  // State lưu kết quả lọc
-  const [result, setResult] = useState<Product[]>([]);
+  // Gọi API backend để tìm kiếm sản phẩm
+  const { products, pagination, loading, error } = useProductPagination({
+    page: currentPage,
+    per_page: PAGE_SIZE,
+    search: query,
+  });
 
   const navigate = useNavigate();
-
-  // Lọc sản phẩm khi có query hoặc products thay đổi
-  useEffect(() => {
-    if (!query) {
-      setResult([]);
-      return;
-    }
-    // Dùng lại filterProducts, chỉ lọc theo tên
-    const filtered = filterProducts(products, { name: query });
-    setResult(filtered);
-  }, [query, products]);
 
   // Hàm quay về trang tổng sản phẩm
   const handleBackToAll = () => {
@@ -46,7 +37,7 @@ const ResultProduct = () => {
       <div className="container my-4 search-result-container">
         {/* Nút quay về trang tổng sản phẩm */}
         <h4 className="mb-3">
-          Kết quả tìm kiếm cho:{" "}
+          Kết quả tìm kiếm cho: {" "}
           <span style={{ color: "#09dbc7" }}>{query}</span>
         </h4>
         <div className="mb-1">
@@ -60,7 +51,6 @@ const ResultProduct = () => {
               padding: 0,
             }}
           >
-            {/* <span style={{fontSize: 18, marginRight: 6}}>&larr;</span> */}
             <span style={{ fontSize: 14 }}>Xem tất cả sản phẩm</span>
           </button>
         </div>
@@ -70,7 +60,7 @@ const ResultProduct = () => {
           <div>Đang tải sản phẩm...</div>
         ) : !query ? (
           <div>Vui lòng nhập từ khóa tìm kiếm.</div>
-        ) : result.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="search-empty">
             <img
               src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png"
@@ -82,9 +72,49 @@ const ResultProduct = () => {
         ) : (
           <div className="product-section-container">
             <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
-              {result.map((product) => (
+              {products.map((product: any) => (
                 <BoxProduct key={product.id} product={product} />
               ))}
+            </div>
+            {/* Phân trang */}
+            <div className="mt-4">
+              {pagination.total_pages > 1 && (
+                <nav className="pagination-nav">
+                  <ul className="pagination justify-content-center">
+                    <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        &laquo;
+                      </button>
+                    </li>
+                    {Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                      <li
+                        key={page}
+                        className={`page-item${page === currentPage ? " active" : ""}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+                    <li className={`page-item${currentPage === pagination.total_pages ? " disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === pagination.total_pages}
+                      >
+                        &raquo;
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
             </div>
           </div>
         )}

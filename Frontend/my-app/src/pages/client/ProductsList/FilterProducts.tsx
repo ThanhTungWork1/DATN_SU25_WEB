@@ -1,8 +1,8 @@
 import type { ProductFilter } from "../../../types/ProductFilterType";
 
 type Props = {
-  filter: ProductFilter;
-  setFilter: (f: ProductFilter) => void;
+  filter: any;
+  setFilter: (f: any) => void;
   onApply: () => void;
   onClear: () => void;
   categories: { id: number; name: string }[];
@@ -27,13 +27,40 @@ export const FilterProducts = ({
     "Fleece",
   ];
 
+  // Chuyển đổi filter FE sang filter BE
+  const handleChange = (key: string, value: any) => {
+    let newFilter = { ...filter };
+    if (key === "categories") {
+      newFilter.category_id = value.length > 0 ? value[0] : undefined;
+      delete newFilter.categories;
+    } else if (key === "colors") {
+      newFilter.color_id = value.length > 0 ? value[0] : undefined;
+      delete newFilter.colors;
+    } else if (key === "sizes") {
+      newFilter.size_id = value.length > 0 ? value[0] : undefined;
+      delete newFilter.sizes;
+    } else if (key === "priceRange") {
+      if (value) {
+        const [min, max] = value.split("-");
+        newFilter.min_price = min;
+        newFilter.max_price = max;
+      } else {
+        delete newFilter.min_price;
+        delete newFilter.max_price;
+      }
+      delete newFilter.priceRange;
+    } else {
+      newFilter[key] = value;
+    }
+    setFilter(newFilter);
+  };
+
   const toggleArray = <T,>(key: keyof ProductFilter, value: T) => {
-    setFilter({
-      ...filter,
-      [key]: (filter[key] as T[])?.includes(value)
-        ? (filter[key] as T[]).filter((v) => v !== value)
-        : [...((filter[key] as T[]) || []), value],
-    });
+    const arr = (filter[key] as T[]) || [];
+    const newArr = arr.includes(value)
+      ? arr.filter((v) => v !== value)
+      : [...arr, value];
+    handleChange(key as string, newArr);
   };
 
   return (
@@ -55,7 +82,7 @@ export const FilterProducts = ({
             className="form-control mt-1"
             placeholder="Nhập tên sản phẩm..."
             value={filter.name || ""}
-            onChange={(e) => setFilter({ ...filter, name: e.target.value })}
+            onChange={(e) => handleChange("search", e.target.value)}
           />
         </div>
 
@@ -67,8 +94,8 @@ export const FilterProducts = ({
             <label key={cat.id} style={{ display: "block", cursor: "pointer" }}>
               <input
                 type="checkbox"
-                checked={filter.categories?.includes(cat.id) || false}
-                onChange={() => toggleArray("categories", cat.id)}
+                checked={filter.category_id === cat.id}
+                onChange={() => handleChange("categories", [cat.id])}
                 style={{ marginRight: 4 }}
               />
               {cat.name}
@@ -84,10 +111,8 @@ export const FilterProducts = ({
               <input
                 type="radio"
                 name="price"
-                checked={!filter.priceRange}
-                onChange={() =>
-                  setFilter({ ...filter, priceRange: undefined })
-                }
+                checked={!filter.min_price && !filter.max_price}
+                onChange={() => handleChange("priceRange", undefined)}
                 style={{ marginRight: 4 }}
               />
               Tất cả
@@ -99,10 +124,8 @@ export const FilterProducts = ({
                 <input
                   type="radio"
                   name="price"
-                  checked={filter.priceRange === range}
-                  onChange={() =>
-                    setFilter({ ...filter, priceRange: range })
-                  }
+                  checked={filter.min_price + "-" + filter.max_price === range}
+                  onChange={() => handleChange("priceRange", range)}
                   style={{ marginRight: 4 }}
                 />
                 {range.replace("-", "k - ")}k
@@ -119,8 +142,8 @@ export const FilterProducts = ({
               <label key={color.id} style={{ cursor: "pointer" }}>
                 <input
                   type="checkbox"
-                  checked={filter.colors?.includes(color.id) || false}
-                  onChange={() => toggleArray("colors", color.id)}
+                  checked={filter.color_id === color.id}
+                  onChange={() => handleChange("colors", [color.id])}
                   style={{ display: "none" }}
                 />
                 <span
@@ -148,8 +171,8 @@ export const FilterProducts = ({
             <label key={size.id} style={{ display: "block", cursor: "pointer" }}>
               <input
                 type="checkbox"
-                checked={filter.sizes?.includes(size.id) || false}
-                onChange={() => toggleArray("sizes", size.id)}
+                checked={filter.size_id === size.id}
+                onChange={() => handleChange("sizes", [size.id])}
                 style={{ marginRight: 4 }}
               />
               {size.name}

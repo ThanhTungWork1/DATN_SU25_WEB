@@ -1,64 +1,76 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FilterProducts } from "./FilterProducts";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { Pagination } from "./Pagination";
-import { useProductList } from "../../../hook/useProductList";
+import { useProductPagination } from "../../../hook/useProductList";
 import { useLocation } from "react-router-dom";
 import { Section } from "../../../components/Section";
-import { useProductFilter } from "../../../hook/useProductFilter";
 import { Breadcrumb } from "../../../components/Breadcrumb";
+import { getAllCategories, getAllColors, getAllSizes } from "../../../api/ApiProduct";
 
-// Số sản phẩm mỗi trang
 const PAGE_SIZE = 15;
 
 /**
  * Trang danh sách sản phẩm với phân trang và bộ lọc
  */
 export const ListProduct = () => {
-  // Fetch dữ liệu sản phẩm + danh mục
-  const { products, categories, colors, sizes, loading, error } =
-    useProductList(1, PAGE_SIZE);
+  // State filter và page
+  const [filter, setFilter] = useState<any>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter hook
-  const {
-    currentPage,
-    setCurrentPage,
-    filter,
-    setFilter,
-    applyFilter,
-    clearFilter,
-    pagedProducts,
-    pageCount,
-    isCategoryMenu,
-  } = useProductFilter(products, PAGE_SIZE);
+  // State cho categories, colors, sizes
+  const [categories, setCategories] = useState<any[]>([]);
+  const [colors, setColors] = useState<any[]>([]);
+  const [sizes, setSizes] = useState<any[]>([]);
 
-  // Lấy category từ query string
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const hasCategory = params.has("category");
-
-  // Tự động lọc khi filter thay đổi
   useEffect(() => {
-    const hasFilter =
-      (filter.categories && filter.categories.length > 0) ||
-      filter.name ||
-      filter.priceRange ||
-      (filter.colors && filter.colors.length > 0) ||
-      (filter.sizes && filter.sizes.length > 0) ||
-      (filter.materials && filter.materials.length > 0);
+    getAllCategories().then(setCategories);
+    getAllColors().then(setColors);
+    getAllSizes().then(setSizes);
+  }, []);
 
-    if (hasFilter) {
-      applyFilter();
+  // Params truyền vào hook
+  const params = {
+    page: currentPage,
+    per_page: PAGE_SIZE,
+    ...filter,
+  };
+
+  // Lấy sản phẩm từ backend
+  const { products, pagination, loading, error } = useProductPagination(params);
+
+  // Lấy category từ query string (nếu cần cho breadcrumb)
+  const location = useLocation();
+  const paramsUrl = new URLSearchParams(location.search);
+  const hasCategory = paramsUrl.has("category");
+  const categoryFromUrl = paramsUrl.get("category");
+
+  // Đồng bộ filter.category_id với URL param
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setFilter((prev: any) => ({
+        ...prev,
+        category_id: Number(categoryFromUrl)
+      }));
+    } else {
+      setFilter((prev: any) => {
+        const { category_id, ...rest } = prev;
+        return rest;
+      });
     }
-   
-  }, [
-    filter.categories,
-    filter.name,
-    filter.priceRange,
-    filter.colors,
-    filter.sizes,
-    filter.materials,
-  ]);
+    setCurrentPage(1);
+  }, [categoryFromUrl]);
+
+  // Hàm apply filter
+  const applyFilter = () => {
+    setCurrentPage(1);
+  };
+
+  // Hàm clear filter
+  const clearFilter = () => {
+    setFilter({});
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -90,14 +102,6 @@ export const ListProduct = () => {
             items={[
               { label: "Trang chủ", to: "/" },
               { label: "Sản phẩm", to: "/products" },
-              ...((filter.categories ?? []).length > 0 && categories.length > 0
-                ? (() => {
-                    const cat = categories.find(
-                      (cat) => cat.id === (filter.categories ?? [])[0]
-                    );
-                    return cat && cat.name ? [{ label: cat.name }] : [];
-                  })()
-                : []),
             ]}
           />
         </div>
@@ -111,20 +115,18 @@ export const ListProduct = () => {
         ) : (
           <>
             <div className="product-section-container">
-              {!isCategoryMenu && (
-                <div className="d-flex align-items-center mb-3">
-                  <button
-                    className="btn btn-filter"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasFilter"
-                  >
-                    Bộ lọc
-                  </button>
-                </div>
-              )}
+              <div className="d-flex align-items-center mb-3">
+                <button
+                  className="btn btn-filter"
+                  type="button"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#offcanvasFilter"
+                >
+                  Bộ lọc
+                </button>
+              </div>
               <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
-                {pagedProducts.map((product) => (
+                {products.map((product: any) => (
                   <BoxProduct key={product.id} product={product} />
                 ))}
               </div>
@@ -132,8 +134,8 @@ export const ListProduct = () => {
 
             {/* Phân trang */}
             <Pagination
-              currentPage={currentPage}
-              totalPages={pageCount}
+              currentPage={pagination.current_page}
+              totalPages={pagination.total_pages}
               onPageChange={setCurrentPage}
             />
           </>

@@ -1,16 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductById, getAllProducts } from "../api/ApiUrl";
+import { getProductDetail } from "../api/ApiProduct";
 import type { Product } from "../types/DetailType";
 
 /**
- * Hook lấy chi tiết sản phẩm theo ID.
- * - Gọi API khi có `id` hợp lệ.
- * - Quản lý trạng thái loading, error, và data.
+ * Hook lấy chi tiết sản phẩm theo ID từ backend thật.
  */
 export const useProductDetail = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
-    queryFn: () => getProductById(id),
+    queryFn: () => getProductDetail(id),
     enabled: !!id,
   });
 };

@@ -21,19 +21,15 @@ class AuthenticationController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = $request->user();
 
-            if ($user->role == 1) {
-                $user->tokens()->delete();
-                $token = $user->createToken('access_token')->plainTextToken;
+            $user->tokens()->delete();
+            $token = $user->createToken('access_token')->plainTextToken;
 
-                return response()->json([
-                    'token' => $token,
-                    'user' => $user,
-                    'message' => 'Login successful',
-                    'status_code' => 200
-                ], 200);
-            }
-
-            return response()->json(['message' => 'Tài khoản không có quyền truy cập!'], 403);
+            return response()->json([
+                'token' => $token,
+                'user' => $user,
+                'message' => 'Login successful',
+                'status_code' => 200
+            ], 200);
         }
 
         return response()->json(['message' => 'Email hoặc mật khẩu không đúng!'], 401);
@@ -47,5 +43,36 @@ class AuthenticationController extends Controller
             'message' => 'Logout successful',
             'status_code' => 200
         ], 200);
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'gender' => 'nullable|string|max:10',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'role' => 0, // Mặc định user thường
+        ]);
+
+        $token = $user->createToken('access_token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => $user,
+            'message' => 'Register successful',
+            'status_code' => 201
+        ], 201);
     }
 }

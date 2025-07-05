@@ -1,15 +1,15 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { signup } from "../provider/authProvider";
+import { useMutation } from "@tanstack/react-query";
+import { register } from "../provider/authProvider";
 
 
-type useSignupParams = {
+type useRegisterParams = {
     resource: string,
 }
 
-const useRegister = ({ resource }: useSignupParams) => {
+const useRegister = ({ resource }: useRegisterParams) => {
     return useMutation({
         mutationFn: (variables: any) => {
-            return signup({ resource, variables })
+            return register({ resource, variables })
         },
     })
 }

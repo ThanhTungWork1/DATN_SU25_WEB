@@ -1,7 +1,7 @@
 export interface Variant {
-  size?: string;
+  size?: { id: number; name: string; created_at?: string; updated_at?: string };
   stock: number;
-  color?: string;
+  color?: { id: number; name: string; hex_code?: string; created_at?: string; updated_at?: string };
   image?: string;
   sku?: string;
 }

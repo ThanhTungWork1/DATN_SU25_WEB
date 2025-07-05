@@ -9,10 +9,21 @@ const Navbar = () => {
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
 
-  const isPhuKien =
-    categoryParam === CATEGORY_MENU.PHU_KIEN.join(",") ||
-    categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ||
-    categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU);
+  // Xác định active cho từng menu
+  // Sản phẩm: chỉ active khi path là /products và không có category thuộc Nam/Nữ/Phụ kiện
+  const isProductsPage = location.pathname === "/products" &&
+    ![...CATEGORY_MENU.NAM_IDS, ...CATEGORY_MENU.NU_IDS, ...CATEGORY_MENU.PHU_KIEN].includes(Number(categoryParam));
+
+  // Nam: active khi category thuộc NAM_IDS
+  const isNamActive = CATEGORY_MENU.NAM_IDS.includes(Number(categoryParam));
+  // Nữ: active khi category thuộc NU_IDS
+  const isNuActive = CATEGORY_MENU.NU_IDS.includes(Number(categoryParam));
+  // Phụ kiện: active khi category là PHU_KIEN, PHU_KIEN_KINH, PHU_KIEN_MU
+  const isPhuKienActive = [
+    ...CATEGORY_MENU.PHU_KIEN,
+    CATEGORY_MENU.PHU_KIEN_KINH,
+    CATEGORY_MENU.PHU_KIEN_MU
+  ].includes(Number(categoryParam));
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -53,12 +64,16 @@ const Navbar = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/products" className={({ isActive }) => isActive ? "active" : ""}>
+          <button
+            className={isProductsPage ? "active" : ""}
+            onClick={() => navigate("/products")}
+            style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: "8px 12px", borderRadius: "4px" }}
+          >
             Sản phẩm
-          </NavLink>
+          </button>
         </li>
         <li className="dropdown">
-          <button className={["1", "2"].includes(categoryParam || "") ? "active" : ""}>
+          <button className={isNamActive ? "active" : ""}>
             Nam <span className="dropdown-icon">▼</span>
           </button>
           <ul className="dropdown-menu">
@@ -67,7 +82,7 @@ const Navbar = () => {
           </ul>
         </li>
         <li className="dropdown">
-          <button className={["5", "6"].includes(categoryParam || "") ? "active" : ""}>
+          <button className={isNuActive ? "active" : ""}>
             Nữ <span className="dropdown-icon">▼</span>
           </button>
           <ul className="dropdown-menu">
@@ -79,14 +94,14 @@ const Navbar = () => {
           <button onClick={() => navigate("/trend")}>Trend</button>
         </li>
         <li className="dropdown">
-          <button onClick={handleClickPhuKien} className={isPhuKien ? "active" : ""}>
+          <button onClick={handleClickPhuKien} className={isPhuKienActive ? "active" : ""}>
             Phụ kiện <span className="dropdown-icon">▼</span>
           </button>
           <ul className="dropdown-menu">
             <li>
               <button
                 onClick={handleClickPhuKienMu}
-                className={categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU) ? "active" : ""}
+                className={Number(categoryParam) === CATEGORY_MENU.PHU_KIEN_MU ? "active" : ""}
               >
                 Mũ
               </button>
@@ -94,7 +109,7 @@ const Navbar = () => {
             <li>
               <button
                 onClick={handleClickPhuKienKinh}
-                className={categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ? "active" : ""}
+                className={Number(categoryParam) === CATEGORY_MENU.PHU_KIEN_KINH ? "active" : ""}
               >
                 Kính
               </button>
@@ -114,7 +129,7 @@ const Navbar = () => {
           className="icon-btn"
           title="Tài khoản"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/register")}
         >
           &#128100;
         </div>
