@@ -17,7 +17,29 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        return Product::findOrFail($id);
+        $product = Product::with([
+            'category',
+            'variants.color',
+            'variants.size',
+            'comments.user' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->findOrFail($id);
+
+        if ($product->discount && $product->discount > 0) {
+            $product->final_price = $product->price - ($product->price * $product->discount / 100);
+        } else {
+            $product->final_price = $product->price;
+        }
+
+        $product->average_rating = $product->comments->avg('rating');
+        $product->total_reviews = $product->comments->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thông tin sản phẩm thành công',
+            'data' => $product
+        ]);
     }
 
     public function store(Request $request)

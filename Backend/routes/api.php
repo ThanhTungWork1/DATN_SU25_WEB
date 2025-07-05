@@ -35,6 +35,7 @@ Route::get('/comments/product/{product_id}', [CommentController::class, 'getByPr
 // Auth
 Route::post('/login', [AuthenticationController::class, 'postLogin']);
 Route::post('/logout', [AuthenticationController::class, 'postLogout'])->middleware('auth:sanctum');
+Route::post('/register', [AuthenticationController::class, 'register']);
 
 // ===========================
 // ✅ ADMIN routes (quản trị)

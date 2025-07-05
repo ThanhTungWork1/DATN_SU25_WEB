@@ -1,29 +1,25 @@
 import axios from "axios"
 
 
-const API_URL = `http://localhost:3000`
+const API_URL = `http://localhost:8000/api`
 
-type signupParams = {
+type registerParams = {
     resource: string,
     variables: any,
 }
-type signinParams = {
+type loginParams = {
     resource: string,
     variables: any,
 }
 const dataProvider = {
-    signup: async ({ resource, variables }: signupParams) => {
+    register: async ({ resource, variables }: registerParams) => {
         const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return {
-            data: response.data
-        }
+        return response.data;
     },
-    signin: async ({ resource, variables }: signinParams) => {
+    login: async ({ resource, variables }: loginParams) => {
         const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return {
-            data: response.data
-        }
-    },
+        return response.data;
+    }
 }
 
-export const { signup } = dataProvider;
+export const { register, login } = dataProvider;

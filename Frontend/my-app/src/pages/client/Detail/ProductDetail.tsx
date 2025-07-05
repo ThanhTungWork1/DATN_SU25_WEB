@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useProductDetail } from "../../../hook/ClientHookDetail";
-import Navbar from "../../../components/Navbar";
 import Aside from "./Aside";
 import MainImage from "./MainImage";
 import ProductInfo from "./ProductInfo";
@@ -9,14 +8,15 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-import RelatedProducts from "./RelatedProducts";
-import Footer from "../../../components/Footer";
+import RelatedProducts from "./RelatedProducts"
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
-import "../../../assets/styles/detailProduct.css";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
+import type { Product } from '../../../types/DetailType';
+import { getAllColors } from '../../../api/ApiProduct';
+import type { ColorType } from '../../../types/ColorType';
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -28,7 +28,8 @@ type RouteParams = {
 
 const ProductDetail = () => {
   const { id } = useParams<RouteParams>();
-  const { data: product, isLoading, isError } = useProductDetail(id!);
+  const { data: productRaw, isLoading, isError } = useProductDetail(id!);
+  const product = (productRaw as any)?.data as Product | undefined;
 
   const {
     selectedImage,
@@ -42,11 +43,13 @@ const ProductDetail = () => {
   } = useProductDetailLogic(product);
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
+  const [allColors, setAllColors] = useState<ColorType[]>([]);
   useEffect(() => {
     getBanners().then((banners) => {
       const found = banners.find((b) => Number(b.id) === 2);
       setBanner2(found || null);
     });
+    getAllColors().then((res: ColorType[]) => setAllColors(res));
   }, []);
 
   useEffect(() => {}, [id]);
@@ -55,19 +58,47 @@ const ProductDetail = () => {
   if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size === selectedSize && v.color === selectedColor?.name,
+    (v) => v.size?.name === selectedSize && v.color?.name === selectedColor?.name,
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-  const thumbnailImages =
-    (product.colors?.map((color) => color.image).filter(Boolean) as string[]) ||
-    [];
+  // Lấy unique colors từ variants, loại bỏ undefined
+  const uniqueColors = Array.from(
+    new Map(
+      (product.variants || [])
+        .filter(v => v.color)
+        .map(v => [v.color!.id, v.color!])
+    ).values()
+  );
+
+  // Lấy thumbnail cho Aside: lấy ảnh đầu tiên của mỗi màu từ variants
+  let colorThumbnails: string[] = [];
+  const colorSet = new Set();
+  if (product?.variants) {
+    for (const variant of product.variants) {
+      if (variant.color && variant.image && !colorSet.has(variant.color)) {
+        colorThumbnails.push(variant.image);
+        colorSet.add(variant.color);
+      }
+    }
+  }
+  const thumbnailImages = colorThumbnails.length
+    ? colorThumbnails
+    : product?.images && product.images.length
+      ? product.images
+      : product?.image
+        ? [product.image]
+        : [];
+
+  // Map allColors để đảm bảo có trường code
+  const mappedColors = allColors.map(c => ({
+    ...c,
+    code: c.code || (c as any).hex_code || ''
+  }));
 
   return (
     <>
-      <Navbar />
-
       {/* Breadcrumb */}
       <div className="container py-2 breadcrumb-container-detail">
         <Breadcrumb
@@ -110,12 +141,12 @@ const ProductDetail = () => {
               <hr />
 
               <Color
-                colors={product.colors || []}
+                colors={mappedColors}
                 selectedColor={selectedColor}
                 onSelectColor={(color) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) => v.color === color.name && v.size === selectedSize,
+                    (v) => v.color?.id === color.id && v.size?.name === selectedSize,
                   );
                   if (variant?.image) {
                     setSelectedImage(variant.image);
@@ -132,18 +163,6 @@ const ProductDetail = () => {
                 maxQuantity={10}
               />
               <hr />
-
-              {product.discount &&
-              product.discount > 0 &&
-              product.discount < 100 ? (
-                <p className="price text-danger">
-                  {Math.max(
-                    0,
-                    Math.round(product.price * (1 - product.discount / 100)),
-                  ).toLocaleString()}
-                  đ
-                </p>
-              ) : null}
             </div>
           </div>
 
@@ -158,8 +177,6 @@ const ProductDetail = () => {
           <RelatedProducts categoryId={product.category_id} />
         </div>
       </div>
-
-      <Footer />
     </>
   );
 };
