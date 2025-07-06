@@ -104,6 +104,12 @@ class AuthenticationController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = auth()->user();
+             if ($user->role !== 1) {
+            return response()->json([
+                'message' => 'Tài khoản không phải admin!',
+                'status_code' => 403
+            ], 403);
+        }
 
             $user->tokens()->delete();
             $token = $user->createToken('access_token')->plainTextToken;
@@ -144,6 +150,4 @@ class AuthenticationController extends Controller
             ], 500);
         }
     }
-
-  
 
