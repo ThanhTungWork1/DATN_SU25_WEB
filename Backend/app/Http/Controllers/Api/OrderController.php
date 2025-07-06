@@ -34,6 +34,7 @@ class OrderController extends Controller
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
+            'sold_number' => 'nullable|numeric',
             'items' => 'required|array',
             'items.*.variant_id' => 'required|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -59,7 +60,8 @@ class OrderController extends Controller
             'status' => $data['status'],
             'is_paid' => $data['is_paid'],
             'total_amount' => $data['total_amount'],
-            'shipping_fee' => $data['shipping_fee']
+            'shipping_fee' => $data['shipping_fee'],
+            'sold_number' => 'nullable|numeric',
         ]);
 
         foreach ($data['items'] as $item) {
