@@ -12,6 +12,14 @@ const ProductInfo = ({
   // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
   const originalPrice = product.original_price || (product as any).old_price;
 
+  // Format giá tiền chuẩn VN
+  const formattedPrice = product.price
+    ? (Number(product.price) * 1000).toLocaleString('vi-VN') + 'đ'
+    : 'N/A';
+  const formattedOldPrice = originalPrice
+    ? (Number(originalPrice) * 1000).toLocaleString('vi-VN') + 'đ'
+    : '';
+
   return (
     <div className="product-info">
       {/* Tên sản phẩm */}
@@ -20,12 +28,12 @@ const ProductInfo = ({
       {/* Giá sản phẩm và giá gốc nếu có */}
       <div className="d-flex align-items-end gap-2 my-3">
         <h2 className="text-danger fw-bolder mb-0">
-          {product.price.toLocaleString()}đ
+          {formattedPrice}
         </h2>
         {/* Hiển thị giá gốc nếu có và lớn hơn giá bán */}
         {originalPrice && originalPrice > product.price && (
           <span className="price-original">
-            {originalPrice.toLocaleString()}đ
+            {formattedOldPrice}
           </span>
         )}
       </div>

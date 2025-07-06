@@ -105,9 +105,8 @@ class AuthenticationController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = auth()->user();
 
-            if ($user->role == 1) {
-                $user->tokens()->delete();
-                $token = $user->createToken('access_token')->plainTextToken;
+            $user->tokens()->delete();
+            $token = $user->createToken('access_token')->plainTextToken;
 
                 return response()->json([
                     'message' => 'Login thành công',
@@ -145,4 +144,6 @@ class AuthenticationController extends Controller
             ], 500);
         }
     }
-}
+
+  
+

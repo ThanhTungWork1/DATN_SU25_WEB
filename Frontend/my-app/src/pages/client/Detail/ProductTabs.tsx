@@ -71,7 +71,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
             <div key={review.id} className="mb-4 border-bottom pb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <strong className="text-dark">
-                  {review.user?.username || "Người dùng ẩn danh"}
+                  {review.user?.username || review.user?.name || "Người dùng ẩn danh"}
                 </strong>
                 <small className="text-muted">{reviewDate}</small>
               </div>

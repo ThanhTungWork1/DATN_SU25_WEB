@@ -3,6 +3,7 @@ import type { Product } from "../types/ProductType";
 import { Link } from "react-router-dom";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
+import { useWishlistContext } from "../provider/WishlistContext";
 
 interface BoxProductProps {
   product: Product;
@@ -13,9 +14,10 @@ interface BoxProductProps {
  * @param product Sản phẩm cần hiển thị
  */
 export const BoxProduct = ({ product }: BoxProductProps) => {
-  const [liked, setLiked] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+  const liked = isInWishlist(product.id);
 
   // Lấy ảnh chính và ảnh hover
   const mainImage =
@@ -47,21 +49,21 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
         >
           {product.discount && (
             <span className="badge bg-warning position-absolute top-0 start-0">
-              Giảm {product.discount}%
+              Giảm {Math.round(product.discount)}%
             </span>
           )}
           <Link to={`/products/${product.id}`}>
             <div className="product-image-inner">
               <img
                 src={mainImage}
-                className={`card-img-top product-image${hasHoverImage ? " main-product-image" : ""}`}
+                className={`card-img-top product-image box-product-image${hasHoverImage ? " main-product-image" : ""}`}
                 alt={product.name}
               />
               {hoverImage && (
                 <img
                   src={hoverImage}
-                  className="card-img-top product-image hover-product-image"
-                  alt={product.name + " hover"}
+                  className="card-img-top product-image box-product-image hover-product-image"
+                  alt={product.name + "hover"}
                 />
               )}
             </div>
@@ -90,11 +92,11 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
           <p className="product-price">
             <Link to={`/products/${product.id}`}>
               <span className="sale-price">
-                {product.price.toLocaleString()}đ
+                {Number(product.price * 1000).toLocaleString('vi-VN')}đ
               </span>
-              {product.old_price && product.old_price > product.price && (
+              {product.old_price && (
                 <span className="original-price">
-                  {product.old_price.toLocaleString()}đ
+                  {Number(product.old_price * 1000).toLocaleString('vi-VN')}đ
                 </span>
               )}
             </Link>
@@ -104,11 +106,11 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
             <span className="sold-text">Đã bán {product.sold ?? 0}</span>
             <button
               className="btn btn-link p-0 m-0"
-              style={{ color: liked ? "#e63946" : "#bbb" }}
+              style={{ color: liked ? "#e63946" : "#00c6ab" }}
               title="Yêu thích"
               onClick={(e) => {
                 e.preventDefault();
-                setLiked((l) => !l);
+                liked ? removeFromWishlist(product.id) : addToWishlist(product.id);
               }}
             >
               <i className={liked ? "fas fa-heart" : "far fa-heart"}></i>
