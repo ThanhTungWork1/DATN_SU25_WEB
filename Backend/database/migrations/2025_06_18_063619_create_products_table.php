@@ -16,6 +16,7 @@
               $table->string('name', 255);
               $table->text('description');
               $table->decimal('price', 10, 2);
+              
               $table->boolean('status')->default(true);
               $table->timestamps();
 

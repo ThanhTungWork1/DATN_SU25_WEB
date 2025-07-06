@@ -17,7 +17,8 @@ class ProductVariant extends Model
         'size_id',
         'stock',
         'price',
-        'old_price'
+        'old_price',
+        'image'
     ];
 
     public function product()

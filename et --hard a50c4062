@@ -1,0 +1,30 @@
+[33m92fbea50[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{0}: reset: moving to 92fbea50
+[33m810290dd[m[33m ([m[1;31morigin/sonph4441[m[33m, [m[1;32msonph4441[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: checkout: moving from main to 810290dd99b1fdfe6a7dd83fef85f489e8aeb1d5
+[33m810290dd[m[33m ([m[1;31morigin/sonph4441[m[33m, [m[1;32msonph4441[m[33m, [m[1;32mmain[m[33m)[m HEAD@{2}: checkout: moving from restore-auth to main
+[33ma50c4062[m[33m ([m[1;31morigin/restore-auth[m[33m, [m[1;32mrestore-auth[m[33m)[m HEAD@{3}: reset: moving to a50c4062
+[33ma50c4062[m[33m ([m[1;31morigin/restore-auth[m[33m, [m[1;32mrestore-auth[m[33m)[m HEAD@{4}: checkout: moving from sonph4441 to restore-auth
+[33m810290dd[m[33m ([m[1;31morigin/sonph4441[m[33m, [m[1;32msonph4441[m[33m, [m[1;32mmain[m[33m)[m HEAD@{5}: merge main: Fast-forward
+[33m92fbea50[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{6}: checkout: moving from main to sonph4441
+[33m810290dd[m[33m ([m[1;31morigin/sonph4441[m[33m, [m[1;32msonph4441[m[33m, [m[1;32mmain[m[33m)[m HEAD@{7}: commit: Cập nhật AuthenticationController – hoàn tất merge và sửa lỗi
+[33ma50c4062[m[33m ([m[1;31morigin/restore-auth[m[33m, [m[1;32mrestore-auth[m[33m)[m HEAD@{8}: commit (merge): Hoàn tất merge nhánh duong-detail
+[33m764c0367[m HEAD@{9}: pull origin main --no-rebase: Merge made by the 'ort' strategy.
+[33mbb33ed6d[m HEAD@{10}: checkout: moving from main to main
+[33mbb33ed6d[m HEAD@{11}: commit: Lưu các thay đổi hiện tại
+[33m588ed975[m HEAD@{12}: reset: moving to HEAD
+[33m588ed975[m HEAD@{13}: reset: moving to HEAD
+[33m588ed975[m HEAD@{14}: commit: update cac api con thieu
+[33me474a1a2[m HEAD@{15}: rebase (abort): returning to refs/heads/main
+[33mc9ac0f09[m HEAD@{16}: pull origin sonph4441 --rebase (pick): check
+[33m95b6f0a6[m HEAD@{17}: pull origin sonph4441 --rebase (pick): checkcheck
+[33m1dc096a0[m HEAD@{18}: pull origin sonph4441 --rebase (start): checkout 1dc096a0e3785189129c84912b6459711b3709f5
+[33me474a1a2[m HEAD@{19}: commit: update product and product yeuthich
+[33m67148c44[m HEAD@{20}: checkout: moving from test-merge-auth to main
+[33mcd989d8f[m HEAD@{21}: merge origin/feat/auth: Merge made by the 'ort' strategy.
+[33m67148c44[m HEAD@{22}: checkout: moving from main to test-merge-auth
+[33m67148c44[m HEAD@{23}: commit: Update ProductController: thêm tính năng upload ảnh
+[33mb3e3d28b[m HEAD@{24}: pull origin Graft_code: Fast-forward
+[33m28fed709[m[33m ([m[1;31morigin/hung-feature/product[m[33m, [m[1;31morigin/hung-feature/order[m[33m)[m HEAD@{25}: checkout: moving from sonph4441 to main
+[33m92fbea50[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{26}: commit: api
+[33mcb20e198[m HEAD@{27}: commit: xaydungapiproduct
+[33m28fed709[m[33m ([m[1;31morigin/hung-feature/product[m[33m, [m[1;31morigin/hung-feature/order[m[33m)[m HEAD@{28}: checkout: moving from main to sonph4441
+[33m28fed709[m[33m ([m[1;31morigin/hung-feature/product[m[33m, [m[1;31morigin/hung-feature/order[m[33m)[m HEAD@{29}: clone: from https://github.com/ThanhTungWork1/DATN_SU25_WEB.git

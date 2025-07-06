@@ -1,7 +1,7 @@
 export interface Variant {
-  size?: string;
+  size?: { id: number; name: string; created_at?: string; updated_at?: string };
   stock: number;
-  color?: string;
+  color?: { id: number; name: string; hex_code?: string; created_at?: string; updated_at?: string };
   image?: string;
   sku?: string;
 }
@@ -44,3 +44,26 @@ export type SizeProps = {
   selectedSize: string | null;
   onSelectSize: (size: string) => void;
 };
+
+export interface Order {
+  id: number;
+  createdAt?: string;
+  created_at?: string;
+  status: string;
+  paymentMethod?: string;
+  totalAmount?: number;
+  total_amount?: number;
+  address?: {
+    street?: string;
+    ward?: string;
+    district?: string;
+    province?: string;
+  };
+  items?: {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  // Thêm các trường khác nếu cần
+}

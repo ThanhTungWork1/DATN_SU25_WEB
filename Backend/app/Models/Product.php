@@ -16,8 +16,14 @@ class Product extends Model
         'price',
         'discount',
         'image',
+        'hover_image',
         'status',
         'category_id'
+    ];
+    protected $casts = [
+        'status' => 'boolean',
+        'price' => 'decimal:2',
+        'discount' => 'decimal:2',
     ];
     public function variants()
     {
