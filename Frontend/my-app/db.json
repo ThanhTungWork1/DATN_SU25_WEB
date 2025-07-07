@@ -836,7 +836,7 @@
       "shipping_fee": 30000,
       "discount_amount": 0,
       "final_amount": 430000,
-      "status": "processing",
+      "status": "shipping",
       "payment_method": "COD",
       "payment_status": "unpaid",
       "notes": "Giao hàng sau 17h",

@@ -1,17 +1,19 @@
 
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getOrder, getOrderItems } from "../../../api/order";
-import { Order, OrderItem } from "../../../types/Order"; // Import interfaces
+
+import { Order, OrderItem } from "../../../types/ProductType";
 import { Typography, Descriptions, message, Spin, Table, Tag } from "antd";
 
-const { Title } = Typography;
+import { getOrderStatusColor, getOrderStatusText, getPaymentStatusColor, getPaymentStatusText } from "../../../utils/orderStatus";
+
+const { Title, Text } = Typography;
 
 export default function OrderDetail() {
-  const { id } = useParams<{ id: string }>(); // id có thể là string
-  const [order, setOrder] = useState<Order | null>(null); // Sử dụng Order interface
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]); // Sử dụng OrderItem interface
+  const { id } = useParams<{ id: string }>();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function OrderDetail() {
       if (!id) return;
       setLoading(true);
       try {
-        const orderRes = await getOrder(Number(id)); // Chuyển id sang number
+        const orderRes = await getOrder(Number(id));
         setOrder(orderRes.data);
 
         const itemsRes = await getOrderItems(Number(id));
@@ -35,41 +37,9 @@ export default function OrderDetail() {
     fetchOrderData();
   }, [id]);
 
-  if (loading) return <Spin tip="Đang tải chi tiết đơn hàng..." />;
-  if (!order) return <Title level={4}>Không tìm thấy đơn hàng này.</Title>;
+  if (loading) return <Spin tip="Đang tải chi tiết đơn hàng..." style={{marginTop: '50px'}} />;
+  if (!order) return <Title level={4} style={{marginTop: '50px', textAlign: 'center'}}>Không tìm thấy đơn hàng này.</Title>;
 
-  // Hàm hiển thị trạng thái đơn hàng (tương tự OrderList)
-  const getStatusText = (status: Order['status']) => {
-    switch (status) {
-      case "pending_confirmation": return "Chờ xác nhận";
-      case "confirmed": return "Đã xác nhận";
-      case "processing": return "Đang xử lý";
-      case "shipping": return "Đang giao hàng";
-      case "delivered": return "Đã giao hàng";
-      case "cancelled": return "Đã huỷ";
-      default: return "Không rõ";
-    }
-  };
-
-  const getPaymentStatusColor = (status: Order['payment_status']) => {
-    switch (status) {
-      case "paid": return "green";
-      case "unpaid": return "red";
-      case "part_paid": return "gold";
-      case "refunded": return "default";
-      default: return "default";
-    }
-  };
-
-  const getPaymentStatusText = (status: Order['payment_status']) => {
-    switch (status) {
-      case "paid": return "Đã thanh toán";
-      case "unpaid": return "Chưa thanh toán";
-      case "part_paid": return "Thanh toán một phần";
-      case "refunded": return "Đã hoàn tiền";
-      default: return "Không rõ";
-    }
-  };
 
   const orderItemsColumns = [
     { title: "Tên sản phẩm", dataIndex: "product_name", key: "product_name" },
@@ -107,7 +77,7 @@ export default function OrderDetail() {
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Trạng thái đơn hàng">
-          <Tag color={getStatusColor(order.status)}>{getStatusText(order.status)}</Tag>
+          <Tag color={getOrderStatusColor(order.status)}>{getOrderStatusText(order.status)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Phương thức thanh toán">{order.payment_method}</Descriptions.Item>
         <Descriptions.Item label="Trạng thái thanh toán">
@@ -134,13 +104,17 @@ export default function OrderDetail() {
 
             return (
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={3}>Tổng số lượng</Table.Summary.Cell>
-                <Table.Summary.Cell index={1}>
-                  <Text type="secondary">{totalQuantity}</Text>
+                <Table.Summary.Cell index={0} colSpan={3}>
+                    <Text strong>Tổng số lượng</Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={2} colSpan={1}>Tổng thành tiền</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>
+                  <Text strong>{totalQuantity}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2} colSpan={1}>
+                    <Text strong>Tổng thành tiền</Text>
+                </Table.Summary.Cell>
                 <Table.Summary.Cell index={3}>
-                  <Text type="secondary">{totalPrice.toLocaleString()} VND</Text>
+                  <Text strong>{totalPrice.toLocaleString()} VND</Text>
                 </Table.Summary.Cell>
               </Table.Summary.Row>
             );
