@@ -1,9 +1,9 @@
-// src/pages/admin/products/ProductList.tsx
+
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts, deleteProduct, getProductVariants } from "../../../api/product";
-import { Product, ProductVariant } from "../../../types/ProductType"; // Import Product và ProductVariant interface
+import { Product, ProductVariant } from "../../../types/ProductType"; 
 import {
   Table,
   Button,
@@ -19,7 +19,7 @@ const { Title } = Typography;
 const { Search } = Input;
 
 export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]); // Sử dụng Product interface
+  const [products, setProducts] = useState<Product[]>([]); 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();

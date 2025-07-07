@@ -1,9 +1,8 @@
 // src/api/product.ts
 
 import axios from "axios";
-import { Product, ProductVariant, Color, Size, Category } from "../types/ProductType";
-
-const BASE_URL = "http://localhost:3000"; // URL 
+import { Product, ProductVariant, Color, Size, Category } from "../types/ProductType"; 
+const BASE_URL = "http://localhost:3000"; 
 
 // API cho Products
 export const getProducts = () => axios.get<Product[]>(`${BASE_URL}/products`);
@@ -24,7 +23,7 @@ export const getColor = (id: string | number) => axios.get<Color>(`${BASE_URL}/c
 export const getSizes = () => axios.get<Size[]>(`${BASE_URL}/sizes`);
 export const getSize = (id: string | number) => axios.get<Size>(`${BASE_URL}/sizes/${id}`);
 
-// API cho Product Variants (Quan trọng để quản lý tồn kho chi tiết)
+// API cho Product Variants 
 export const getProductVariants = (productId: string | number) => axios.get<ProductVariant[]>(`${BASE_URL}/productVariants?product_id=${productId}`);
 export const getProductVariant = (id: string | number) => axios.get<ProductVariant>(`${BASE_URL}/productVariants/${id}`);
 export const createProductVariant = (data: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => axios.post<ProductVariant>(`${BASE_URL}/productVariants`, data);

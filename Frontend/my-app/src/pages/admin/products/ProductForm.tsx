@@ -14,15 +14,14 @@ import {
   updateProductVariant,
   deleteProductVariant
 } from "../../../api/product";
-import { Product, ProductVariant, Category, Color, Size } from "../../../types/ProductType"; 
-import { Form, Input, Button, Typography, Select, message, Upload, Space, Tag, Divider, Row, Col } from "antd";
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { Product, ProductVariant, Category, Color, Size } from "../../../types/ProductType";
+import { Form, Input, Button, Typography, Select, message, Space, Divider, Row, Col } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
-// Định nghĩa trạng thái cho Product
 const PRODUCT_STATUS_OPTIONS = [
   { value: "active", label: "Đang bán" },
   { value: "out_of_stock", label: "Hết hàng" },
@@ -32,16 +31,14 @@ const PRODUCT_STATUS_OPTIONS = [
 export default function ProductForm() {
   const [formRef] = Form.useForm();
   const navigate = useNavigate();
-  const { id } = useParams(); // id có thể là string hoặc undefined
-  const isEditing = !!id; // Biến cờ kiểm tra đang ở chế độ chỉnh sửa
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [sizes, setSizes] = useState<Size[]>([]);
-  const [productVariants, setProductVariants] = useState<ProductVariant[]>([]); // State để quản lý các biến thể
 
   useEffect(() => {
-    // Fetch danh mục, màu sắc, kích thước khi component mount
     const fetchSelectOptions = async () => {
       try {
         const [catRes, colorRes, sizeRes] = await Promise.all([
@@ -53,112 +50,122 @@ export default function ProductForm() {
         setColors(colorRes.data);
         setSizes(sizeRes.data);
       } catch (error) {
-        message.error("Lỗi khi tải dữ liệu tùy chọn.");
+        message.error("Lỗi khi tải dữ liệu tùy chọn (danh mục, màu, kích thước).");
         console.error("Fetch select options error:", error);
       }
     };
 
     fetchSelectOptions();
 
-    // Fetch dữ liệu sản phẩm nếu đang ở chế độ chỉnh sửa
     if (isEditing) {
-      const productId = Number(id); // Chuyển id sang number
+      const productId = Number(id);
+      if (isNaN(productId)) {
+        message.error("ID sản phẩm không hợp lệ.");
+        navigate("/admin/products");
+        return;
+      }
+
       Promise.all([
         getProduct(productId),
-        getProductVariants(productId) // Lấy các biến thể của sản phẩm
+        getProductVariants(productId)
       ])
         .then(([productRes, variantsRes]) => {
           const productData: Product = productRes.data;
           const variantsData: ProductVariant[] = variantsRes.data;
 
-          // Chuyển đổi mảng URL hình ảnh thành chuỗi để hiển thị trong TextArea
-          // Hoặc có thể dùng component Upload của Ant Design nếu muốn upload file
+          console.log("Dữ liệu sản phẩm từ API:", productData);
+          console.log("Dữ liệu biến thể từ API:", variantsData);
+
           formRef.setFieldsValue({
             ...productData,
-            main_image: productData.main_image, // Ảnh chính
-            images: productData.images ? productData.images.join('\n') : '', // Mảng ảnh phụ
-            // Không set stock_quantity trực tiếp vào form sản phẩm chính
-            // products.colors và products.sizes là mảng các ID, không phải tên
-            // Nên không cần chuyển đổi ở đây, form sẽ handle các ID này
-          });
-          setProductVariants(variantsData); // Set biến thể cho state
+            images: productData.images ? productData.images.join('\n') : '',
+            materials: productData.materials || [], // Đảm bảo materials là mảng rỗng nếu null/undefined
 
+            variants: variantsData.map(v => ({
+              ...v,
+              // Đảm bảo giá trị của Select là undefined nếu không có
+              color_id: v.color_id === null ? undefined : v.color_id,
+              size_id: v.size_id === null ? undefined : v.size_id,
+              // Đảm bảo giá trị số mặc định là 0 nếu null/undefined
+              stock_quantity: v.stock_quantity === null || v.stock_quantity === undefined ? 0 : v.stock_quantity,
+              // Đảm bảo chuỗi rỗng mặc định nếu null/undefined
+              image: v.image || '',
+              sku: v.sku || ''
+            }))
+          });
         })
-        .catch(() => {
-          message.error("Không tìm thấy sản phẩm");
+        .catch((error) => {
+          message.error("Không tìm thấy sản phẩm hoặc lỗi tải dữ liệu.");
+          console.error("Fetch product/variants error:", error);
         });
     } else {
-      // Thiết lập giá trị mặc định cho form khi tạo mới
+      // Khi tạo mới, đảm bảo các giá trị mặc định là an toàn
       formRef.setFieldsValue({
         status: "active",
-        old_price: null, // Mặc định không có giá cũ
-        sold_count: 0, // Mặc định số lượng đã bán là 0
-        images: '', // Mặc định không có ảnh phụ
-        materials: [], // Mặc định không có chất liệu
+        old_price: null,
+        sold_count: 0,
+        images: '',
+        materials: [],
+        // Khởi tạo một biến thể rỗng để người dùng có thể bắt đầu nhập
+        variants: [{ color_id: undefined, size_id: undefined, stock_quantity: 0, image: '', sku: '' }]
       });
     }
-  }, [id, isEditing]);
-
+  }, [id, isEditing, formRef, navigate]);
 
   const onFinish = async (values: any) => {
-    // Chuẩn bị dữ liệu sản phẩm
     const productData: Partial<Product> = {
       name: values.name,
       description: values.description,
       price: Number(values.price),
       old_price: values.old_price ? Number(values.old_price) : null,
       status: values.status,
-      slug: values.slug || values.name.toLowerCase().replace(/\s+/g, '-'), // Tự động tạo slug nếu không có
+      slug: values.slug || values.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
       category_id: Number(values.category_id),
       main_image: values.main_image,
-      images: values.images ? values.images.split('\n').filter(url => url.trim() !== '') : [], // Chuyển đổi chuỗi thành mảng URL
-      materials: values.materials || [], // Đảm bảo là mảng
+      images: values.images ? values.images.split('\n').filter((url: string) => url.trim() !== '') : [],
+      materials: values.materials || [],
       sold_count: Number(values.sold_count) || 0,
-      // colors và sizes trong product là các ID được chọn, không phải tên.
-      // Laravel API sẽ tự xử lý các mối quan hệ này.
-      colors: values.colors || [],
-      sizes: values.sizes || []
     };
 
     try {
-      let response;
+      let productResponse;
       if (isEditing) {
-        response = await updateProduct(Number(id), productData);
+        productResponse = await updateProduct(Number(id), productData);
         message.success("Cập nhật sản phẩm thành công");
       } else {
-        response = await createProduct(productData as Product); // json-server sẽ tạo id mới
+        productResponse = await createProduct(productData as Product);
         message.success("Tạo sản phẩm thành công");
       }
 
-      const productId = response.data.id; // Lấy ID của sản phẩm vừa tạo/cập nhật
+      const productId = productResponse.data.id;
 
-      // Xử lý Product Variants
-      const existingVariantIds = new Set(productVariants.map(v => v.id));
-      const submittedVariants = values.productVariants || [];
-      const newVariantIds = new Set(submittedVariants.map((v: any) => v.id));
+      const submittedVariants: ProductVariant[] = values.variants || [];
+      const existingVariantsRes = await getProductVariants(productId);
+      const existingVariants: ProductVariant[] = existingVariantsRes.data;
 
-      // Xóa các biến thể đã bị loại bỏ
-      for (const existingId of existingVariantIds) {
-        if (!newVariantIds.has(existingId)) {
-          await deleteProductVariant(existingId);
+      const existingVariantIds = new Set(existingVariants.map(v => v.id));
+      const newVariantIds = new Set(submittedVariants.map(v => v.id).filter(id => id !== undefined));
+
+      for (const existingVariant of existingVariants) {
+        if (!newVariantIds.has(existingVariant.id)) {
+          await deleteProductVariant(existingVariant.id);
         }
       }
 
-      // Tạo mới hoặc cập nhật các biến thể
       for (const variant of submittedVariants) {
-        const variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> = {
+        const variantDataToSend: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> = {
           product_id: productId,
-          color_id: variant.color_id,
-          size_id: variant.size_id,
+          color_id: Number(variant.color_id),
+          size_id: Number(variant.size_id),
           stock_quantity: Number(variant.stock_quantity),
-          image: variant.image || null,
+          image: variant.image || null, // Chắc chắn là null hoặc string
           sku: variant.sku || `${productId}-${variant.color_id}-${variant.size_id}`
         };
 
         if (variant.id && existingVariantIds.has(variant.id)) {
-          await updateProductVariant(variant.id, variantData);
+          await updateProductVariant(variant.id, variantDataToSend);
         } else {
-          await createProductVariant(variantData);
+          await createProductVariant(variantDataToSend);
         }
       }
 
@@ -176,8 +183,10 @@ export default function ProductForm() {
         form={formRef}
         onFinish={onFinish}
         layout="vertical"
-        initialValues={{ status: "active", sold_count: 0 }}
+        // initialValues được set trong useEffect để đảm bảo data từ API được nạp đúng
       >
+        {/* Product General Information */}
+        <Divider orientation="left">Thông tin chung sản phẩm</Divider>
         <Form.Item
           label="Tên sản phẩm"
           name="name"
@@ -258,7 +267,7 @@ export default function ProductForm() {
             ))}
           </Select>
         </Form.Item>
-        
+
         <Form.Item
           label="URL ảnh chính"
           name="main_image"
@@ -279,17 +288,19 @@ export default function ProductForm() {
           label="Số lượng đã bán"
           name="sold_count"
         >
-          <Input type="number" min={0} readOnly={isEditing} /> {/* Chỉ cho phép chỉnh sửa khi tạo mới, hoặc có thể ẩn đi */}
+          <Input type="number" min={0} readOnly={isEditing} />
         </Form.Item>
 
-        <Divider>Quản lý Biến thể Sản phẩm (Màu sắc, Kích thước, Tồn kho)</Divider>
+        {/* Product Variants Management */}
+        <Divider orientation="left">Quản lý Biến thể Sản phẩm</Divider>
 
-        {/* Dynamic Form for Product Variants */}
-        <Form.List name="productVariants">
+        <Form.List name="variants">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline" wrap={true}>
+                  <Form.Item {...restField} name={[name, 'id']} hidden />
+
                   <Form.Item
                     {...restField}
                     name={[name, 'color_id']}
