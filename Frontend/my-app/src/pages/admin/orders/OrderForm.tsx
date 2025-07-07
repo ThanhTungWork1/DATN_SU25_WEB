@@ -1,96 +1,257 @@
+
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createOrder, getOrder, updateOrder } from "../../../api/order";
-import { Form, Input, Button, Typography, Select, message } from "antd";
+import { Order } from "../../../types/Order"; // Import Order interface
+import { Form, Input, Button, Typography, Select, message, Row, Col } from "antd";
 
 const { Title } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 // Danh sách trạng thái theo thứ tự luồng xử lý đơn hàng
-const STATUS_LIST = [
-  "Chờ xác nhận",
-  "Đã xác nhận",
-  "Đang giao",
-  "Đã giao",
-  "Đã huỷ"
+const STATUS_OPTIONS = [
+  { value: "pending_confirmation", label: "Chờ xác nhận" },
+  { value: "confirmed", label: "Đã xác nhận" },
+  { value: "processing", label: "Đang xử lý" },
+  { value: "shipping", label: "Đang giao hàng" },
+  { value: "delivered", label: "Đã giao hàng" },
+  { value: "cancelled", label: "Đã huỷ" },
 ];
+
+const PAYMENT_STATUS_OPTIONS = [
+    { value: "unpaid", label: "Chưa thanh toán" },
+    { value: "paid", label: "Đã thanh toán" },
+    { value: "part_paid", label: "Thanh toán một phần" },
+    { value: "refunded", label: "Đã hoàn tiền" }
+];
+
+const PAYMENT_METHOD_OPTIONS = [
+    { value: "COD", label: "Thanh toán khi nhận hàng (COD)" },
+    { value: "Bank Transfer", label: "Chuyển khoản ngân hàng" },
+    { value: "Credit Card", label: "Thẻ tín dụng" }
+];
+
 
 export default function OrderForm() {
   const [formRef] = Form.useForm();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
 
-  const [currentStatus, setCurrentStatus] = useState<string>("");
+  const [currentStatusIndex, setCurrentStatusIndex] = useState<number>(-1); // Index của trạng thái hiện tại
 
   useEffect(() => {
-    if (id) {
-      getOrder(id)
+    if (isEditing) {
+      const orderId = Number(id); 
+      getOrder(orderId)
         .then((res) => {
-          console.log("Dữ liệu đơn hàng:", res.data);
-          formRef.setFieldsValue(res.data);
-          setCurrentStatus(res.data.status); // lưu trạng thái hiện tại
+          const orderData: Order = res.data;
+          formRef.setFieldsValue(orderData);
+          const statusIdx = STATUS_OPTIONS.findIndex(opt => opt.value === orderData.status);
+          setCurrentStatusIndex(statusIdx);
         })
         .catch(() => {
           message.error("Không tìm thấy đơn hàng");
         });
+    } else {
+        // Thiết lập giá trị mặc định khi tạo mới
+        formRef.setFieldsValue({
+            status: "pending_confirmation",
+            payment_status: "unpaid",
+            payment_method: "COD",
+            shipping_fee: 30000, // Ví dụ mặc định phí ship
+            discount_amount: 0,
+            total_amount: 0, // Sẽ được tính toán từ order items sau
+            final_amount: 0, 
+            notes: null
+        });
     }
-  }, [id]);
+  }, [id, isEditing, formRef]);
 
   const onFinish = async (values: any) => {
-    if (id) {
-      await updateOrder(id, values);
-      message.success("Cập nhật đơn hàng thành công");
-    } else {
-      await createOrder(values);
-      message.success("Tạo đơn hàng thành công");
-    }
-    navigate("/admin/orders");
-  };
+    // Chuẩn bị dữ liệu đơn hàng
+    const orderData: Partial<Order> = {
+      user_id: values.user_id, //user_id cần được lấy từ context/auth hoặc chọn từ dropdown User nếu có
+      customer_name: values.customer_name,
+      customer_email: values.customer_email,
+      customer_phone: values.customer_phone,
+      shipping_address: values.shipping_address,
+      total_amount: Number(values.total_amount),
+      shipping_fee: Number(values.shipping_fee),
+      discount_amount: Number(values.discount_amount),
+      final_amount: Number(values.final_amount), // Tính toán dựa trên total_amount, shipping_fee, discount_amount
+      status: values.status,
+      payment_method: values.payment_method,
+      payment_status: values.payment_status,
+      notes: values.notes || null,
+    };
 
-  // Xác định trạng thái nào cần disable
-  const statusIndex = STATUS_LIST.indexOf(currentStatus);
+    try {
+      if (isEditing) {
+        await updateOrder(Number(id), orderData);
+        message.success("Cập nhật đơn hàng thành công");
+      } else {
+        await createOrder(orderData as Omit<Order, 'id' | 'created_at' | 'updated_at'>); // JSON-server sẽ tự tạo ID, created_at/updated_at
+        message.success("Tạo đơn hàng thành công");
+      }
+      navigate("/admin/orders");
+    } catch (error) {
+      message.error(`Lỗi: ${isEditing ? "Cập nhật" : "Tạo mới"} đơn hàng.`);
+      console.error("Order form submission error:", error);
+    }
+  };
 
   return (
     <div>
-      <Title level={3}>{id ? "Chỉnh sửa đơn hàng" : "Tạo mới đơn hàng"}</Title>
+      <Title level={3}>{isEditing ? "Chỉnh sửa đơn hàng" : "Tạo mới đơn hàng"}</Title>
       <Form form={formRef} onFinish={onFinish} layout="vertical">
+        <Row gutter={16}>
+            <Col span={12}>
+                <Form.Item
+                    label="ID Khách hàng (User ID)"
+                    name="user_id"
+                    rules={[{ required: true, message: "Vui lòng nhập User ID" }]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+            </Col>
+            <Col span={12}>
+                <Form.Item
+                    label="Tên khách hàng"
+                    name="customer_name"
+                    rules={[{ required: true, message: "Vui lòng nhập tên khách hàng" }]}
+                >
+                    <Input />
+                </Form.Item>
+            </Col>
+        </Row>
+
+        <Row gutter={16}>
+            <Col span={12}>
+                <Form.Item
+                    label="Email khách hàng"
+                    name="customer_email"
+                    rules={[{ required: true, message: "Vui lòng nhập email", type: 'email' }]}
+                >
+                    <Input />
+                </Form.Item>
+            </Col>
+            <Col span={12}>
+                <Form.Item
+                    label="Số điện thoại khách hàng"
+                    name="customer_phone"
+                    rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+                >
+                    <Input />
+                </Form.Item>
+            </Col>
+        </Row>
+
         <Form.Item
-          label="Tên khách hàng"
-          name="customer_name"
-          rules={[{ required: true, message: "Vui lòng nhập tên" }]}
+          label="Địa chỉ giao hàng"
+          name="shipping_address"
+          rules={[{ required: true, message: "Vui lòng nhập địa chỉ giao hàng" }]}
         >
-          <Input />
+          <TextArea rows={3} />
+        </Form.Item>
+
+        <Row gutter={16}>
+            <Col span={8}>
+                <Form.Item
+                    label="Tổng tiền sản phẩm"
+                    name="total_amount"
+                    rules={[{ required: true, message: "Vui lòng nhập tổng tiền sản phẩm" }]}
+                >
+                    <Input type="number" min={0} />
+                </Form.Item>
+            </Col>
+            <Col span={8}>
+                <Form.Item
+                    label="Phí vận chuyển"
+                    name="shipping_fee"
+                    rules={[{ required: true, message: "Vui lòng nhập phí vận chuyển" }]}
+                >
+                    <Input type="number" min={0} />
+                </Form.Item>
+            </Col>
+            <Col span={8}>
+                <Form.Item
+                    label="Giảm giá"
+                    name="discount_amount"
+                    rules={[{ required: true, message: "Vui lòng nhập số tiền giảm giá" }]}
+                >
+                    <Input type="number" min={0} />
+                </Form.Item>
+            </Col>
+        </Row>
+         <Form.Item
+            label="Tổng tiền cuối cùng (Đã bao gồm phí ship và giảm giá)"
+            name="final_amount"
+            rules={[{ required: true, message: "Vui lòng nhập tổng tiền cuối cùng" }]}
+        >
+            <Input type="number" min={0} /> {/* Có thể làm trường này readonly và tính toán tự động */}
         </Form.Item>
 
         <Form.Item
-          label="Tổng tiền"
-          name="total"
-          rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
-        >
-          <Input type="number" />
-        </Form.Item>
-
-        <Form.Item
-          label="Trạng thái"
+          label="Trạng thái đơn hàng"
           name="status"
           rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
         >
           <Select>
-            {STATUS_LIST.map((status, index) => (
+            {STATUS_OPTIONS.map((statusOption, index) => (
               <Option
-                key={status}
-                value={status}
-                disabled={id && index < statusIndex}
+                key={statusOption.value}
+                value={statusOption.value}
+                // Chỉ disable các trạng thái trước trạng thái hiện tại 
+                disabled={isEditing && index < currentStatusIndex}
               >
-                {status}
+                {statusOption.label}
               </Option>
             ))}
           </Select>
         </Form.Item>
 
+        <Row gutter={16}>
+            <Col span={12}>
+                <Form.Item
+                    label="Phương thức thanh toán"
+                    name="payment_method"
+                    rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán" }]}
+                >
+                    <Select placeholder="Chọn phương thức">
+                        {PAYMENT_METHOD_OPTIONS.map(method => (
+                            <Option key={method.value} value={method.value}>{method.label}</Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+            </Col>
+            <Col span={12}>
+                <Form.Item
+                    label="Trạng thái thanh toán"
+                    name="payment_status"
+                    rules={[{ required: true, message: "Vui lòng chọn trạng thái thanh toán" }]}
+                >
+                    <Select placeholder="Chọn trạng thái">
+                         {PAYMENT_STATUS_OPTIONS.map(status => (
+                            <Option key={status.value} value={status.value}>{status.label}</Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+            </Col>
+        </Row>
+
+        <Form.Item
+          label="Ghi chú của khách hàng"
+          name="notes"
+        >
+          <TextArea rows={2} />
+        </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            {id ? "Cập nhật" : "Tạo mới"}
+            {isEditing ? "Cập nhật" : "Tạo mới"}
           </Button>
         </Form.Item>
       </Form>

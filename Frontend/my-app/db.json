@@ -358,6 +358,291 @@
       "updated_at": "2024-06-15T10:00:00Z"
     }
   ],
+
+  "colors": [
+    {
+      "id": 1,
+      "name": "Trắng",
+      "code": "#FFFFFF",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Đen",
+      "code": "#000000",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Xanh",
+      "code": "#000080",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Xám",
+      "code": "#808080",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Áo nam",
+      "slug": "ao-nam",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Quần nam",
+      "slug": "quan-nam",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Kính",
+      "slug": "kinh",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Mũ",
+      "slug": "mu",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 5,
+      "name": "Áo nữ",
+      "slug": "ao-nu",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 6,
+      "name": "Quần nữ",
+      "slug": "quan-nu",
+      "status": "active",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+  "sizes": [
+    {
+      "id": 1,
+      "name": "S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+  "productVariants": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 1,
+      "stock_quantity": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "sku": "P1-WHITE-S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 1,
+      "stock_quantity": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "sku": "P1-BLACK-S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 1,
+      "stock_quantity": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "sku": "P1-BLUE-S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 1,
+      "stock_quantity": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "sku": "P1-GREY-S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 5,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 2,
+      "stock_quantity": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "sku": "P1-WHITE-M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 6,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 2,
+      "stock_quantity": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "sku": "P1-BLACK-M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 7,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 2,
+      "stock_quantity": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "sku": "P1-BLUE-M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 8,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 2,
+      "stock_quantity": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "sku": "P1-GREY-M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 9,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 3,
+      "stock_quantity": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-5-den.jpg?aio=w-1069",
+      "sku": "P1-WHITE-L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 10,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 3,
+      "stock_quantity": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "sku": "P1-BLACK-L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 11,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 3,
+      "stock_quantity": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "sku": "P1-BLUE-L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 12,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 3,
+      "stock_quantity": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "sku": "P1-GREY-L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 13,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 4,
+      "stock_quantity": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "sku": "P1-WHITE-XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 14,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 4,
+      "stock_quantity": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-5-den.jpg?aio=w-1069",
+      "sku": "P1-BLACK-XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 15,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 4,
+      "stock_quantity": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "sku": "P1-BLUE-XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 16,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 4,
+      "stock_quantity": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "sku": "P1-GREY-XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
   "orders": [
     {
       "id": 1,
