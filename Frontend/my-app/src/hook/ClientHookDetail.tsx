@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductDetail } from "../api/ApiProduct";
+import { getProductDetail, getAllProducts } from "../api/ApiProduct";
 import type { Product } from "../types/DetailType";
 
 /**
@@ -27,7 +27,7 @@ export const useRelatedProducts = (
   return useQuery({
     queryKey: ["related-products", currentProductId, categoryId],
     queryFn: async () => {
-      const allProducts = await getAllProducts();
+      const allProducts = (await getAllProducts()) as Product[];
       const currentId = parseInt(currentProductId);
 
       // 1. Loại trừ sản phẩm hiện tại
@@ -38,7 +38,7 @@ export const useRelatedProducts = (
       // 2. Lọc theo category
       let relatedProducts = categoryId
         ? filteredProducts.filter(
-            (product: Product) => product.category_id === categoryId
+            (product: Product) => Number(product.category_id) === Number(categoryId)
           )
         : filteredProducts;
 

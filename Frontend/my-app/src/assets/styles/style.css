@@ -808,7 +808,7 @@ button.btn-buy-now:hover, button.btn-buy-now:focus {
 
 /* ===== FOOTER ===== */
 .footer {
-  background-color: #0f0f13;
+  background-color: #000;
   color: #fff;
   padding: 40px 20px;
   font-family: "Segoe UI", sans-serif;
@@ -817,15 +817,23 @@ button.btn-buy-now:hover, button.btn-buy-now:focus {
   margin-top: 0 !important;
 }
 
+.footer h6,
+.footer .fw-bold,
+.footer p,
+.footer li,
+.footer .footer-desc,
+.footer .footer-bottom,
 .footer a {
-  color: #ccc;
-  margin-right: 20px;
-  text-decoration: none;
-  transition: color 0.3s ease;
+  color: #fff !important;
 }
-
 .footer a:hover {
-  color: #ffffff;
+  color: #00c6ab !important;
+}
+.footer li,
+.footer ul,
+.footer p,
+.footer .footer-desc {
+  opacity: 0.95;
 }
 
 .footer-links,
@@ -2111,4 +2119,51 @@ body.dark-theme .breadcrumb-link:hover {
 .btn-add-to-cart:hover, .btn-add-to-cart:focus {
   background: #009e8e;
   color: #fff;
+}
+
+.footer .btn-outline-dark {
+  color: #fff;
+  border: 1.5px solid #fff;
+  background: transparent;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+.footer .btn-outline-dark:hover, .footer .btn-outline-dark:focus {
+  background: #00c6ab;
+  color: #fff;
+  border-color: #00c6ab;
+}
+
+.contact-floating {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.contact-floating .contact-btn {
+  background: #00c6ab;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  margin-bottom: 2px;
+  padding: 0;
+}
+
+.contact-floating .contact-btn:hover {
+  background: #009e87;
+  color: #fff;
+  transform: scale(1.08);
 }

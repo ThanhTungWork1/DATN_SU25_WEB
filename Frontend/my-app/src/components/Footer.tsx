@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer className="bg-light text-dark py-5 border-top">
+    <footer className="footer">
       <div className="container">
         <div className="row">
           {/* Cột 1: Về StrideX */}

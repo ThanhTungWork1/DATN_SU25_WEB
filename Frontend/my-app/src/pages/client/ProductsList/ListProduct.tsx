@@ -25,7 +25,12 @@ export const ListProduct = () => {
 
   useEffect(() => {
     getAllCategories().then(setCategories);
-    getAllColors().then(setColors);
+    getAllColors().then((colors) => {
+      setColors(colors.map((c: any) => ({
+        ...c,
+        code: c.hex_code // Map hex_code -> code cho Color component
+      })));
+    });
     getAllSizes().then(setSizes);
   }, []);
 

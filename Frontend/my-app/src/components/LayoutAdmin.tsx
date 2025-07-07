@@ -31,6 +31,8 @@ const items: MenuItem[] = [
     getItem('Tất cả người dùng', '/admin/users'),
     // getItem('Hồ sơ', '4'),
   ]),
+  getItem('Sản phẩm', '/admin/products', <DesktopOutlined />),
+  getItem('Đơn hàng', '/admin/orders', <DesktopOutlined />),
 ];
 
 const LayoutAdmin: React.FC = () => {

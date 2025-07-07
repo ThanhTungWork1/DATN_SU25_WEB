@@ -1,11 +1,9 @@
-
 import type { ColorProps } from "../types/ColorType";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
 
   return (
     <div className="mb-3">
-      <label className="fw-bold">Màu:</label>
       <div className="d-flex gap-2 flex-wrap mt-2">
         {colors.map((color) => {
           const isSelected = selectedColor?.id === color.id;

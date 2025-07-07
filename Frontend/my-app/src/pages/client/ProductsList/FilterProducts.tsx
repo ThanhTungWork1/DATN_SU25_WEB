@@ -1,4 +1,5 @@
 import type { ProductFilter } from "../../../types/ProductFilterType";
+import Color from '../../../components/Color';
 
 type Props = {
   filter: any;
@@ -74,18 +75,6 @@ export const FilterProducts = ({
         ></button>
       </div>
       <div className="offcanvas-body">
-        {/* Tên sản phẩm */}
-        <div className="filter-group mb-2">
-          <strong>Tên sản phẩm</strong>
-          <input
-            type="text"
-            className="form-control mt-1"
-            placeholder="Nhập tên sản phẩm..."
-            value={filter.name || ""}
-            onChange={(e) => handleChange("search", e.target.value)}
-          />
-        </div>
-
         {/* Danh mục */}
         <div className="filter-group">
           <strong>Danh mục</strong>
@@ -95,7 +84,11 @@ export const FilterProducts = ({
               <input
                 type="checkbox"
                 checked={filter.category_id === cat.id}
-                onChange={() => handleChange("categories", [cat.id])}
+                onChange={() =>
+                  filter.category_id === cat.id
+                    ? handleChange("categories", [])
+                    : handleChange("categories", [cat.id])
+                }
                 style={{ marginRight: 4 }}
               />
               {cat.name}
@@ -137,30 +130,15 @@ export const FilterProducts = ({
         {/* Màu sắc */}
         <div className="filter-group mb-2">
           <strong>Màu sắc</strong>
-          <div className="d-flex gap-3 flex-wrap mt-1">
-            {colors.map((color) => (
-              <label key={color.id} style={{ cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={filter.color_id === color.id}
-                  onChange={() => handleChange("colors", [color.id])}
-                  style={{ display: "none" }}
-                />
-                <span
-                  className="color-circle"
-                  title={color.name}
-                  style={{
-                    backgroundColor: color.code,
-                    border: "1px solid #ccc",
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    display: "inline-block",
-                  }}
-                ></span>
-              </label>
-            ))}
-          </div>
+          <Color
+            colors={colors}
+            selectedColor={colors.find(c => c.id === filter.color_id) || null}
+            onSelectColor={(color) =>
+              filter.color_id === color.id
+                ? handleChange('colors', [])
+                : handleChange('colors', [color.id])
+            }
+          />
         </div>
 
         {/* Kích cỡ */}
@@ -172,7 +150,11 @@ export const FilterProducts = ({
               <input
                 type="checkbox"
                 checked={filter.size_id === size.id}
-                onChange={() => handleChange("sizes", [size.id])}
+                onChange={() =>
+                  filter.size_id === size.id
+                    ? handleChange("sizes", [])
+                    : handleChange("sizes", [size.id])
+                }
                 style={{ marginRight: 4 }}
               />
               {size.name}
