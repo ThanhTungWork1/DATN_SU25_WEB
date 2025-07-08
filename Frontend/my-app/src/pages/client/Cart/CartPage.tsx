@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../../store/store";
-import { removeFromCart, updateQuantity, clearCart } from "../../../store/cartSlice";
+import {
+  removeFromCart,
+  updateQuantity,
+  clearCart
+} from "../../../store/cartSlice";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
@@ -17,7 +21,10 @@ const CartPage = () => {
   };
 
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
-  const totalAmount = selectedProducts.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalAmount = selectedProducts.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
     <>
@@ -38,7 +45,12 @@ const CartPage = () => {
                     checked={selectedItems[item.id] || false}
                     onChange={() => toggleSelectItem(item.id)}
                   />
-                  <img src={item.image} alt={item.name} className="img-thumbnail" width={80} />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="img-thumbnail"
+                    width={80}
+                  />
                   <div className="ms-3 w-50">
                     <h5 className="fw-bold">{item.name}</h5>
                     <p className="text-danger fw-bold">{item.price.toLocaleString()} VND</p>
@@ -48,9 +60,13 @@ const CartPage = () => {
                     min="1"
                     value={item.quantity}
                     className="form-control w-25 mx-2"
-                    onChange={(e) => dispatch(updateQuantity({ id: item.id, quantity: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      dispatch(updateQuantity({ id: item.id, quantity: Number(e.target.value) }))
+                    }
                   />
-                  <p className="fw-bold">{(item.price * item.quantity).toLocaleString()} VND</p>
+                  <p className="fw-bold">
+                    {(item.price * item.quantity).toLocaleString()} VND
+                  </p>
                   <button
                     onClick={() => dispatch(removeFromCart(item.id))}
                     className="btn btn-danger ms-3"
@@ -64,7 +80,7 @@ const CartPage = () => {
               <div className="p-4 bg-light rounded shadow">
                 <h4 className="fw-bold">Tóm tắt đơn hàng</h4>
                 <p className="fw-bold">
-                  Tổng tiền:{" "}
+                  Tổng tiền: {" "}
                   <span className="text-danger">{totalAmount.toLocaleString()} VND</span>
                 </p>
 

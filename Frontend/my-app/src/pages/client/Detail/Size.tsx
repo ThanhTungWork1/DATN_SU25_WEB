@@ -20,7 +20,6 @@ const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
    * GỠ LỖI: In ra prop 'variants' mà component này nhận được
    * =================================================================
    */
-  console.log("[DEBUG] Component 'Size' nhận được variants:", variants);
 
   /*
    * BƯỚC 1: LẤY DANH SÁCH SIZE DUY NHẤT

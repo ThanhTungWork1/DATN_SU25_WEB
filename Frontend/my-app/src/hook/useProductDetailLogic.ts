@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import type { ColorType, Product } from "../../../types/DetailType";
-import { useCart } from "../../../provider/CartProvider";
+import type { ColorType, Product } from "../types/DetailType";
+import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
-import { validateProductDetail } from "../../../validation/productDetailValidation";
+import { validateProductDetail } from "../validation/productDetailValidation";
 
 export function useProductDetailLogic(product: Product | undefined) {
   const { addToCart } = useCart();

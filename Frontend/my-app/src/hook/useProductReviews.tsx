@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProductReviews, getAllUsers } from "../api/ApiUrl";
-
-// Khôi phục lại kiểu dữ liệu chính xác
-export type Review = {
-  id: number;
-  product_id: number;
-  user: { id: number; username: string };
-  rating: number;
-  content: string;
-  created_at: string;
-};
+import type { Review } from "../types/ReviewType";
 
 export const useProductReviews = (productId: number) => {
   const [reviews, setReviews] = useState<Review[]>([]);

@@ -1,10 +1,5 @@
-import type { ColorType } from "../types/DetailType";
 
-type ColorProps = {
-  colors: ColorType[];
-  selectedColor: ColorType | null;
-  onSelectColor: (color: ColorType) => void;
-};
+import type { ColorProps } from "../types/ColorType";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
   return (
@@ -13,6 +8,17 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
       <div className="d-flex gap-2 flex-wrap mt-2">
         {colors.map((color) => {
           const isSelected = selectedColor?.id === color.id;
+          let borderStyle = "1px solid #ccc";
+          if (isSelected) {
+            if (
+              color.code === "#ff0000" ||
+              color.code.toLowerCase() === "red"
+            ) {
+              borderStyle = "2.5px solid red";
+            } else {
+              borderStyle = "1.5px solid #00c6ab";
+            }
+          }
 
           return (
             <span
@@ -24,7 +30,7 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                border: isSelected ? "2px solid red" : "1px solid #ccc",
+                border: borderStyle,
                 display: "inline-block",
                 cursor: "pointer",
                 transform: isSelected ? "scale(1.15)" : "scale(1)",

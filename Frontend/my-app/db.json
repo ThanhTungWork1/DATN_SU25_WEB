@@ -27,28 +27,743 @@
       "updated_at": "2024-06-15T10:00:00Z"
     }
   ],
-  "vouchers": [],
-  "products": [],
-  "colors": [],
-  "categories": [],
-  "sizes": [],
-  "productVariants": [],
-  "comments": [],
-  "banners": [],
-  "carts": [
+  "vouchers": [
     {
       "id": 1,
-      "user_id": 1,
+      "title": "Giảm giá 10%",
+      "code": "SALE10",
+      "value": 10,
+      "max_value": 100,
+      "quantity": 50,
+      "description": "Giảm 10% cho đơn hàng đầu tiên",
+      "start_date": "2024-06-01T00:00:00Z",
+      "end_date": "2024-07-01T00:00:00Z",
+      "status": true
+    },
+    {
+      "id": 2,
+      "title": "Giảm giá 20%",
+      "code": "SALE10",
+      "value": 20,
+      "max_value": 200,
+      "quantity": 100,
+      "description": "Giảm 20% cho đơn hàng đầu tiên",
+      "start_date": "2024-06-01T00:00:00Z",
+      "end_date": "2024-07-01T00:00:00Z",
+      "status": true
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Áo thun nam Premium Cotton",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 179000,
+      "old_price": 249000,
+      "status": "còn hàng",
+      "slug": "ao-nam",
+      "category_id": 1,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069"
+      ],
+      "materials": ["cotton"],
+      "sold": 150
+    },
+    {
+      "id": 2,
+      "name": "Áo thun nữ cotton cao cấp",
+      "description": "Áo thun nữ, áo phông nữ tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool ...",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "hết hàng",
+      "slug": "ao-nu",
+      "category_id": 5,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4, 5],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/June2025/ao-thun-relaxed-fit-nghe-chon-nguoi-nguoi-chon-tien-7-den_82.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/June2025/ao-thun-relaxed-fit-nghe-chon-nguoi-nguoi-chon-tien-8-den_89.jpg?aio=w-1069"
+      ],
+      "materials": ["polyester"],
+      "sold": 200
+    },
+    {
+      "id": 3,
+      "name": "Áo thun nam bassic trẻ trung",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool ...",
+      "price": 159000,
+      "old_price": 219000,
+      "status": "còn hàng",
+      "slug": "ao-nam",
+      "category_id": 1,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/May2025/polo-nam-pickleball-baseline-5261-trang_60.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/May2025/polo-nam-pickleball-baseline-6302-trang_83.jpg?aio=w-1069"
+      ],
+      "materials": ["spandex"],
+      "sold": 2900
+    },
+    {
+      "id": 4,
+      "name": "Mũ Adidas nam thể thao phong cách MC",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "phu-kien-mu",
+      "category_id": 4,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://product.hstatic.net/200000025394/product/mu_bong_chay_san_nha_manchester_united_djo_iy0441_01_standard_e16b7c11e265428c87f36dc1490f5dae_master.jpg",
+        "https://product.hstatic.net/200000025394/product/mu_bong_chay_san_nha_manchester_united_djo_iy0441_41_detail_hover_725d530051324775b31d6c3ae5c4c18d_master.jpg"
+      ],
+      "materials": ["cotton"],
+      "sold": 1090
+    },
+    {
+      "id": 5,
+      "name": "Kính râm nữ EYEPLUS 7260 C3 MẮT HỒNG",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "phu-kien-kinh",
+      "category_id": 3,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://kinhmateyeplus.com/wp-content/uploads/2024/11/IMG_2118.jpg",
+        "https://kinhmateyeplus.com/wp-content/uploads/2024/11/IMG_2143.jpg"
+      ],
+      "materials": ["plastic"],
+      "sold": 1001
+    },
+    {
+      "id": 6,
+      "name": "Quần Shorts thể thao 7 inch đa năng",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 299000,
+      "old_price": 359000,
+      "status": "còn hàng",
+      "slug": "thoi-trang-nam",
+      "category_id": 2,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/August2024/den_1.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/August2024/den_2(1).jpg?aio=w-1069"
+      ],
+      "materials": ["fleece"],
+      "sold": 2000
+    },
+    {
+      "id": 7,
+      "name": "Biker Shorts nữ chạy bộ 8inch",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 299000,
+      "old_price": 359000,
+      "status": "còn hàng",
+      "slug": "quan-nu",
+      "category_id": 6,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/March2025/biker-short-nu-chay-bo-8-inch-631_-den.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/March2025/biker-short-nu-chay-bo-8-inch-640_-den.jpg?aio=w-1069"
+      ],
+      "materials": ["cotton"],
+      "sold": 1500
+    },
+    {
+      "id": 8,
+      "name": "Mũ nữ che nắng vành rộng",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "phu-kien-mu",
+      "category_id": 4,
+      "colors": [1, 2, 3, 4],
+      "sizes": [1, 2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://product.hstatic.net/200000025394/product/trefoil_monogram_jacquard_bucket_hat_white_is3010_01_standard_da36b9ffbe6249fead75494e35e99e90_master.jpg",
+        "https://product.hstatic.net/200000025394/product/trefoil_monogram_jacquard_bucket_hat_white_is3010_41_detail_hover_01e7d2b95eb74a9c9efed59db8e5b27b_master.jpg"
+      ],
+      "materials": ["cotton"],
+      "sold": 1606
+    },
+    {
+      "id": 9,
+      "name": "Áo sơ mi dài tay Oxford Premium",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 399000,
+      "old_price": 459000,
+      "status": "còn hàng",
+      "slug": "ao-nam",
+      "category_id": 1,
+      "colors": [1, 3, 4],
+      "sizes": [1, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/December2024/24CMCW.SM009_-_Xanh_Dark_Blue_1.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/December2024/24CMCW.SM009_-_Xanh_Dark_Blue_2.JPG?aio=w-1069"
+      ],
+      "materials": ["spandex"],
+      "sold": 530
+    },
+    {
+      "id": 10,
+      "name": "Áo Crop top nữ Pickleball Dink Shot",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 129000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "ao-nu",
+      "category_id": 5,
+      "colors": [1, 2,4],
+      "sizes": [1, 2, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/May2025/ao-croptop-pickleball-dink-shot-6-trang_65.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/May2025/ao-croptop-pickleball-dink-shot-7-trang_72.jpg?aio=w-1069"
+      ],
+      "materials": ["fleece"],
+      "sold": 700
+    },
+    {
+      "id": 11,
+      "name": "Tshirt chạy bộ AirRush Gradient",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 329000,
+      "old_price": 399000,
+      "status": "còn hàng",
+      "slug": "ao-nam",
+      "category_id": 1,
+      "colors": [1,4],
+      "sizes": [1, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/June2025/t-shirt-chay-bo-airush-gradient-cut-_1-trang.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/June2025/t-shirt-chay-bo-airush-gradient-cut-_2-trang.jpg?aio=w-1069"
+      ],
+      "materials": ["cotton"],
+      "sold": 400
+    },
+    {
+      "id": 12,
+      "name": "Kính râm nam EYE PLUS TR855",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 129000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "phu-kien-kinh",
+      "category_id": 3,
+      "colors": [3, 4],
+      "sizes": [3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://kinhmateyeplus.com/wp-content/uploads/2025/06/IMG_1810.jpg",
+        "https://kinhmateyeplus.com/wp-content/uploads/2025/06/IMG_1769-1.jpg"
+      ],
+      "materials": ["plastic"],
+      "sold": 100
+    },
+    {
+      "id": 13,
+      "name": "Mũ bóng chày nam",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 79000,
+      "old_price": 99000,
+      "status": "còn hàng",
+      "slug": "thoi-trang-nu",
+      "category_id": 4,
+      "colors": [2, 3, 4],
+      "sizes": [2, 3, 4],
+      "created_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://product.hstatic.net/200000025394/product/it7365_01_standard__1__e166145ed04d4e6884729942ee5e4b1d_master.jpg",
+        "https://product.hstatic.net/200000025394/product/it7365_42_detail_3fcfc27d579945b7ba5bb2f7b67d3193_master.jpg"
+      ],
+      "materials": ["cotton"],
+      "sold": 320
+    },
+    {
+      "id": 14,
+      "name": "Quần Shorts thể thao nữ Ribbed",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 99000,
+      "old_price": 159000,
+      "status": "còn hàng",
+      "slug": "quan-nu",
+      "category_id": 6,
+      "colors": [1],
+      "sizes": [1],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/March2025/quan-shorts-yoga-ribbed-34-be_12.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/March2025/quan-shorts-yoga-ribbed-33-be_21.jpg?aio=w-1069"
+      ],
+      "materials": ["fleece"],
+      "sold": 1280
+    },
+    {
+      "id": 15,
+      "name": "Quần Jogger nam thể thao Hybrid Woven",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 229000,
+      "old_price": 359000,
+      "status": "còn hàng",
+      "slug": "quan-nam",
+      "category_id": 2,
+      "colors": [1, 2],
+      "sizes": [1, 2],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/December2024/24CM.MAWCS.JGZ995_-_Xanh_1.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/December2024/24CM.MAWCS.JGZ995_-_Xanh_11.jpg?aio=w-1069"
+      ],
+      "materials": ["cotton"],
+      "sold": 1010
+    },
+    {
+      "id": 16,
+      "name": "Áo thun Relaxed Fit Regular Disney Stitch Is Coastal Cool",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "ao-nu",
+      "category_id": 5,
+      "colors": [1, 2, 3],
+      "sizes": [1, 2, 3],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/May2025/ao-thun-relaxed-fit-in-stitch-coastal-cool-Den_FRONT-den.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/May2025/ao-thun-relaxed-fit-in-stitch-coastal-cool-2-den_66.jpg?aio=w-1069"
+      ],
+      "materials": ["polyester"],
+      "sold": 540
+    },
+    {
+      "id": 17,
+      "name": "Áo Polo Nam Cafe Essentials",
+      "description": "Áo thun nam, áo phông nam tay ngắn cổ tròn chất thun lạnh co giãn 4 chiều hình thành phố alex cool \n Luôn luôn cập nhật những mẫu mã mới , đa dạng – ALEX COOL e hứa hẹn sẽ luôn đem lại cho bạn những sản phẩm thời trang ưng ý và hoàn hảo nhất.\n - Về sản phẩm: Shop cam kết cả về CHẤT LIỆU cũng như HÌNH DÁNG ( đúng với những gì được nêu bật trong phần mô tả sản phẩm). \n - Về giá cả : Shop nhập với số lượng nhiều và trực tiếp nên chi phí sẽ là RẺ NHẤT nhé.- \n - Thời gian chuẩn bị hàng: Hàng có sẵn, thời gian chuẩn bị tối ưu nhất.  \n Shop Buôn Sỉ Áo Thun Nam Tay Ngắn In Họa Tiết ",
+      "price": 199000,
+      "old_price": 259000,
+      "status": "còn hàng",
+      "slug": "ao-nam",
+      "category_id": 1,
+      "colors": [1, 2, 3],
+      "sizes": [1, 2, 3],
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "images": [
+        "https://n7media.coolmate.me/uploads/December2024/ao-polo-nam-cafe-essentials-thoang-mat-chong-uv-xam-2.jpg?aio=w-1069",
+        "https://n7media.coolmate.me/uploads/December2024/ao-polo-nam-cafe-essentials-thoang-mat-chong-uv-xam-5.jpg?aio=w-1069"
+      ],
+      "materials": ["spandex"],
+      "sold": 720
+    }
+  ],
+  "colors": [
+    {
+      "id": 1,
+      "name": "Trắng",
+      "code": "#FFFFFF",
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     },
     {
       "id": 2,
-      "user_id": 2,
+      "name": "Đen",
+      "code": "#000000",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Xanh",
+      "code": "#000080",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Xám",
+      "code": "#808080",
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
     }
   ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Áo nam",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Quần nam",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Kính",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Mũ",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+     {
+      "id": 5,
+      "name": "Áo nữ",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 6,
+      "name": "Quần nữ",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+  "sizes": [
+    {
+      "id": 1,
+      "name": "S",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "M",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "L",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "name": "XL",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+  "productVariants": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 1,
+      "stock": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 2,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 1,
+      "stock": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 3,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 1,
+      "stock": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 4,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 1,
+      "stock": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 5,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 2,
+      "stock": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 6,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 2,
+      "stock": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 7,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 2,
+      "stock": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 8,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 2,
+      "stock": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 9,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 3,
+      "stock": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-5-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 10,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 3,
+      "stock": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 11,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 3,
+      "stock": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 12,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 3,
+      "stock": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-3-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 13,
+      "product_id": 1,
+      "color_id": 1,
+      "size_id": 4,
+      "stock": 10,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-4-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 14,
+      "product_id": 1,
+      "color_id": 2,
+      "size_id": 4,
+      "stock": 20,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-5-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 15,
+      "product_id": 1,
+      "color_id": 3,
+      "size_id": 4,
+      "stock": 30,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-1-1-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    },
+    {
+      "id": 16,
+      "product_id": 1,
+      "color_id": 4,
+      "size_id": 4,
+      "stock": 40,
+      "image": "https://n7media.coolmate.me/uploads/June2025/ao-thun-nam-premium-cotton-2-den.jpg?aio=w-1069",
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "sku": "P1-RED-M"
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "user_id": 1,
+      "content": "Sản phẩm rất tốt nhé !",
+      "rating": 5,
+      "status": true,
+      "created_at": "2022-06-15T10:00:00Z",
+      "updated_at": "2023-07-17T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "product_id": 2,
+      "user_id": 2,
+      "content": "Sản phẩm rất ok nha mọi người ơi !",
+      "rating": 4,
+      "status": true,
+      "created_at": "2020-04-12T10:00:00Z",
+      "updated_at": "2021-05-17T10:00:00Z"
+    },
+    {
+      "id": 3,
+      "product_id": 1,
+      "user_id": 1,
+      "content": "Sản phẩm cũng khá là bình thường thôi !",
+      "rating": 3,
+      "status": true,
+      "created_at": "2018-01-08T10:00:00Z",
+      "updated_at": "2019-02-10T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "product_id": 2,
+      "user_id": 2,
+      "content": "Sản phẩm tôi rất là ưng luôn haha !",
+      "rating": 5,
+      "status": true,
+      "created_at": "2016-01-02T10:00:00Z",
+      "updated_at": "2017-05-04T10:00:00Z"
+    },
+    {
+      "id": 5,
+      "product_id": 1,
+      "user_id": 1,
+      "content": "Sản phẩm rất tốt nhé bro !",
+      "rating": 5,
+      "status": true,
+      "created_at": "2012-03-05T10:00:00Z",
+      "updated_at": "2015-07-17T10:00:00Z"
+    },
+    {
+      "id": 6,
+      "product_id": 1,
+      "user_id": 1,
+      "content": "Sản phẩm rất tốt nhé bạn iu !",
+      "rating": 5,
+      "status": true,
+      "created_at": "2014-06-01T10:00:00Z",
+      "updated_at": "2017-12-29T10:00:00Z"
+    }
+  ],
+  "banners": [
+    {
+      "id": 1,
+      "image_url": "https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/CcnQdpiJAgHxf3wEB4JiQ5lXtngat92T_cover.jpg",
+      "public_id": "banner1",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "image_url": "https://media.istockphoto.com/id/1322085340/vi/vec-to/banner-qu%E1%BA%A3ng-c%C3%A1o-fot-t%E1%BA%ADp-luy%E1%BB%87n-th%E1%BB%83-d%E1%BB%A5c-%C4%91%E1%BB%93-th%E1%BB%83-thao-t%E1%BA%ADp-luy%E1%BB%87n-ph%C3%B2ng-t%E1%BA%ADp-th%E1%BB%83-d%E1%BB%A5c-l%E1%BB%91i-s%E1%BB%91ng-l%C3%A0nh.jpg?s=170667a&w=0&k=20&c=H6pgqyjAmFontltx4YKQ4dGIszD5R7xTVZSERjASaqQ=",
+      "public_id": "banner2",
+      "status": true,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    }
+  ],
+ "cart": [
+  {
+    "id": 1,
+    "productId": 101,
+    "name": "Áo thun nam Premium Cotton",
+    "image": "/images/shirt1.png",
+    "price": 179000,
+    "quantity": 1,
+    "color": "Đen",
+    "size": "M"
+  }
+],
   "cartItems": [
     {
       "id": 1,
@@ -119,7 +834,17 @@
     {
       "id": 1,
       "order_id": 1,
-      "method": "credit card",
+      "method": "thanh toàn bằng thẻ ngân hàng",
+      "status": "pending",
+      "amount": 430000,
+      "paid_at": null,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z"
+    },
+     {
+      "id": 2,
+      "order_id": 1,
+      "method": "thanh toán khi nhận hàng",
       "status": "pending",
       "amount": 430000,
       "paid_at": null,
@@ -137,6 +862,16 @@
       "content": "Đơn hàng đã xác nhận",
       "created_at": "2024-06-15T10:00:00Z",
       "updated_at": "2024-06-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "order_id": 1,
+      "message": "Đơn hàng của bạn đã được vận chuyển",
+      "is_read": false,
+      "created_at": "2024-06-15T10:00:00Z",
+      "updated_at": "2024-06-15T10:00:00Z",
+      "content": "Đơn hàng đã xác nhận"
     }
   ]
 }
