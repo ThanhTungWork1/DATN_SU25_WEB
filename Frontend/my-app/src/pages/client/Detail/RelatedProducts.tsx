@@ -1,29 +1,33 @@
-import { useRelatedProducts } from "../../../hook/ClientHookDetail";
 import { useParams } from "react-router-dom";
-import "../../../assets/styles/detailProduct.css";
-import { BoxProduct } from "../../../components/BoxProduct";
+import { useRelatedProducts } from "../../../hook/ClientHookDetail";
 import { useRelatedProductsPagination } from "../../../hook/useRelatedProductsPagination";
+import { BoxProduct } from "../../../components/BoxProduct";
+import { useCart } from "../../../provider/CartProvider";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import type { RouteParams, RelatedProductsProps } from "../../../types/RelatedProductsType";
-
-// =============================
-// Component hiển thị danh sách sản phẩm liên quan
-// =============================
+import { toast } from "sonner";
+import type {
+  RouteParams,
+  RelatedProductsProps,
+} from "../../../types/RelatedProductsType";
 
 const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
-  // Lấy id sản phẩm hiện tại từ URL
   const { id } = useParams<RouteParams>();
-  // Lấy danh sách sản phẩm liên quan từ hook (lọc theo categoryId)
+  const { addToCart } = useCart();
+
   const {
     data: relatedProducts,
     isLoading,
     isError,
   } = useRelatedProducts(id!, categoryId, limit);
 
-  const { paginatedProducts, canPrev, canNext, goPrev, goNext } =
-    useRelatedProductsPagination(relatedProducts || [], 4);
+  const {
+    paginatedProducts,
+    canPrev,
+    canNext,
+    goPrev,
+    goNext,
+  } = useRelatedProductsPagination(relatedProducts || [], 4);
 
-  // Loading: hiển thị skeleton
   if (isLoading) {
     return (
       <div className="related-products mt-5">
@@ -50,7 +54,6 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
     );
   }
 
-  // Nếu lỗi hoặc không có sản phẩm liên quan
   if (isError || !relatedProducts || relatedProducts.length === 0) {
     return (
       <div className="related-products mt-5">
@@ -60,9 +63,6 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
     );
   }
 
-  // =============================
-  // Render danh sách sản phẩm liên quan
-  // =============================
   return (
     <div className="related-products-wrapper mt-5">
       <h4 className="text-center mb-4">Sản phẩm liên quan</h4>
@@ -76,24 +76,45 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
           <FaChevronLeft />
         </button>
         <div className="related-products-flex">
-          {paginatedProducts.map((product) => (
-            <div className="related-product-item" key={product.id}>
-              <BoxProduct
-                product={{
-                  ...product,
-                  image:
-                    product.image ||
-                    (product.images && product.images[0]) ||
-                    "",
-                  colors: Array.isArray(product.colors)
-                    ? product.colors.map((c: any) =>
-                        typeof c === "object" && c.id ? c.id : c,
-                      )
-                    : product.colors,
-                }}
-              />
-            </div>
-          ))}
+          {paginatedProducts.map((product) => {
+            const image =
+              product.image || (product.images?.[0] ?? "");
+
+            return (
+              <div className="related-product-item" key={product.id}>
+                <BoxProduct
+                  product={{
+                    ...product,
+                    image,
+                    colors: Array.isArray(product.colors)
+                      ? product.colors.map((c: any) =>
+                          typeof c === "object" && c.id ? c.id : c
+                        )
+                      : product.colors,
+                  }}
+                  onAddToCart={() => {
+                    const finalPrice =
+                      product.discount && product.discount > 0
+                        ? Math.max(
+                            0,
+                            Math.round(
+                              product.price * (1 - product.discount / 100)
+                            )
+                          )
+                        : product.price;
+                    addToCart({
+                      id: product.id,
+                      name: product.name,
+                      price: finalPrice,
+                      image,
+                      quantity: 1,
+                    });
+                    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
         <button
           className="related-products-nav-btn right"

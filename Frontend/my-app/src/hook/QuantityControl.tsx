@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+/**
+ * Custom hook điều khiển số lượng sản phẩm (quantity).
+ * - Đảm bảo không vượt quá giới hạn tối đa (max).
+ * - Không được nhỏ hơn 1.
+ */
 export function useQuantityControl(max: number) {
   const [quantity, setQuantity] = useState(1);
 

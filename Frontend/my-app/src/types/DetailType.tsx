@@ -1,21 +1,3 @@
-// ==========================
-// CART TYPES
-// ==========================
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-}
-
-export interface CartState {
-  items: CartItem[];
-}
-
-// ==========================
-// PRODUCT TYPES
-// ==========================
 export interface Variant {
   size?: string;
   stock: number;
@@ -63,48 +45,25 @@ export type SizeProps = {
   onSelectSize: (size: string) => void;
 };
 
-// ==========================
-// ORDER TYPES
-// ==========================
-export interface OrderItem {
+export interface Order {
   id: number;
-  order_id?: number | string;
-  productId?: number;
-  variant_id?: number;
-  name?: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export type Order = {
-  id: string | number;
-  userId?: number;
-  user_id?: number;
-  items?: OrderItem[];
-  totalAmount?: number;
-  total_amount?: number;
-  shipping_fee?: number;
-  is_paid?: boolean;
   createdAt?: string;
   created_at?: string;
-  updated_at?: string;
-  status?: string;
+  status: string;
   paymentMethod?: string;
+  totalAmount?: number;
+  total_amount?: number;
   address?: {
-    province: string;
-    district: string;
+    street?: string;
     ward?: string;
-    street: string;
+    district?: string;
+    province?: string;
   };
-};
-
-export interface OrderPayload {
-  name: string;
-  phone: string;
-  address: string;
-  items: CartItem[];
-  totalAmount: number;
+  items?: {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  // Thêm các trường khác nếu cần
 }

@@ -1,5 +1,5 @@
-import ClientRoute from "./routes/ClientRoute";
 import { Toaster } from "sonner";
+import ClientRoute from "./routes/ClientRoute";
 
 function App() {
   return (

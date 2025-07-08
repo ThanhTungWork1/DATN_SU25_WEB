@@ -7,7 +7,7 @@ type ProductTabsProps = {
   product: Product;
 };
 
-/* Component để hiển thị các ngôi sao đánh giá */
+/* Component hiển thị sao đánh giá */
 const StarRating = ({ rating }: { rating: number }) => {
   return (
     <div className="d-flex align-items-center">
@@ -24,12 +24,10 @@ const StarRating = ({ rating }: { rating: number }) => {
 };
 
 const ProductTabs = ({ product }: ProductTabsProps) => {
-  const [activeTab, setActiveTab] = useState<"desc" | "info" | "review">(
-    "desc",
-  );
+  const [activeTab, setActiveTab] = useState<"desc" | "review">("desc");
   const { reviews, isLoading } = useProductReviews(product.id);
 
-  // Render phần mô tả sản phẩm
+  // Render mô tả sản phẩm
   const renderDescription = () => (
     <>
       <p className="mt-3">{product.description}</p>
@@ -47,7 +45,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     </>
   );
 
-  // Render phần đánh giá
+  // Render đánh giá sản phẩm
   const renderReview = () => {
     if (isLoading) return <p>Đang tải đánh giá...</p>;
     if (!reviews || reviews.length === 0) {
@@ -67,7 +65,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-            },
+            }
           );
           return (
             <div key={review.id} className="mb-4 border-bottom pb-3">
@@ -90,7 +88,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 
   return (
     <>
-      {/* Tabs */}
+      {/* Tabs điều hướng */}
       <ul className="nav nav-tabs">
         <li className="nav-item">
           <button

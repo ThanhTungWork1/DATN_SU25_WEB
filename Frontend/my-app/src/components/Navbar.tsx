@@ -2,9 +2,6 @@ import SearchBar from "./SearchBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
 
-/**
- * Navbar hiển thị menu và xử lý chuyển trang theo danh mục
- */
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,7 +25,6 @@ const Navbar = () => {
     navigate("/cart");
   };
 
-  // Xử lý click menu Phụ kiện (lọc cả Kính và Mũ)
   const handleClickPhuKien = () => {
     navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
   };
@@ -51,117 +47,83 @@ const Navbar = () => {
         />
       </div>
 
-      <ul className="nav-links" id="navLinks">
+      <ul className="menu-links" id="navLinks">
         <li>
-          <a href="#">Trang chủ</a>
+          <button onClick={() => navigate("/")}>Trang chủ</button>
+        </li>
+
+        <li>
+          <button onClick={() => navigate("/products")}>Sản phẩm</button>
         </li>
 
         <li className="dropdown">
-          <a
-            href="#"
-            className={categoryParam === "1" || categoryParam === "2" ? "active" : ""}
-          >
+          <button className={["1", "2"].includes(categoryParam || "") ? "active" : ""}>
             Nam <span className="dropdown-icon">▼</span>
-          </a>
+          </button>
           <ul className="dropdown-menu">
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=1`)}>
-                Áo
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=2`)}>
-                Quần
-              </a>
-            </li>
+            <li><button onClick={() => navigate("/products?category=1")}>Áo</button></li>
+            <li><button onClick={() => navigate("/products?category=2")}>Quần</button></li>
           </ul>
         </li>
 
         <li className="dropdown">
-          <a
-            href="#"
-            className={categoryParam === "5" || categoryParam === "6" ? "active" : ""}
-          >
+          <button className={["5", "6"].includes(categoryParam || "") ? "active" : ""}>
             Nữ <span className="dropdown-icon">▼</span>
-          </a>
+          </button>
           <ul className="dropdown-menu">
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=5`)}>
-                Áo
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=6`)}>
-                Quần
-              </a>
-            </li>
+            <li><button onClick={() => navigate("/products?category=5")}>Áo</button></li>
+            <li><button onClick={() => navigate("/products?category=6")}>Quần</button></li>
           </ul>
         </li>
 
         <li>
-          <a href="#">Trend</a>
+          <button onClick={() => navigate("/trend")}>Trend</button>
         </li>
 
         <li className="dropdown">
-          <a
-            href="#"
-            onClick={handleClickPhuKien}
-            className={isPhuKien ? "active" : ""}
-          >
+          <button onClick={handleClickPhuKien} className={isPhuKien ? "active" : ""}>
             Phụ kiện <span className="dropdown-icon">▼</span>
-          </a>
+          </button>
           <ul className="dropdown-menu">
             <li>
-              <a
-                href="#"
+              <button
                 onClick={handleClickPhuKienMu}
                 className={categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU) ? "active" : ""}
               >
                 Mũ
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="#"
+              <button
                 onClick={handleClickPhuKienKinh}
                 className={categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ? "active" : ""}
               >
                 Kính
-              </a>
+              </button>
             </li>
           </ul>
         </li>
 
         <li>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/orders");
-            }}
-          >
-            Đơn hàng
-          </a>
+          <button onClick={() => navigate("/orders")}>Đơn hàng</button>
         </li>
       </ul>
 
       <div className="icon-group">
         <SearchBar onSearch={handleSearch} />
-
-        <div className="icon-btn" title="Tài khoản">
-          &#128100;
-        </div>
-
-        <div className="icon-btn" title="Giỏ hàng" onClick={goToCart} style={{ cursor: "pointer" }}>
+        <div className="icon-btn" title="Tài khoản">&#128100;</div>
+        <div
+          className="icon-btn"
+          title="Giỏ hàng"
+          onClick={goToCart}
+          style={{ cursor: "pointer" }}
+        >
           &#128722;
         </div>
-
         <button className="login-btn">Đăng nhập</button>
       </div>
 
-      <div className="menu-toggle" id="menuToggle">
-        &#9776;
-      </div>
+      <div className="menu-toggle" id="menuToggle">&#9776;</div>
     </nav>
   );
 };

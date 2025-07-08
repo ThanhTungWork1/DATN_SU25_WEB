@@ -4,7 +4,6 @@ import { BoxProduct } from "../../../components/BoxProduct";
 import { useProductList } from "../../../hook/useProductList";
 import { filterProducts } from "../../../utils/productFilter";
 import type { Product } from "../../../types/ProductType";
-import "../../../assets/styles/ListProducts.css";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { Section } from "../../../components/Section";

@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { Product, Variant, ColorType } from "../types/DetailType";
+import { processProductDetail } from "../utils/productDetailHelper";
 
 /**
  * ============================================================
@@ -22,52 +23,13 @@ export const getProductById = async (id: string): Promise<Product> => {
       axios.get(`http://localhost:3000/categories`),
     ]);
 
-    const productData = productResponse.data as Product;
-    const variantsFromDb = variantsResponse.data as any[];
-    const allColors = colorsResponse.data as any[];
-    const allSizes = sizesResponse.data as any[];
-    const allCategories = categoriesResponse.data as any[];
-
-    const colorMap = new Map(allColors.map((c) => [Number(c.id), c]));
-    const sizeMap = new Map(allSizes.map((s) => [Number(s.id), s]));
-    const categoryMap = new Map(allCategories.map((c) => [Number(c.id), c]));
-
-    const category = categoryMap.get(Number(productData.category_id));
-    const uniqueColorsForThisProduct = new Map<number, ColorType>();
-
-    const processedVariants: Variant[] = variantsFromDb.map((variant) => {
-      const foundColor = colorMap.get(Number(variant.color_id));
-      const foundSize = sizeMap.get(Number(variant.size_id));
-
-      if (
-        foundColor &&
-        !uniqueColorsForThisProduct.has(Number(foundColor.id))
-      ) {
-        uniqueColorsForThisProduct.set(Number(foundColor.id), {
-          id: Number(foundColor.id),
-          name: foundColor.name,
-          code: foundColor.code,
-          image: variant.image,
-        });
-      }
-
-      return {
-        size: foundSize?.name,
-        stock: variant.stock,
-        color: foundColor?.name,
-        image: variant.image,
-        sku: variant.sku,
-      };
-    });
-
-    const finalProduct: Product = {
-      ...productData,
-      category: category ? category.name : "Chưa phân loại",
-      variants: processedVariants,
-      colors: Array.from(uniqueColorsForThisProduct.values()),
-    };
-
-    return finalProduct;
+    return processProductDetail(
+      productResponse.data,
+      variantsResponse.data,
+      colorsResponse.data,
+      sizesResponse.data,
+      categoriesResponse.data
+    );
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
     throw error;
@@ -81,7 +43,7 @@ export const getProductById = async (id: string): Promise<Product> => {
  */
 export const getAllProducts = async (): Promise<Product[]> => {
   const { data } = await axios.get(`http://localhost:3000/products`);
-  return data as Product[];
+  return data;
 };
 
 /**
