@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ClientOrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Middleware\CheckAdminMiddleware;
@@ -46,11 +47,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{id}', [ProductController::class, 'show']);
     });
 
-    // Orders - cho user
+    // Orders - cho user (ClientOrderController)
+    Route::prefix('client/orders')->group(function () {
+        Route::get('/', [ClientOrderController::class, 'index']);
+        Route::get('/statistics', [ClientOrderController::class, 'statistics']);
+        Route::get('/status/{status}', [ClientOrderController::class, 'getByStatus']);
+        Route::get('/{id}', [ClientOrderController::class, 'show']);
+        Route::post('/', [ClientOrderController::class, 'store']);
+        Route::put('/{id}', [ClientOrderController::class, 'update']);
+        Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
+    });
+
+    // Orders - cho admin (OrderController gốc)
     Route::prefix('order')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::get('/{id}', [OrderController::class, 'show']);
-        Route::post('add', [OrderController::class, 'store']); // ⚠ nếu controller tên là `store`, không phải `add`
+        Route::post('add', [OrderController::class, 'store']);
         Route::put('update/{id}', [OrderController::class, 'update']);
         Route::delete('delete/{id}', [OrderController::class, 'destroy']);
     });
@@ -59,7 +71,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/{id}', [UserController::class, 'show']);
-        Route::post('add', [UserController::class, 'store']); // ⚠ tên hàm controller phải đúng
+        Route::post('add', [UserController::class, 'store']);
         Route::put('update/{id}', [UserController::class, 'update']);
         Route::delete('delete/{id}', [UserController::class, 'destroy']);
     });
