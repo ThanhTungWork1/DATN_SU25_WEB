@@ -1,26 +1,27 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
-// Sản phẩm
-import ProductList from "../pages/admin/products/ProductsList"
-import ProductForm from "../pages/admin/products/ProductForm";
+import AdminLayout from "../layouts/Admin/AdminLayout";
 
-// Đơn hàng
+import ProductList from "../pages/admin/products/ProductsList";
+import ProductForm from "../pages/admin/products/ProductForm";
 import OrderList from "../pages/admin/orders/OrderList";
 import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
 
 export const adminRoutes = (
-  <>
+  // Route chính cho admin, sử dụng AdminLayout làm cha
+  <Route path="/admin" element={<AdminLayout />}>
+    <Route index element={<h1>Chào mừng đến với Admin Panel!</h1>} />{" "}
+    {/* Trang chủ Admin */}
     {/* Sản phẩm */}
-    <Route path="/admin/products" element={<ProductList />} key="product-list" />
-    <Route path="/admin/products/create" element={<ProductForm />} key="product-create" />
-    <Route path="/admin/products/edit/:id" element={<ProductForm />} key="product-edit" />
-
+    <Route path="products" element={<ProductList />} />
+    <Route path="products/create" element={<ProductForm />} />
+    <Route path="products/edit/:id" element={<ProductForm />} />
     {/* Đơn hàng */}
-    <Route path="/admin/orders" element={<OrderList />} key="order-list" />
-    <Route path="/admin/orders/create" element={<OrderForm />} key="order-create" />
-    <Route path="/admin/orders/edit/:id" element={<OrderForm />} key="order-edit" />
-    <Route path="/admin/orders/detail/:id" element={<OrderDetail />} key="order-detail" />
-  </>
+    <Route path="orders" element={<OrderList />} />
+    <Route path="orders/create" element={<OrderForm />} />
+    <Route path="orders/edit/:id" element={<OrderForm />} />
+    <Route path="orders/detail/:id" element={<OrderDetail />} />
+  </Route>
 );
