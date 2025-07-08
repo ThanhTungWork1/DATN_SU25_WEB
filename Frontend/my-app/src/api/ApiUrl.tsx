@@ -65,7 +65,7 @@ export const getAllUsers = async () => {
  * ============================================================
  */
 export const getCart = async () => {
-  const { data } = await axios.get("http://localhost:3000/cart");
+  const { data } = await axios.get("http://localhost:3000/carts");
   return data;
 };
 
@@ -75,15 +75,15 @@ export const addToCart = async (item: {
   color?: string;
   size?: string;
 }) => {
-  return await axios.post("http://localhost:3000/cart", item);
+  return await axios.post("http://localhost:3000/carts", item);
 };
 
 export const updateCartItem = async (id: number, quantity: number) => {
-  return await axios.patch(`http://localhost:3000/cart/${id}`, { quantity });
+  return await axios.patch(`http://localhost:3000/carts/${id}`, { quantity });
 };
 
 export const removeCartItem = async (id: number) => {
-  return await axios.delete(`http://localhost:3000/cart/${id}`);
+  return await axios.delete(`http://localhost:3000/carts/${id}`);
 };
 
 /**
