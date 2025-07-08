@@ -1,6 +1,6 @@
 import { Button, Form, Input, message, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
-import useRegister from "../../hook/useRegisster";
+import useRegister from "../../hook/useRegister";
 
 const formItemLayout = {
   labelCol: {

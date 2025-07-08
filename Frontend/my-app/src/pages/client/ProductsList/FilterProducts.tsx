@@ -10,7 +10,7 @@ type Props = {
   sizes: { id: number; name: string }[];
 };
 
-export const FilteProducts = ({
+export const FilterProducts = ({
   filter,
   setFilter,
   onApply,
