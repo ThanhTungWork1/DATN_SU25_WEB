@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
@@ -20,36 +19,3 @@ const AdminRoute = () => {
     </Routes>
   );
 };
-
-export default AdminRoute;
-=======
-import type { RouteObject } from "react-router-dom";
-import LayoutAdmin from "../components/LayoutAdmin";
-import UserList from "../pages/admin/users/UserList";
-import UserEdit from "../pages/admin/users/UserEdit";
-import UserAdd from "../pages/admin/users/AddUser";
-
-
-const AdminRoute: RouteObject[] = [
-    {
-      path:"/admin",
-      element: <LayoutAdmin/>,
-      children:[
-        {
-          path:"users",
-          element:<UserList/>
-        },
-        {
-          path:"users/edit/:id",
-          element:<UserEdit/>
-        },
-        {
-          path:"users/create",
-          element:<UserAdd/>
-        }
-      ]
-    }
-];
-
-export default AdminRoute
->>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)

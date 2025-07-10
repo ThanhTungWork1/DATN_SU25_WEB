@@ -29,4 +29,8 @@ const UserGrowthCard = () => {
   );
 };
 
+<<<<<<< HEAD
 export default UserGrowthCard;
+=======
+export default UserGrowthCard;
+>>>>>>> df458680 (Trang dashboard tổng số người dùng, sản phẩm, đơn hàng, tỉ lệ tăng giảm người dùng theo tháng)
