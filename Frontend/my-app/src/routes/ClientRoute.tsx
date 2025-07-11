@@ -12,20 +12,18 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import '../assets/styles/style.css'
+import "../assets/styles/style.css";
 import LikeProduct from "../pages/client/LikeProduct/LikeProduct";
-
 
 const ClientRoute = () => {
   return (
-
     <>
-    <Navbar/>
+      <Navbar />
       <Routes>
-        <Route path='/' element={<HomePage/>}/>
+        <Route path="/" element={<HomePage />} />
         <Route path="/users/:id" element={<UserProfile />} />
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/register' element={<Register/>}/>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/products" element={<ListProduct />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/search" element={<ResultProduct />} />
@@ -35,11 +33,9 @@ const ClientRoute = () => {
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
       </Routes>
-    <Footer/>
+      <Footer />
     </>
   );
 };
 
-
 export default ClientRoute;
-

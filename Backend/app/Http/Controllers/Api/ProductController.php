@@ -173,6 +173,16 @@ class ProductController extends Controller
             });
         }
 
+        // Filter theo chất liệu (material)
+        if ($request->has('materials') && !empty($request->materials)) {
+            $materials = $request->materials;
+            if (is_array($materials)) {
+                $query->whereIn('material', $materials);
+            } else {
+                $query->where('material', $materials);
+            }
+        }
+
 
         if ($request->has('has_discount') && $request->has_discount !== '') {
             if ($request->has_discount == '1') {

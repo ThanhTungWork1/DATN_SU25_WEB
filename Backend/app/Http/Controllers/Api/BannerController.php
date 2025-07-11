@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use Illuminate\Support\Facades\Cache;
 
 class BannerController extends Controller
 {
     public function index()
     {
-        $banners = Banner::where('status', 1)->get();
-        return response()->json($banners);
+        $banners = Cache::remember('banners_all', 3600, function () {
+            return Banner::all();
+        });
+        return response()->json(['data' => $banners]);
     }
 }
 

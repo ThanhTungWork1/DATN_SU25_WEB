@@ -45,7 +45,7 @@ const LikeProduct = () => {
   }, [loading, allProducts, wishlist, removeFromWishlist]);
 
   return (
-    <div className="container my-4">
+    <div className="product-list-container">
       <div className="breadcrumb-container-list">
         <Breadcrumb items={[
           { label: "Trang chủ", to: "/" },
@@ -66,7 +66,7 @@ const LikeProduct = () => {
         </div>
       ) : (
         <div className="product-section-container">
-          <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+          <div className="product-grid">
             {paginatedProducts.map((product) => (
               <BoxProduct key={product.id} product={product} />
             ))}

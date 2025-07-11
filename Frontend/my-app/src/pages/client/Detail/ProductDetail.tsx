@@ -161,6 +161,7 @@ const ProductDetail = () => {
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
                 maxQuantity={10}
+                disabled={!selectedSize || !selectedColor}
               />
               <hr />
             </div>

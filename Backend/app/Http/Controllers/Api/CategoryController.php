@@ -6,20 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount(['products' => function ($query) {
-            $query->where('status', true);
-        }])->where('status', true)->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách danh mục thành công',
-            'data' => $categories
-        ]);
+        $categories = Cache::remember('categories_all', 3600, function () {
+            return Category::all();
+        });
+        return response()->json(['data' => $categories]);
     }
 
     /**

@@ -5,9 +5,10 @@ type ProductActionsProps = {
   onAddToCart: (quantity: number) => void;
   onBuyNow?: () => void;
   maxQuantity: number;
+  disabled?: boolean; // Thêm prop disabled
 };
 
-const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
+const ProductActions = ({ onAddToCart, onBuyNow, maxQuantity, disabled = false }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
 
   const increase = () =>
@@ -49,14 +50,19 @@ const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
 
       {/* Nút thêm giỏ hàng */}
       <button
-        className="btn-add-to-cart d-flex align-items-center"
+        className={`btn-add-to-cart d-flex align-items-center${disabled ? ' disabled' : ''}`}
         onClick={() => onAddToCart(quantity)}
+        disabled={disabled}
       >
         <FaShoppingCart className="me-1" /> Thêm
       </button>
 
       {/* Nút mua ngay */}
-      <button className="btn-buy-now">Mua ngay</button>
+      <button
+        className={`btn-buy-now${disabled ? ' disabled' : ''}`}
+        onClick={onBuyNow}
+        disabled={disabled}
+      >Mua ngay</button>
     </div>
   );
 };
