@@ -48,7 +48,7 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
-// Public Routes
+// Public Routes (Không cần xác thực)
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
@@ -57,23 +57,33 @@ Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [CommentController::class, 'getByProduct']);
 
-// Authentication
+// Authentication Routes (Không cần xác thực trước khi đăng nhập)
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
-// Admin Routes
+// ====================================================================
+// ADMIN ROUTES (TẠM THỜI BỎ MIDDLEWARE CHO PRODUCTS VÀ ORDERS ĐỂ DEBUG)
+// ====================================================================
+
+// Các route Admin cho Products và Orders (TẠM THỜI KHÔNG CẦN XÁC THỰC)
+Route::prefix('admin')->group(function () {
+    Route::apiResource('products', ProductController::class); // GET /api/admin/products
+    Route::apiResource('orders', OrderController::class);    // GET /api/admin/orders
+});
+
+// Các route Admin khác VẪN CẦN XÁC THỰC (vì chúng nằm trong group middleware)
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('orders', OrderController::class);
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('vouchers', [VoucherController::class, 'index']);
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
 });
 
-// Authenticated User Routes
+
+
+// Authenticated User Routes (Yêu cầu xác thực auth:sanctum)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('product')->group(function () {
         Route::get('/', [ProductController::class, 'index']);

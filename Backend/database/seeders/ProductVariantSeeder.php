@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class ProductVariantSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         DB::table('product_variants')->insert([
@@ -15,8 +18,7 @@ class ProductVariantSeeder extends Seeder
                 'color_id' => 2,
                 'size_id' => 2,
                 'stock' => 50,
-                'price' => 19.99,
-                'old_price' => 25.99,
+                'price' => 10,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -25,11 +27,11 @@ class ProductVariantSeeder extends Seeder
                 'color_id' => 1,
                 'size_id' => 1,
                 'stock' => 30,
-                'price' => 19.99,
-                'old_price' => 24.99,
+                'price' => 10,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+
         ]);
     }
 }
