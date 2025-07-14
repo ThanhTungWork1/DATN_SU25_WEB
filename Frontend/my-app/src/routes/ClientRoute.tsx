@@ -6,14 +6,14 @@ import CheckoutPage from "../pages/client/Cart/CheckoutPage";
 import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
 import ResultProduct from "../pages/client/ResultProduct/ResultProduct";
-import HomePage from "../pages/client/Home";
-import UserProfile from "../pages/client/UserProfile";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import "../assets/styles/style.css";
 import LikeProduct from "../pages/client/LikeProduct/LikeProduct";
+import { Contact } from "../pages/client/Contact/Contact";
+import HomePage from "../pages/client/Home/Home";
+import UserProfile from "../pages/client/Home/UserProfile";
 
 const ClientRoute = () => {
   return (
@@ -28,6 +28,7 @@ const ClientRoute = () => {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/search" element={<ResultProduct />} />
         <Route path="/wishlist" element={<LikeProduct />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/orders" element={<OrderHistory />} />

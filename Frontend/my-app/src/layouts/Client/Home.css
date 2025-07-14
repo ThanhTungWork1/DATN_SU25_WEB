@@ -367,9 +367,7 @@ body,
   transform: scale(1.1);
 }
 /* Footer */
-<<<<<<< HEAD
 
-=======
 .footer {
   background-color: #0f0f13;
   color: #fff;
@@ -444,7 +442,7 @@ body,
   background-color: #00b29a;
   transform: scale(1.05);
 }
->>>>>>> a8244187 (giao dien list sp)
+
 /* Main Section */
 main {
   max-width: 1200px;

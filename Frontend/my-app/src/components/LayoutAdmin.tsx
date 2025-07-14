@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import {
-  DesktopOutlined ,
-  UserOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Layout, Menu, theme } from 'antd';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { DesktopOutlined, UserOutlined } from "@ant-design/icons";
+import type { MenuProps } from "antd";
+import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Outlet, useNavigate } from "react-router-dom";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-type MenuItem = Required<MenuProps>['items'][number];
+type MenuItem = Required<MenuProps>["items"][number];
 
 function getItem(
   label: React.ReactNode,
   key: React.Key,
   icon?: React.ReactNode,
-  children?: MenuItem[],
+  children?: MenuItem[]
 ): MenuItem {
   return {
     key,
@@ -26,13 +23,10 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem('Dashboard', 'dashboard', <DesktopOutlined  />),
-  getItem('Thành viên', '/admin/users', <UserOutlined />, [
-    getItem('Tất cả người dùng', '/admin/users'),
-    // getItem('Hồ sơ', '4'),
-  ]),
-  getItem('Sản phẩm', '/admin/products', <DesktopOutlined />),
-  getItem('Đơn hàng', '/admin/orders', <DesktopOutlined />),
+  getItem("Dashboard", "dashboard", <DesktopOutlined />),
+  getItem("Thành viên", "/admin/users", <UserOutlined />),
+  getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
+  getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
 ];
 
 const LayoutAdmin: React.FC = () => {
@@ -43,15 +37,28 @@ const LayoutAdmin: React.FC = () => {
   } = theme.useToken();
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+      >
         <div className="demo-logo-vertical" />
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} onClick={({key})=> navigate(key)} />
+        <Menu
+          theme="dark"
+          defaultSelectedKeys={["1"]}
+          mode="inline"
+          items={items}
+          onClick={({ key }) => navigate(key as string)}
+        />
       </Sider>
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: '0 16px' }}>
-
+        <Content style={{ margin: "0 16px" }}>
+          <Breadcrumb
+            style={{ margin: "16px 0" }}
+            items={[{ title: "User" }, { title: "Bill" }]}
+          />
           <div
             style={{
               padding: 24,
@@ -60,10 +67,10 @@ const LayoutAdmin: React.FC = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            <Outlet/>
+            <Outlet />
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>
+        <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()} Created by Ant UED
         </Footer>
       </Layout>

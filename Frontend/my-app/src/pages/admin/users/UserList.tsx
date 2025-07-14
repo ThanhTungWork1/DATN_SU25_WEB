@@ -90,12 +90,19 @@ const UserList = () => {
           <Tag color="orange">Chưa xác minh</Tag>
         ),
     },
+
   ];
 
   const filteredData = dataSource?.filter((user) =>
     user.name.toLowerCase().includes(searchText.toLowerCase()) ||
     user.address.toLowerCase().includes(searchText.toLowerCase()) ||
     user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+
+    user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+
+    user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchText.toLowerCase())||
+
     user.phone.toLowerCase().includes(searchText.toLowerCase())
   );
 

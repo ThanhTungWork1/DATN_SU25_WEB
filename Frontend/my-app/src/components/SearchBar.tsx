@@ -3,20 +3,20 @@ import { validateSearchQuery } from "../validation/searchValidation";
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
+  autoFocus?: boolean;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [open, setOpen] = useState(false);
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, autoFocus }) => {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Focus input khi mở
   useEffect(() => {
-    if (open && inputRef.current) {
+    if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [open]);
+  }, [autoFocus]);
 
   // Đóng khi click ra ngoài
   useEffect(() => {
@@ -25,64 +25,53 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setOpen(false);
+        // Không làm gì, vì showSearch sẽ được quản lý ở Navbar
       }
     }
 
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [open]);
+  }, []);
 
   // Đóng khi nhấn ESC
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setOpen(false);
+        // Không làm gì, vì showSearch sẽ được quản lý ở Navbar
       }
     }
 
-    if (open) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (onSearch && validateSearchQuery(query)) {
       onSearch(query);
     }
   };
 
-  const handleIconClick = () => {
-    if (!open) {
-      setOpen(true);
-    } else if (validateSearchQuery(query)) {
-      if (onSearch) {
-        onSearch(query);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    if (e.target.value.trim() === "") {
+      // Nếu đang ở trang search thì điều hướng về trang trước hoặc /products
+      if (window.location.pathname === "/search") {
+        window.history.length > 1 ? window.history.back() : window.location.assign("/products");
       }
     }
   };
 
   return (
     <div
-      className={`searchbar-container${open ? " open" : ""}`}
+      className={`searchbar-container custom-searchbar`}
       ref={containerRef}
     >
-      <button
-        className="searchbar-icon"
-        aria-label="Tìm kiếm"
-        type="button"
-        onClick={handleIconClick}
-      >
-        <span role="img" aria-label="search">🔍</span>
-      </button>
       <form className="searchbar-form" onSubmit={handleSubmit}>
         <input
           ref={inputRef}
@@ -90,7 +79,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
           type="text"
           placeholder="Tìm kiếm sản phẩm..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={handleChange}
+          style={{
+            width: 180,
+            opacity: 1,
+            padding: "0 12px",
+            transition: "all 0.3s",
+            borderRadius: 24,
+            border: "none",
+            outline: "none",
+            background: "#fff"
+          }}
         />
       </form>
     </div>

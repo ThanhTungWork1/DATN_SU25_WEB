@@ -2,6 +2,7 @@ import { Button, Form, Input, message, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
 import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
+import { useState } from "react";
 
 const formItemLayout = {
   labelCol: {
@@ -19,9 +20,17 @@ export const Register = () => {
   const navigate = useNavigate();
   const { mutate: registerMutate } = useRegister({ resource: "register" });
   const { mutate: loginMutate } = useLogin({ resource: "login" });
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
 
   const onFinish = (formData: any) => {
-    registerMutate(formData, {
+    // Chuyển confirm thành password_confirmation
+    const payload = {
+      ...formData,
+      password_confirmation: formData.confirm,
+    };
+    delete payload.confirm;
+    setFieldErrors({}); // clear lỗi cũ
+    registerMutate(payload, {
       onSuccess: () => {
         loginMutate(
           { email: formData.email, password: formData.password },
@@ -42,7 +51,13 @@ export const Register = () => {
         );
       },
       onError: (error: any) => {
-        messageApi.error(error?.response?.data || "Đăng ký thất bại");
+        // Xử lý lỗi chi tiết từng trường
+        const apiErrors = error?.response?.data?.errors;
+        if (apiErrors) {
+          setFieldErrors(apiErrors);
+        } else {
+          messageApi.error(error?.response?.data?.message || "Đăng ký thất bại");
+        }
       },
     });
   };
@@ -58,6 +73,8 @@ export const Register = () => {
           label="Họ tên"
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+          validateStatus={fieldErrors.name ? "error" : undefined}
+          help={fieldErrors.name ? fieldErrors.name[0] : undefined}
         >
           <Input />
         </Form.Item>
@@ -69,6 +86,8 @@ export const Register = () => {
             { required: true, message: "Vui lòng nhập email!" },
             { type: "email", message: "Email không hợp lệ!" },
           ]}
+          validateStatus={fieldErrors.email ? "error" : undefined}
+          help={fieldErrors.email ? fieldErrors.email[0] : undefined}
         >
           <Input />
         </Form.Item>
@@ -77,6 +96,8 @@ export const Register = () => {
           label="Số điện thoại"
           name="phone"
           rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+          validateStatus={fieldErrors.phone ? "error" : undefined}
+          help={fieldErrors.phone ? fieldErrors.phone[0] : undefined}
         >
           <Input />
         </Form.Item>
@@ -85,6 +106,8 @@ export const Register = () => {
           label="Địa chỉ"
           name="address"
           rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+          validateStatus={fieldErrors.address ? "error" : undefined}
+          help={fieldErrors.address ? fieldErrors.address[0] : undefined}
         >
           <Input />
         </Form.Item>

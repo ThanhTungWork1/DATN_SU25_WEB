@@ -1,0 +1,65 @@
+.btn-clear {
+  background: #ff4040;
+  color: #fff;
+  border: 1px solid #ff4040;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.btn-clear:hover, .btn-clear:focus {
+  background: #d32f2f;
+  color: #fff;
+  border-color: #d32f2f;
+}
+
+.offcanvas-body {
+  padding: 12px 12px 8px 12px !important;
+}
+
+.offcanvas-body .btn-filter {
+  display: none !important;
+}
+
+.filter-group {
+  margin-bottom: 10px;
+}
+
+.filter-group strong {
+  font-size: 16px;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.filter-group label {
+  margin-bottom: 2px !important;
+  padding-left: 2px;
+  font-size: 15px;
+}
+
+.filter-group input[type="checkbox"],
+.filter-group input[type="radio"] {
+  margin-right: 4px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.offcanvas-title {
+  font-size: 22px;
+  margin-bottom: 0;
+}
+
+.offcanvas-header {
+  padding: 10px 12px 6px 12px;
+}
+
+.btn-close {
+  transition: color 0.2s, filter 0.2s;
+}
+.btn-close:hover, .btn-close:focus {
+  filter: none;
+  color: #ff4040 !important;
+  opacity: 1;
+}

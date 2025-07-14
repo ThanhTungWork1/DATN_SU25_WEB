@@ -3,7 +3,6 @@ import { FilterProducts } from "./FilterProducts";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { Pagination } from "./Pagination";
 import { useLocation } from "react-router-dom";
-import { Section } from "../../../components/Section";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import {
   getAllCategories,
@@ -12,6 +11,10 @@ import {
   getProductsPaginatedAndFiltered,
 } from "../../../api/ApiProduct";
 import { SkeletonProduct } from "../../../components/SkeletonProduct";
+import NoData from "../../../components/NoData";
+import "../../../assets/styles/filte.css";
+import "../../../assets/styles/bodyListSP.css";
+import banner4 from "../../../assets/image/banner4.png";
 
 const PAGE_SIZE = 15;
 
@@ -126,7 +129,8 @@ export const ListProduct = () => {
   const paramsUrl = new URLSearchParams(location.search);
   const hasCategory = paramsUrl.has("category");
   const categoryFromUrl = paramsUrl.get("category");
-  const isOnlyProductsPage = location.pathname === "/products" && !paramsUrl.has("category");
+  const isOnlyProductsPage =
+    location.pathname === "/products" && !paramsUrl.has("category");
 
   // Đồng bộ filter.category_id với URL param
   useEffect(() => {
@@ -195,7 +199,7 @@ export const ListProduct = () => {
         {memoizedFilterProducts}
       </div>
 
-      <Section />
+      {/* <Section /> */}
 
       {/* Breadcrumb */}
       {hasCategory && (
@@ -220,9 +224,14 @@ export const ListProduct = () => {
               </div>
             ))}
           </div>
+        ) : products.length === 0 ? (
+          <NoData text="Hiện không có sản phẩm nào trong shop hoặc đã hết hàng." />
         ) : (
           <>
-            <div className="product-section-container">
+            <div className="product-list-section">
+              <div className="bannerListSP">
+                <img src={banner4} alt="banner4" />
+              </div>
               <div className="d-flex align-items-center mb-3">
                 {isOnlyProductsPage && (
                   <button
@@ -235,13 +244,12 @@ export const ListProduct = () => {
                   </button>
                 )}
               </div>
-              <div className="product-grid">
+              <div className="product-list-grid">
                 {products.map((product: any) => (
                   <BoxProduct key={product.id} product={product} />
                 ))}
               </div>
             </div>
-
             {/* Phân trang */}
             <Pagination
               currentPage={pagination.current_page}
@@ -266,3 +274,4 @@ type ProductApiResponse = {
   };
   [key: string]: any;
 };
+// ==============================================================================================

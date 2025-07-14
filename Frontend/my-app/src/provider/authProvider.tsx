@@ -1,25 +1,17 @@
-import axios from "axios"
+// src/provider/authProvider.ts
+import axios from "../utils/axios";
 
+type AuthParams = {
+  resource: string;
+  variables: any;
+};
 
-const API_URL = `http://localhost:8000/api`
+export const register = async ({ resource, variables }: AuthParams) => {
+  const response = await axios.post(`/${resource}`, variables);
+  return response.data;
+};
 
-type registerParams = {
-    resource: string,
-    variables: any,
-}
-type loginParams = {
-    resource: string,
-    variables: any,
-}
-const dataProvider = {
-    register: async ({ resource, variables }: registerParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return response.data;
-    },
-    login: async ({ resource, variables }: loginParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return response.data;
-    }
-}
-
-export const { register, login } = dataProvider;
+export const login = async ({ resource, variables }: AuthParams) => {
+  const response = await axios.post(`/${resource}`, variables);
+  return response.data;
+};

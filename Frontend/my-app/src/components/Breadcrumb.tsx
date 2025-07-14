@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import type { BreadcrumbProps } from "../types/BreadcrumbType";
+import "../assets/styles/breadcrumb.css";
 
 export const Breadcrumb = ({ items }: BreadcrumbProps) => (
   <nav className="breadcrumb-nav">
@@ -15,7 +16,12 @@ export const Breadcrumb = ({ items }: BreadcrumbProps) => (
           <span>{item.label}</span>
         )}
         {idx < items.length - 1 && (
-          <span className="breadcrumb-separator" style={{ margin: '0 8px', color: '#bdbdbd' }}>{'>'}</span>
+          <span
+            className="breadcrumb-separator"
+            style={{ margin: "0 8px", color: "#bdbdbd" }}
+          >
+            {">"}
+          </span>
         )}
       </span>
     ))}

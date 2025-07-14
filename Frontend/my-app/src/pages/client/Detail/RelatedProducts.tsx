@@ -4,6 +4,7 @@ import { useRelatedProductsPagination } from "../../../hook/useRelatedProductsPa
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useCart } from "../../../provider/CartProvider";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import "../../../assets/styles/realte.css";
 import { toast } from "sonner";
 import type {
   RouteParams,
@@ -20,13 +21,8 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
     isError,
   } = useRelatedProducts(id!, categoryId, limit);
 
-  const {
-    paginatedProducts,
-    canPrev,
-    canNext,
-    goPrev,
-    goNext,
-  } = useRelatedProductsPagination(relatedProducts || [], 4);
+  const { paginatedProducts, canPrev, canNext, goPrev, goNext } =
+    useRelatedProductsPagination(relatedProducts || [], 4);
 
   if (isLoading) {
     return (
@@ -77,8 +73,7 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
         </button>
         <div className="related-products-flex">
           {paginatedProducts.map((product) => {
-            const image =
-              product.image || (product.images?.[0] ?? "");
+            const image = product.image || (product.images?.[0] ?? "");
 
             return (
               <div className="related-product-item" key={product.id}>

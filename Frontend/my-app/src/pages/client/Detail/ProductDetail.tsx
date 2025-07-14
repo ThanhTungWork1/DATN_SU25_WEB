@@ -8,15 +8,15 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-import RelatedProducts from "./RelatedProducts"
+import RelatedProducts from "./RelatedProducts";
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
-import type { Product } from '../../../types/DetailType';
-import { getAllColors } from '../../../api/ApiProduct';
-import type { ColorType } from '../../../types/ColorType';
+import type { Product } from "../../../types/DetailType";
+import { getAllColors } from "../../../api/ApiProduct";
+import type { ColorType } from "../../../types/ColorType";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -46,7 +46,9 @@ const ProductDetail = () => {
   const [allColors, setAllColors] = useState<ColorType[]>([]);
   useEffect(() => {
     getBanners().then((banners) => {
-      const found = banners.find((b) => Number(b.id) === 2);
+      console.log("Banners from API:", banners);
+      const found = banners.find((b) => b.public_id === "banner2");
+      console.log("Found banner2:", found);
       setBanner2(found || null);
     });
     getAllColors().then((res: ColorType[]) => setAllColors(res));
@@ -58,7 +60,8 @@ const ProductDetail = () => {
   if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size?.name === selectedSize && v.color?.name === selectedColor?.name,
+    (v) =>
+      v.size?.name === selectedSize && v.color?.name === selectedColor?.name
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -67,8 +70,8 @@ const ProductDetail = () => {
   const uniqueColors = Array.from(
     new Map(
       (product.variants || [])
-        .filter(v => v.color)
-        .map(v => [v.color!.id, v.color!])
+        .filter((v) => v.color)
+        .map((v) => [v.color!.id, v.color!])
     ).values()
   );
 
@@ -92,9 +95,9 @@ const ProductDetail = () => {
         : [];
 
   // Map allColors để đảm bảo có trường code
-  const mappedColors = allColors.map(c => ({
+  const mappedColors = allColors.map((c) => ({
     ...c,
-    code: c.code || (c as any).hex_code || ''
+    code: c.code || (c as any).hex_code || "",
   }));
 
   return (
@@ -112,20 +115,17 @@ const ProductDetail = () => {
 
       <div className="container py-5 product-detail-container">
         <div className="product-detail-wrapper">
-          <div className="row g-4">
-            <div className="col-lg-2 col-md-3 d-none d-md-block">
+          <div className="row g-0">
+            <div className="col-lg-6 d-flex">
               <Aside
                 images={thumbnailImages}
                 onSelect={setSelectedImage}
                 selectedImage={selectedImage}
               />
-            </div>
-
-            <div className="col-lg-5 col-md-9 col-12">
               <MainImage imageUrl={selectedImage} />
             </div>
 
-            <div className="col-lg-5 col-md-4 col-12">
+            <div className="col-lg-6 product-info-col">
               <ProductInfo
                 product={product}
                 selectedVariantStock={selectedVariantStock}
@@ -146,7 +146,8 @@ const ProductDetail = () => {
                 onSelectColor={(color) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) => v.color?.id === color.id && v.size?.name === selectedSize,
+                    (v) =>
+                      v.color?.id === color.id && v.size?.name === selectedSize
                   );
                   if (variant?.image) {
                     setSelectedImage(variant.image);

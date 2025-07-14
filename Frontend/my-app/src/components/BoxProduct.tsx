@@ -4,27 +4,28 @@ import { Link } from "react-router-dom";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
 import { useWishlistContext } from "../provider/WishlistContext";
+import "../assets/styles/boxSP.css";
 
 interface BoxProductProps {
   product: Product;
+  onAddToCart?: () => void;
 }
 
-/**
- * Card sản phẩm cho trang danh sách
- * @param product Sản phẩm cần hiển thị
- */
-export const BoxProduct = ({ product }: { product: any }) => {
+export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { addToCart } = useCart();
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+  const { isInWishlist, addToWishlist, removeFromWishlist } =
+    useWishlistContext();
   const liked = isInWishlist(product.id);
 
-  // Lấy ảnh chính và ảnh hover
-  const mainImage = product.image;
+  const mainImage =
+    product.image || product.image_url || (product.images && product.images[0]);
   const hoverImage = product.hover_image;
   const hasHoverImage = !!hoverImage;
 
-  // Hàm xử lý thêm vào giỏ hàng
+  // Log chi tiết dữ liệu sản phẩm để kiểm tra các trường, đặc biệt là trường ảnh
+  console.log("BoxProduct FULL DATA:", JSON.stringify(product, null, 2));
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,46 +40,46 @@ export const BoxProduct = ({ product }: { product: any }) => {
   };
 
   return (
-    <div className="card h-100">
+    <div className="product-card">
       <div
-        className="position-relative product-image-wrapper"
+        className="product-card__image-wrapper"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {product.discount && (
-          <span className="badge bg-warning position-absolute top-0 start-0">
+          <span className="product-card__badge">
             Giảm {Math.round(product.discount)}%
           </span>
         )}
         <Link to={`/products/${product.id}`}>
-          <div className="product-image-inner">
+          <div className="product-card__image-inner">
             <img
               src={mainImage}
-              className={`card-img-top product-image box-product-image${hasHoverImage ? " main-product-image" : ""}`}
+              className="product-card__image"
               alt={product.name}
             />
             {hasHoverImage && (
               <img
                 src={hoverImage}
-                className="card-img-top product-image box-product-image hover-product-image"
+                className="product-card__image product-card__image--hover"
                 alt={product.name + " hover"}
               />
             )}
           </div>
         </Link>
-        {/* Cart icon overlay: Đặt ngoài Link */}
-        <button
-          type="button"
-          className="cart-icon-overlay"
-          onClick={handleAddToCart}
+        {/* GỠ BỎ NỀN TRẮNG ĐỤC */}
+        <Link
+          to={`/products/${product.id}`}
+          className="product-card__buy-now"
           tabIndex={0}
-          aria-label="Thêm vào giỏ hàng"
+          aria-label="Mua ngay"
+          onClick={e => e.stopPropagation()}
         >
-          <i className="fa-solid fa-cart-shopping"></i>
-        </button>
+          MUA NGAY &rarr;
+        </Link>
       </div>
-      <div className="card-body d-flex flex-column">
-        <h5 className="card-title product-title">
+      <div className="product-card__body">
+        <h5 className="product-card__title">
           <Link
             to={`/products/${product.id}`}
             style={{ textDecoration: "none", color: "inherit" }}
@@ -86,29 +87,27 @@ export const BoxProduct = ({ product }: { product: any }) => {
             {product.name}
           </Link>
         </h5>
-
-        <p className="product-price">
-          <Link to={`/products/${product.id}`}>
-            <span className="sale-price">
-              {Number(product.price * 1000).toLocaleString('vi-VN')}đ
+        <p className="product-card__price">
+          <span className="product-card__sale-price">
+            {Number(product.price * 1000).toLocaleString("vi-VN")}đ
+          </span>
+          {product.old_price && (
+            <span className="product-card__original-price">
+              {Number(product.old_price * 1000).toLocaleString("vi-VN")}đ
             </span>
-            {product.old_price && (
-              <span className="original-price">
-                {Number(product.old_price * 1000).toLocaleString('vi-VN')}đ
-              </span>
-            )}
-          </Link>
+          )}
         </p>
-
-        <div className="d-flex justify-content-between align-items-center mt-2">
-          <span className="sold-text">Đã bán {product.sold ?? 0}</span>
+        <div className="product-card__footer">
+          <span className="product-card__sold">Đã bán {product.sold ?? 0}</span>
           <button
-            className="btn btn-link p-0 m-0"
+            className="product-card__wishlist-btn"
             style={{ color: liked ? "#e63946" : "#00c6ab" }}
             title="Yêu thích"
             onClick={(e) => {
               e.preventDefault();
-              liked ? removeFromWishlist(product.id) : addToWishlist(product.id);
+              liked
+                ? removeFromWishlist(product.id)
+                : addToWishlist(product.id);
             }}
           >
             <i className={liked ? "fas fa-heart" : "far fa-heart"}></i>
@@ -117,4 +116,4 @@ export const BoxProduct = ({ product }: { product: any }) => {
       </div>
     </div>
   );
-}; 
+};

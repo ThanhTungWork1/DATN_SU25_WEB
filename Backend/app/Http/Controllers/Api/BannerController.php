@@ -16,4 +16,3 @@ class BannerController extends Controller
         return response()->json(['data' => $banners]);
     }
 }
-

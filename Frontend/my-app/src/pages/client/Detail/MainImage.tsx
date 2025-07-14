@@ -1,15 +1,16 @@
+import "../../../assets/styles/mainImage.css";
+
 type MainImageProps = {
   imageUrl: string;
 };
 
 const MainImage = ({ imageUrl }: MainImageProps) => {
   return (
-    // hiển thị ảnh chi tiết sp
-    <div className="text-center">
+    <div className="main-image-container">
       <img
         src={imageUrl}
         alt="Main Product"
-        style={{ width: "100%", maxHeight: 500, objectFit: "contain" }}
+        className="main-image"
       />
     </div>
   );

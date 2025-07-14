@@ -17,28 +17,11 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with([
-            'category',
-            'variants.color',
-            'variants.size',
-            'comments.user' => function ($query) {
-                $query->where('status', 1);
-            }
-        ])->findOrFail($id);
-
-        if ($product->discount && $product->discount > 0) {
-            $product->final_price = $product->price - ($product->price * $product->discount / 100);
-        } else {
-            $product->final_price = $product->price;
-        }
-
-        $product->average_rating = $product->comments->avg('rating');
-        $product->total_reviews = $product->comments->count();
-
+        $product = Product::findOrFail($id);
         return response()->json([
-            'success' => true,
-            'message' => 'Lấy thông tin sản phẩm thành công',
-            'data' => $product
+            'data' => $product,
+            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
+            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
         ]);
     }
 
@@ -51,7 +34,8 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         if ($request->hasFile('image')) {
@@ -61,12 +45,20 @@ class ProductController extends Controller
             $data['image'] = $filename;
         }
 
+        if ($request->hasFile('hover_image')) {
+            $hoverImage = $request->file('hover_image');
+            $filename = 'images/' . Str::random(10) . '.' . $hoverImage->getClientOriginalExtension();
+            $hoverImage->storeAs('public', $filename);
+            $data['hover_image'] = $filename;
+        }
+
         $product = Product::create($data);
 
         return response()->json([
             'message' => 'Thêm sản phẩm thành công',
             'data' => $product,
-            'image_url' => $product->image ? asset('storage/' . $product->image) : null
+            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
+            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
         ], 201);
     }
 
@@ -81,18 +73,28 @@ class ProductController extends Controller
             'price' => 'numeric|nullable',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         if ($request->hasFile('image')) {
             if ($product->image && Storage::exists('public/' . $product->image)) {
                 Storage::delete('public/' . $product->image);
             }
-
             $image = $request->file('image');
             $filename = 'images/' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->storeAs('public', $filename);
             $validated['image'] = $filename;
+        }
+
+        if ($request->hasFile('hover_image')) {
+            if ($product->hover_image && Storage::exists('public/' . $product->hover_image)) {
+                Storage::delete('public/' . $product->hover_image);
+            }
+            $hoverImage = $request->file('hover_image');
+            $filename = 'images/' . Str::random(10) . '.' . $hoverImage->getClientOriginalExtension();
+            $hoverImage->storeAs('public', $filename);
+            $validated['hover_image'] = $filename;
         }
 
         $product->update($validated);
@@ -100,14 +102,24 @@ class ProductController extends Controller
         return response()->json([
             'message' => 'Cập nhật sản phẩm thành công',
             'data' => $product,
-            'image_url' => $product->image ? asset('storage/' . $product->image) : null
+            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
+            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
         ]);
     }
 
     public function destroy($id)
     {
-        return Product::destroy($id);
+        $product = Product::findOrFail($id);
+        if ($product->image && Storage::exists('public/' . $product->image)) {
+            Storage::delete('public/' . $product->image);
+        }
+        if ($product->hover_image && Storage::exists('public/' . $product->hover_image)) {
+            Storage::delete('public/' . $product->hover_image);
+        }
+        $product->delete();
+        return response()->json(['message' => 'Xóa sản phẩm thành công']);
     }
+
     public function add(Request $request)
     {
         $data = $request->validate([
@@ -131,7 +143,6 @@ class ProductController extends Controller
     {
         $query = Product::with(['category', 'variants.color', 'variants.size']);
 
-
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -140,11 +151,9 @@ class ProductController extends Controller
             });
         }
 
-
         if ($request->has('category_id') && !empty($request->category_id)) {
             $query->where('category_id', $request->category_id);
         }
-
 
         if ($request->has('min_price') && !empty($request->min_price)) {
             $query->where('price', '>=', $request->min_price);
@@ -154,18 +163,15 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
         }
-
 
         if ($request->has('color_id') && !empty($request->color_id)) {
             $query->whereHas('variants', function ($q) use ($request) {
                 $q->where('color_id', $request->color_id);
             });
         }
-
 
         if ($request->has('size_id') && !empty($request->size_id)) {
             $query->whereHas('variants', function ($q) use ($request) {
@@ -183,7 +189,6 @@ class ProductController extends Controller
             }
         }
 
-
         if ($request->has('has_discount') && $request->has_discount !== '') {
             if ($request->has_discount == '1') {
                 $query->whereNotNull('discount')->where('discount', '>', 0);
@@ -194,7 +199,6 @@ class ProductController extends Controller
             }
         }
 
-
         if ($request->has('min_discount') && !empty($request->min_discount)) {
             $query->where('discount', '>=', $request->min_discount);
         }
@@ -202,7 +206,6 @@ class ProductController extends Controller
         if ($request->has('max_discount') && !empty($request->max_discount)) {
             $query->where('discount', '<=', $request->max_discount);
         }
-
 
         if ($request->has('in_stock') && $request->in_stock !== '') {
             if ($request->in_stock == '1') {
@@ -216,16 +219,13 @@ class ProductController extends Controller
             }
         }
 
-
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-
 
         $allowedSortFields = ['name', 'price', 'discount', 'created_at', 'updated_at'];
         if (!in_array($sortBy, $allowedSortFields)) {
             $sortBy = 'created_at';
         }
-
 
         if (!in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'desc';
@@ -233,9 +233,8 @@ class ProductController extends Controller
 
         $query->orderBy($sortBy, $sortOrder);
 
-
         $perPage = $request->get('per_page', 10);
-        $perPage = min(max($perPage, 1), 100); // Giới hạn từ 1-100
+        $perPage = min(max($perPage, 1), 100);
 
         $products = $query->paginate($perPage);
 
@@ -245,6 +244,8 @@ class ProductController extends Controller
             } else {
                 $product->final_price = $product->price;
             }
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             return $product;
         });
 
@@ -281,7 +282,7 @@ class ProductController extends Controller
     public function featured(Request $request)
     {
         $limit = $request->get('limit', 8);
-        $limit = min(max($limit, 1), 20); // Giới hạn từ 1-20
+        $limit = min(max($limit, 1), 20);
 
         $products = Product::with(['category', 'variants.color', 'variants.size'])
             ->where('status', true)
@@ -289,13 +290,14 @@ class ProductController extends Controller
             ->limit($limit)
             ->get();
 
-
         $products->transform(function ($product) {
             if ($product->discount && $product->discount > 0) {
                 $product->final_price = $product->price - ($product->price * $product->discount / 100);
             } else {
                 $product->final_price = $product->price;
             }
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             return $product;
         });
 
@@ -337,13 +339,14 @@ class ProductController extends Controller
 
         $products = $query->paginate($perPage);
 
-
         $products->getCollection()->transform(function ($product) {
             if ($product->discount && $product->discount > 0) {
                 $product->final_price = $product->price - ($product->price * $product->discount / 100);
             } else {
                 $product->final_price = $product->price;
             }
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             return $product;
         });
 
@@ -372,7 +375,6 @@ class ProductController extends Controller
             ->whereNotNull('discount')
             ->where('discount', '>', 0);
 
-
         $query->orderBy('discount', 'desc');
 
         // Phân trang
@@ -381,9 +383,10 @@ class ProductController extends Controller
 
         $products = $query->paginate($perPage);
 
-
         $products->getCollection()->transform(function ($product) {
             $product->final_price = $product->price - ($product->price * $product->discount / 100);
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             return $product;
         });
 
@@ -416,7 +419,6 @@ class ProductController extends Controller
             }
         ])->findOrFail($id);
 
-
         if ($product->discount && $product->discount > 0) {
             $product->final_price = $product->price - ($product->price * $product->discount / 100);
         } else {
@@ -430,7 +432,9 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lấy thông tin sản phẩm thành công',
-            'data' => $product
+            'data' => $product,
+            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
+            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
         ]);
     }
 }

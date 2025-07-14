@@ -1,3 +1,5 @@
+import "../assets/styles/mess-fb-phone.css";
+
 export const Contact = () => {
   return (
     <div className="contact-floating">

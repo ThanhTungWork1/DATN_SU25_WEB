@@ -4,19 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddOldPriceToProductVariantsTable extends Migration
-{
+return new class extends Migration {
     public function up()
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->decimal('old_price', 10, 2)->nullable()->after('price');
+            $table->string('sku')->nullable()->after('stock');
         });
     }
 
     public function down()
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->dropColumn('old_price');
+            $table->dropColumn('sku');
         });
     }
-}
+};

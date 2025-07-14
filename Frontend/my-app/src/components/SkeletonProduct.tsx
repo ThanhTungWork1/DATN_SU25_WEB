@@ -1,5 +1,4 @@
-import React from "react";
-import "./SkeletonProduct.css";
+import "../assets/styles/SkeletonProduct.css";
 
 export const SkeletonProduct = () => (
   <div className="skeleton-product">
@@ -7,4 +6,4 @@ export const SkeletonProduct = () => (
     <div className="skeleton-text" />
     <div className="skeleton-text short" />
   </div>
-); 
+);

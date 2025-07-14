@@ -1,0 +1,275 @@
+/* ĐỒNG BỘ HIỆU ỨNG ACTIVE MENU: chỉ đổi màu chữ, không đổ nền kể cả hover */
+.menu-links li a.active,
+.menu-links li button.active,
+.dropdown > a.active,
+.dropdown > button.active,
+.nav-btn-product.active {
+  color: #00c6ab !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.menu-links li a.active:hover,
+.menu-links li button.active:hover,
+.nav-btn-product.active:hover {
+  color: #00c6ab !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 84px;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #232946;
+  padding: 10px 0;
+  border-radius: 6px;
+  min-width: 180px;
+  flex-direction: column;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  animation: dropdownFade 0.3s ease forwards;
+  z-index: 999;
+}
+.dropdown:hover .dropdown-menu {
+  display: flex;
+}
+.dropdown-menu li {
+  width: 100%;
+}
+.dropdown-menu li a,
+.dropdown-menu li button {
+  display: block;
+  width: 100%;
+  color: white;
+  padding: 10px 16px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+.dropdown-menu li a:hover,
+.dropdown-menu li button:hover {
+  background-color: #00c6ab;
+  color: white;
+}
+.dropdown-icon {
+  font-size: 0.55em;
+  vertical-align: middle;
+  padding-left: 2px;
+  line-height: 1;
+  position: relative;
+  top: -1px;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: white;
+  height: 84px;
+  align-items: center;
+}
+
+/* Căn giữa menu-links trong navbar */
+.navbar {
+  position: relative;
+}
+.menu-links {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+.navbar-logo {
+  position: relative;
+  z-index: 2;
+}
+.icon-group {
+  position: relative;
+  z-index: 2;
+}
+
+/* Mega menu dạng bảng lớn cho Nam/Nữ/Phụ kiện */
+.mega-menu-nam {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 32px 36px 24px 36px;
+  display: flex;
+  gap: 48px;
+  min-width: 800px;
+  z-index: 1001;
+  margin-top: 12px;
+}
+.mega-menu-col {
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mega-menu-title {
+  font-weight: 700;
+  font-size: 1.08em;
+  margin-bottom: 8px;
+  color: #232946;
+  letter-spacing: 0.5px;
+}
+.mega-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.mega-menu-list li a {
+  display: block;
+  color: #232946;
+  padding: 4px 0;
+  font-size: 1em;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s;
+}
+.mega-menu-list li a:hover {
+  color: #00c6ab;
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+/* Đảm bảo hiển thị rõ ràng nội dung mega menu */
+.mega-menu-list li a {
+  display: block !important;
+  color: #232946 !important;
+  background: transparent !important;
+  font-size: 1em !important;
+  text-decoration: none;
+  border-radius: 4px;
+  padding: 4px 0;
+  transition: background 0.18s, color 0.18s;
+}
+.mega-menu-list li a:hover {
+  color: #00c6ab !important;
+  background: transparent !important;
+  font-weight: normal;
+}
+
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+  z-index: 1002;
+}
+
+.mega-menu-nam {
+  z-index: 1001;
+}
+
+.menu-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  align-items: center;
+  height: 84px;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+.menu-links li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 84px;
+}
+.menu-links li a,
+.menu-links li button {
+  color: white;
+  background: transparent;
+  border: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: color 0.3s, transform 0.3s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  line-height: 44px;
+}
+.menu-links li a:hover,
+.menu-links li button:hover {
+  color: #00c6ab;
+  transform: scale(1.03);
+}
+
+.mega-menu-footer {
+  text-align: center;
+  padding: 16px 0 8px 0;
+}
+.mega-menu-all-link {
+  color: #00c6ab;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1.08rem;
+  transition: color 0.2s;
+}
+.mega-menu-all-link:hover {
+  color: #e53935;
+  text-decoration: underline;
+}
+
+.mega-menu-nam {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 520px;
+  max-width: 600px;
+  padding: 18px 20px 12px 20px;
+  gap: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: #fff;
+}
+.mega-menu-cols {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+}
+.mega-menu-col {
+  min-width: 120px;
+}
+.mega-menu-all-link {
+  color: #00c6ab;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1.08rem;
+  transition: color 0.2s;
+  display: block;
+  padding-top: 8px;
+  margin-top: 0;
+  text-align: left;
+}
+.mega-menu-all-link:hover {
+  color: #e53935;
+  text-decoration: underline;
+}

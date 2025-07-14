@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
+import "../assets/styles/action.css";
 
 type ProductActionsProps = {
   onAddToCart: (quantity: number) => void;
   onBuyNow?: () => void;
   maxQuantity: number;
-  disabled?: boolean; // Thêm prop disabled
+  disabled?: boolean;
 };
 
-const ProductActions = ({ onAddToCart, onBuyNow, maxQuantity, disabled = false }: ProductActionsProps) => {
+const ProductActions = ({
+  onAddToCart,
+  onBuyNow,
+  maxQuantity,
+  disabled = false,
+}: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
 
   const increase = () =>
@@ -19,11 +25,7 @@ const ProductActions = ({ onAddToCart, onBuyNow, maxQuantity, disabled = false }
     <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
       {/* Bộ đếm số lượng */}
       <div className="quantity-control">
-        <button
-          onClick={decrease}
-          className="quantity-btn"
-          type="button"
-        >
+        <button onClick={decrease} className="quantity-btn" type="button">
           −
         </button>
         <input
@@ -37,20 +39,16 @@ const ProductActions = ({ onAddToCart, onBuyNow, maxQuantity, disabled = false }
               setQuantity(Math.min(Math.max(val, 1), maxQuantity));
             }
           }}
-          className="quantity-value"
+          className="quantity-input"
         />
-        <button
-          onClick={increase}
-          className="quantity-btn"
-          type="button"
-        >
+        <button onClick={increase} className="quantity-btn" type="button">
           +
         </button>
       </div>
 
       {/* Nút thêm giỏ hàng */}
       <button
-        className={`btn-add-to-cart d-flex align-items-center${disabled ? ' disabled' : ''}`}
+        className={`btn-add-cart d-flex align-items-center${disabled ? " disabled" : ""}`}
         onClick={() => onAddToCart(quantity)}
         disabled={disabled}
       >
@@ -59,10 +57,12 @@ const ProductActions = ({ onAddToCart, onBuyNow, maxQuantity, disabled = false }
 
       {/* Nút mua ngay */}
       <button
-        className={`btn-buy-now${disabled ? ' disabled' : ''}`}
+        className={`btn-buy-now${disabled ? " disabled" : ""}`}
         onClick={onBuyNow}
         disabled={disabled}
-      >Mua ngay</button>
+      >
+        Mua ngay
+      </button>
     </div>
   );
 };

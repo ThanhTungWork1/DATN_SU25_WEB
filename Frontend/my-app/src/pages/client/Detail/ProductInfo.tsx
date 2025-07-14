@@ -1,5 +1,5 @@
 import type { ProductInfoProps } from "../../../types/ProductInfoType";
-
+import "../../../assets/styles/info.css";
 // =============================
 // Component hiển thị thông tin sản phẩm (tên, giá, trạng thái, mã SP...)
 // =============================
@@ -14,11 +14,11 @@ const ProductInfo = ({
 
   // Format giá tiền chuẩn VN
   const formattedPrice = product.price
-    ? (Number(product.price) * 1000).toLocaleString('vi-VN') + 'đ'
-    : 'N/A';
+    ? (Number(product.price) * 1000).toLocaleString("vi-VN") + "đ"
+    : "N/A";
   const formattedOldPrice = originalPrice
-    ? (Number(originalPrice) * 1000).toLocaleString('vi-VN') + 'đ'
-    : '';
+    ? (Number(originalPrice) * 1000).toLocaleString("vi-VN") + "đ"
+    : "";
 
   return (
     <div className="product-info">
@@ -27,14 +27,10 @@ const ProductInfo = ({
 
       {/* Giá sản phẩm và giá gốc nếu có */}
       <div className="d-flex align-items-end gap-2 my-3">
-        <h2 className="text-danger fw-bolder mb-0">
-          {formattedPrice}
-        </h2>
+        <h2 className="text-danger fw-bolder mb-0">{formattedPrice}</h2>
         {/* Hiển thị giá gốc nếu có và lớn hơn giá bán */}
-        {originalPrice && originalPrice > product.price && (
-          <span className="price-original">
-            {formattedOldPrice}
-          </span>
+        {originalPrice && Number(originalPrice) > Number(product.price) && (
+          <span className="price-original">{formattedOldPrice}</span>
         )}
       </div>
 

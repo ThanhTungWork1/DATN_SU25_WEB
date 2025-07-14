@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { Form, Input, Radio, DatePicker, Button, message } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import useOne from "../../hook/useOne";
-import useProfile from "../../hook/useProfile";
-import "../../layouts/Client/UserProfile.css";
+import useOne from "../../../hook/useOne";
+import useProfile from "../../../hook/useProfile";
 
 const UserProfile = () => {
   const { id } = useParams();

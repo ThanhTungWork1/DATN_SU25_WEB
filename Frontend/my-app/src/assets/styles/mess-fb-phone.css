@@ -1,0 +1,32 @@
+.contact-floating {
+  position: fixed;
+  bottom: 32px;
+  right: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 2000;
+  pointer-events: auto;
+}
+
+.contact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #00c6ab;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 22px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.contact-btn:hover {
+  background-color: #00b29a;
+  transform: scale(1.08);
+}
