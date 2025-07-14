@@ -4,8 +4,10 @@ import {
   getProducts,
   deleteProduct,
   getProductVariants,
+  getCategories, // Import để lấy danh sách danh mục
 } from "../../../api/product";
-import { Product, ProductVariant } from "../../../types/ProductType";
+// Đảm bảo đường dẫn đến Product và ProductVariant là chính xác
+import { Product, ProductVariant, Category } from "../../../types/ProductType"; 
 import {
   Table,
   Button,
@@ -16,12 +18,19 @@ import {
   Tag,
   Input,
 } from "antd";
+import { TagProps } from "antd"; 
 
 const { Title } = Typography;
 const { Search } = Input;
 
+// Định nghĩa lại Product với trường total_stock được thêm vào
+interface ProductWithTotalStock extends Product {
+  total_stock?: number;
+}
+
 export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithTotalStock[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // State để lưu danh mục
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -29,16 +38,29 @@ export default function ProductList() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await getProducts();
+      // Gọi API để lấy danh sách sản phẩm và danh mục đồng thời
+      const [productsRes, categoriesRes] = await Promise.all([
+        getProducts(),
+        getCategories(), // Lấy danh sách danh mục
+      ]);
 
-      const productsData: Product[] = res.data;
+      // Xử lý dữ liệu danh mục
+      const categoriesData: Category[] = Array.isArray(categoriesRes.data.data) ? categoriesRes.data.data : categoriesRes.data;
+      setCategories(categoriesData);
 
-      // Tính toán tổng tồn kho từ productVariants
+      // Xử lý dữ liệu sản phẩm
+      const productsData: Product[] = Array.isArray(productsRes.data.data) ? productsRes.data.data : productsRes.data;
+
+      // Tính toán tổng tồn kho từ productVariants cho mỗi sản phẩm
       const productsWithStock = await Promise.all(
         productsData.map(async (product) => {
           try {
+            // Lấy biến thể của từng sản phẩm
             const variantsRes = await getProductVariants(product.id);
-            const totalStock = variantsRes.data.reduce(
+            const variantsData: ProductVariant[] = Array.isArray(variantsRes.data.data) ? variantsRes.data.data : variantsRes.data;
+            
+            // Tính tổng tồn kho
+            const totalStock = variantsData.reduce(
               (sum, variant) => sum + variant.stock_quantity,
               0
             );
@@ -48,7 +70,7 @@ export default function ProductList() {
               `Error fetching variants for product ${product.id}:`,
               error
             );
-            return { ...product, total_stock: 0 }; // Default to 0 if variants fail to load
+            return { ...product, total_stock: 0 }; // Mặc định là 0 nếu lỗi
           }
         })
       );
@@ -66,7 +88,6 @@ export default function ProductList() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    // id là number
     try {
       await deleteProduct(id);
       message.success("Đã xoá sản phẩm thành công");
@@ -81,24 +102,40 @@ export default function ProductList() {
     item.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getStatusColor = (status: Product["status"]) => {
-    switch (status) {
-      case "active":
-        return "green";
-      case "out_of_stock":
-        return "red";
-      case "inactive":
-        return "default";
-      default:
-        return "default";
+  // Hàm lấy màu cho Tag trạng thái sản phẩm (nhận boolean/number)
+  const getProductStatusColor = (status: boolean | number): TagProps['color'] => {
+    if (status === true || status === 1) {
+      return "green"; // Đang bán
     }
+    if (status === false || status === 0) {
+      return "red"; // Ngừng bán/Hết hàng
+    }
+    return "default"; // Mặc định
   };
 
-  const getStockTag = (totalStock: number) => {
-    if (totalStock === 0) return <Tag color="red">Hết hàng</Tag>;
-    if (totalStock <= 10)
-      return <Tag color="orange">Sắp hết ({totalStock})</Tag>; // Thêm số lượng cụ thể
-    return <Tag color="green">Còn hàng ({totalStock})</Tag>;
+  // Hàm lấy văn bản cho trạng thái sản phẩm (nhận boolean/number)
+  const getProductStatusText = (status: boolean | number): string => {
+    if (status === true || status === 1) {
+      return "Đang bán";
+    }
+    if (status === false || status === 0) {
+      return "Ngừng bán";
+    }
+    return "Không rõ";
+  };
+
+  // Hàm lấy Tag hiển thị tồn kho
+  // const getStockTag = (totalStock: number) => {
+  //   if (totalStock === 0) return <Tag color="red">Hết hàng</Tag>;
+  //   if (totalStock <= 10)
+  //     return <Tag color="orange">Sắp hết ({totalStock})</Tag>; 
+  //   return <Tag color="blue">Còn hàng ({totalStock})</Tag>;
+  // };
+
+  // Hàm để lấy tên danh mục từ category_id
+  const getCategoryName = (categoryId: number): string => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "Không rõ";
   };
 
   const columns = [
@@ -109,12 +146,12 @@ export default function ProductList() {
       render: (text: number) => `#${text}`,
     },
     {
-      title: "Ảnh chính",
-      dataIndex: "main_image", // Sử dụng main_image
-      key: "main_image",
+      title: "Ảnh",
+      dataIndex: "image", // Sử dụng main_image
+      key: "image",
       render: (url: string) => (
         <img
-          src={url || "https://via.placeholder.com/50"}
+          src={url || "https://placehold.co/50x50/cccccc/333333?text=No+Image"} // Placeholder nếu không có ảnh
           alt="ảnh sản phẩm"
           style={{
             width: 50,
@@ -131,7 +168,7 @@ export default function ProductList() {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      ellipsis: true,
+      ellipsis: true, // Hiển thị dấu ba chấm nếu quá dài
     },
     {
       title: "Giá bán",
@@ -139,38 +176,34 @@ export default function ProductList() {
       key: "price",
       render: (text: number) => `${text.toLocaleString()} VND`,
     },
+    // {
+    //   title: "Giá cũ", 
+    //   dataIndex: "old_price",
+    //   key: "old_price",
+    //   render: (text: number | null) =>
+    //     text ? `${text.toLocaleString()} VND` : "-", // Hiển thị "-" nếu không có giá cũ
+    // },
     {
-      title: "Giá cũ", // Thêm cột giá cũ
-      dataIndex: "old_price",
-      key: "old_price",
-      render: (text: number | null) =>
-        text ? `${text.toLocaleString()} VND` : "-",
-    },
-    {
-      title: "Danh mục ID", // Hiện tại chỉ hiển thị ID, cần API để lấy tên danh mục
+      title: "Danh mục", 
       dataIndex: "category_id",
       key: "category_id",
+      render: (categoryId: number) => getCategoryName(categoryId), // Hiển thị tên danh mục
     },
     {
       title: "Trạng thái",
       key: "status",
       render: (_: any, record: Product) => (
-        <Tag color={getStatusColor(record.status)}>
-          {record.status === "active"
-            ? "Đang bán"
-            : record.status === "out_of_stock"
-              ? "Hết hàng"
-              : "Ngừng bán"}
+        <Tag color={getProductStatusColor(record.status)}>
+          {getProductStatusText(record.status)}
         </Tag>
       ),
     },
-    {
-      // Lưu ý: Trường total_stock này không có sẵn trong db.json products,
-      title: "Tổng tồn kho",
-      dataIndex: "total_stock",
-      key: "total_stock",
-      render: (totalStock: number) => getStockTag(totalStock),
-    },
+    // {
+    //   title: "Tổng tồn kho",
+    //   dataIndex: "total_stock", // Trường này được thêm vào khi fetchData
+    //   key: "total_stock",
+    //   render: (totalStock: number) => getStockTag(totalStock),
+    // },
     {
       title: "Hành động",
       key: "action",

@@ -1,6 +1,7 @@
+// src/pages/admin/orders/OrderList.tsx
+
 import React, { useEffect, useState } from "react";
 import { getOrders, deleteOrder } from "../../../api/order";
-
 import { Order } from "../../../types/ProductType";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,13 +11,16 @@ import {
   Space,
   message,
   Typography,
-  Tag,
   Input,
+  Tag,
 } from "antd";
 
+// Import các hàm helper về trạng thái từ utils/orderStatus.ts
 import {
   getOrderStatusColor,
   getOrderStatusText,
+  getPaymentStatusColor,
+  getPaymentStatusText,
 } from "../../../utils/orderStatus";
 
 const { Title } = Typography;
@@ -32,7 +36,16 @@ export default function OrderList() {
     setLoading(true);
     try {
       const res = await getOrders();
-      setOrders(res.data);
+
+      let ordersData: Order[] = [];
+      if (res.data && Array.isArray(res.data.data)) {
+        ordersData = res.data.data;
+      } else if (Array.isArray(res.data)) {
+        ordersData = res.data;
+      } else {
+        ordersData = res.data.orders || [];
+      }
+      setOrders(ordersData);
     } catch (error) {
       message.error("Không thể tải danh sách đơn hàng.");
       console.error("Fetch orders error:", error);
@@ -58,8 +71,8 @@ export default function OrderList() {
 
   const filtered = orders.filter(
     (item) =>
-      item.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-      item.id.toString().includes(search)
+      item.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
+      item.id?.toString().includes(search)
   );
 
   const columns = [
@@ -69,15 +82,44 @@ export default function OrderList() {
       key: "id",
       render: (text: number) => `#${text}`,
     },
-    { title: "Khách hàng", dataIndex: "customer_name", key: "customer_name" },
+    { title: "Mã Khách hàng", dataIndex: "user_id", key: "user_id" },
     {
       title: "Tổng cộng",
-      dataIndex: "final_amount",
-      key: "final_amount",
-      render: (text: number) => `${text.toLocaleString()} VND`,
+      dataIndex: "total_amount",
+      key: "total_amount",
+      render: (text: number | undefined | null) => {
+        if (text === undefined || text === null) {
+          return "-";
+        }
+        return `${text.toLocaleString()} VND`;
+      },
     },
     {
-      title: "Trạng thái",
+      title: "Phí vận chuyển",
+      dataIndex: "shipping_fee",
+      key: "shipping_fee",
+      render: (text: number | undefined | null) => {
+        if (text === undefined || text === null) {
+          return "-";
+        }
+        return `${text.toLocaleString()} VND`;
+      },
+    },
+
+    {
+      title: "Trạng thái thanh toán",
+      dataIndex: "is_paid",
+      key: "is_paid",
+      render: (
+        isPaid: boolean | number // isPaid sẽ là true/false hoặc 0/1
+      ) => (
+        <Tag color={getPaymentStatusColor(isPaid)}>
+          {getPaymentStatusText(isPaid)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Trạng thái đơn hàng",
       dataIndex: "status",
       key: "status",
       render: (status: Order["status"]) => (

@@ -1,4 +1,4 @@
-
+// src/pages/admin/products/ProductForm.tsx
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,9 +23,8 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const PRODUCT_STATUS_OPTIONS = [
-  { value: "active", label: "Đang bán" },
-  { value: "out_of_stock", label: "Hết hàng" },
-  { value: "inactive", label: "Ngừng bán" },
+  { value: true, label: "Đang bán" },
+  { value: false, label: "Ngừng bán/Hết hàng" },
 ];
 
 export default function ProductForm() {
@@ -46,9 +45,11 @@ export default function ProductForm() {
           getColors(),
           getSizes(),
         ]);
-        setCategories(catRes.data);
-        setColors(colorRes.data);
-        setSizes(sizeRes.data);
+        
+        setCategories(Array.isArray(catRes.data.data) ? catRes.data.data : catRes.data);
+        setColors(Array.isArray(colorRes.data.data) ? colorRes.data.data : colorRes.data);
+        setSizes(Array.isArray(sizeRes.data.data) ? sizeRes.data.data : sizeRes.data);
+
       } catch (error) {
         message.error("Lỗi khi tải dữ liệu tùy chọn (danh mục, màu, kích thước).");
         console.error("Fetch select options error:", error);
@@ -67,28 +68,28 @@ export default function ProductForm() {
 
       Promise.all([
         getProduct(productId),
-        getProductVariants(productId)
+        getProductVariants(productId) 
       ])
         .then(([productRes, variantsRes]) => {
           const productData: Product = productRes.data;
-          const variantsData: ProductVariant[] = variantsRes.data;
+          
+          const variantsData: ProductVariant[] = Array.isArray(variantsRes.data.data) ? variantsRes.data.data : variantsRes.data;
 
           console.log("Dữ liệu sản phẩm từ API:", productData);
           console.log("Dữ liệu biến thể từ API:", variantsData);
 
           formRef.setFieldsValue({
             ...productData,
-            images: productData.images ? productData.images.join('\n') : '',
-            materials: productData.materials || [], // Đảm bảo materials là mảng rỗng nếu null/undefined
+            // SỬA: Đồng nhất tên trường cho ảnh chính và ảnh phụ
+            main_image: productData.main_image || '', // Đảm bảo có giá trị
+            hover_image: productData.hover_image || '', // Dùng hover_image cho ảnh phụ
+            materials: productData.materials || [], 
 
             variants: variantsData.map(v => ({
               ...v,
-              // Đảm bảo giá trị của Select là undefined nếu không có
               color_id: v.color_id === null ? undefined : v.color_id,
               size_id: v.size_id === null ? undefined : v.size_id,
-              // Đảm bảo giá trị số mặc định là 0 nếu null/undefined
               stock_quantity: v.stock_quantity === null || v.stock_quantity === undefined ? 0 : v.stock_quantity,
-              // Đảm bảo chuỗi rỗng mặc định nếu null/undefined
               image: v.image || '',
               sku: v.sku || ''
             }))
@@ -99,14 +100,13 @@ export default function ProductForm() {
           console.error("Fetch product/variants error:", error);
         });
     } else {
-      // Khi tạo mới, đảm bảo các giá trị mặc định là an toàn
       formRef.setFieldsValue({
-        status: "active",
+        status: true, 
         old_price: null,
         sold_count: 0,
-        images: '',
+        main_image: '', // Khởi tạo giá trị rỗng
+        hover_image: '', // Khởi tạo giá trị rỗng
         materials: [],
-        // Khởi tạo một biến thể rỗng để người dùng có thể bắt đầu nhập
         variants: [{ color_id: undefined, size_id: undefined, stock_quantity: 0, image: '', sku: '' }]
       });
     }
@@ -121,34 +121,37 @@ export default function ProductForm() {
       status: values.status,
       slug: values.slug || values.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
       category_id: Number(values.category_id),
-      main_image: values.main_image,
-      images: values.images ? values.images.split('\n').filter((url: string) => url.trim() !== '') : [],
+      // SỬA: Đồng nhất tên trường ảnh chính và ảnh phụ khi gửi đi
+      main_image: values.main_image, // Dùng main_image
+      hover_image: values.hover_image, // Dùng hover_image cho ảnh phụ
       materials: values.materials || [],
       sold_count: Number(values.sold_count) || 0,
+      discount: values.discount ? Number(values.discount) : null, // Thêm trường discount
     };
 
     try {
       let productResponse;
       if (isEditing) {
         productResponse = await updateProduct(Number(id), productData);
-        message.success("Cập nhật sản phẩm thành công");
       } else {
         productResponse = await createProduct(productData as Product);
-        message.success("Tạo sản phẩm thành công");
       }
 
       const productId = productResponse.data.id;
 
       const submittedVariants: ProductVariant[] = values.variants || [];
+      
       const existingVariantsRes = await getProductVariants(productId);
-      const existingVariants: ProductVariant[] = existingVariantsRes.data;
-
+      const existingVariants: ProductVariant[] = Array.isArray(existingVariantsRes.data.data) ? existingVariantsRes.data.data : existingVariantsRes.data;
+      
       const existingVariantIds = new Set(existingVariants.map(v => v.id));
-      const newVariantIds = new Set(submittedVariants.map(v => v.id).filter(id => id !== undefined));
+      const newVariantIds = new Set(submittedVariants.map(v => v.id).filter(id_val => id_val !== undefined));
+
+      const variantOperations: Promise<any>[] = [];
 
       for (const existingVariant of existingVariants) {
         if (!newVariantIds.has(existingVariant.id)) {
-          await deleteProductVariant(existingVariant.id);
+          variantOperations.push(deleteProductVariant(existingVariant.id));
         }
       }
 
@@ -157,21 +160,39 @@ export default function ProductForm() {
           product_id: productId,
           color_id: Number(variant.color_id),
           size_id: Number(variant.size_id),
-          stock_quantity: Number(variant.stock_quantity),
-          image: variant.image || null, // Chắc chắn là null hoặc string
+          stock_quantity: Number(variant.stock_quantity), // BỎ COMMENT NẾU BACKEND YÊU CẦU
+          image: variant.image || null, 
           sku: variant.sku || `${productId}-${variant.color_id}-${variant.size_id}`
         };
 
         if (variant.id && existingVariantIds.has(variant.id)) {
-          await updateProductVariant(variant.id, variantDataToSend);
+          variantOperations.push(updateProductVariant(variant.id, variantDataToSend));
         } else {
-          await createProductVariant(variantDataToSend);
+          variantOperations.push(createProductVariant(variantDataToSend));
         }
       }
 
+      await Promise.all(variantOperations);
+
+      message.success(`${isEditing ? "Cập nhật" : "Tạo mới"} sản phẩm thành công!`);
+      
       navigate("/admin/products");
-    } catch (error) {
-      message.error(`Lỗi: ${isEditing ? "Cập nhật" : "Tạo mới"} sản phẩm.`);
+
+    } catch (error: any) {
+      let errorMessage = `Lỗi: ${isEditing ? "Cập nhật" : "Tạo mới"} sản phẩm.`;
+      if (error.response && error.response.data) {
+          if (error.response.data.message) {
+              errorMessage += ` Chi tiết: ${error.response.data.message}`;
+          }
+          if (error.response.data.errors) {
+              Object.values(error.response.data.errors).forEach((errMsgs: any) => {
+                  errMsgs.forEach((msg: string) => message.error(msg));
+              });
+          }
+      } else if (error.message) {
+          errorMessage += ` Chi tiết: ${error.message}`;
+      }
+      message.error(errorMessage);
       console.error("Product form submission error:", error);
     }
   };
@@ -183,7 +204,6 @@ export default function ProductForm() {
         form={formRef}
         onFinish={onFinish}
         layout="vertical"
-        // initialValues được set trong useEffect để đảm bảo data từ API được nạp đúng
       >
         {/* Product General Information */}
         <Divider orientation="left">Thông tin chung sản phẩm</Divider>
@@ -261,7 +281,7 @@ export default function ProductForm() {
         >
           <Select placeholder="Chọn trạng thái">
             {PRODUCT_STATUS_OPTIONS.map((option) => (
-              <Option key={option.value} value={option.value}>
+              <Option key={option.value.toString()} value={option.value}> 
                 {option.label}
               </Option>
             ))}
@@ -270,7 +290,7 @@ export default function ProductForm() {
 
         <Form.Item
           label="URL ảnh chính"
-          name="main_image"
+          name="main_image" // SỬA: Đổi tên thành main_image
           rules={[{ required: true, message: "Vui lòng nhập URL ảnh chính" }]}
         >
           <Input placeholder="http://example.com/main-image.jpg" />
@@ -278,10 +298,17 @@ export default function ProductForm() {
 
         <Form.Item
           label="URL ảnh phụ (mỗi URL một dòng)"
-          name="images"
+          name="hover_image" // SỬA: Đổi tên thành hover_image
           tooltip="Mỗi đường dẫn ảnh phụ trên một dòng mới."
         >
-          <TextArea rows={4} placeholder="http://example.com/image1.jpg&#10;http://example.com/image2.jpg" />
+          <TextArea rows={4} placeholder="http://example.com/hover_image1.jpg&#10;http://example.com/hover_image2.jpg" />
+        </Form.Item>
+        
+        <Form.Item
+          label="Giảm giá" // Thêm trường giảm giá
+          name="discount"
+        >
+          <Input type="number" min={0} placeholder="Số tiền giảm giá" />
         </Form.Item>
 
         <Form.Item
@@ -309,7 +336,9 @@ export default function ProductForm() {
                   >
                     <Select placeholder="Màu sắc">
                       {colors.map(color => (
-                        <Option key={color.id} value={color.id}>{color.name}</Option>
+                        <Option key={color.id} value={color.id}>
+                          {color.name}
+                        </Option>
                       ))}
                     </Select>
                   </Form.Item>
@@ -321,10 +350,13 @@ export default function ProductForm() {
                   >
                     <Select placeholder="Kích thước">
                       {sizes.map(size => (
-                        <Option key={size.id} value={size.id}>{size.name}</Option>
+                        <Option key={size.id} value={size.id}>
+                          {size.name}
+                        </Option>
                       ))}
                     </Select>
                   </Form.Item>
+                  {/* BỎ COMMENT: Thêm lại trường stock_quantity */}
                   <Form.Item
                     {...restField}
                     name={[name, 'stock_quantity']}

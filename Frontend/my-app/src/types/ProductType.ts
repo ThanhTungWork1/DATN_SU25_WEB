@@ -9,10 +9,10 @@ export interface Product {
   category_id: number; // ID của danh mục
   colors: number[]; // Mảng các ID màu sắc
   sizes: number[]; // Mảng các ID kích thước
-  main_image: string; // URL ảnh chính
-  images: string[]; // Mảng các URL ảnh phụ
+  image: string; // URL ảnh chính
+  hover_images: string[]; // Mảng các URL ảnh phụ
   materials: string[]; // Mảng các chất liệu
-  sold_count: number; // Số lượng đã bán
+  sold: number; // Số lượng đã bán
   created_at: string;
   updated_at: string;
 }

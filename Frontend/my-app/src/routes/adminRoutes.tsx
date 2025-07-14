@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Route } from "react-router-dom";
 
 import AdminLayout from "../layouts/Admin/AdminLayout";

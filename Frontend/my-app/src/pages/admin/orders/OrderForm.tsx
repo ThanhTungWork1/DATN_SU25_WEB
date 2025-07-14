@@ -78,7 +78,7 @@ export default function OrderForm() {
       final_amount: Number(values.final_amount),
       status: values.status,
       payment_method: values.payment_method,
-      payment_status: values.payment_status,
+      is_paid: values.is_paid,
       notes: values.notes || null,
     };
 
@@ -254,7 +254,7 @@ export default function OrderForm() {
           <Col span={12}>
             <Form.Item
               label="Trạng thái thanh toán"
-              name="payment_status"
+              name="is_paid"
               rules={[
                 {
                   required: true,
