@@ -17,7 +17,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with(['variants.size', 'variants.color'])->findOrFail($id);
         return response()->json([
             'data' => $product,
             'image_url' => $product->image ? asset('storage/' . $product->image) : null,

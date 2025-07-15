@@ -1,28 +1,31 @@
 import type { ColorProps } from "../types/ColorType";
+import "../assets/styles/color.css";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
-
   return (
     <div className="mb-3">
+      <div>Test render Color</div>
       <div className="d-flex gap-2 flex-wrap mt-2">
         {colors.map((color) => {
           const isSelected = selectedColor?.id === color.id;
-          const code = color.code ? color.code.toLowerCase() : "";
+          const code = (color.code || color.hex_code || "").toLowerCase();
           const isWhite = code === "#fff" || code === "#ffffff";
           const isRed = code === "#ff0000" || code === "red";
           const classes = [
             "color-circle",
             isSelected && !isWhite && !isRed && "color-circle--selected",
             isWhite && "color-circle--white",
-            isRed && isSelected && "color-circle--red"
-          ].filter(Boolean).join(" ");
+            isRed && isSelected && "color-circle--red",
+          ]
+            .filter(Boolean)
+            .join(" ");
           return (
             <span
               key={color.id}
               title={color.name}
               onClick={() => onSelectColor(color)}
               className={classes}
-              style={isWhite ? undefined : { backgroundColor: color.code }}
+              style={isWhite ? undefined : { backgroundColor: code }}
             />
           );
         })}

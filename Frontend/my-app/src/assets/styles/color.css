@@ -1,0 +1,29 @@
+/* Style cho nút chọn màu sản phẩm */
+.color-circle {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  cursor: pointer;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  vertical-align: middle;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.color-circle--selected {
+  border: 2.5px solid #222;
+  box-shadow: 0 0 0 2px #4fd1c5;
+}
+.color-circle--white {
+  border: 2px solid #aaa;
+  background: #fff;
+}
+.color-circle--red {
+  border: 2px solid #ff0000;
+}
+.color-circle:hover {
+  border: 2.5px solid #4fd1c5;
+  box-shadow: 0 0 0 2px #b2f5ea;
+}

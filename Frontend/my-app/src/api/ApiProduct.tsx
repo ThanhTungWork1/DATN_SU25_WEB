@@ -12,7 +12,7 @@ import type { ProductPaginatedResponse } from "../types/ProductType";
 export const getProductsPaginated = async (
   page: number,
   limit: number,
-  search?: string,
+  search?: string
 ): Promise<ProductPaginatedResponse> => {
   const params: any = { page, limit };
   if (search) params.search = search;
@@ -27,7 +27,8 @@ export const getAllCategories = async () => {
   const { data } = await config.get("/categories");
   const res: any = data;
   if (Array.isArray(res)) return res as { id: number; name: string }[];
-  if (Array.isArray(res.data)) return res.data as { id: number; name: string }[];
+  if (Array.isArray(res.data))
+    return res.data as { id: number; name: string }[];
   return [];
 };
 
@@ -44,7 +45,9 @@ export const getAllProducts = async () => {
  */
 export const getAllColors = async () => {
   const response = await config.get("/colors");
-  const data = response.data as { data: { id: number; name: string; code: string }[] };
+  const data = response.data as {
+    data: { id: number; name: string; code: string }[];
+  };
   return data.data;
 };
 
@@ -72,3 +75,4 @@ export const getProductDetail = async (id: string | number) => {
   const response = await config.get(`/product/${id}`);
   return response.data;
 };
+2;

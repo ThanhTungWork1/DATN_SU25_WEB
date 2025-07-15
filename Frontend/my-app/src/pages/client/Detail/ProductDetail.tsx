@@ -17,6 +17,7 @@ import type { Banner as BannerType } from "../../../types/BannerType";
 import type { Product } from "../../../types/DetailType";
 import { getAllColors } from "../../../api/ApiProduct";
 import type { ColorType } from "../../../types/ColorType";
+import "../../../assets/styles/color.css";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -30,6 +31,10 @@ const ProductDetail = () => {
   const { id } = useParams<RouteParams>();
   const { data: productRaw, isLoading, isError } = useProductDetail(id!);
   const product = (productRaw as any)?.data as Product | undefined;
+
+  // Log dữ liệu trả về từ API
+  console.log("[DEBUG] productRaw:", productRaw);
+  console.log("[DEBUG] product (parsed):", product);
 
   const {
     selectedImage,
@@ -46,9 +51,7 @@ const ProductDetail = () => {
   const [allColors, setAllColors] = useState<ColorType[]>([]);
   useEffect(() => {
     getBanners().then((banners) => {
-      console.log("Banners from API:", banners);
       const found = banners.find((b) => b.public_id === "banner2");
-      console.log("Found banner2:", found);
       setBanner2(found || null);
     });
     getAllColors().then((res: ColorType[]) => setAllColors(res));
@@ -70,10 +73,14 @@ const ProductDetail = () => {
   const uniqueColors = Array.from(
     new Map(
       (product.variants || [])
-        .filter((v) => v.color)
-        .map((v) => [v.color!.id, v.color!])
+        .map((v) => v.color)
+        .filter((color): color is ColorType => color !== undefined && color !== null)
+        .map((color) => [color.id, color])
     ).values()
   );
+
+  // Log uniqueColors để debug
+  console.log("[DEBUG] uniqueColors for Color:", uniqueColors);
 
   // Lấy thumbnail cho Aside: lấy ảnh đầu tiên của mỗi màu từ variants
   let colorThumbnails: string[] = [];
@@ -99,6 +106,12 @@ const ProductDetail = () => {
     ...c,
     code: c.code || (c as any).hex_code || "",
   }));
+
+  // Log dữ liệu truyền vào Size và Color
+  console.log("[DEBUG] variants for Size:", product.variants);
+  console.log("[DEBUG] mappedColors for Color:", mappedColors);
+  console.log("[DEBUG] selectedSize:", selectedSize);
+  console.log("[DEBUG] selectedColor:", selectedColor);
 
   return (
     <>
@@ -141,7 +154,7 @@ const ProductDetail = () => {
               <hr />
 
               <Color
-                colors={mappedColors}
+                colors={uniqueColors}
                 selectedColor={selectedColor}
                 onSelectColor={(color) => {
                   handleColorSelect(color);
@@ -169,14 +182,13 @@ const ProductDetail = () => {
           </div>
 
           <ProductTabs product={product} />
+          <RelatedProducts categoryId={product.category_id} />
 
           {banner2 && (
-            <div className="container banner-detail-middle">
+            <div className="banner-detail-middle">
               <Banner imageUrl={banner2.image_url} />
             </div>
           )}
-
-          <RelatedProducts categoryId={product.category_id} />
         </div>
       </div>
     </>

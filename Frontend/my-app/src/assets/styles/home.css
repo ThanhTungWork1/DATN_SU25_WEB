@@ -162,13 +162,16 @@
   border-radius: 8px;
 }
 
-.single-banner {
-  margin: 40px 0;
-  text-align: center;
+.banner-small {
+  width: 50%;
+  height: auto;
+  object-fit: cover;
+  /* Bỏ border-radius để góc vuông */
 }
 
 .single-banner img {
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  /* Bỏ border-radius để góc vuông */
 }
+

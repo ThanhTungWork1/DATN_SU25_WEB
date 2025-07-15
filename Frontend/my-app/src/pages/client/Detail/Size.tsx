@@ -1,4 +1,5 @@
 import type { Variant } from "../../../types/DetailType";
+import "../../../assets/styles/size.css";
 
 /*
  * =================================================================
@@ -15,7 +16,6 @@ type SizeProps = {
 };
 
 const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
-  
   // BƯỚC 1: Lọc ra các size duy nhất và hợp lệ
   const availableSizes = [
     ...new Set(variants.map((v) => v.size?.name).filter(Boolean) as string[]),
@@ -32,7 +32,9 @@ const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
           // Kiểm tra xem size này có còn hàng không
           const isOutOfStock = !variants.some(
             (variant) =>
-              variant?.size?.name === size && variant?.stock && variant.stock > 0
+              variant?.size?.name === size &&
+              variant?.stock &&
+              variant.stock > 0
           );
 
           const isSelected = selectedSize === size;
