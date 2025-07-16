@@ -3,19 +3,26 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  old_price: number | null; // Có thể null nếu không có giá cũ
-  status: 'active' | 'out_of_stock' | 'inactive'; // Trạng thái sản phẩm
-  slug: string;
-  category_id: number; // ID của danh mục
-  colors: number[]; // Mảng các ID màu sắc
-  sizes: number[]; // Mảng các ID kích thước
-  image: string; // URL ảnh chính
-  hover_images: string[]; // Mảng các URL ảnh phụ
-  materials: string[]; // Mảng các chất liệu
-  sold: number; // Số lượng đã bán
-  created_at: string;
-  updated_at: string;
+  old_price: number | null; 
+  status: boolean | number; // Có thể là boolean hoặc 0/1
+  slug: string; 
+  category_id: number; 
+  
+  // Tên cột trong DB (mà form sẽ dùng)
+  image: string; // Cột 'image' trong DB (ảnh chính)
+  hover_image: string | null; // Cột 'hover_image' trong DB (ảnh phụ)
+  material: string | string[] | null; // Cột 'material' trong DB, có thể là string hoặc array
+  sold: number; // Cột 'sold' trong DB (số lượng đã bán)
+  discount: number | null; 
+  
+  // Tên trường mà API Laravel thực tế đang trả về (nếu dùng API Resource)
+  image_url?: string; // API đang trả về tên này cho ảnh chính
+  hover_image_url?: string; // API đang trả về tên này cho ảnh phụ
+
+  created_at?: string;
+  updated_at?: string;
 }
+
 
 export interface Color {
   id: number;
@@ -42,4 +49,12 @@ export interface ProductVariant {
   sku: string; // Mã SKU cho biến thể
   created_at: string;
   updated_at: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    status: 'active' | 'inactive';
+    created_at?: string;
+    updated_at?: string;
 }

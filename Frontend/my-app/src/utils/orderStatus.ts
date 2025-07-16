@@ -52,10 +52,8 @@ export const PAYMENT_METHOD_OPTIONS = [
 
 // Danh sách trạng thái thanh toán
 export const PAYMENT_STATUS_OPTIONS = [
-  { value: "unpaid", label: "Chưa thanh toán" },
-  { value: "paid", label: "Đã thanh toán" },
-  { value: "part_paid", label: "Thanh toán một phần" },
-  { value: "refunded", label: "Đã hoàn tiền" },
+  { value: true, label: "Đã thanh toán" },
+  { value: false, label: "Chưa thanh toán" },
 ];
 
 // Hàm lấy màu cho Tag trạng thái thanh toán
