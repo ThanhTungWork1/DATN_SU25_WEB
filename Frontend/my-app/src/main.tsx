@@ -7,15 +7,19 @@ import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import ReactQueryProvider from "./provider/ClientProvideDetail.tsx";
 import { CartProvider } from "./provider/CartProvider";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ReactQueryProvider>
-      <BrowserRouter>
-        <CartProvider>
-          <App />
-        </CartProvider>
-      </BrowserRouter>
-    </ReactQueryProvider>
+    <Provider store={store}>
+      <ReactQueryProvider>
+        <BrowserRouter>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </BrowserRouter>
+      </ReactQueryProvider>
+    </Provider>
   </StrictMode>
 );

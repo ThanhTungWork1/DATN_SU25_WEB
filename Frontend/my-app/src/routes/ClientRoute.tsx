@@ -26,7 +26,7 @@ const ClientRoute = () => {
         <Route path="/products" element={<ListProduct />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products/search" element={<ResultProduct />} />
-        <Route path="/cart" element={<CartPage />} />
+        <Route path="/carts" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/orders/:id" element={<OrderDetail />} />

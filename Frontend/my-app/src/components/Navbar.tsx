@@ -22,7 +22,7 @@ const Navbar = () => {
   };
 
   const goToCart = () => {
-    navigate("/cart");
+    navigate("/carts");
   };
 
   const handleClickPhuKien = () => {
