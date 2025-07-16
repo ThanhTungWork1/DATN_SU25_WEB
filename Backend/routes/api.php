@@ -22,6 +22,7 @@ use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\Api\ContactController;
 
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
@@ -71,7 +72,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('vouchers', [VoucherController::class, 'index']);
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
+    Route::get('contacts', [ContactController::class, 'index']);
+
 });
+
+Route::post('/contact', [ContactController::class, 'store']);
 
 // Authenticated User Routes
 Route::middleware(['auth:sanctum'])->group(function () {
