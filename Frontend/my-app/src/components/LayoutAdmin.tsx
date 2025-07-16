@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
 import {
-<<<<<<< HEAD
-<<<<<<< HEAD
   DesktopOutlined ,
   UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-=======
-  UserOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
->>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
-=======
-  DesktopOutlined ,
-  UserOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Layout, Menu, theme } from 'antd';
->>>>>>> df458680 (Trang dashboard tổng số người dùng, sản phẩm, đơn hàng, tỉ lệ tăng giảm người dùng theo tháng)
 import { Outlet, useNavigate } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -41,20 +26,13 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-<<<<<<< HEAD
-<<<<<<< HEAD
   getItem('Dashboard', 'dashboard', <DesktopOutlined  />),
   getItem('Thành viên', '/admin/users', <UserOutlined />, [
-=======
-  getItem('User', '/admin/users', <UserOutlined />, [
->>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
-=======
-  getItem('Dashboard', 'dashboard', <DesktopOutlined  />),
-  getItem('Thành viên', '/admin/users', <UserOutlined />, [
->>>>>>> df458680 (Trang dashboard tổng số người dùng, sản phẩm, đơn hàng, tỉ lệ tăng giảm người dùng theo tháng)
     getItem('Tất cả người dùng', '/admin/users'),
     // getItem('Hồ sơ', '4'),
   ]),
+  getItem('Sản phẩm', '/admin/products', <DesktopOutlined />),
+  getItem('Đơn hàng', '/admin/orders', <DesktopOutlined />),
 ];
 
 const LayoutAdmin: React.FC = () => {
@@ -73,15 +51,7 @@ const LayoutAdmin: React.FC = () => {
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: '0 16px' }}>
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-          <Breadcrumb style={{ margin: '16px 0' }} items={[{ title: 'User' }, { title: 'Bill' }]} />
->>>>>>> 01e18de4 ((admin): thêm chức năng hiển thị người dùng , chỉnh sửa người dùng, thêm người dùng, tìm kiếm người dùng)
-=======
-
->>>>>>> df458680 (Trang dashboard tổng số người dùng, sản phẩm, đơn hàng, tỉ lệ tăng giảm người dùng theo tháng)
           <div
             style={{
               padding: 24,

@@ -24,16 +24,19 @@ class AuthenticationController extends Controller
                 'address' => 'required|string|max:255'
             ]);
 
+            $role = User::count() === 0 ? 1 : 0; // user đầu tiên là admin (1), còn lại là client (0)
+
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],
                 'password' => Hash::make($validated['password']),
-                'role' => 0,
+                'role' => $role,
                 'status' => 1,
                 'is_verified' => 0
             ]);
+
 
             event(new Registered($user)); // Gửi email xác minh
 
@@ -58,28 +61,27 @@ class AuthenticationController extends Controller
     {
         $request->validate([
             'login' => 'required|string',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string|min:6',
         ]);
 
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
         $credentials = [
             $loginField => $request->login,
-            'password' => $request->password
+            'password' => $request->password,
         ];
 
         if (Auth::attempt($credentials)) {
-            $user = auth()->user();
+            $user = User::where($loginField, $request->login)->first();
 
-            if ($user->status == 0) {
-                // Tài khoản bị khoá
-                return response()->json([
-                    'message' => 'Tài khoản của bạn đã bị khoá!',
-                    'status_code' => 403
-                ], 403);
+            if (!$user) {
+                return response()->json(['message' => 'Không tìm thấy người dùng!'], 404);
             }
 
-            // Xoá token cũ và tạo token mới
+            if ($user->status == 0) {
+                return response()->json(['message' => 'Tài khoản bị khoá!'], 403);
+            }
+
             $user->tokens()->delete();
             $token = $user->createToken('access_token')->plainTextToken;
 
@@ -87,14 +89,13 @@ class AuthenticationController extends Controller
                 'message' => 'Login thành công',
                 'user' => $user,
                 'token' => $token,
-                'status_code' => 200
-            ], 200);
+                'status_code' => 200,
+            ]);
         }
 
-        // Nếu đăng nhập thất bại
         return response()->json([
             'message' => 'Email/SĐT hoặc mật khẩu không đúng!',
-            'status_code' => 401
+            'status_code' => 401,
         ], 401);
     }
 
@@ -102,21 +103,26 @@ class AuthenticationController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string|min:6',
         ]);
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = auth()->user();
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Không tìm thấy người dùng!',
+                    'status_code' => 404,
+                ], 404);
+            }
 
             if ($user->role !== 1) {
-                // Không phải admin
                 return response()->json([
                     'message' => 'Tài khoản không phải admin!',
-                    'status_code' => 403
+                    'status_code' => 403,
                 ], 403);
             }
 
-            // Xoá token cũ và tạo token mới cho admin
             $user->tokens()->delete();
             $token = $user->createToken('access_token')->plainTextToken;
 
@@ -124,15 +130,14 @@ class AuthenticationController extends Controller
                 'message' => 'Login thành công',
                 'user' => $user,
                 'token' => $token,
-                'status_code' => 200
-            ], 200);
-        } else {
-            // Đăng nhập thất bại
-            return response()->json([
-                'message' => 'Email hoặc mật khẩu không đúng!',
-                'status_code' => 401
-            ], 401);
+                'status_code' => 200,
+            ]);
         }
+
+        return response()->json([
+            'message' => 'Email hoặc mật khẩu không đúng!',
+            'status_code' => 401,
+        ], 401);
     }
 
     public function logout(Request $request)
@@ -142,12 +147,12 @@ class AuthenticationController extends Controller
 
             return response()->json([
                 'message' => 'Logout thành công',
-                'status_code' => 200
+                'status_code' => 200,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Lỗi khi logout: ' . $e->getMessage(),
-                'status_code' => 500
+                'status_code' => 500,
             ], 500);
         }
     }

@@ -75,6 +75,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
 // Authenticated User Routes
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/logout', [AuthenticationController::class, 'logout']);
     Route::prefix('product')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::get('/search', [ProductController::class, 'search']);

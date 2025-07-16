@@ -1,8 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-<<<<<<< HEAD
-=======
-import "../assets/styles/SearchBar.css";
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 import { validateSearchQuery } from "../validation/searchValidation";
 
 interface SearchBarProps {
@@ -59,28 +55,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
     if (onSearch && validateSearchQuery(query)) {
       onSearch(query);
     }
-=======
-    if (onSearch && validateSearchQuery(query)) onSearch(query);
-    // Không đóng input ở đây
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
   };
 
   const handleIconClick = () => {
     if (!open) {
       setOpen(true);
     } else if (validateSearchQuery(query)) {
-<<<<<<< HEAD
       if (onSearch) {
         onSearch(query);
       }
-=======
-      if (onSearch) onSearch(query);
-      // Không đóng input, chỉ tìm kiếm
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
     }
   };
 

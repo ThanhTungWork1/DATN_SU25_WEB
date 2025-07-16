@@ -13,7 +13,7 @@ export const Login = () => {
   const { mutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: { email: string; password: string }) => {
-    // Nếu đăng nhập admin "ảo"
+    // Nếu đăng nhập bằng tài khoản admin "ảo"
     if (formData.email === "admin@gmail.com" && formData.password === "admin123") {
       localStorage.setItem("role", "admin");
       messageApi.success("Đăng nhập với tư cách Admin");
@@ -21,18 +21,25 @@ export const Login = () => {
       return;
     }
 
-    // Nếu là user bình thường => gọi API Laravel
-    mutate(formData, {
-      onSuccess: (data: any) => {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", "user");
-        messageApi.success("Đăng nhập thành công");
-        navigate("/");
+    // Nếu là user thật => gọi Laravel API
+    mutate(
+      {
+        login: formData.email, // Laravel backend dùng field "login"
+        password: formData.password,
       },
-      onError: (error: any) => {
-        messageApi.error(error.message || "Đăng nhập thất bại");
-      },
-    });
+      {
+        onSuccess: (data: any) => {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", "user");
+          messageApi.success("Đăng nhập thành công");
+          navigate("/");
+        },
+        onError: (error: any) => {
+          const msg = error?.response?.data?.message || "Đăng nhập thất bại!";
+          messageApi.error(msg);
+        },
+      }
+    );
   };
 
   return (
@@ -41,12 +48,9 @@ export const Login = () => {
       <h1 className="text-xl font-semibold mb-4">Đăng nhập</h1>
       <Form {...formItemLayout} onFinish={onFinish}>
         <Form.Item
-          label="Email"
+          label="Email hoặc SĐT"
           name="email"
-          rules={[
-            { required: true, message: "Vui lòng nhập email!" },
-            { type: "email", message: "Email không hợp lệ!" },
-          ]}
+          rules={[{ required: true, message: "Vui lòng nhập email hoặc SĐT!" }]}
         >
           <Input />
         </Form.Item>

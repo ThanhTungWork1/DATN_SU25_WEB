@@ -21,28 +21,49 @@ export const Register = () => {
   const { mutate: loginMutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: any) => {
-    registerMutate(formData, {
-      onSuccess: () => {
-        loginMutate(
-          { email: formData.email, password: formData.password },
-          {
-            onSuccess: (data) => {
-              const res: any = data;
-              if (res && res.token) {
-                localStorage.setItem("token", res.token);
-              }
-              messageApi.success("Đăng ký & đăng nhập thành công!");
-              navigate("/");
-            },
-            onError: () => {
-              messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
-              navigate("/login");
-            },
-          }
-        );
-      },
+  const {
+    confirm, // lấy confirm ra nhưng không gửi
+    gender,  // nếu backend không yêu cầu gender, có thể bỏ
+    ...rest
+  } = formData;
+
+  const submitData = {
+    ...rest,
+    password_confirmation: confirm, // Laravel expects this!
+  };
+
+  registerMutate(submitData, {
+    onSuccess: () => {
+      loginMutate(
+        { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
+        {
+          onSuccess: (data) => {
+            const res: any = data;
+            if (res && res.token) {
+              localStorage.setItem("token", res.token);
+            }
+            messageApi.success("Đăng ký & đăng nhập thành công!");
+            navigate("/");
+          },
+          onError: () => {
+            messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
+            navigate("/login");
+          },
+        }
+      );
+    },
       onError: (error: any) => {
-        messageApi.error(error?.response?.data || "Đăng ký thất bại");
+        const res = error?.response?.data;
+        if (typeof res === "string") {
+          messageApi.error(res);
+        } else if (res?.message) {
+          messageApi.error(res.message);
+        } else if (res?.errors) {
+          const errorList = Object.values(res.errors).flat();
+          // messageApi.error(errorList[0] || "Đăng ký thất bại");
+        } else {
+          messageApi.error("Đăng ký thất bại");
+        }
       },
     });
   };

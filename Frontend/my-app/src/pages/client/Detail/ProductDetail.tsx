@@ -8,25 +8,15 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-<<<<<<< HEAD
 import RelatedProducts from "./RelatedProducts"
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
-=======
-import RelatedProducts from "./RelatedProducts";
-import Footer from "../../../components/Footer";
-import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
-import "../../../assets/styles/detailProduct.css";
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
-<<<<<<< HEAD
 import type { Product } from '../../../types/DetailType';
 import { getAllColors } from '../../../api/ApiProduct';
 import type { ColorType } from '../../../types/ColorType';
-=======
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -61,11 +51,7 @@ const ProductDetail = () => {
     });
     getAllColors().then((res: ColorType[]) => setAllColors(res));
   }, []);
-<<<<<<< HEAD
 
-=======
-  // Khi id sản phẩm thay đổi, có thể thêm logic ở đây nếu cần
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
   useEffect(() => {}, [id]);
 
   if (isLoading) return <p>Đang tải...</p>;
@@ -111,10 +97,6 @@ const ProductDetail = () => {
     code: c.code || (c as any).hex_code || ''
   }));
 
-<<<<<<< HEAD
-=======
-  // Render giao diện trang chi tiết sản phẩm
->>>>>>> bc9cc18e (spa lai giao dien va cac file code, nang cap serch,filte)
   return (
     <>
       {/* Breadcrumb */}

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createOne } from "../../provider/dataProvider";
+import { createOne } from "../../provider/dataProvider1";
 
 
 type useCreateParams = {
