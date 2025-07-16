@@ -2,11 +2,6 @@ import axios from "axios";
 import type { Product, Variant, ColorType } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
 
-/**
- * ============================================================
- * HÀM LẤY DỮ LIỆU CHI TIẾT SẢN PHẨM (getProductById)
- * ============================================================
- */
 export const getProductById = async (id: string): Promise<Product> => {
   try {
     const [
@@ -36,21 +31,11 @@ export const getProductById = async (id: string): Promise<Product> => {
   }
 };
 
-/**
- * ============================================================
- * LẤY DANH SÁCH TẤT CẢ SẢN PHẨM
- * ============================================================
- */
 export const getAllProducts = async (): Promise<Product[]> => {
   const { data } = await axios.get(`http://localhost:3000/products`);
   return data;
 };
 
-/**
- * ============================================================
- * LẤY COMMENT & USERS
- * ============================================================
- */
 export const getProductReviews = async (productId: number) => {
   return await axios.get(`http://localhost:3000/comments?product_id=${productId}`);
 };
@@ -59,11 +44,6 @@ export const getAllUsers = async () => {
   return await axios.get(`http://localhost:3000/users`);
 };
 
-/**
- * ============================================================
- * GIỎ HÀNG - CART
- * ============================================================
- */
 export const getCart = async () => {
   const { data } = await axios.get("http://localhost:3000/carts");
   return data;
@@ -86,11 +66,6 @@ export const removeCartItem = async (id: number) => {
   return await axios.delete(`http://localhost:3000/carts/${id}`);
 };
 
-/**
- * ============================================================
- * ĐƠN HÀNG - ORDER
- * ============================================================
- */
 export const getAllOrders = async () => {
   const { data } = await axios.get("http://localhost:3000/orders");
   return data;
