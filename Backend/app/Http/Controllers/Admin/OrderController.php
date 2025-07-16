@@ -44,13 +44,35 @@ class OrderController extends Controller
         return Order::with('items')->findOrFail($id);
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
         $order = Order::findOrFail($id);
-        $order->update($request->only(['status', 'is_paid']));
-        return $order;
-    }
 
+        $request->validate([
+            // Các trường này là 'sometimes' vì bạn có thể chỉ gửi status hoặc is_paid
+            'customer_name' => 'sometimes|required|string|max:255',
+            'customer_email' => 'sometimes|required|email|max:255',
+            'customer_phone' => 'sometimes|required|string|max:20',
+            'shipping_address' => 'sometimes|required|string|max:500',
+            'total_amount' => 'sometimes|required|numeric|min:0',
+            'shipping_fee' => 'sometimes|required|numeric|min:0',
+            'discount_amount' => 'sometimes|required|numeric|min:0',
+            'final_amount' => 'sometimes|required|numeric|min:0',
+
+            // QUAN TRỌNG: Validation cho status và is_paid
+            'status' => 'sometimes|required|in:pending,confirmed,processing,shipping,delivered,cancelled,completed', // Đảm bảo khớp với các giá trị bạn dùng
+            'is_paid' => 'sometimes|required|boolean', // Đảm bảo là boolean
+
+            'notes' => 'nullable|string',
+        ]);
+
+        $order->update($request->all()); // Cập nhật các trường được gửi đến
+
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'data' => $order
+        ]);
+    }
     public function destroy($id)
     {
         return Order::destroy($id);
