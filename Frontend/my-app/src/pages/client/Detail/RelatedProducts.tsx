@@ -59,8 +59,7 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
           <FaChevronLeft />
         </button>
         <div className="related-products-grid">
-          {paginatedProducts.map((product, idx) => {
-            console.log("Related product:", product);
+          {paginatedProducts.map((product) => {
             const image = product.image || (product.images?.[0] ?? "");
             return (
               <div className="related-product-card" key={product.id}>

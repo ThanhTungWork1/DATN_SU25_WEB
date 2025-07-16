@@ -1,16 +1,19 @@
+import { useDashboardStats } from "../../../hook/dashboards/useDashboardStats";
+import { Card, Col, Row, Statistic } from "antd";
+import {
+  AppstoreOutlined,
+  ShoppingOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 
-import { useDashboardStats } from '../../../hook/dashboards/useDashboardStats'
-import { Card, Col, Row, Statistic } from 'antd';
-import { AppstoreOutlined, ShoppingOutlined, UserOutlined } from '@ant-design/icons';
-
-import UserChart from '../../../components/dashboard/UserChart';
-import UserGrowthCard from '../../../components/dashboard/UserGrowthCard';
+import UserChart from "../../../components/dashboard/UserChart";
+import UserGrowthCard from "../../../components/dashboard/UserGrowthCard";
+import { Contact } from "lucide-react";
 
 const Dashboard = () => {
-
   const { data, isLoading } = useDashboardStats();
 
-  if (isLoading) return <p>Loading...</p>
+  if (isLoading) return <p>Loading...</p>;
 
   return (
     <Row gutter={[16, 16]}>
@@ -47,8 +50,17 @@ const Dashboard = () => {
           />
         </Card>
       </Col>
+      <Col span={6}>
+        <Card>
+          <Statistic
+            title="Liên hệ"
+            value={data?.contact}
+            prefix={<Contact />}
+          />
+        </Card>
+      </Col>
     </Row>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

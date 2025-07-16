@@ -62,7 +62,7 @@ const HomePage = () => {
                 <span className="fashion-oldprice">399.000đ</span>
               </div>
               <div className="fashion-rate">25 sản phẩm đã bán</div>
-              <button className="fashion-buy">Mua để nhận quà</button>
+              <button className="fashion-buy">Xem Ngay</button>
             </div>
           ))}
         </div>
@@ -110,21 +110,12 @@ const HomePage = () => {
               <div className="fashion-name">
                 Áo Polo Nam 5S Fashion Can Phối Phom Slimfit
               </div>
-              {/* <div className="fashion-meta">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/128/616/616490.png"
-                  width="16"
-                  height="16"
-                  style={{ verticalAlign: "middle" }}
-                />{" "}
-                5/5
-              </div> */}
               <div>
                 <span className="fashion-price">339.150đ</span>
                 <span className="fashion-oldprice">399.000đ</span>
               </div>
               <div className="fashion-rate">25 sản phẩm đã bán</div>
-              <button className="fashion-buy">Mua để nhận quà</button>
+              <button className="fashion-buy">Xem Ngay</button>
             </div>
           ))}
         </div>
@@ -158,21 +149,12 @@ const HomePage = () => {
               <div className="fashion-name">
                 Áo Polo Nam 5S Fashion Can Phối Phom Slimfit
               </div>
-              {/* <div className="fashion-meta">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/128/616/616490.png"
-                  width="16"
-                  height="16"
-                  style={{ verticalAlign: "middle" }}
-                />{" "}
-                5/5
-              </div> */}
               <div>
                 <span className="fashion-price">339.150đ</span>
                 <span className="fashion-oldprice">399.000đ</span>
               </div>
               <div className="fashion-rate">25 sản phẩm đã bán</div>
-              <button className="fashion-buy">Mua để nhận quà</button>
+              <button className="fashion-buy">Xem Ngay</button>
             </div>
           ))}
         </div>

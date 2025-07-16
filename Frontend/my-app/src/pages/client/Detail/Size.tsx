@@ -1,5 +1,4 @@
 import type { Variant } from "../../../types/DetailType";
-import "../../../assets/styles/size.css";
 
 /*
  * =================================================================

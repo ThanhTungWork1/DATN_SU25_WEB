@@ -1,5 +1,5 @@
 import type { ProductInfoProps } from "../../../types/ProductInfoType";
-import "../../../assets/styles/info.css";
+
 // =============================
 // Component hiển thị thông tin sản phẩm (tên, giá, trạng thái, mã SP...)
 // =============================

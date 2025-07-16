@@ -32,10 +32,6 @@ const ProductDetail = () => {
   const { data: productRaw, isLoading, isError } = useProductDetail(id!);
   const product = (productRaw as any)?.data as Product | undefined;
 
-  // Log dữ liệu trả về từ API
-  console.log("[DEBUG] productRaw:", productRaw);
-  console.log("[DEBUG] product (parsed):", product);
-
   const {
     selectedImage,
     setSelectedImage,
@@ -74,13 +70,12 @@ const ProductDetail = () => {
     new Map(
       (product.variants || [])
         .map((v) => v.color)
-        .filter((color): color is ColorType => color !== undefined && color !== null)
+        .filter(
+          (color): color is ColorType => color !== undefined && color !== null
+        )
         .map((color) => [color.id, color])
     ).values()
   );
-
-  // Log uniqueColors để debug
-  console.log("[DEBUG] uniqueColors for Color:", uniqueColors);
 
   // Lấy thumbnail cho Aside: lấy ảnh đầu tiên của mỗi màu từ variants
   let colorThumbnails: string[] = [];
@@ -106,12 +101,6 @@ const ProductDetail = () => {
     ...c,
     code: c.code || (c as any).hex_code || "",
   }));
-
-  // Log dữ liệu truyền vào Size và Color
-  console.log("[DEBUG] variants for Size:", product.variants);
-  console.log("[DEBUG] mappedColors for Color:", mappedColors);
-  console.log("[DEBUG] selectedSize:", selectedSize);
-  console.log("[DEBUG] selectedColor:", selectedColor);
 
   return (
     <>

@@ -8,6 +8,7 @@ import ProductForm from "../pages/admin/products/ProductForm";
 import OrderList from "../pages/admin/orders/OrderList";
 import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
+import { Contact } from "../pages/admin/contact/contact";
 
 const AdminRoute = () => {
   return (
@@ -28,6 +29,8 @@ const AdminRoute = () => {
         <Route path="orders/create" element={<OrderForm />} />
         <Route path="orders/edit/:id" element={<OrderForm />} />
         <Route path="orders/detail/:id" element={<OrderDetail />} />
+        {/* Liên hệ */}
+        <Route path="contacts" element={<Contact />} />
         {/* Thêm các route con khác ở đây nếu cần */}
       </Route>
     </Routes>

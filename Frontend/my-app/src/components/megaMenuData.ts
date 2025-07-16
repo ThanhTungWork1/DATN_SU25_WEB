@@ -5,8 +5,8 @@ export const MEGA_MENU_NAM = [
       { label: "Áo thun nam", link: "/products?category=ao-thun-nam" },
       { label: "Áo sơ mi nam", link: "/products?category=ao-so-mi-nam" },
       { label: "Áo polo nam", link: "/products?category=ao-polo-nam" },
-      { label: "Áo khoác nam", link: "/products?category=ao-khoac-nam" },
-      { label: "Áo len nam", link: "/products?category=ao-len-nam" },
+      { label: "Áo Tanktop nam", link: "/products?category=ao-tanktop-nam" },
+      { label: "Áo thể thao nam", link: "/products?category=ao-the-thao-nam" },
     ],
   },
   {
@@ -14,9 +14,9 @@ export const MEGA_MENU_NAM = [
     items: [
       { label: "Quần jeans nam", link: "/products?category=quan-jeans-nam" },
       { label: "Quần short nam", link: "/products?category=quan-short-nam" },
-      { label: "Quần tây nam", link: "/products?category=quan-tay-nam" },
+      { label: "Quần thể thao", link: "/products?category=quan-the-thao-nam" },
       { label: "Quần jogger nam", link: "/products?category=quan-jogger-nam" },
-      { label: "Quần kaki nam", link: "/products?category=quan-kaki-nam" },
+      { label: "Quần dài nam", link: "/products?category=quan-dai-nam" },
     ],
   },
 ];
@@ -26,10 +26,10 @@ export const MEGA_MENU_NU = [
     title: "Áo Nữ",
     items: [
       { label: "Áo thun nữ", link: "/products?category=ao-thun-nu" },
+      { label: "Áo polo nữ", link: "/products?category=ao-polo-nu" },
+      { label: "Áo croptop nữ", link: "/products?category=ao-croptop-nu" },
       { label: "Áo sơ mi nữ", link: "/products?category=ao-so-mi-nu" },
-      { label: "Áo kiểu nữ", link: "/products?category=ao-kieu-nu" },
-      { label: "Áo khoác nữ", link: "/products?category=ao-khoac-nu" },
-      { label: "Áo len nữ", link: "/products?category=ao-len-nu" },
+      { label: "Áo Tanktop nữ", link: "/products?category=ao-tanktop-nu" },
     ],
   },
   {
@@ -37,9 +37,9 @@ export const MEGA_MENU_NU = [
     items: [
       { label: "Quần jeans nữ", link: "/products?category=quan-jeans-nu" },
       { label: "Quần short nữ", link: "/products?category=quan-short-nu" },
-      { label: "Quần tây nữ", link: "/products?category=quan-tay-nu" },
+      { label: "Quần lengging nữ", link: "/products?category=quan-lengging-nu" },
       { label: "Quần jogger nữ", link: "/products?category=quan-jogger-nu" },
-      { label: "Quần kaki nữ", link: "/products?category=quan-kaki-nu" },
+      { label: "Váy đầm thể thao nữ", link: "/products?category=vay-dam-the-thao-nu" },
     ],
   },
 ];
@@ -52,17 +52,6 @@ export const MEGA_MENU_PHUKIEN = [
       { label: "Thắt lưng", link: "/products?category=that-lung" },
       { label: "Mũ nón", link: "/products?category=mu-non" },
       { label: "Vớ tất", link: "/products?category=vo-tat" },
-      { label: "Khăn choàng", link: "/products?category=khan-choang" },
     ],
-  },
-  {
-    title: "Khác",
-    items: [
-      { label: "Kính mắt", link: "/products?category=kinh-mat" },
-      { label: "Găng tay", link: "/products?category=gang-tay" },
-      { label: "Trang sức", link: "/products?category=trang-suc" },
-      { label: "Đồng hồ", link: "/products?category=dong-ho" },
-      { label: "Phụ kiện tóc", link: "/products?category=phu-kien-toc" },
-    ],
-  },
+  }
 ]; 

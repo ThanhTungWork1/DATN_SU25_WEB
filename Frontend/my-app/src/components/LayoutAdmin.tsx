@@ -3,6 +3,7 @@ import { DesktopOutlined, UserOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu, theme } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
+import { Contact } from "lucide-react";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -23,10 +24,11 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Dashboard", "dashboard", <DesktopOutlined />),
+  getItem("Dashboard", "/admin/dashboard", <DesktopOutlined />),
   getItem("Thành viên", "/admin/users", <UserOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
+  getItem("Liên hệ", "/admin/contacts", <Contact />),
 ];
 
 const LayoutAdmin: React.FC = () => {
