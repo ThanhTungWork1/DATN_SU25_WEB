@@ -11,7 +11,13 @@ class Order extends Model
         'status',
         'is_paid',
         'total_amount',
-        'shipping_fee'
+        'shipping_fee',
+        'shipping_address',
+        'shipping_phone',
+        'shipping_name',
+        'note',
+        'payment_method',
+        'discount_amount',
     ];
 
     public function items()
