@@ -93,8 +93,10 @@ export const ListProduct = () => {
   useEffect(() => {
     setLoading(products.length === 0);
     setError(null);
+    console.log("[ListProduct] params gửi lên API:", params);
     getProductsPaginatedAndFiltered(params)
       .then((res) => {
+        console.log("[ListProduct] Kết quả API:", res);
         const result = res as ProductApiResponse;
         setProducts(result.data);
         setPagination(

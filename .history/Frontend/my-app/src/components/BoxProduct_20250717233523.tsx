@@ -104,9 +104,10 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
             </span>
           )}
         </div>
-        <div className="fashion-rate">{product.sold ?? 0} sản phẩm đã bán</div>
         <button className="fashion-buy">Xem Ngay</button>
       </Link>
+
+      <div className="fashion-rate">{product.sold ?? 0} sản phẩm đã bán</div>
     </div>
   );
 };

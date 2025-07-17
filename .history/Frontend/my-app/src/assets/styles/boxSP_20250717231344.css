@@ -1,3 +1,4 @@
+
 .product-card {
   border: 1px solid #eee;
   border-radius: 12px;
@@ -162,8 +163,7 @@
 }
 
 /* Grid 5 cột cho danh sách sản phẩm */
-.product-list-grid,
-.product-section-container .row {
+.product-list-grid, .product-section-container .row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 24px;
@@ -173,39 +173,28 @@
 }
 
 @media (max-width: 1200px) {
-
-  .product-list-grid,
-  .product-section-container .row {
+  .product-list-grid, .product-section-container .row {
     grid-template-columns: repeat(4, 1fr);
     padding-left: 48px;
     padding-right: 48px;
   }
 }
-
 @media (max-width: 992px) {
-
-  .product-list-grid,
-  .product-section-container .row {
+  .product-list-grid, .product-section-container .row {
     grid-template-columns: repeat(3, 1fr);
     padding-left: 36px;
     padding-right: 36px;
   }
 }
-
 @media (max-width: 768px) {
-
-  .product-list-grid,
-  .product-section-container .row {
+  .product-list-grid, .product-section-container .row {
     grid-template-columns: repeat(2, 1fr);
     padding-left: 24px;
     padding-right: 24px;
   }
 }
-
 @media (max-width: 576px) {
-
-  .product-list-grid,
-  .product-section-container .row {
+  .product-list-grid, .product-section-container .row {
     grid-template-columns: 1fr;
     padding-left: 12px;
     padding-right: 12px;
@@ -236,35 +225,8 @@
 
 .wishlist-icon {
   position: absolute;
-  top: 13px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   z-index: 2;
   cursor: pointer;
-}
-
-.wishlist-icon svg {
-  width: 18px !important;
-  height: 18px !important;
-}
-
-.fashion-buy {
-  width: 100%;
-  display: block;
-  text-align: center;
-  background: #19e6a7;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 0;
-  /* Giảm từ 12px xuống 10px */
-  margin-top: 12px;
-  font-size: 1.05rem;
-  /* Có thể giảm nhẹ font-size nếu muốn */
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.fashion-buy:hover {
-  background: #13c18c;
 }

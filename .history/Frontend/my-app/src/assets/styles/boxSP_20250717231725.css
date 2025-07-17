@@ -213,7 +213,7 @@
 }
 
 .fashion-name {
-  font-size: 19px;
+  font-size: 15px;
   font-weight: 600;
   color: #222;
   min-height: 50px;
@@ -236,35 +236,8 @@
 
 .wishlist-icon {
   position: absolute;
-  top: 13px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   z-index: 2;
   cursor: pointer;
-}
-
-.wishlist-icon svg {
-  width: 18px !important;
-  height: 18px !important;
-}
-
-.fashion-buy {
-  width: 100%;
-  display: block;
-  text-align: center;
-  background: #19e6a7;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 0;
-  /* Giảm từ 12px xuống 10px */
-  margin-top: 12px;
-  font-size: 1.05rem;
-  /* Có thể giảm nhẹ font-size nếu muốn */
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.fashion-buy:hover {
-  background: #13c18c;
 }

@@ -253,14 +253,12 @@
   text-align: center;
   background: #19e6a7;
   color: #fff;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
   border-radius: 8px;
-  padding: 10px 0;
-  /* Giảm từ 12px xuống 10px */
+  padding: 12px 0;
   margin-top: 12px;
-  font-size: 1.05rem;
-  /* Có thể giảm nhẹ font-size nếu muốn */
+  font-size: 1.1rem;
   cursor: pointer;
   transition: background 0.2s;
 }
