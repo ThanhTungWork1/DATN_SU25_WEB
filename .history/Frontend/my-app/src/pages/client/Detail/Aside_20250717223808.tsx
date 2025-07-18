@@ -1,6 +1,4 @@
-// src/components/Aside.tsx
 import "../../../assets/styles/aside.css";
-
 type AsideProps = {
   images: string[];
   onSelect: (img: string) => void;
@@ -10,15 +8,14 @@ type AsideProps = {
 const Aside = ({ images, onSelect, selectedImage }: AsideProps) => {
   return (
     <div className="aside-thumbnails">
+      {/* hiển thị ảnh và click ảnh hiển thị ra */}
       {images.map((img, idx) => (
         <img
           key={idx}
           src={img}
           alt={`thumb-${idx}`}
           onClick={() => onSelect(img)}
-          className={
-            img === selectedImage ? "thumbnail-img selected" : "thumbnail-img"
-          }
+          className={img === selectedImage ? "thumbnail-img selected" : "thumbnail-img"}
         />
       ))}
     </div>

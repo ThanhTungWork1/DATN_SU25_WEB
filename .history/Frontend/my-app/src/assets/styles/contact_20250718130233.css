@@ -88,6 +88,56 @@ body {
   background-color: #019874;
 }
 
+/* Thông báo nổi góc phải trên cho form liên hệ */
+.contact-toast {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  z-index: 2000;
+  min-width: 260px;
+  max-width: 350px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  background: #e6fff4;
+  color: #1a7f5a;
+  border-left: 6px solid #09dbc7;
+  animation: fadeInDown 0.5s;
+}
+
+.contact-toast.error {
+  background: #fff0f0;
+  color: #c0392b;
+  border-left: 6px solid #e74c3c;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 575px) {
+  .contact-toast {
+    right: 8px;
+    left: 8px;
+    top: 12px;
+    min-width: unset;
+    max-width: unset;
+    padding: 12px 8px;
+    font-size: 0.98rem;
+  }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .contact-grid {
     flex-direction: column;

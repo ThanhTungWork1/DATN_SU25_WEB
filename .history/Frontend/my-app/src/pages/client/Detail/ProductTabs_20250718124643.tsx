@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Product } from "../../../types/DetailType";
 import { useProductReviews } from "../../../hook/useProductReviews";
 import { FaStar } from "react-icons/fa";
-import "../../../assets/styles/productTabs.css";
+import "../../../assets/styles/product-tabs.css";
 
 type ProductTabsProps = {
   product: Product;

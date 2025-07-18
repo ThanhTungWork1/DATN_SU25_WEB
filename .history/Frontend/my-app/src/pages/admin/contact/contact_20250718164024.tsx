@@ -12,13 +12,12 @@ export const Contact = () => {
   const [total, setTotal] = useState(0);
 
   // Lấy token admin từ localStorage hoặc context
-  const token =
-    localStorage.getItem("token_admin") || localStorage.getItem("token") || "";
+  const token = localStorage.getItem("token_admin") || localStorage.getItem("token") || "";
 
   useEffect(() => {
     setLoading(true);
     getContacts(page, token)
-      .then((res) => {
+      .then(res => {
         // res.data.data.data: mảng contacts, res.data.data.total: tổng số bản ghi
         setData(res.data.data.data || []);
         setTotal(res.data.data.total || 0);

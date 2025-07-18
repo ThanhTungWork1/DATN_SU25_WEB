@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../../../assets/styles/contact.css";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 export const Contact = () => {
   const [form, setForm] = useState({
@@ -10,16 +9,18 @@ export const Contact = () => {
     message: "",
   });
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setSuccess("");
+    setError("");
     try {
       const res = await fetch("http://localhost:8000/api/contact", {
         method: "POST",
@@ -27,25 +28,24 @@ export const Contact = () => {
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Gửi thất bại");
-      toast.success(
-        "Thông tin của bạn đã được gửi, chúng tôi sẽ phản hồi vào email của bạn. Xin cảm ơn !!",
-        {
-          autoClose: 5000,
-          style: {
-            fontSize: "1.15rem",
-            fontWeight: 600,
-            padding: "24px 32px",
-          },
-        }
-      );
+      setSuccess("Gửi liên hệ thành công!");
       setForm({ name: "", email: "", message: "" });
+      toast.success("Thông tin của bạn đã được gửi, chúng tôi sẽ phản hồi vào email của bạn. Xin cảm ơn !!", { autoClose: 5000, style: { fontSize: '1.15rem', fontWeight: 600, padding: '24px 32px' } });
     } catch (err) {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!", {
-        autoClose: 5000,
-      });
+      setError("Có lỗi xảy ra, vui lòng thử lại!");
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (success || error) {
+      const timer = setTimeout(() => {
+        setSuccess("");
+        setError("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
 
   return (
     <main className="contact-page">
@@ -111,8 +111,10 @@ export const Contact = () => {
             </button>
           </form>
         </div>
+        {/* Thông báo nổi góc phải trên */}
+        {success && <div className="contact-toast">{success}</div>}
+        {error && <div className="contact-toast error">{error}</div>}
       </section>
-      <ToastContainer position="top-right" newestOnTop />
     </main>
   );
 };

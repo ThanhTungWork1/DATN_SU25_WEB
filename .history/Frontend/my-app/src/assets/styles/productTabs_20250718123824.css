@@ -1,0 +1,15 @@
+.review-scroll-container {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 6px;
+    scrollbar-width: thin;
+}
+
+.review-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.review-scroll-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
