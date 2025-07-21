@@ -20,10 +20,17 @@ const ClientRoute = () => {
     <>
       <Navbar />
       <Routes>
+<<<<<<< HEAD
         <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/users/:id" element={<UserProfile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+=======
+        <Route path='/' element={<HomePage/>}/>
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path='/login' element={<Login/>}/>
+        <Route path='/register' element={<Register/>}/>
+>>>>>>> origin/ThanhTung_profile_home_auth
         <Route path="/products" element={<ListProduct />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/search" element={<ResultProduct />} />

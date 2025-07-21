@@ -1,8 +1,16 @@
 import { useEffect } from "react";
+<<<<<<< HEAD:Frontend/my-app/src/pages/client/Home/UserProfile.tsx
+import { Form, Input, Radio, DatePicker, Button, message } from "antd";
+import { useParams, useNavigate } from "react-router-dom";
+import useOne from "../../../hook/useOne";
+import useProfile from "../../../hook/useProfile";
+=======
 import { Button, Form, Input, Radio, DatePicker, message, Spin } from "antd";
 import dayjs from "dayjs";
-import useCurrentUser from "../../../hook/useCurrentUser";
-import useProfile from "../../../hook/useProfile";
+import useCurrentUser from "../../hook/useCurrentUser";
+import useProfile from "../../hook/useProfile";
+import type { IUser } from "../../types/users";
+>>>>>>> origin/ThanhTung_profile_home_auth:Frontend/my-app/src/pages/client/userProfile.tsx
 
 const UserProfile = () => {
   const [form] = Form.useForm();

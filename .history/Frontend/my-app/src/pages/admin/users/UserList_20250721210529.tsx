@@ -6,7 +6,7 @@ import { config } from "../../../api/axios";
 import { Link } from "react-router-dom";
 
 const UserList = () => {
-  const { data, isLoading, refetch } = useList({ resource: "admin/users" });
+  const { data, isLoading, refetch } = useList({ resource: "users" });
   const [searchText, setSearchText] = useState("");
 
   if (isLoading) return <div>Loading...</div>;
@@ -18,16 +18,16 @@ const UserList = () => {
     user: 3,
   };
 
-  const dataSource = (data?.data as IUser[] | undefined)
+  const dataSource = data?.data
     ?.map((user: IUser) => ({
       key: user.id,
       ...user,
     }))
     .sort(
-      (a: IUser, b: IUser) => (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
+      (a, b) => (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
     );
 
-  const handleStatusChange = async (userId: number, newStatus: boolean) => {
+  const handleStatusChange = async (userId: string, newStatus: boolean) => {
     try {
       await config.patch(`/users/${userId}`, { status: newStatus });
       message.success("Cập nhật trạng thái thành công");
@@ -93,12 +93,14 @@ const UserList = () => {
   ];
 
   const filteredData = dataSource?.filter(
-    (user: IUser) =>
+    (user) =>
       user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      (user.address || "").toLowerCase().includes(searchText.toLowerCase()) ||
+      user.address.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      (user.phone || "").toLowerCase().includes(searchText.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchText.toLowerCase())
+      user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.phone.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
