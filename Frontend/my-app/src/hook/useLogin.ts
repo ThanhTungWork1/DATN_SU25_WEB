@@ -14,12 +14,15 @@ const useLogin = ({ resource }: useLoginParams) => {
 
       if (!token) throw new Error("Token không tồn tại");
 
+      // ✅ Lưu token và role vào localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role); // 👈 Thêm dòng này
+
+      console.log("✅ Đăng nhập thành công:", user); // 👀 Xem user có role chưa
 
       return user;
     },
   });
 };
-
 
 export default useLogin;

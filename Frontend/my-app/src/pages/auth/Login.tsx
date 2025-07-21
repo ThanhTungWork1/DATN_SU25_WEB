@@ -13,26 +13,26 @@ export const Login = () => {
   const { mutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: { email: string; password: string }) => {
-    // Đăng nhập bằng tài khoản admin ảo
-    if (formData.email === "admin@gmail.com" && formData.password === "admin123") {
-      localStorage.setItem("role", "admin");
-      messageApi.success("Đăng nhập với tư cách Admin");
-      navigate("/admin/dashboard");
-      return;
-    }
+mutate(
+  {
+    login: formData.email,
+    password: formData.password,
+  },
+  {
+    onSuccess: (user: any) => {
+      // Lưu token đã được xử lý trong useLogin
+      const role = user.role === "1" ? "1" : "0";
+      localStorage.setItem("role", role);
 
-    // Đăng nhập người dùng thật qua API Laravel
-    mutate(
-      {
-        login: formData.email,
-        password: formData.password,
-      },
-      {
-        onSuccess: (user: any) => {
-          localStorage.setItem("role", "user");
-          messageApi.success("Đăng nhập thành công");
-          navigate("/profile");
-        },
+      messageApi.success("Đăng nhập thành công");
+
+      if (role === "1") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/profile");
+      }
+    },
+
         onError: (error: any) => {
           const msg = error?.response?.data?.message || "Đăng nhập thất bại!";
           messageApi.error(msg);
