@@ -30,10 +30,11 @@ class ContactController extends Controller
     // Admin xem danh sách liên hệ
     public function index()
     {
-
+<<<<<<< HEAD
         $contacts = Contact::latest()->paginate(10);
-
+=======
         $contacts = Contact::latest()->get();
+>>>>>>> origin/sonph4441
 
         return response()->json([
             'status' => true,
