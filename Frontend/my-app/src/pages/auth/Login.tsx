@@ -13,7 +13,7 @@ export const Login = () => {
   const { mutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: { email: string; password: string }) => {
-    // Nếu đăng nhập bằng tài khoản admin "ảo"
+    // Đăng nhập bằng tài khoản admin ảo
     if (formData.email === "admin@gmail.com" && formData.password === "admin123") {
       localStorage.setItem("role", "admin");
       messageApi.success("Đăng nhập với tư cách Admin");
@@ -21,18 +21,17 @@ export const Login = () => {
       return;
     }
 
-    // Nếu là user thật => gọi Laravel API
+    // Đăng nhập người dùng thật qua API Laravel
     mutate(
       {
-        login: formData.email, // Laravel backend dùng field "login"
+        login: formData.email,
         password: formData.password,
       },
       {
-        onSuccess: (data: any) => {
-          localStorage.setItem("token", data.token);
+        onSuccess: (user: any) => {
           localStorage.setItem("role", "user");
           messageApi.success("Đăng nhập thành công");
-          navigate("/");
+          navigate("/profile");
         },
         onError: (error: any) => {
           const msg = error?.response?.data?.message || "Đăng nhập thất bại!";

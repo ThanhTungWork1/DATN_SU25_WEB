@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\CheckRole;
 
+
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 
@@ -74,8 +75,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 });
 
 // Authenticated User Routes
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', function (Request $request) {
+        return response()->json($request->user());
+    });
+
+    Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);
+
     Route::prefix('product')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::get('/search', [ProductController::class, 'search']);

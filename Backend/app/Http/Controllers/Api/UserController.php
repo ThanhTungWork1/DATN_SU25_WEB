@@ -20,8 +20,10 @@ class UserController extends Controller
         return User::findOrFail($id);
     }
 
+    // ✅ Đặt đúng tên hàm store user hoặc chuyển qua OrderController
     public function store(Request $request)
     {
+        // Nếu đây là tạo order, nên tách ra một controller khác
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'status' => 'required|string',
@@ -54,15 +56,16 @@ class UserController extends Controller
         return response()->json($order->load('items'), 201);
     }
 
-
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
         $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
-            'phone' => 'nullable|string|max:20',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $id,
+            'gender' => 'nullable|in:male,female,other',
+            'birthdate' => 'nullable|date',
             'address' => 'nullable|string|max:255',
             'role' => 'sometimes|in:0,1',
             'status' => 'nullable|boolean',
@@ -77,7 +80,7 @@ class UserController extends Controller
         $user->update($data);
 
         return response()->json([
-            'message' => 'User updated successfully',
+            'message' => 'Cập nhật thông tin thành công',
             'data' => $user
         ]);
     }

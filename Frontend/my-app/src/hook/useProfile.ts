@@ -1,23 +1,28 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { getUpdateProfile } from "../provider/dataProvider";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
-type useProfileParam = {
-    resource: string;
-    id: number;
-}
+type UseProfileProps = {
+  resource: string;
+  id: string;
+};
 
-const useProfile = ({resource, id}: useProfileParam) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (variable: any) => {
-            return getUpdateProfile({resource, variable, id})
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: [resource, id]
-            })
+const useProfile = ({ resource, id }: UseProfileProps) => {
+  const token = localStorage.getItem("token");
+
+  return useMutation({
+    mutationFn: async (updatedData: any) => {
+      const response = await axios.put(
+        `http://localhost:8000/api/${resource}/${id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    })
-}
+      );
+      return response.data;
+    },
+  });
+};
 
-export default useProfile
+export default useProfile;

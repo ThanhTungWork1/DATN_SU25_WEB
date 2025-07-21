@@ -24,7 +24,7 @@ const ClientRoute = () => {
     <Navbar/>
       <Routes>
         <Route path='/' element={<HomePage/>}/>
-        <Route path="/users/:id" element={<UserProfile />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path='/login' element={<Login/>}/>
         <Route path='/register' element={<Register/>}/>
         <Route path="/products" element={<ListProduct />} />
