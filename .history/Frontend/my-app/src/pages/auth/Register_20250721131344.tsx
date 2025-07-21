@@ -20,26 +20,21 @@ export const Register = () => {
   const navigate = useNavigate();
   const { mutate: registerMutate } = useRegister({ resource: "register" });
   const { mutate: loginMutate } = useLogin({ resource: "login" });
-  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>(
-    {}
-  );
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
 
   const onFinish = (formData: any) => {
-    const {
-      confirm, // lấy confirm ra nhưng không gửi
-      gender, // nếu backend không yêu cầu gender, có thể bỏ
-      ...rest
-    } = formData;
-
-    const submitData = {
-      ...rest,
-      password_confirmation: confirm, // Laravel expects this!
+<<<<<<< HEAD
+    // Chuyển confirm thành password_confirmation
+    const payload = {
+      ...formData,
+      password_confirmation: formData.confirm,
     };
-
-    registerMutate(submitData, {
+    delete payload.confirm;
+    setFieldErrors({}); // clear lỗi cũ
+    registerMutate(payload, {
       onSuccess: () => {
         loginMutate(
-          { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
+          { email: formData.email, password: formData.password },
           {
             onSuccess: (data) => {
               const res: any = data;
@@ -57,6 +52,45 @@ export const Register = () => {
         );
       },
       onError: (error: any) => {
+        // Xử lý lỗi chi tiết từng trường
+        const apiErrors = error?.response?.data?.errors;
+        if (apiErrors) {
+          setFieldErrors(apiErrors);
+        } else {
+          messageApi.error(error?.response?.data?.message || "Đăng ký thất bại");
+=======
+  const {
+    confirm, // lấy confirm ra nhưng không gửi
+    gender,  // nếu backend không yêu cầu gender, có thể bỏ
+    ...rest
+  } = formData;
+
+  const submitData = {
+    ...rest,
+    password_confirmation: confirm, // Laravel expects this!
+  };
+
+  registerMutate(submitData, {
+    onSuccess: () => {
+      loginMutate(
+        { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
+        {
+          onSuccess: (data) => {
+            const res: any = data;
+            if (res && res.token) {
+              localStorage.setItem("token", res.token);
+            }
+            messageApi.success("Đăng ký & đăng nhập thành công!");
+            navigate("/");
+          },
+          onError: () => {
+            messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
+            navigate("/login");
+          },
+        }
+      );
+    },
+      onError: (error: any) => {
         const res = error?.response?.data;
         if (typeof res === "string") {
           messageApi.error(res);
@@ -67,6 +101,7 @@ export const Register = () => {
           // messageApi.error(errorList[0] || "Đăng ký thất bại");
         } else {
           messageApi.error("Đăng ký thất bại");
+>>>>>>> origin/ThanhTung_profile_home_auth
         }
       },
     });

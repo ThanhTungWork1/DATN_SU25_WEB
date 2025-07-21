@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { getList } from "../../provider/dataProvider"
+import { getList } from "../../provider/dataProvider1"
 
 export const useDashboardStats = () =>{
   return useQuery({

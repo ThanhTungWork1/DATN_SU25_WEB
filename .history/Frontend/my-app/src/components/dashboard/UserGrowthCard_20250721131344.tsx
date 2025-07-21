@@ -30,3 +30,8 @@ const UserGrowthCard = () => {
   );
 };
 export default UserGrowthCard;
+
+<<<<<<< HEAD
+export default UserGrowthCard;
+=======
+>>>>>>> origin/ThanhTung_profile_home_auth

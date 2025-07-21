@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
+// import UserList from "../pages/admin/users/UserList";
 import UserAdd from "../pages/admin/users/AddUser";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 import ProductList from "../pages/admin/products/ProductsList";
@@ -7,7 +8,10 @@ import ProductForm from "../pages/admin/products/ProductForm";
 import OrderList from "../pages/admin/orders/OrderList";
 import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
+<<<<<<< HEAD
 import { Contact } from "../pages/admin/contact/contact";
+=======
+>>>>>>> origin/ThanhTung_profile_home_auth
 
 const AdminRoute = () => {
   return (
@@ -28,12 +32,19 @@ const AdminRoute = () => {
         <Route path="orders/create" element={<OrderForm />} />
         <Route path="orders/edit/:id" element={<OrderForm />} />
         <Route path="orders/detail/:id" element={<OrderDetail />} />
+<<<<<<< HEAD
         {/* Liên hệ */}
         <Route path="contacts" element={<Contact />} />
+=======
+>>>>>>> origin/ThanhTung_profile_home_auth
         {/* Thêm các route con khác ở đây nếu cần */}
       </Route>
     </Routes>
   );
 };
 
+<<<<<<< HEAD
 export default AdminRoute;
+=======
+export default AdminRoute;
+>>>>>>> origin/ThanhTung_profile_home_auth

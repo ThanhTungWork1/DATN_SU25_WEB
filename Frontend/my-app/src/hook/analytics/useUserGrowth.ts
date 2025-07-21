@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getList } from "../../provider/dataProvider";
+import { getList } from "../../provider/dataProvider1";
 import dayjs from "dayjs";
 
 export const useUserGrowth = () => {

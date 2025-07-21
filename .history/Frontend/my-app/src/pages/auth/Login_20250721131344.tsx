@@ -12,27 +12,47 @@ export const Login = () => {
   const navigate = useNavigate();
   const { mutate } = useLogin({ resource: "login" });
 
+<<<<<<< HEAD
+  const onFinish = (formData: any) => {
+    // Nếu đăng nhập admin "ảo"
+=======
   const onFinish = (formData: { email: string; password: string }) => {
+    // Nếu đăng nhập bằng tài khoản admin "ảo"
+>>>>>>> origin/ThanhTung_profile_home_auth
+    if (formData.email === "admin@gmail.com" && formData.password === "admin123") {
+      localStorage.setItem("role", "admin");
+      messageApi.success("Đăng nhập với tư cách Admin");
+      navigate("/admin/dashboard");
+      return;
+    }
+
+<<<<<<< HEAD
+    // Nếu là user bình thường => gọi API Laravel
+    const payload = {
+      login: formData.email, // Sử dụng trường 'login' thay vì 'email'
+      password: formData.password,
+    };
+    mutate(payload, {
+      onSuccess: (data: any) => {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", "user");
+        messageApi.success("Đăng nhập thành công");
+        navigate("/");
+=======
+    // Nếu là user thật => gọi Laravel API
     mutate(
       {
-        login: formData.email,
+        login: formData.email, // Laravel backend dùng field "login"
         password: formData.password,
+>>>>>>> origin/ThanhTung_profile_home_auth
       },
       {
-        onSuccess: (user: any) => {
-          // Lưu token đã được xử lý trong useLogin
-          const role = user.role === "1" ? "1" : "0";
-          localStorage.setItem("role", role);
-
+        onSuccess: (data: any) => {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", "user");
           messageApi.success("Đăng nhập thành công");
-
-          if (role === "1") {
-            navigate("/admin/dashboard");
-          } else {
-            navigate("/profile");
-          }
+          navigate("/");
         },
-
         onError: (error: any) => {
           const msg = error?.response?.data?.message || "Đăng nhập thất bại!";
           messageApi.error(msg);

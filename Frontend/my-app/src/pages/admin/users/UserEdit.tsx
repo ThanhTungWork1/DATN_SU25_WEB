@@ -2,7 +2,7 @@ import { Button, Form, Input, message, Radio, Select } from "antd";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { IUser } from "../../../types/users";
-import { getOne, updateOne } from "../../../provider/dataProvider";
+import { getOne, updateOne } from "../../../provider/dataProvider1";
 
 const UserEdit = () => {
   const [form] = Form.useForm();

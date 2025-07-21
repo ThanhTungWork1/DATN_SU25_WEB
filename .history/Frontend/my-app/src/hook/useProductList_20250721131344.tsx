@@ -15,6 +15,10 @@ export const useProductPagination = (params: any) => {
   useEffect(() => {
     setLoading(true);
     setError(null);
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/ThanhTung_profile_home_auth
     getProductsPaginatedAndFiltered(params)
       .then((res) => {
         const result = res as { data: any[]; pagination: any };

@@ -9,7 +9,10 @@ import type {
   RouteParams,
   RelatedProductsProps,
 } from "../../../types/RelatedProductsType";
+<<<<<<< HEAD
 import "../../../assets/styles/realte.css";
+=======
+>>>>>>> origin/ThanhTung_profile_home_auth
 
 const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
   const { id } = useParams<RouteParams>();
@@ -77,6 +80,25 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
                         )
                       : product.colors,
                   }}
+                  // onAddToCart={() => {
+                  //   const finalPrice =
+                  //     product.discount && product.discount > 0
+                  //       ? Math.max(
+                  //           0,
+                  //           Math.round(
+                  //             product.price * (1 - product.discount / 100)
+                  //           )
+                  //         )
+                  //       : product.price;
+                  //   addToCart({
+                  //     id: product.id,
+                  //     name: product.name,
+                  //     price: finalPrice,
+                  //     image,
+                  //     quantity: 1,
+                  //   });
+                  //   toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+                  // }}
                 />
               </div>
             );
