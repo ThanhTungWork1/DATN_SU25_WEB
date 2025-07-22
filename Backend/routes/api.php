@@ -2,7 +2,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
-use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
@@ -64,16 +64,27 @@ Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
 // ====================================================================
-// ADMIN ROUTES (TẠM THỜI BỎ MIDDLEWARE CHO PRODUCTS VÀ ORDERS ĐỂ DEBUG)
+// ADMIN ROUTES
 // ====================================================================
 
-// Các route Admin cho Products và Orders (TẠM THỜI KHÔNG CẦN XÁC THỰC)
 Route::prefix('admin')->group(function () {
-    Route::apiResource('products', ProductController::class); // GET /api/admin/products
-    Route::apiResource('orders', OrderController::class);    // GET /api/admin/orders
+    // --- SỬA LỖI 405 TẠI ĐÂY ---
+    // 1. Dùng apiResource cho các route đơn giản: index, show, destroy
+    Route::apiResource('products', ProductController::class)->except(['store', 'update']);
+
+    // 2. Định nghĩa riêng route POST cho việc TẠO MỚI (store)
+    Route::post('products', [ProductController::class, 'store']);
+
+    // 3. ĐỊNH NGHĨA RIÊNG ROUTE POST CHO VIỆC CẬP NHẬT (update)
+    // Đây là dòng quan trọng nhất để sửa lỗi 405.
+    Route::post('products/{id}', [ProductController::class, 'update']);
+    // --- KẾT THÚC SỬA LỖI ---
+
+    // Các route admin khác của bạn giữ nguyên
+    Route::apiResource('orders', OrderController::class);
 });
 
-// Các route Admin khác VẪN CẦN XÁC THỰC (vì chúng nằm trong group middleware)
+// Các route Admin khác VẪN CẦN XÁC THỰC
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
     Route::get('dashboard', [DashboardController::class, 'index']);
