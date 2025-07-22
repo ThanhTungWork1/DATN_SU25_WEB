@@ -12,7 +12,12 @@ class Order extends Model
         'is_paid',
         'total_amount',
         'shipping_fee',
-        'sold_number',
+        'shipping_address',
+        'shipping_phone',
+        'shipping_name',
+        'note',
+        'payment_method',
+        'discount_amount',
         'created_at',
         'updated_at',
     ];

@@ -12,7 +12,7 @@ class CartItemSeeder extends Seeder
         CartItem::create([
             'cart_id' => 1,
             'variant_id' => 2,
-            'product_id' => 1,
+            // 'product_id' => 1,
             'quantity' => 1,
             'price' => 199000  // hoặc giá phù hợp tùy sp
         ]);

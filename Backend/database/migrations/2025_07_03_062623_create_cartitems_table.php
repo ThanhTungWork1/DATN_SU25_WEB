@@ -13,6 +13,7 @@ class CreateCartitemsTable extends Migration
             $table->unsignedBigInteger('cart_id');
             $table->unsignedBigInteger('variant_id');
             $table->integer('quantity');
+              $table->decimal('price', 10, 2); // Sử dụng decimal cho giá tiền
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
 

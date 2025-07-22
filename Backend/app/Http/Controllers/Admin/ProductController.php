@@ -20,7 +20,7 @@ class ProductController extends Controller
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
-            'status' => 'boolean',
+      
         ]);
 
         $product = Product::create($data);

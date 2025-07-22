@@ -14,11 +14,13 @@ class Product extends Model
         'slug',
         'description',
         'price',
-        'discount',
         'image',
-        'hover_image',
         'status',
-        'category_id'
+        'category_id',
+        'material',
+        'sold',
+        'hover_image',
+        'discount',
     ];
     protected $casts = [
         'status' => 'boolean',
@@ -44,5 +46,4 @@ class Product extends Model
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
-
 }

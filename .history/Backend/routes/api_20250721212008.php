@@ -85,6 +85,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
 });
 
+<<<<<<< HEAD
 Route::post('/contact', [ContactController::class, 'store']);
 
 // Authenticated User Routes
@@ -96,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 
+=======
+
+
+// Authenticated User Routes (Yêu cầu xác thực auth:sanctum)
+Route::middleware(['auth:sanctum'])->group(function () {
+>>>>>>> origin/hung-feature/product-and-order
     Route::prefix('product')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::get('/search', [ProductController::class, 'search']);
