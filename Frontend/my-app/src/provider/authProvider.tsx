@@ -1,4 +1,5 @@
-import axios from "../utils/axios";
+import axiosInstance from "../utils/axios";
+ // dùng đúng axiosInstance từ utils/axios.ts
 import type { IUser } from "../types/users";
 
 type AuthParams = {
@@ -15,17 +16,17 @@ type LoginResponse = {
 };
 
 export const login = async ({ resource, variables }: AuthParams): Promise<LoginResponse> => {
+  const { data } = await axiosInstance.post<LoginResponse>(`/${resource}`, variables);
+  return data;
+};
+
+export const register = async ({ resource, variables }: AuthParams): Promise<LoginResponse> => {
   try {
-    const response = await axios.post<LoginResponse>(`/${resource}`, variables);
-    return response.data;
+    const { data } = await axiosInstance.post<LoginResponse>(`/${resource}`, variables);
+    return data;
   } catch (error: any) {
-    console.error("❌ Login API error:", error.response?.data || error.message);
+    console.error("❌ Register API error:", error.response?.data || error.message);
     throw error;
   }
 };
- // ✅ đóng hàm login ở đây
 
-export const register = async ({ resource, variables }: AuthParams): Promise<AuthParams> => {
-  const response = await axios.post<AuthParams>(`/${resource}`, variables);
-  return response.data;
-};

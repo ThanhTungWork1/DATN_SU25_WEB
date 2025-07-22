@@ -1,21 +1,13 @@
-import { Routes, Route } from "react-router-dom";
-import { Toaster } from "sonner";
-import { WishlistProvider } from "./provider/WishlistContext";
-// import { Contact } from "./components/Contact";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ClientRoute from "./routes/ClientRoute";
 import AdminRoute from "./routes/AdminRoute";
-// import AdminRoute from "./routes/AdminRoute";
 
 function App() {
   return (
-    <WishlistProvider>
       <Routes>
-        <Route path="/admin/*" element={<AdminRoute />} />
         <Route path="/*" element={<ClientRoute />} />
+        <Route path="/admin/*" element={<AdminRoute />} />
       </Routes>
-      <Toaster position="top-right" richColors />
-      {/* <Contact /> */}
-    </WishlistProvider>
   );
 }
 

@@ -1,4 +1,3 @@
-// src/hook/useCurrentUser.ts
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { IUser } from "../types/users"; // Đảm bảo đúng path

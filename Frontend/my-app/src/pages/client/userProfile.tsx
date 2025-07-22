@@ -4,11 +4,18 @@ import dayjs from "dayjs";
 import useCurrentUser from "../../hook/useCurrentUser";
 import useProfile from "../../hook/useProfile";
 import type { IUser } from "../../types/users";
+import { useNavigate } from "react-router-dom";
+import { LogoutOutlined } from "@ant-design/icons";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
   const { data: user, isLoading, refetch } = useCurrentUser();
-
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // hoặc user_token nếu bạn vẫn dùng key cũ
+    message.success("Đăng xuất thành công!");
+    navigate("/"); // hoặc điều hướng về trang chủ
+  };
   const userId = user?.id?.toString() || "";
 
   const { mutate, isPending } = useProfile({
@@ -49,6 +56,14 @@ const UserProfile = () => {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
       <h1>Thông tin cá nhân</h1>
+        <Button
+          type="primary"
+          danger
+          icon={<LogoutOutlined />}
+          onClick={handleLogout}
+          style={{ marginBottom: 24 }}
+        >
+        </Button>
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Form.Item
           label="Họ tên"

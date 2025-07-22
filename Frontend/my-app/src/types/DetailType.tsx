@@ -1,7 +1,18 @@
 export interface Variant {
-  size?: { id: number; name: string; created_at?: string; updated_at?: string };
+  size?: {
+    id: number;
+    name: string;
+    created_at?: string;
+    updated_at?: string;
+  };
   stock: number;
-  color?: { id: number; name: string; hex_code?: string; created_at?: string; updated_at?: string };
+  color?: {
+    id: number;
+    name: string;
+    hex_code?: string;
+    created_at?: string;
+    updated_at?: string;
+  };
   image?: string;
   sku?: string;
 }
@@ -9,8 +20,8 @@ export interface Variant {
 export type ColorType = {
   id: number;
   name: string;
-  code: string;
-  image?: string;
+  code: string;       // Đây là `hex_code` rút gọn lại
+  image?: string;     // Gắn vào từ `variant.image`
 };
 
 export interface Product {
@@ -28,42 +39,23 @@ export interface Product {
   sold?: number;
   discount?: number;
   sku?: string;
-  category?: string;
+
+  // ✅ Các trường được thêm khi xử lý chi tiết
+  category?: string;            // tên danh mục dạng text
+  variants?: {
+    size?: string;              // lấy từ size.name
+    stock: number;
+    color?: string;             // lấy từ color.name
+    image?: string;
+    sku?: string;
+  }[];
+  colors?: ColorType[];         // màu sắc riêng biệt của sản phẩm
+
+  // ✅ Các trường bổ sung cho frontend (nếu có)
   tags?: string[];
   images?: string[];
   detailImages?: string[];
-  variants?: Variant[];
-  colors?: ColorType[];
   rating?: number;
   reviews?: number;
   details?: string[];
-}
-
-export type SizeProps = {
-  variants: Variant[];
-  selectedSize: string | null;
-  onSelectSize: (size: string) => void;
-};
-
-export interface Order {
-  id: number;
-  createdAt?: string;
-  created_at?: string;
-  status: string;
-  paymentMethod?: string;
-  totalAmount?: number;
-  total_amount?: number;
-  address?: {
-    street?: string;
-    ward?: string;
-    district?: string;
-    province?: string;
-  };
-  items?: {
-    id: number;
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  // Thêm các trường khác nếu cần
 }

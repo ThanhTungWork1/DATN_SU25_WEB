@@ -1,23 +1,16 @@
-// src/utils/axios.ts
 import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8000/api",
-  headers: {
-    Accept: "application/json",
-  },
 });
 
-axiosInstance.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((request) => {
   const token = localStorage.getItem("token");
-
-  config.headers = config.headers || {};
-
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    request.headers = request.headers || {};
+    request.headers["Authorization"] = `Bearer ${token}`;
   }
-
-  return config;
+  return request;
 });
 
 export default axiosInstance;

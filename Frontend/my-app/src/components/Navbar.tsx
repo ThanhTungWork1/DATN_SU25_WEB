@@ -1,35 +1,56 @@
 import SearchBar from "./SearchBar";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
+import { useEffect, useState } from "react";
+import { message } from "antd";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const params = new URLSearchParams(location.search);
-  const categoryParam = params.get("category");
+  const [user, setUser] = useState<any>(null);
 
-  // Xác định active cho từng menu
-  // Sản phẩm: chỉ active khi path là /products và không có category thuộc Nam/Nữ/Phụ kiện
-  const isProductsPage = location.pathname === "/products" &&
-    ![...CATEGORY_MENU.NAM_IDS, ...CATEGORY_MENU.NU_IDS, ...CATEGORY_MENU.PHU_KIEN].includes(Number(categoryParam));
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        setUser(null);
+      }
+    }
+  }, [location]); // cập nhật mỗi lần chuyển route
 
-  // Nam: active khi category thuộc NAM_IDS
-  const isNamActive = CATEGORY_MENU.NAM_IDS.includes(Number(categoryParam));
-  // Nữ: active khi category thuộc NU_IDS
-  const isNuActive = CATEGORY_MENU.NU_IDS.includes(Number(categoryParam));
-  // Phụ kiện: active khi category là PHU_KIEN, PHU_KIEN_KINH, PHU_KIEN_MU
-  const isPhuKienActive = [
-    ...CATEGORY_MENU.PHU_KIEN,
-    CATEGORY_MENU.PHU_KIEN_KINH,
-    CATEGORY_MENU.PHU_KIEN_MU
-  ].includes(Number(categoryParam));
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    message.success("Đăng xuất thành công");
+    setUser(null);
+    navigate("/login");
+  };
+
+  const goToCart = () => navigate("/cart");
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
       navigate(`/search?query=${encodeURIComponent(query)}`);
     }
   };
+
+  const params = new URLSearchParams(location.search);
+  const categoryParam = params.get("category");
+
+  const isProductsPage =
+    location.pathname === "/products" &&
+    ![...CATEGORY_MENU.NAM_IDS, ...CATEGORY_MENU.NU_IDS, ...CATEGORY_MENU.PHU_KIEN].includes(Number(categoryParam));
+
+  const isNamActive = CATEGORY_MENU.NAM_IDS.includes(Number(categoryParam));
+  const isNuActive = CATEGORY_MENU.NU_IDS.includes(Number(categoryParam));
+  const isPhuKienActive = [
+    ...CATEGORY_MENU.PHU_KIEN,
+    CATEGORY_MENU.PHU_KIEN_KINH,
+    CATEGORY_MENU.PHU_KIEN_MU,
+  ].includes(Number(categoryParam));
 
   const handleClickPhuKien = () => {
     navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
@@ -41,10 +62,6 @@ const Navbar = () => {
 
   const handleClickPhuKienKinh = () => {
     navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN_KINH}`);
-  };
-
-  const goToCart = () => {
-    navigate("/cart");
   };
 
   return (
@@ -59,7 +76,7 @@ const Navbar = () => {
 
       <ul className="menu-links" id="navLinks">
         <li>
-          <NavLink to="/" className={({ isActive }) => isActive ? "active" : ""} end>
+          <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")} end>
             Trang chủ
           </NavLink>
         </li>
@@ -67,7 +84,15 @@ const Navbar = () => {
           <button
             className={isProductsPage ? "active" : ""}
             onClick={() => navigate("/products")}
-            style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: "8px 12px", borderRadius: "4px" }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "inherit",
+              font: "inherit",
+              cursor: "pointer",
+              padding: "8px 12px",
+              borderRadius: "4px",
+            }}
           >
             Sản phẩm
           </button>
@@ -77,8 +102,12 @@ const Navbar = () => {
             Nam <span className="dropdown-icon">▼</span>
           </button>
           <ul className="dropdown-menu">
-            <li><button onClick={() => navigate("/products?category=1")}>Áo</button></li>
-            <li><button onClick={() => navigate("/products?category=2")}>Quần</button></li>
+            <li>
+              <button onClick={() => navigate("/products?category=1")}>Áo</button>
+            </li>
+            <li>
+              <button onClick={() => navigate("/products?category=2")}>Quần</button>
+            </li>
           </ul>
         </li>
         <li className="dropdown">
@@ -86,8 +115,12 @@ const Navbar = () => {
             Nữ <span className="dropdown-icon">▼</span>
           </button>
           <ul className="dropdown-menu">
-            <li><button onClick={() => navigate("/products?category=5")}>Áo</button></li>
-            <li><button onClick={() => navigate("/products?category=6")}>Quần</button></li>
+            <li>
+              <button onClick={() => navigate("/products?category=5")}>Áo</button>
+            </li>
+            <li>
+              <button onClick={() => navigate("/products?category=6")}>Quần</button>
+            </li>
           </ul>
         </li>
         <li>
@@ -117,7 +150,7 @@ const Navbar = () => {
           </ul>
         </li>
         <li>
-          <NavLink to="/orders" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
             Đơn hàng
           </NavLink>
         </li>
@@ -127,37 +160,45 @@ const Navbar = () => {
         <SearchBar onSearch={handleSearch} />
         <div
           className="icon-btn"
-          title="Tài khoản"
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate("/register")}
-        >
-          &#128100;
-        </div>
-        <div
-          className="icon-btn icon-favorite-navbar"
           title="Yêu thích"
-          style={{ cursor: "pointer" }}
           onClick={() => navigate("/wishlist")}
+          style={{ cursor: "pointer" }}
         >
           <i className="far fa-heart"></i>
         </div>
-        <div
-          className="icon-btn"
-          title="Giỏ hàng"
-          onClick={goToCart}
-          style={{ cursor: "pointer" }}
-        >
-          &#128722;
+        <div className="icon-btn" title="Giỏ hàng" onClick={goToCart} style={{ cursor: "pointer" }}>
+          🛒
         </div>
-        <button
-          className="login-btn"
-          onClick={() => navigate("/login")}
-        >
-          Đăng nhập
-        </button>
+
+        {user ? (
+          <>
+            {user.role === "admin" && (
+              <button className="login-btn" onClick={() => navigate("/admin/dashboard")}>
+                Admin
+              </button>
+            )}
+            <button className="login-btn" onClick={() => navigate("/profile")}>
+              {user.name || "Tài khoản"}
+            </button>
+            <button className="login-btn" onClick={logout}>
+              Đăng xuất
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="login-btn" onClick={() => navigate("/login")}>
+              Đăng nhập
+            </button>
+            <button className="login-btn" onClick={() => navigate("/register")}>
+              Đăng ký
+            </button>
+          </>
+        )}
       </div>
 
-      <div className="menu-toggle" id="menuToggle">&#9776;</div>
+      <div className="menu-toggle" id="menuToggle">
+        ☰
+      </div>
     </nav>
   );
 };
