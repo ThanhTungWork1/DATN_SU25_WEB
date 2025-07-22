@@ -4,24 +4,32 @@ import axios from 'axios';
 
 const API_BASE_URL = "http://localhost:8000/api";
 
+// Bỏ phần 'headers' mặc định ở đây để interceptor toàn quyền xử lý
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
 });
 
-// Thêm Interceptor cho Request
+// Thêm Interceptor cho Request - Phiên bản hoàn chỉnh và mạnh mẽ hơn
 axiosInstance.interceptors.request.use(
     config => {
-        // Lấy token từ localStorage (hoặc bất kỳ nơi nào bạn lưu token sau khi đăng nhập)
+        // Luôn chấp nhận phản hồi JSON từ server
+        config.headers['Accept'] = 'application/json';
+
+        // Lấy token từ localStorage
         const token = localStorage.getItem('authToken'); 
         
         if (token) {
-            // Thêm token vào header Authorization theo định dạng 'Bearer Token'
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // QUAN TRỌNG: Logic xử lý Content-Type
+        // Nếu dữ liệu là FormData, chúng ta KHÔNG làm gì cả.
+        // Axios sẽ tự động đặt Content-Type là 'multipart/form-data' với boundary chính xác.
+        if (!(config.data instanceof FormData)) {
+            // Nếu không phải FormData, chúng ta mới đặt Content-Type là JSON.
+            config.headers['Content-Type'] = 'application/json';
+        }
+        
         return config;
     },
     error => {
@@ -33,13 +41,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     response => response,
     error => {
-        // Nếu nhận lỗi 401 (Unauthorized) hoặc 403 (Forbidden) từ backend
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.error("Authentication error. Redirecting to login.");
-            // Xóa token đã lưu
             localStorage.removeItem('authToken');
-            // Redirect về trang đăng nhập
-            window.location.href = '/admin/login'; // Chuyển hướng về trang login admin của bạn
+            window.location.href = '/admin/login';
         }
         return Promise.reject(error);
     }
