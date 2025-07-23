@@ -78,7 +78,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        return Product::with('variants')->findOrFail($id);
+     return Product::with(['variants.color', 'variants.size'])->findOrFail($id);
     }
 
     public function update(Request $request, $id)

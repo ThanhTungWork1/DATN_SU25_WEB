@@ -25,7 +25,6 @@ class Product extends Model
         'status',
         'category_id',
         'material',
-        // 'discount',
         'sold',
         'image',
         'hover_image',
@@ -56,23 +55,25 @@ class Product extends Model
     }
 
     /**
-     * Accessor để lấy URL đầy đủ của ảnh chính.
+     * SỬA LỖI: Dùng hàm asset() để tạo URL đầy đủ và chính xác.
+     * Đây là cách làm đúng chuẩn của Laravel.
      */
     public function getImageUrlAttribute()
     {
         if ($this->image && Storage::disk('public')->exists($this->image)) {
-            return Storage::url($this->image);
+            // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
+            return asset('storage/' . $this->image);
         }
-        return null; // Hoặc trả về một ảnh placeholder
+        return null;
     }
 
     /**
-     * Accessor để lấy URL đầy đủ của ảnh hover.
+     * SỬA LỖI: Dùng hàm asset() cho cả ảnh hover.
      */
     public function getHoverImageUrlAttribute()
     {
         if ($this->hover_image && Storage::disk('public')->exists($this->hover_image)) {
-            return Storage::url($this->hover_image);
+            return asset('storage/' . $this->hover_image);
         }
         return null;
     }
