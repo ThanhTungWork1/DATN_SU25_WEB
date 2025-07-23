@@ -61,11 +61,7 @@ const UserList = () => {
       title: "Chức vụ",
       dataIndex: "role",
       key: "role",
-      render: (role: number | string) => (
-        <Tag color={role == 1 ? "volcano" : "blue"}>
-          {role == 1 ? "Admin" : "User"}
-        </Tag>
-      ),
+      render: (role: string) => <Tag color="blue">{role}</Tag>,
     },
     {
       title: "Trạng thái",

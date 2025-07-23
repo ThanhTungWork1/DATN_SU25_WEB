@@ -61,9 +61,9 @@ const UserList = () => {
       title: "Chức vụ",
       dataIndex: "role",
       key: "role",
-      render: (role: number | string) => (
-        <Tag color={role == 1 ? "volcano" : "blue"}>
-          {role == 1 ? "Admin" : "User"}
+      render: (role: number) => (
+        <Tag color={role === 1 ? "volcano" : "blue"}>
+          {role === 1 ? "Admin" : "User"}
         </Tag>
       ),
     },
@@ -124,11 +124,10 @@ const UserList = () => {
   return (
     <div>
       <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
-
+      <br />
       <Button type="primary">
         <Link to="/admin/users/create">Thêm người dùng</Link>
       </Button>
-
       <Input.Search
         placeholder="Tìm theo tên người dùng"
         allowClear

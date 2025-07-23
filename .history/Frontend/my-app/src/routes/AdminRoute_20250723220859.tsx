@@ -10,7 +10,6 @@ import OrderDetail from "../pages/admin/orders/OrderDetail";
 import RequireAuth from "./RequireAuth";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
 import UserList from "../pages/admin/users/UserList";
-import UserEdit from "../pages/admin/users/UserEdit";
 
 const AdminRoute = () => {
   return (
@@ -21,7 +20,6 @@ const AdminRoute = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="users" element={<UserList />} />
           <Route path="users/create" element={<UserAdd />} />
-          <Route path="users/edit/:id" element={<UserEdit />} />
           <Route path="products" element={<ProductList />} />
           <Route path="products/create" element={<ProductForm />} />
           <Route path="products/edit/:id" element={<ProductForm />} />

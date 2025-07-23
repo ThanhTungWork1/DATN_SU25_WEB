@@ -11,9 +11,69 @@ class UserController extends Controller
 {
 
 
-    public function index()
+    public function index(Request $request)
     {
-        return User::all();
+        $query = User::query();
+
+        // Tìm kiếm theo tên hoặc email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%")
+                  ->orWhere('phone', 'like', "%$search%")
+                  ->orWhere('address', 'like', "%$search%")
+                  ;
+            });
+        }
+
+        // Lọc theo role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        // Lọc theo status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Sắp xếp
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $allowedSortFields = ['name', 'email', 'created_at', 'updated_at', 'role', 'status'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+        $query->orderBy($sortBy, $sortOrder);
+
+        // Phân trang
+        $perPage = $request->get('per_page', 10);
+        $perPage = min(max($perPage, 1), 100);
+        $users = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách user thành công',
+            'data' => $users->items(),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'total_pages' => $users->lastPage(),
+                'has_next_page' => $users->hasMorePages(),
+                'has_prev_page' => $users->currentPage() > 1,
+            ],
+            'filters' => [
+                'search' => $request->search ?? null,
+                'role' => $request->role ?? null,
+                'status' => $request->status ?? null,
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
+            ]
+        ]);
     }
 
     public function store(Request $request)

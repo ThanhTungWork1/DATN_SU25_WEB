@@ -9,9 +9,6 @@ const UserList = () => {
   const { data, isLoading, refetch } = useList({ resource: "admin/users" });
   const [searchText, setSearchText] = useState("");
 
-  console.log("isLoading", isLoading);
-  console.log("data", data);
-
   if (isLoading) return <div>Loading...</div>;
 
   // Sắp xếp theo vai trò
@@ -21,16 +18,8 @@ const UserList = () => {
     user: 3,
   };
 
-  const userArray =
-    data &&
-    typeof data === "object" &&
-    data.data &&
-    typeof data.data === "object" &&
-    Array.isArray(data.data.data)
-      ? data.data.data
-      : [];
-  const dataSource = userArray
-    .map((user: IUser) => ({
+  const dataSource = (data?.data as IUser[] | undefined)
+    ?.map((user: IUser) => ({
       key: user.id,
       ...user,
     }))
@@ -38,8 +27,6 @@ const UserList = () => {
       (a: IUser, b: IUser) =>
         (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
     );
-
-  console.log("dataSource", dataSource);
 
   const handleStatusChange = async (userId: number, newStatus: boolean) => {
     try {
@@ -61,11 +48,7 @@ const UserList = () => {
       title: "Chức vụ",
       dataIndex: "role",
       key: "role",
-      render: (role: number | string) => (
-        <Tag color={role == 1 ? "volcano" : "blue"}>
-          {role == 1 ? "Admin" : "User"}
-        </Tag>
-      ),
+      render: (role: string) => <Tag color="blue">{role}</Tag>,
     },
     {
       title: "Trạng thái",
@@ -119,12 +102,8 @@ const UserList = () => {
       user.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  console.log("filteredData", filteredData);
-
   return (
     <div>
-      <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
-
       <Button type="primary">
         <Link to="/admin/users/create">Thêm người dùng</Link>
       </Button>
@@ -136,6 +115,7 @@ const UserList = () => {
         style={{ width: 300, marginBottom: 16 }}
       />
 
+      <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
       <Table
         dataSource={filteredData || []}
         columns={columns}
