@@ -6,7 +6,7 @@ import {
   clearCart
 } from "../../../store/cartSlice";
 import { useNavigate } from "react-router-dom";
-import { getCartItemsWithDetails } from "../../../api/ApiUrl"; // sửa path nếu cần
+import { getCartItemsWithDetails, updateCartItem, removeCartItem } from "../../../api/ApiUrl"; // sửa path nếu cần
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -32,6 +32,25 @@ const CartPage = () => {
     (total, item) => total + item.price * item.quantity,
     0
   );
+
+  // Cập nhật số lượng sản phẩm
+  const handleQuantityChange = async (id: number, quantity: number) => {
+    if (quantity < 1) return;
+    await updateCartItem(id, quantity);
+    // Reload lại giỏ hàng
+    if (userId) {
+      getCartItemsWithDetails(userId).then((items) => setCartItems(items));
+    }
+  };
+
+  // Xóa sản phẩm khỏi giỏ hàng
+  const handleRemoveItem = async (id: number) => {
+    await removeCartItem(id);
+    // Reload lại giỏ hàng
+    if (userId) {
+      getCartItemsWithDetails(userId).then((items) => setCartItems(items));
+    }
+  };
 
   return (
     <div className="container my-5">
@@ -66,13 +85,15 @@ const CartPage = () => {
                   min="1"
                   value={item.quantity}
                   className="form-control w-25 mx-2"
-                  onChange={(e) => dispatch(updateQuantity({ id: item.id, quantity: Number(e.target.value) }))}
+                  title="Số lượng"
+                  placeholder="Số lượng"
+                  onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
                 />
                 <p className="fw-bold">
                   {(item.price * item.quantity).toLocaleString()} VND
                 </p>
                 <button
-                  onClick={() => dispatch(removeFromCart(item.id))}
+                  onClick={() => handleRemoveItem(item.id)}
                   className="btn btn-danger ms-3"
                 >
                   Xóa

@@ -3,6 +3,7 @@ import type { ColorType, Product } from "../types/DetailType";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
 import { validateProductDetail } from "../validation/productDetailValidation";
+import { addToCart as apiAddToCart } from "../api/ApiUrl";
 
 export function useProductDetailLogic(product: Product | undefined) {
   const { addToCart } = useCart();
@@ -18,7 +19,7 @@ export function useProductDetailLogic(product: Product | undefined) {
     setSelectedColor(null);
   }, [product]);
 
-  const handleAddToCart = (quantity: number) => {
+  const handleAddToCart = async (quantity: number) => {
     if (!product) return;
     // Validate chọn size và màu
     const { valid, message } = validateProductDetail(
@@ -29,23 +30,20 @@ export function useProductDetailLogic(product: Product | undefined) {
       toast.error(message);
       return;
     }
-    const fallbackImage =
-      product.image || (product.images && product.images[0]) || "";
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price:
-        product.discount && product.discount > 0 && product.discount < 100
-          ? Math.max(
-              0,
-              Math.round(product.price * (1 - product.discount / 100)),
-            )
-          : product.price,
-      image: selectedImage || fallbackImage,
-      quantity,
-      color: selectedColor!.name,
-      size: selectedSize!,
-    });
+    const userId = Number(localStorage.getItem("userId"));
+    if (!userId) {
+      toast.error("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+      return;
+    }
+    // Tìm variantId đúng với màu và size
+    const variant = product.variants?.find(
+      (v) => v.size === selectedSize && v.color === selectedColor?.name
+    );
+    if (!variant) {
+      toast.error("Không tìm thấy phiên bản sản phẩm phù hợp!");
+      return;
+    }
+    await apiAddToCart(userId, variant.sku || variant.id, quantity);
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 

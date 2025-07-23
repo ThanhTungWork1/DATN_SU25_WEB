@@ -120,7 +120,7 @@ const Navbar = () => {
         >
           &#128722;
         </div>
-        <button className="login-btn">Đăng nhập</button>
+        <button className="login-btn" onClick={() => navigate("/login")}>Đăng nhập</button>
       </div>
 
       <div className="menu-toggle" id="menuToggle">&#9776;</div>

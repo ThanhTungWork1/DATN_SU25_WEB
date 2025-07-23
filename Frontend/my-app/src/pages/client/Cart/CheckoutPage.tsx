@@ -115,7 +115,6 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <Header />
       <div className="container my-5">
         <h2 className="fw-bold text-center">🛍️ Thanh toán</h2>
         <div className="row">
@@ -123,9 +122,15 @@ const CheckoutPage = () => {
           <div className="col-lg-6">
             <h4 className="fw-bold">Đơn hàng</h4>
             {selectedProducts.map(item => (
-              <div key={item.id} className="border-bottom py-2">
-                <p>{item.name} x {item.quantity}</p>
-                <p>{(item.price * item.quantity).toLocaleString()} VND</p>
+              <div key={item.id} className="border-bottom py-2 d-flex align-items-center">
+                {/* Hiển thị ảnh sản phẩm nếu có */}
+                {item.image && (
+                  <img src={item.image} alt={item.name} style={{ width: 60, height: 60, objectFit: 'cover', marginRight: 12 }} />
+                )}
+                <div>
+                  <p className="mb-1">{item.name} x {item.quantity}</p>
+                  <p className="mb-1">{(item.price * item.quantity).toLocaleString()} VND</p>
+                </div>
               </div>
             ))}
             <h5 className="mt-3">
@@ -208,7 +213,6 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

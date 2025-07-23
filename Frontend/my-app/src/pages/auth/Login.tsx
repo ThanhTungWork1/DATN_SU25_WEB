@@ -23,9 +23,13 @@ export const Login = () => {
     }
 
     mutate(formData, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
         messageApi.success("Đăng nhập thành công");
         localStorage.setItem("role", "user");
+        // Lưu userId vào localStorage nếu có
+        if (data?.data?.id) {
+          localStorage.setItem("userId", data.data.id.toString());
+        }
         navigate("/");
       },
       onError: (error: any) => {

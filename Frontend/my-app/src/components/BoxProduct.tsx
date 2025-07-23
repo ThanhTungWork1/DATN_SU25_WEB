@@ -3,6 +3,7 @@ import type { Product } from "../types/ProductType";
 import { Link } from "react-router-dom";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
+import { addToCart as apiAddToCart } from "../api/ApiUrl";
 
 interface BoxProductProps {
   product: Product;
@@ -24,16 +25,16 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
   const hasHoverImage = !!hoverImage;
 
   // Hàm xử lý thêm vào giỏ hàng
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: mainImage,
-      quantity: 1,
-    });
+    const userId = Number(localStorage.getItem("userId"));
+    if (!userId) {
+      toast.error("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+      return;
+    }
+    // Nếu có variant thì lấy đúng variant_id, ở đây tạm dùng product.id
+    await apiAddToCart(userId, product.id, 1);
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
