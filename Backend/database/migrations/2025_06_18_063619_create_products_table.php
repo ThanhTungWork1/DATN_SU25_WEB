@@ -31,3 +31,4 @@
           Schema::dropIfExists('products');
       }
   };
+  
