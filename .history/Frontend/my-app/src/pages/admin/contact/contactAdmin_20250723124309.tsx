@@ -1,6 +1,6 @@
 import { Table, Input, Button, Modal, Form, message } from "antd";
 import { useState, useEffect } from "react";
-import { getContacts, replyContact } from "../../../api/ApiContact";
+import { getContacts } from "../../../api/ApiContact";
 
 // Định nghĩa type cho contact
 interface Contact {
@@ -42,25 +42,9 @@ export const ContactAdmin = () => {
   };
 
   const handleSendReply = (values: any) => {
-    if (!selectedContact) return;
-    setLoading(true);
-    replyContact(selectedContact.id, values.reply, token)
-      .then(() => {
-        message.success("Đã gửi phản hồi cho khách hàng!");
-        setModalOpen(false);
-        // Reload lại danh sách liên hệ
-        Promise.resolve(getContacts(page, token))
-          .then((res: any) => {
-            setData(res.data.data || []);
-            setTotal(res.data.total || 0);
-          })
-          .catch(() => message.error("Không lấy được danh sách liên hệ!"))
-          .finally(() => setLoading(false));
-      })
-      .catch(() => {
-        message.error("Gửi phản hồi thất bại!");
-        setLoading(false);
-      });
+    message.success("Phản hồi đã được gửi!");
+    setModalOpen(false);
+    // TODO: Gửi API phản hồi tới khách hàng
   };
 
   const filteredData = data.filter((item: any) =>

@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Mail\SendReplyMail;
-use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -105,24 +103,27 @@ class ContactController extends Controller
         ]);
     }
 
-    public function reply(Request $request, $id)
-    {
-        $request->validate([
-            'reply_message' => 'required|string',
-        ]);
+    use App\Mail\SendReplyMail;
+use Illuminate\Support\Facades\Mail;
 
-        $contact = Contact::find($id);
-        if (!$contact) {
-            return response()->json(['status' => false, 'message' => 'Liên hệ không tồn tại'], 404);
-        }
+public function reply(Request $request, $id)
+{
+    $request->validate([
+        'reply_message' => 'required|string',
+    ]);
 
-        // Gửi email cho user
-        Mail::to($contact->email)->send(new SendReplyMail($contact, $request->reply_message));
-
-        // Cập nhật trạng thái đã phản hồi
-        $contact->status = 1;
-        $contact->save();
-
-        return response()->json(['status' => true, 'message' => 'Đã gửi phản hồi cho khách hàng!']);
+    $contact = Contact::find($id);
+    if (!$contact) {
+        return response()->json(['status' => false, 'message' => 'Liên hệ không tồn tại'], 404);
     }
+
+    // Gửi email cho user
+    Mail::to($contact->email)->send(new SendReplyMail($contact, $request->reply_message));
+
+    // Cập nhật trạng thái đã phản hồi
+    $contact->status = 1;
+    $contact->save();
+
+    return response()->json(['status' => true, 'message' => 'Đã gửi phản hồi cho khách hàng!']);
+}
 }

@@ -105,24 +105,24 @@ class ContactController extends Controller
         ]);
     }
 
-    public function reply(Request $request, $id)
-    {
-        $request->validate([
-            'reply_message' => 'required|string',
-        ]);
+public function reply(Request $request, $id)
+{
+    $request->validate([
+        'reply_message' => 'required|string',
+    ]);
 
-        $contact = Contact::find($id);
-        if (!$contact) {
-            return response()->json(['status' => false, 'message' => 'Liên hệ không tồn tại'], 404);
-        }
-
-        // Gửi email cho user
-        Mail::to($contact->email)->send(new SendReplyMail($contact, $request->reply_message));
-
-        // Cập nhật trạng thái đã phản hồi
-        $contact->status = 1;
-        $contact->save();
-
-        return response()->json(['status' => true, 'message' => 'Đã gửi phản hồi cho khách hàng!']);
+    $contact = Contact::find($id);
+    if (!$contact) {
+        return response()->json(['status' => false, 'message' => 'Liên hệ không tồn tại'], 404);
     }
+
+    // Gửi email cho user
+    Mail::to($contact->email)->send(new SendReplyMail($contact, $request->reply_message));
+
+    // Cập nhật trạng thái đã phản hồi
+    $contact->status = 1;
+    $contact->save();
+
+    return response()->json(['status' => true, 'message' => 'Đã gửi phản hồi cho khách hàng!']);
+}
 }
