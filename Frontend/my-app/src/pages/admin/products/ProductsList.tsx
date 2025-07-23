@@ -17,8 +17,10 @@ import {
   Typography,
   Tag,
   Input,
+  Tooltip
 } from "antd";
 import { TagProps } from "antd"; 
+import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -210,11 +212,11 @@ export default function ProductList() {
       key: "action",
       render: (_: any, record: Product) => (
         <Space size="middle">
-           <Button type="default" onClick={() => navigate(`/admin/products/detail/${record.id}`)}>
-                    Xem
+           <Button type="default"  icon={<EyeOutlined />}  onClick={() => navigate(`/admin/products/detail/${record.id}`)}>
+                    {/* Xem */}
                 </Button>
-          <Button onClick={() => navigate(`/admin/products/edit/${record.id}`)}>
-            Sửa
+          <Button   icon={<EditOutlined />}  onClick={() => navigate(`/admin/products/edit/${record.id}`)}>
+            {/* Sửa */}
           </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xoá?"
@@ -222,7 +224,13 @@ export default function ProductList() {
             okText="Xoá"
             cancelText="Huỷ"
           >
-            <Button danger>Xoá</Button>
+            <Tooltip title="Xóa">
+                        <Button 
+                            type="text" 
+                            danger 
+                            icon={<DeleteOutlined />} 
+                        />
+                    </Tooltip>
           </Popconfirm>
         </Space>
       ),
