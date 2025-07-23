@@ -140,7 +140,6 @@ class AuthenticationController extends Controller
             'status_code' => 401,
         ], 401);
     }
-}
 
 
 

@@ -106,6 +106,7 @@ class AuthenticationController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
+<<<<<<< HEAD
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = User::where('email', $request->email)->first();
 
@@ -125,9 +126,14 @@ class AuthenticationController extends Controller
 
             $user->tokens()->delete();
             $token = $user->createToken('access_token')->plainTextToken;
+=======
+        // Tìm user theo email
+        $user = User::where('email', $request->email)->first();
+>>>>>>> origin/sonph4441
 
         if (!$user) {
             return response()->json([
+<<<<<<< HEAD
                 'message' => 'Login thành công',
                 'user' => $user,
                 'token' => $token,
@@ -139,8 +145,48 @@ class AuthenticationController extends Controller
             'message' => 'Email hoặc mật khẩu không đúng!',
             'status_code' => 401,
         ], 401);
+=======
+                'message' => 'Email không tồn tại!',
+                'status_code' => 401
+            ], 401);
+        }
+
+        // Kiểm tra mật khẩu
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Mật khẩu không đúng!',
+                'status_code' => 401
+            ], 401);
+        }
+
+        // Kiểm tra role admin
+        if ((int) $user->role !== 1) {
+            return response()->json([
+                'message' => 'Tài khoản không phải admin!',
+                'status_code' => 403
+            ], 403);
+        }
+
+        // Kiểm tra trạng thái
+        if ($user->status == 0) {
+            return response()->json([
+                'message' => 'Tài khoản của bạn đã bị khoá!',
+                'status_code' => 403
+            ], 403);
+        }
+
+        // Tạo token
+        $user->tokens()->delete();
+        $token = $user->createToken('access_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login thành công',
+            'user' => $user,
+            'token' => $token,
+            'status_code' => 200
+        ], 200);
+>>>>>>> origin/sonph4441
     }
-}
 
 
 
