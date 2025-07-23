@@ -8,6 +8,7 @@ import ProductForm from "../pages/admin/products/ProductForm";
 import OrderList from "../pages/admin/orders/OrderList";
 import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
+import ProductDetail from "../pages/admin/products/ProductDetail";
 
 export const adminRoutes = (
   // Route chính cho admin, sử dụng AdminLayout làm cha
@@ -18,6 +19,7 @@ export const adminRoutes = (
     <Route path="products" element={<ProductList />} />
     <Route path="products/create" element={<ProductForm />} />
     <Route path="products/edit/:id" element={<ProductForm />} />
+    <Route path="products/detail/:id" element={<ProductDetail />} />
     {/* Đơn hàng */}
     <Route path="orders" element={<OrderList />} />
     <Route path="orders/create" element={<OrderForm />} />

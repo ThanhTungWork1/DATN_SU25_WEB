@@ -23,6 +23,17 @@ const PRODUCT_STATUS_OPTIONS = [
   { value: false, label: "Ngừng bán/Hết hàng" },
 ];
 
+// SỬA ĐỔI: Tạo một danh sách chất liệu cố định
+const MATERIAL_OPTIONS = [
+    { value: 'Cotton', label: 'Cotton' },
+    { value: 'Polyester', label: 'Polyester' },
+    { value: 'Len', label: 'Len (Wool)' },
+    { value: 'Lụa', label: 'Lụa (Silk)' },
+    { value: 'Kaki', label: 'Kaki' },
+    { value: 'Nylon', label: 'Nylon' },
+    { value: 'Spandex', label: 'Spandex' },
+];
+
 export default function ProductForm() {
   const [formRef] = Form.useForm();
   const navigate = useNavigate();
@@ -151,13 +162,21 @@ export default function ProductForm() {
             <Col span={12}><Form.Item label="Giá cũ" name="old_price"><Input type="number" min={0} /></Form.Item></Col>
         </Row>
         <Form.Item label="Danh mục" name="category_id" rules={[{ required: true }]}><Select placeholder="Chọn danh mục">{categories.map((cat) => (<Option key={cat.id} value={cat.id}>{cat.name}</Option>))}</Select></Form.Item>
-        <Form.Item label="Chất liệu" name="material"><Select mode="tags" placeholder="Chọn hoặc nhập chất liệu" /></Form.Item>
+        
+        {/* SỬA ĐỔI: Chuyển từ 'tags' sang 'multiple' và dùng danh sách có sẵn */}
+        <Form.Item label="Chất liệu" name="material">
+            <Select mode="multiple" placeholder="Chọn các loại chất liệu">
+                {MATERIAL_OPTIONS.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                ))}
+            </Select>
+        </Form.Item>
+
         <Form.Item label="Trạng thái" name="status" rules={[{ required: true }]}><Select>{PRODUCT_STATUS_OPTIONS.map(opt => <Option key={String(opt.value)} value={opt.value}>{opt.label}</Option>)}</Select></Form.Item>
         <Form.Item label="Ảnh chính" rules={[{ required: !isEditing && mainImageFileList.length === 0, message: "Vui lòng tải lên ảnh chính" }]}><Upload {...mainImageUploadProps}><Button icon={<UploadOutlined />}>Chọn file</Button></Upload></Form.Item>
         <Form.Item label="Ảnh phụ (hover)"><Upload {...hoverImageUploadProps}><Button icon={<UploadOutlined />}>Chọn file</Button></Upload></Form.Item>
         <Form.Item label="Mô tả" name="description"><TextArea rows={4} /></Form.Item>
         
-        {/* SỬA LỖI: Thêm lại trường "Số lượng đã bán" */}
         <Form.Item label="Số lượng đã bán" name="sold">
             <Input type="number" min={0} readOnly={isEditing} />
         </Form.Item>
