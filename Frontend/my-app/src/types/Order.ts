@@ -14,6 +14,7 @@ export interface Order {
   payment_method: string;
   is_paid: 'unpaid' | 'paid' | 'refunded' | 'part_paid';
   notes: string | null;
+   items?: OrderItem[]; 
   created_at: string;
   updated_at: string;
 }
@@ -21,16 +22,19 @@ export interface Order {
 export interface OrderItem {
   id: number;
   order_id: number;
-  variant_id: number;
-  product_id: number;
+  ariant_id: number | null;
+  quantity: number;
+  price: number;
   product_name: string;
-  color_name: string; // Tên màu sắc của sản phẩm tại thời điểm đặt hàng
-  size_name: string; // Tên kích thước của sản phẩm tại thời điểm đặt hàng
-  quantity: number; // Số lượng sản phẩm  trong đơn hàng
-  price: number; // Giá sản phẩm tại thời điểm đặt hàng
+  variant_color_name: string;
+  variant_size_name: string;
+  variant_sku: string | null;
+  variant_image: string | null;
+  variant_image_url?: string; // THÊM MỚI: Để nhận URL ảnh đầy đủ
   created_at: string;
   updated_at: string;
 }
+
 
 
 export interface Category {

@@ -2,48 +2,79 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Sanctum\HasApiTokens;
-use App\Models\Category;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
+    use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'slug',
         'description',
         'price',
-        'image',
+        'old_price',
         'status',
         'category_id',
         'material',
         'sold',
+        'image',
         'hover_image',
-        'discount',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'status' => 'boolean',
-        'price' => 'decimal:2',
-        'discount' => 'decimal:2',
     ];
-    public function variants()
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['image_url', 'hover_image_url'];
+
+    /**
+     * Định nghĩa mối quan hệ "một-nhiều" với ProductVariant.
+     */
+    public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
 
-
-    public function category()
+    /**
+     * SỬA LỖI: Dùng hàm asset() để tạo URL đầy đủ và chính xác.
+     * Đây là cách làm đúng chuẩn của Laravel.
+     */
+    public function getImageUrlAttribute()
     {
-        return $this->belongsTo(Category::class);
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
+            return asset('storage/' . $this->image);
+        }
+        return null;
     }
 
-    public function comments()
+    /**
+     * SỬA LỖI: Dùng hàm asset() cho cả ảnh hover.
+     */
+    public function getHoverImageUrlAttribute()
     {
-        return $this->hasMany(Comment::class);
-    }
-    public function favoritedByUsers()
-    {
-        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+        if ($this->hover_image && Storage::disk('public')->exists($this->hover_image)) {
+            return asset('storage/' . $this->hover_image);
+        }
+        return null;
     }
 }
