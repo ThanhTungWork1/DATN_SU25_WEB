@@ -117,6 +117,7 @@ class OrderController extends Controller
         if ($orders->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy đơn hàng nào cho người dùng này.'], 404);
         }
+    
 
         return response()->json($orders);
     }

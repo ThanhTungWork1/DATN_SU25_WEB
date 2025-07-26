@@ -142,4 +142,5 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Xóa sản phẩm thành công!']);
     }
+    
 }
