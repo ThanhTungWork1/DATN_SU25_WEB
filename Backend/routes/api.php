@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ComplaintController;
@@ -97,6 +98,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
+
+        // ✅ VNPay routes
+        Route::prefix('vnpay')->group(function () {
+            Route::post('/create', [VNPayController::class, 'createPayment']);
+            Route::get('/callback', [VNPayController::class, 'callback']);
+            Route::post('/ipn', [VNPayController::class, 'ipn']);
+        });
     });
 
 
@@ -107,5 +115,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
-
 });
