@@ -71,7 +71,13 @@ export default function ProductDetail() {
     { title: "Tồn kho", dataIndex: "stock", key: "stock", render: (stock) => <Tag color={stock > 0 ? 'blue' : 'red'}>{stock}</Tag> },
     { title: "Giá", dataIndex: "price", key: "price", render: (price) => `${Number(price).toLocaleString()} VND` },
     { title: "SKU", dataIndex: "sku", key: "sku", render: (sku) => sku || 'N/A' },
-    { title: "Ảnh riêng", dataIndex: "image", key: "image", render: (url) => url ? <Image src={url} width={40} /> : 'N/A' },
+    { 
+      title: "Ảnh riêng", 
+      // SỬA LỖI TẠI ĐÂY: Dùng 'image_url' thay vì 'image'
+      dataIndex: "image_url", 
+      key: "image", 
+      render: (url) => url ? <Image src={url} width={40} /> : 'N/A' 
+    },
   ];
 
   return (

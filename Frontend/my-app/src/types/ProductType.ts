@@ -41,6 +41,7 @@ export interface ProductVariant {
   stock: number; // Đổi từ stock_quantity thành stock
   price: number; // Thêm trường price
   image: string | null;
+   image_url?: string;
   sku: string | null; // Sửa lại cho khớp
   created_at: string;
   updated_at: string;
