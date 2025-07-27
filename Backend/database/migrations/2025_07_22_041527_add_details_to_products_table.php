@@ -53,7 +53,6 @@ return new class extends Migration
                 'slug',
                 'old_price',
                 'material',
-
                 'sold',
                 'image',
                 'hover_image'

@@ -25,6 +25,11 @@ class OrderSeeder extends Seeder
         $user1 = User::find(1);
         $user2 = User::find(2);
 
+
+        // --- TÍNH TOÁN GIÁ TRỊ CHO DỮ LIỆU MẪU ---
+        $finalAmount1 = (1019.98 + 19.99) - 0.00;
+        $finalAmount2 = (39.98 + 9.99) - 5.00;
+
         // Chèn dữ liệu mới hoàn chỉnh
         DB::table('orders')->insert([
             [
@@ -34,6 +39,7 @@ class OrderSeeder extends Seeder
                 'is_paid' => false,
                 'status' => 'processing',
                 'discount_amount' => 0.00,
+                'final_amount' => $finalAmount1,
                 'customer_name' => $user1 ? $user1->name : 'Khách hàng 1',
                 'customer_email' => $user1 ? $user1->email : 'user1@example.com',
                 'customer_phone' => $user1 && property_exists($user1, 'phone') ? $user1->phone : '0901111222',
@@ -50,6 +56,7 @@ class OrderSeeder extends Seeder
                 'is_paid' => true,
                 'status' => 'completed',
                 'discount_amount' => 5.00,
+                  'final_amount' => $finalAmount2,
                 'customer_name' => $user2 ? $user2->name : 'Khách hàng 2',
                 'customer_email' => $user2 ? $user2->email : 'user2@example.com',
                 'customer_phone' => $user2 && property_exists($user2, 'phone') ? $user2->phone : '0903333444',

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // THÊM: Import DB để dùng transaction
-use Illuminate\Validation\Rule; // THÊM: Import Rule để validation status
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -16,19 +16,15 @@ class OrderController extends Controller
      */
     public function index()
     {
-        // CẢI TIẾN: Sắp xếp đơn hàng mới nhất lên đầu và phân trang
-        // Giúp trang admin không bị chậm khi có nhiều đơn hàng.
         return Order::with('items')->latest()->paginate(15);
     }
 
     /**
-     * Tạo đơn hàng mới (không thay đổi logic, chỉ đảm bảo validation đầy đủ).
+     * Tạo đơn hàng mới.
      */
     public function store(Request $request)
     {
-        // CẢI TIẾN: Bọc trong transaction để đảm bảo toàn vẹn dữ liệu
-        // Nếu tạo OrderItem lỗi, toàn bộ đơn hàng sẽ được hủy bỏ.
-        DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request) {
             $data = $request->validate([
                 'user_id' => 'required|exists:users,id',
                 'status' => 'required|string',
@@ -66,7 +62,6 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        // Logic này đã tốt, không cần thay đổi.
         return Order::with('items')->findOrFail($id);
     }
 
@@ -77,14 +72,52 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
 
-        // CẢI TIẾN: Validate chặt chẽ hơn
         $validatedData = $request->validate([
-            'status' => ['sometimes', 'required', Rule::in(['pending', 'confirmed', 'processing', 'shipping', 'delivered', 'cancelled', 'completed'])],
+            'status' => ['sometimes', 'required', Rule::in(['pending_confirmation', 'confirmed', 'processing', 'shipping', 'delivered', 'completed', 'cancelled'])],
             'is_paid' => 'sometimes|required|boolean',
             'notes' => 'nullable|string',
         ]);
 
+        // =================================================================
+        // LOGIC TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI
+        // =================================================================
+
+        // Kịch bản 1: Admin thay đổi "Trạng thái Đơn hàng"
+        if (isset($validatedData['status'])) {
+            // Nếu admin chuyển trạng thái thành "đã giao" hoặc "hoàn thành",
+            // hệ thống sẽ tự động coi như đơn hàng này đã được thanh toán.
+            if (in_array($validatedData['status'], ['delivered', 'completed'])) {
+                $validatedData['is_paid'] = true;
+            }
+        }
+
+        // Kịch bản 2: Admin thay đổi "Trạng thái Thanh toán"
+        if (isset($validatedData['is_paid'])) {
+            // Nếu admin chuyển trạng thái thành "Đã thanh toán"
+            if ($validatedData['is_paid'] === true) {
+
+                // VÀ đơn hàng hiện tại đang ở trạng thái "Đã giao hàng",
+                // thì tự động chuyển trạng thái đơn hàng thành "Đã hoàn thành".
+                // (Áp dụng cho trường hợp thu tiền COD thành công).
+                if ($order->status === 'delivered') {
+                    $validatedData['status'] = 'completed';
+                }
+
+                // VÀ đơn hàng hiện tại đang ở trạng thái "Chờ xác nhận",
+                // thì tự động chuyển trạng thái đơn hàng thành "Đã xác nhận".
+                // (Áp dụng cho trường hợp khách thanh toán trước).
+                if ($order->status === 'pending_confirmation') {
+                    $validatedData['status'] = 'confirmed';
+                }
+            }
+        }
+        // =================================================================
+
+        // Cập nhật đơn hàng với dữ liệu đã được xử lý logic
         $order->update($validatedData);
+
+        // Tải lại model từ database để đảm bảo dữ liệu trả về là mới nhất
+        $order->refresh();
 
         return response()->json([
             'message' => 'Cập nhật đơn hàng thành công!',
@@ -98,9 +131,7 @@ class OrderController extends Controller
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
-        $order->delete(); // Xóa các order items liên quan sẽ được tự động xử lý bởi onDelete('cascade') trong migration
-
-        // CẢI TIẾN: Trả về một thông báo JSON chuẩn
+        $order->delete();
         return response()->json(['message' => 'Xóa đơn hàng thành công!']);
     }
 
@@ -117,7 +148,6 @@ class OrderController extends Controller
         if ($orders->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy đơn hàng nào cho người dùng này.'], 404);
         }
-    
 
         return response()->json($orders);
     }

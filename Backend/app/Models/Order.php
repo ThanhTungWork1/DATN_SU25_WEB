@@ -18,6 +18,7 @@ class Order extends Model
         'note',
         'payment_method',
         'discount_amount',
+         'final_amount',
         'created_at',
         'updated_at',
     ];
