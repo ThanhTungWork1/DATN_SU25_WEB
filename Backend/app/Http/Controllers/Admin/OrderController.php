@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -12,11 +13,22 @@ use Illuminate\Validation\Rule;
 class OrderController extends Controller
 {
     /**
-     * Lấy danh sách đơn hàng, có phân trang và sắp xếp.
+     * Lấy danh sách đơn hàng, có phân trang và tìm kiếm.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Order::with('items')->latest()->paginate(15);
+        $query = Order::query();
+
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_name', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        return $query->with('items')->latest()->paginate(15);
     }
 
     /**
@@ -40,18 +52,29 @@ class OrderController extends Controller
                 'payment_method' => 'required|string',
                 'notes' => 'nullable|string',
                 'items' => 'required|array',
-                'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1'
+                'items.*.variant_id' => 'required|exists:product_variants,id',
+                'items.*.quantity' => 'required|integer|min:1',
             ]);
 
             $order = Order::create($data);
 
+            // Tạo các sản phẩm trong đơn hàng (order items)
             foreach ($data['items'] as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity']
-                ]);
+                $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+                if ($variant) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'variant_id' => $variant->id,
+                        'quantity' => $item['quantity'],
+                        'price' => $variant->price, // Lấy giá từ biến thể để đảm bảo chính xác
+                        // Lưu lại thông tin "snapshot"
+                        'product_name' => $variant->product->name,
+                        'variant_color_name' => $variant->color->name,
+                        'variant_size_name' => $variant->size->name,
+                        'variant_sku' => $variant->sku,
+                        'variant_image' => $variant->image,
+                    ]);
+                }
             }
             return $order->load('items');
         });
@@ -78,45 +101,26 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // =================================================================
-        // LOGIC TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI
-        // =================================================================
-
-        // Kịch bản 1: Admin thay đổi "Trạng thái Đơn hàng"
+        // Kịch bản 1: Cập nhật trạng thái đơn hàng
         if (isset($validatedData['status'])) {
-            // Nếu admin chuyển trạng thái thành "đã giao" hoặc "hoàn thành",
-            // hệ thống sẽ tự động coi như đơn hàng này đã được thanh toán.
             if (in_array($validatedData['status'], ['delivered', 'completed'])) {
                 $validatedData['is_paid'] = true;
             }
         }
 
-        // Kịch bản 2: Admin thay đổi "Trạng thái Thanh toán"
+        // Kịch bản 2: Cập nhật trạng thái thanh toán
         if (isset($validatedData['is_paid'])) {
-            // Nếu admin chuyển trạng thái thành "Đã thanh toán"
-            if ($validatedData['is_paid'] === true) {
-
-                // VÀ đơn hàng hiện tại đang ở trạng thái "Đã giao hàng",
-                // thì tự động chuyển trạng thái đơn hàng thành "Đã hoàn thành".
-                // (Áp dụng cho trường hợp thu tiền COD thành công).
+            if ($validatedData['is_paid'] === true || $validatedData['is_paid'] == 1) {
                 if ($order->status === 'delivered') {
                     $validatedData['status'] = 'completed';
                 }
-
-                // VÀ đơn hàng hiện tại đang ở trạng thái "Chờ xác nhận",
-                // thì tự động chuyển trạng thái đơn hàng thành "Đã xác nhận".
-                // (Áp dụng cho trường hợp khách thanh toán trước).
                 if ($order->status === 'pending_confirmation') {
                     $validatedData['status'] = 'confirmed';
                 }
             }
         }
-        // =================================================================
 
-        // Cập nhật đơn hàng với dữ liệu đã được xử lý logic
         $order->update($validatedData);
-
-        // Tải lại model từ database để đảm bảo dữ liệu trả về là mới nhất
         $order->refresh();
 
         return response()->json([
