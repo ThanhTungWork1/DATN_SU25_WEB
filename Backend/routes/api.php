@@ -2,7 +2,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
-use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ClientOrderController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\ProductController; // Đảm bảo dùng đúng controller API
 
 
 // Test API

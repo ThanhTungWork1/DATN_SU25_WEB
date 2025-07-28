@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -141,10 +142,12 @@ class ProductController extends Controller
     //search
     public function search(Request $request)
     {
+        Log::info('---[SEARCH PRODUCT] Bắt đầu search', ['request' => $request->all()]);
         $query = Product::with(['category', 'variants.color', 'variants.size']);
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
+            Log::info('---[SEARCH PRODUCT] Có filter search', ['search' => $search]);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('description', 'LIKE', "%{$search}%");
@@ -152,28 +155,34 @@ class ProductController extends Controller
         }
 
         if ($request->has('category_id') && !empty($request->category_id)) {
+            Log::info('---[SEARCH PRODUCT] Có filter category_id', ['category_id' => $request->category_id]);
             $query->where('category_id', $request->category_id);
         }
 
         if ($request->has('min_price') && !empty($request->min_price)) {
+            Log::info('---[SEARCH PRODUCT] Có filter min_price', ['min_price' => $request->min_price]);
             $query->where('price', '>=', $request->min_price);
         }
 
         if ($request->has('max_price') && !empty($request->max_price)) {
+            Log::info('---[SEARCH PRODUCT] Có filter max_price', ['max_price' => $request->max_price]);
             $query->where('price', '<=', $request->max_price);
         }
 
         if ($request->has('status') && $request->status !== '') {
+            Log::info('---[SEARCH PRODUCT] Có filter status', ['status' => $request->status]);
             $query->where('status', $request->status);
         }
 
         if ($request->has('color_id') && !empty($request->color_id)) {
+            Log::info('---[SEARCH PRODUCT] Có filter color_id', ['color_id' => $request->color_id]);
             $query->whereHas('variants', function ($q) use ($request) {
                 $q->where('color_id', $request->color_id);
             });
         }
 
         if ($request->has('size_id') && !empty($request->size_id)) {
+            Log::info('---[SEARCH PRODUCT] Có filter size_id', ['size_id' => $request->size_id]);
             $query->whereHas('variants', function ($q) use ($request) {
                 $q->where('size_id', $request->size_id);
             });
@@ -181,6 +190,7 @@ class ProductController extends Controller
 
         // Filter theo chất liệu (material)
         if ($request->has('materials') && !empty($request->materials)) {
+            Log::info('---[SEARCH PRODUCT] Có filter materials', ['materials' => $request->materials]);
             $materials = $request->materials;
             if (is_array($materials)) {
                 $query->whereIn('material', $materials);
@@ -190,6 +200,7 @@ class ProductController extends Controller
         }
 
         if ($request->has('has_discount') && $request->has_discount !== '') {
+            Log::info('---[SEARCH PRODUCT] Có filter has_discount', ['has_discount' => $request->has_discount]);
             if ($request->has_discount == '1') {
                 $query->whereNotNull('discount')->where('discount', '>', 0);
             } else {
@@ -200,14 +211,17 @@ class ProductController extends Controller
         }
 
         if ($request->has('min_discount') && !empty($request->min_discount)) {
+            Log::info('---[SEARCH PRODUCT] Có filter min_discount', ['min_discount' => $request->min_discount]);
             $query->where('discount', '>=', $request->min_discount);
         }
 
         if ($request->has('max_discount') && !empty($request->max_discount)) {
+            Log::info('---[SEARCH PRODUCT] Có filter max_discount', ['max_discount' => $request->max_discount]);
             $query->where('discount', '<=', $request->max_discount);
         }
 
         if ($request->has('in_stock') && $request->in_stock !== '') {
+            Log::info('---[SEARCH PRODUCT] Có filter in_stock', ['in_stock' => $request->in_stock]);
             if ($request->in_stock == '1') {
                 $query->whereHas('variants', function ($q) {
                     $q->where('stock', '>', 0);
@@ -218,7 +232,7 @@ class ProductController extends Controller
                 });
             }
         }
-
+        Log::info('---[SEARCH PRODUCT] Trước khi paginate');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
@@ -237,7 +251,7 @@ class ProductController extends Controller
         $perPage = min(max($perPage, 1), 100);
 
         $products = $query->paginate($perPage);
-
+        Log::info('---[SEARCH PRODUCT] Sau khi paginate', ['total' => $products->total()]);
         $products->getCollection()->transform(function ($product) {
             if ($product->discount && $product->discount > 0) {
                 $product->final_price = $product->price - ($product->price * $product->discount / 100);
@@ -248,7 +262,7 @@ class ProductController extends Controller
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             return $product;
         });
-
+        Log::info('---[SEARCH PRODUCT] Trước khi return response', ['count' => count($products->items())]);
         return response()->json([
             'success' => true,
             'message' => 'Tìm kiếm sản phẩm thành công',
