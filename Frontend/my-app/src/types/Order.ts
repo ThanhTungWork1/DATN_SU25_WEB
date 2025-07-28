@@ -15,6 +15,7 @@ export interface Order {
   is_paid: 'unpaid' | 'paid' | 'refunded' | 'part_paid';
   notes: string | null;
    items?: OrderItem[]; 
+   total_quantity?: number; // THÊM MỚI: Để nhận tổng số lượng
   created_at: string;
   updated_at: string;
 }
