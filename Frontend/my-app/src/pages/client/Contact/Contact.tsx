@@ -1,51 +1,10 @@
-import { useState } from "react";
 import "../../../assets/styles/contact.css";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useContactForm } from "../../../hook/contact/useContactForm";
 
 export const ContactClient = () => {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:8000/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error("Gửi thất bại");
-      toast.success(
-        "Thông tin của bạn đã được gửi, chúng tôi sẽ phản hồi vào email của bạn. Xin cảm ơn !!",
-        {
-          autoClose: 5000,
-          style: {
-            fontSize: "1.15rem",
-            fontWeight: 600,
-            padding: "24px 32px",
-          },
-        }
-      );
-      setForm({ name: "", email: "", message: "" });
-    } catch (err) {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!", {
-        autoClose: 5000,
-      });
-    }
-    setLoading(false);
-  };
+  const { form, loading, handleChange, handleSubmit } = useContactForm();
 
   return (
     <main className="contact-page">
@@ -58,8 +17,7 @@ export const ContactClient = () => {
         <div className="contact-grid">
           <div className="contact-info">
             <p>
-              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện
-              đại
+              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện đại
             </p>
             <p>
               <strong>📍 Địa chỉ:</strong> 123 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội

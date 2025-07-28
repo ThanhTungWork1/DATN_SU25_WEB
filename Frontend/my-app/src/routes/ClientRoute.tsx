@@ -16,6 +16,7 @@ import UserLogin from "../pages/auth/userLogin";
 import AdminLogin from "../pages/auth/adminLogin";
 import RequireAuth from "./RequireAuth";
 import { ContactClient } from "../pages/client/Contact/Contact";
+import { ContactFloating } from "../components/ContactFloating";
 
 const ClientRoute = () => {
   return (
@@ -41,6 +42,7 @@ const ClientRoute = () => {
         <Route path="/contact" element={<ContactClient />} />
       </Routes>
       <Footer />
+      <ContactFloating />
     </>
   );
 };

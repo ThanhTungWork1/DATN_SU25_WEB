@@ -27,6 +27,9 @@ export const Contact = () => {
       >
         <i className="fa-brands fa-facebook-f"></i>
       </a>
+      <a href="tel:0987654321" className="contact-btn" title="Gọi ngay">
+        <i className="fa-solid fa-phone"></i>
+      </a>
     </div>
   );
 };

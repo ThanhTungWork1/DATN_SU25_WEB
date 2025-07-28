@@ -28,6 +28,7 @@ class SendReplyMail extends Mailable
     public function build()
     {
         return $this->subject('Phản hồi liên hệ từ StrideX')
+            ->from(config('mail.from.address'), config('mail.from.name'))
             ->view('emails.reply_contact')
             ->with([
                 'contact' => $this->contact,

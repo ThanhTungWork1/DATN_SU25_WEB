@@ -9,7 +9,7 @@ export const Contact = () => {
         className="contact-btn"
         title="Zalo"
       >
-        <span style={{ fontWeight: "bold", fontSize: "12px" }}>zalo</span>
+        <span style={{ fontWeight: "bold", fontSize: "12px" }}>Z</span>
       </a>
       <a
         href="https://m.me/yourid"
@@ -26,6 +26,9 @@ export const Contact = () => {
         title="Facebook"
       >
         <i className="fa-brands fa-facebook-f"></i>
+      </a>
+      <a href="tel:0987654321" className="contact-btn" title="Gọi ngay">
+        <i className="fa-solid fa-phone"></i>
       </a>
     </div>
   );
