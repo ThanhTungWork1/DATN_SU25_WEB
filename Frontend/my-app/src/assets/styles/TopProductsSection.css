@@ -1,0 +1,118 @@
+.top-clothing-section {
+  background-color: rgb(255, 255, 255);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.top-clothing-section h2 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #000000;
+}
+
+.product-list {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.product-card {
+  width: 240px; /* Card rộng hơn */
+  border-radius: 16px;
+  background-color: #f3eeee;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  clip-path: polygon(0 5%, 100% 0%, 100% 95%, 0% 100%);
+  border: 2px solid transparent;
+}
+
+.product-card:hover {
+  border: 3px solid #00c6ab;
+  box-shadow: 0 6px 12px rgba(0, 198, 171, 0.4);
+}
+
+.product-image {
+  height: 320px; /* Ảnh cao hơn */
+  background-size: cover;
+  background-position: center;
+}
+
+.product-info {
+  padding: 16px;
+  text-align: left;
+}
+
+.product-info h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 6px;
+  overflow: hidden;
+  white-space: nowrap;       /* Tiêu đề chỉ 1 dòng */
+  text-overflow: ellipsis;
+}
+
+.product-info p {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;      /* Mô tả giới hạn 2 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Lật khung các card lẻ (1, 3, 5) */
+.product-card:nth-child(odd) {
+  transform: scaleX(-1);
+}
+
+/* Lật lại nội dung để hiển thị bình thường */
+.product-card:nth-child(odd) .product-image,
+.product-card:nth-child(odd) .product-info,
+.product-card:nth-child(odd) .product-rank {
+  transform: scaleX(-1);
+}
+
+.product-info span {
+  font-size: 13px;
+  color: #888;
+}
+
+.product-rank {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffc107;
+  z-index: 2;
+}
+
+.product-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.product-price .new-price {
+  font-size: 18px;
+  font-weight: bold;
+  color: red; /* Giá mới màu đỏ */
+}
+
+.product-price .old-price {
+  font-size: 14px;
+  color: #000;
+  text-decoration: line-through; /* Gạch ngang giá cũ */
+}
+
+.product-color {
+  font-size: 13px;
+  color: #555;
+}

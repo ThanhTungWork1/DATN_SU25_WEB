@@ -1,0 +1,17 @@
+/* Chỉ giữ lại CSS cho input nếu cần, xóa toàn bộ rule liên quan .searchbar-icon để tránh xung đột với navbar.css */
+
+.icon-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 84px;
+  margin-left: auto;
+}
+
+.icon-group .searchbar-container {
+  margin-left: 0;
+  margin-right: 0;
+  height: 52px;
+}
+
+/* Nếu có CSS cho .custom-searchbar, .searchbar-form, .searchbar-input thì giữ lại ở đây */

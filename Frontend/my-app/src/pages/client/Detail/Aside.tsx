@@ -1,9 +1,9 @@
-
 type AsideProps = {
   images: string[];
   onSelect: (img: string) => void;
   selectedImage: string;
 };
+
 
 const Aside = ({ images, onSelect, selectedImage }: AsideProps) => {
   return (

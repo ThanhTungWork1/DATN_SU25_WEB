@@ -1,0 +1,16 @@
+.bannerListSP {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.bannerListSP img {
+  width: 100vw;
+  max-width: 100vw;
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  object-fit: cover;
+}

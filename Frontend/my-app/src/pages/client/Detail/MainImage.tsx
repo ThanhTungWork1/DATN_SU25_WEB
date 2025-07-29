@@ -1,18 +1,18 @@
-type MainImageProps = {
-  imageUrl: string;
-};
+import React from "react";
+import type { BannerProps } from "../../../types/BannerType";
 
-const MainImage = ({ imageUrl }: MainImageProps) => {
+/**
+ * Banner quảng cáo giữa trang detail
+ */
+const Banner: React.FC<BannerProps> = ({
+  imageUrl,
+  alt = "Banner quảng cáo",
+}) => {
   return (
-    // hiển thị ảnh chi tiết sp
-    <div className="text-center">
-      <img
-        src={imageUrl}
-        alt="Main Product"
-        style={{ width: "100%", maxHeight: 500, objectFit: "contain" }}
-      />
+    <div className="banner-detail-image-wrapper">
+      <img src={imageUrl} alt={alt} className="banner-detail-image" />
     </div>
   );
 };
 
-export default MainImage;
+export default Banner;

@@ -16,7 +16,7 @@
               $table->string('name', 255);
               $table->text('description');
               $table->decimal('price', 10, 2);
-              
+              $table->string('image')->nullable(); // Thêm dòng này
               $table->boolean('status')->default(true);
               $table->timestamps();
 

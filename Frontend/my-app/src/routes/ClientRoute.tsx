@@ -1,6 +1,5 @@
 // src/routes/ClientRoute.tsx
 import { Routes, Route } from "react-router-dom";
-import HomePage from "../pages/client/Home";
 import Register from "../pages/auth/Register";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -14,8 +13,9 @@ import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
 import UserProfile from "../pages/client/userProfile";
 import UserLogin from "../pages/auth/userLogin";
-import AdminLogin from "../pages/auth/AdminLogin";
 import RequireAuth from "./RequireAuth";
+import HomePage from "../pages/client/Home/Home";
+import AdminLogin from "../pages/auth/adminLogin";
 
 const ClientRoute = () => {
   return (

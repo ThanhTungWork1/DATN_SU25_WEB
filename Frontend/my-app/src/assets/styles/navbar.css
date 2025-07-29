@@ -1,0 +1,123 @@
+/* ========== 2. NAVBAR & NAVIGATION ========== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(90deg, #000000);
+  color: white;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s ease;
+  min-height: 84px;
+  height: 84px;
+}
+
+
+
+/* Nếu muốn shadow đậm hơn khi cuộn, có thể dùng JS thêm class .scrolled cho .navbar */
+
+.navbar-logo {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 2.1rem;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  user-select: none;
+  height: 84px;
+  margin-right: 32px;
+}
+.logo-text, .logo-x {
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+.logo-text {
+  color: #fff;
+  font-weight: 700;
+  font-size: 2.1rem;
+  letter-spacing: 1px;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+.logo-x {
+  color: #00c6ab;
+  font-weight: 900;
+  font-size: 2.1rem;
+  margin-left: 2px;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+/* Icon yêu thích trên navbar */
+.icon-favorite-navbar {
+  color: #00c6ab;
+  font-size: 18px;
+  transition: color 0.3s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  box-sizing: border-box;
+}
+.icon-favorite-navbar:hover {
+  color: #e63946;
+  transform: scale(1.18);
+}
+.icon-favorite-navbar i {
+  font-size: 1em;
+}
+
+.icon-group {
+  display: flex;
+  align-items: center;
+  height: 84px;
+  gap: 12px;
+  position: relative;
+}
+.icon-group > * {
+  vertical-align: middle;
+  align-items: center;
+  display: flex;
+  height: 100%;
+}
+.icon-favorite-navbar, .icon-btn {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+button.searchbar-icon {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  font-size: 20px !important;
+  transition: background 0.2s, box-shadow 0.2s !important;
+}
+button.searchbar-icon:active,
+button.searchbar-icon:focus,
+button.searchbar-icon:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+main {
+  margin-top: 0 !important;
+}
+.main-content, .container {
+  margin-top: 0 !important;
+}

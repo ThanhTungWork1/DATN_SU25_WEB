@@ -8,15 +8,15 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-import RelatedProducts from "./RelatedProducts"
+import RelatedProducts from "./RelatedProducts";
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
-import type { Product } from '../../../types/DetailType';
-import { getAllColors } from '../../../api/ApiProduct';
-import type { ColorType } from '../../../types/ColorType';
+import type { Product } from "../../../types/DetailType";
+import { getAllColors } from "../../../api/ApiProduct";
+import type { ColorType } from "../../../types/ColorType";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -44,6 +44,7 @@ const ProductDetail = () => {
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
   const [allColors, setAllColors] = useState<ColorType[]>([]);
+
   useEffect(() => {
     getBanners().then((banners) => {
       const found = banners.find((b) => Number(b.id) === 2);
@@ -52,27 +53,23 @@ const ProductDetail = () => {
     getAllColors().then((res: ColorType[]) => setAllColors(res));
   }, []);
 
-  useEffect(() => {}, [id]);
-
   if (isLoading) return <p>Đang tải...</p>;
   if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size?.name === selectedSize && v.color?.name === selectedColor?.name,
+    (v) => v.size?.name === selectedSize && v.color?.name === selectedColor?.name
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-  // Lấy unique colors từ variants, loại bỏ undefined
   const uniqueColors = Array.from(
     new Map(
       (product.variants || [])
-        .filter(v => v.color)
-        .map(v => [v.color!.id, v.color!])
+        .filter((v) => v.color)
+        .map((v) => [v.color!.id, v.color!])
     ).values()
   );
 
-  // Lấy thumbnail cho Aside: lấy ảnh đầu tiên của mỗi màu từ variants
   let colorThumbnails: string[] = [];
   const colorSet = new Set();
   if (product?.variants) {
@@ -86,15 +83,14 @@ const ProductDetail = () => {
   const thumbnailImages = colorThumbnails.length
     ? colorThumbnails
     : product?.images && product.images.length
-      ? product.images
-      : product?.image
-        ? [product.image]
-        : [];
+    ? product.images
+    : product?.image
+    ? [product.image]
+    : [];
 
-  // Map allColors để đảm bảo có trường code
-  const mappedColors = allColors.map(c => ({
+  const mappedColors = allColors.map((c) => ({
     ...c,
-    code: c.code || (c as any).hex_code || ''
+    code: c.code || (c as any).hex_code || "",
   }));
 
   return (
@@ -143,10 +139,10 @@ const ProductDetail = () => {
               <Color
                 colors={mappedColors}
                 selectedColor={selectedColor}
-                onSelectColor={(color) => {
+                onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) => v.color?.id === color.id && v.size?.name === selectedSize,
+                    (v) => v.color?.id === color.id && v.size?.name === selectedSize
                   );
                   if (variant?.image) {
                     setSelectedImage(variant.image);

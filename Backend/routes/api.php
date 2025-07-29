@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
@@ -23,7 +24,6 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\CheckRole;
 
-
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 
@@ -31,6 +31,8 @@ Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
+Route::get('/top-selling-products', [ProductController::class, 'topSellingProducts']);
+Route::get('/product', [ProductController::class, 'index']);
 
 // Email Verification
 Route::post('/email/verification-notification', function (Request $request) {
@@ -49,7 +51,7 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
-// Public Routes
+// -------------------- Public Routes --------------------
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
@@ -58,13 +60,22 @@ Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [CommentController::class, 'getByProduct']);
 
+// Cho phép truy cập sản phẩm không cần token (sửa tại đây)
+Route::prefix('product')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/search', [ProductController::class, 'search']);
+    Route::get('/featured', [ProductController::class, 'featured']);
+    Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
+    Route::get('/{id}', [ProductController::class, 'show']);
+});
+
 // Authentication
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
-// Admin Routes
+// -------------------- Admin Routes --------------------
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
     Route::apiResource('products', ProductController::class);
@@ -74,7 +85,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
 });
 
-// Authenticated User Routes
+// -------------------- Authenticated User Routes --------------------
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', function (Request $request) {
         return response()->json($request->user());
@@ -83,13 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 
-    Route::prefix('product')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::get('/search', [ProductController::class, 'search']);
-        Route::get('/featured', [ProductController::class, 'featured']);
-        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
-        Route::get('/{id}', [ProductController::class, 'show']);
-    });
+    // ✅ KHÔNG cần giữ lại product ở đây vì đã move ra ngoài
 
     Route::prefix('favorites')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
