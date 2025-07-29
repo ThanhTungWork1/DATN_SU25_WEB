@@ -7,7 +7,11 @@ import { Product, ProductVariant, Color, Size, Category } from "../types/Product
 // API cho Products (Admin Routes)
 // ====================================================================
 
-export const getProducts = () => axiosInstance.get<Product[]>(`/admin/products`);
+export const getProducts = (params: { page?: number, search?: string } = {}) => {
+    // Gửi các tham số đến backend
+    return axiosInstance.get('/admin/products', { params });
+};
+
 
 export const getProduct = (id: string | number) => axiosInstance.get<Product>(`/admin/products/${id}`);
 
@@ -30,12 +34,7 @@ export const updateProduct = (id: string | number, data: FormData) => {
 export const deleteProduct = (id: string | number) => axiosInstance.delete<void>(`/admin/products/${id}`);
 
 
-// ====================================================================
-// API cho các tài nguyên khác (Giữ nguyên)
-// ====================================================================
 
-export const getCategories = () => axiosInstance.get<Category[]>(`/categories`);
-export const getCategory = (id: string | number) => axiosInstance.get<Category>(`/categories/${id}`);
 
 export const getColors = () => axiosInstance.get<Color[]>(`/colors`);
 export const getColor = (id: string | number) => axiosInstance.get<Color>(`/colors/${id}`);

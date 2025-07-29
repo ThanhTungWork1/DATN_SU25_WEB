@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+// SỬA LẠI: Tách import ra cho rõ ràng và chính xác
 import {
   createProduct,
   getProduct,
   updateProduct,
-  getCategories,
-  getColors,
-  getSizes,
   getProductVariants,
+  getColors, // Giả sử getColors và getSizes vẫn ở trong file product.ts
+  getSizes,
 } from "../../../api/product";
+import { getCategories } from "../../../api/category"; // Import getCategories từ file riêng
 import { Product, ProductVariant, Category, Color, Size } from "../../../types/ProductType";
 import { Form, Input, Button, Typography, Select, message, Space, Divider, Row, Col, Upload } from "antd";
 import type { UploadFile, UploadProps } from 'antd';
@@ -29,6 +30,7 @@ const MATERIAL_OPTIONS = [
     { value: 'Plastic', label: 'Plastic' },
     { value: 'Spandex', label: 'Spandex' },
     { value: 'Fleece', label: 'Fleece' },
+
 ];
 
 // Interface để quản lý state của các file ảnh biến thể
@@ -44,7 +46,6 @@ export default function ProductForm() {
 
   const [mainImageFileList, setMainImageFileList] = useState<UploadFile[]>([]);
   const [hoverImageFileList, setHoverImageFileList] = useState<UploadFile[]>([]);
-  // State mới để quản lý ảnh của các biến thể
   const [variantImageFiles, setVariantImageFiles] = useState<VariantImageState>({});
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -105,7 +106,6 @@ export default function ProductForm() {
         }
     });
     
-    // Thêm mảng biến thể (không chứa file) dưới dạng chuỗi JSON
     formData.append('variants', JSON.stringify(values.variants));
 
     if (mainImageFileList.length > 0 && mainImageFileList[0].originFileObj) {
@@ -115,11 +115,9 @@ export default function ProductForm() {
         formData.append('hover_image', hoverImageFileList[0].originFileObj);
     }
 
-    // Thêm mảng các file ảnh của biến thể
     Object.keys(variantImageFiles).forEach(index => {
         const fileList = variantImageFiles[Number(index)];
         if (fileList && fileList.length > 0 && fileList[0].originFileObj) {
-            // Gửi file với key có chỉ số, ví dụ: variant_images[0], variant_images[1]
             formData.append(`variant_images[${index}]`, fileList[0].originFileObj);
         }
     });
@@ -163,7 +161,6 @@ export default function ProductForm() {
     maxCount: 1,
   };
 
-  // Hàm tạo props cho từng component Upload của biến thể
   const getVariantImageUploadProps = (index: number): UploadProps => ({
     onRemove: () => {
         setVariantImageFiles(prev => {
@@ -221,14 +218,11 @@ export default function ProductForm() {
                   <Form.Item {...restField} name={[name, 'stock']} rules={[{ required: true}]} style={{ width: 100 }}><Input type="number" min={0} placeholder="Tồn kho" /></Form.Item>
                   <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true}]} style={{ width: 120 }}><Input type="number" min={0} placeholder="Giá" /></Form.Item>
                   <Form.Item {...restField} name={[name, 'sku']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="SKU (tùy chọn)" /></Form.Item>
-                  
-                  {/* SỬA ĐỔI: Thay Input bằng Upload */}
                   <Form.Item>
                     <Upload {...getVariantImageUploadProps(name)}>
                         <Button icon={<UploadOutlined />} size="small">Ảnh</Button>
                     </Upload>
                   </Form.Item>
-
                   <MinusCircleOutlined onClick={() => remove(name)} />
                 </Space>
               ))}

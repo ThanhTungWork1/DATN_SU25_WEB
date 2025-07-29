@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   getProducts,
   deleteProduct,
-  getProductVariants,
-  getCategories, // Import để lấy danh sách danh mục
-} from "../../../api/product";
-// Đảm bảo đường dẫn đến Product và ProductVariant là chính xác
-import { Product, ProductVariant, Category } from "../../../types/ProductType"; 
+} from "../../../api/product"; 
+import { getCategories } from "../../../api/category"; 
+import { Product, Category } from "../../../types/ProductType"; 
 import {
   Table,
   Button,
@@ -19,64 +17,67 @@ import {
   Input,
   Tooltip
 } from "antd";
-import { TagProps } from "antd"; 
+import type { TableProps } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Search } = Input;
 
-// Định nghĩa lại Product với trường total_stock được thêm vào
-interface ProductWithTotalStock extends Product {
-  total_stock?: number;
+// Định nghĩa kiểu cho phản hồi phân trang từ Laravel
+interface PaginatedResponse<T> {
+    current_page: number;
+    data: T[];
+    total: number;
+    per_page: number;
 }
 
 export default function ProductList() {
-  const [products, setProducts] = useState<ProductWithTotalStock[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]); // State để lưu danh mục
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const fetchData = async () => {
+  // --- SỬA LỖI: Logic tìm kiếm với Debounce ---
+  const [searchTerm, setSearchTerm] = useState(""); // State cho từ khóa người dùng nhập
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // State cho từ khóa sẽ được gửi đi
+
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    total: 0,
+  });
+
+  // Sử dụng Debounce để tránh gọi API liên tục khi người dùng đang gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+        setDebouncedSearchTerm(searchTerm);
+    }, 500); // Gửi request sau 500ms ngừng gõ
+
+    // Hủy timeout nếu người dùng tiếp tục gõ
+    return () => {
+        clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      // Gọi API để lấy danh sách sản phẩm và danh mục đồng thời
-      const [productsRes, categoriesRes] = await Promise.all([
-        getProducts(),
-        getCategories(), // Lấy danh sách danh mục
-      ]);
+      const productsRes = await getProducts({ page, search });
+      const paginatedData: PaginatedResponse<Product> = productsRes.data;
 
-      // Xử lý dữ liệu danh mục
-      const categoriesData: Category[] = Array.isArray(categoriesRes.data.data) ? categoriesRes.data.data : categoriesRes.data;
-      setCategories(categoriesData);
+      if (categories.length === 0) {
+          const categoriesRes = await getCategories();
+          const categoriesData: Category[] = Array.isArray(categoriesRes.data.data) ? categoriesRes.data.data : categoriesRes.data;
+          setCategories(categoriesData);
+      }
+      
+      setProducts(paginatedData.data);
+      setPagination({
+        currentPage: paginatedData.current_page,
+        pageSize: paginatedData.per_page,
+        total: paginatedData.total,
+      });
 
-      // Xử lý dữ liệu sản phẩm
-      const productsData: Product[] = Array.isArray(productsRes.data.data) ? productsRes.data.data : productsRes.data;
-
-      // Tính toán tổng tồn kho từ productVariants cho mỗi sản phẩm
-      const productsWithStock = await Promise.all(
-        productsData.map(async (product) => {
-          try {
-            // Lấy biến thể của từng sản phẩm
-            const variantsRes = await getProductVariants(product.id);
-            const variantsData: ProductVariant[] = Array.isArray(variantsRes.data.data) ? variantsRes.data.data : variantsRes.data;
-            
-            // Tính tổng tồn kho
-            const totalStock = variantsData.reduce(
-              (sum, variant) => sum + variant.stock_quantity,
-              0
-            );
-            return { ...product, total_stock: totalStock };
-          } catch (error) {
-            console.error(
-              `Error fetching variants for product ${product.id}:`,
-              error
-            );
-            return { ...product, total_stock: 0 }; // Mặc định là 0 nếu lỗi
-          }
-        })
-      );
-      setProducts(productsWithStock);
     } catch (error) {
       message.error("Không thể tải danh sách sản phẩm.");
       console.error("Fetch products error:", error);
@@ -85,155 +86,62 @@ export default function ProductList() {
     }
   };
 
+  // Gọi lại API mỗi khi từ khóa tìm kiếm (đã được debounce) hoặc trang thay đổi
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(pagination.currentPage, debouncedSearchTerm);
+  }, [debouncedSearchTerm, pagination.currentPage]);
 
   const handleDelete = async (id: number) => {
     try {
       await deleteProduct(id);
       message.success("Đã xoá sản phẩm thành công");
-      fetchData(); // Tải lại dữ liệu sau khi xóa
+      fetchData(pagination.currentPage, debouncedSearchTerm);
     } catch (error) {
       message.error("Không thể xoá sản phẩm.");
-      console.error("Delete product error:", error);
     }
   };
 
-  const filtered = products.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Hàm lấy màu cho Tag trạng thái sản phẩm (nhận boolean/number)
-  const getProductStatusColor = (status: boolean | number): TagProps['color'] => {
-    if (status === true || status === 1) {
-      return "green"; // Đang bán
-    }
-    if (status === false || status === 0) {
-      return "red"; // Ngừng bán/Hết hàng
-    }
-    return "default"; // Mặc định
+  const handleTableChange: TableProps<Product>['onChange'] = (paginationConfig) => {
+    setPagination(prev => ({ ...prev, currentPage: paginationConfig.current ?? 1 }));
   };
 
-  // Hàm lấy văn bản cho trạng thái sản phẩm (nhận boolean/number)
-  const getProductStatusText = (status: boolean | number): string => {
-    if (status === true || status === 1) {
-      return "Đang bán";
-    }
-    if (status === false || status === 0) {
-      return "Ngừng bán";
-    }
-    return "Không rõ";
-  };
-
-  // Hàm lấy Tag hiển thị tồn kho
-  // const getStockTag = (totalStock: number) => {
-  //   if (totalStock === 0) return <Tag color="red">Hết hàng</Tag>;
-  //   if (totalStock <= 10)
-  //     return <Tag color="orange">Sắp hết ({totalStock})</Tag>; 
-  //   return <Tag color="blue">Còn hàng ({totalStock})</Tag>;
-  // };
-
-  // Hàm để lấy tên danh mục từ category_id
   const getCategoryName = (categoryId: number): string => {
     const category = categories.find((cat) => cat.id === categoryId);
     return category ? category.name : "Không rõ";
   };
 
-  const columns = [
+  const columns: TableProps<Product>['columns'] = [
+    { title: "ID", dataIndex: "id", key: "id", render: (text) => `#${text}` },
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      render: (text: number) => `#${text}`,
-    },
-     {
-      title: "Ảnh",
-      // SỬA LỖI TẠI ĐÂY: Dùng 'image_url' thay vì 'image'
-      dataIndex: "image_url", 
-      key: "image",
-      render: (url: string) => (
-        <img
-          src={url || "https://placehold.co/50x50/cccccc/333333?text=No+Image"}
-          alt="ảnh sản phẩm"
-          style={{
-            width: 50,
-            height: 50,
-            objectFit: "cover",
-            borderRadius: 4,
-            border: "1px solid #eee",
-          }}
-        />
-      ),
+        title: "Ảnh",
+        dataIndex: "image_url",
+        key: "image",
+        render: (url: string) => (
+            <img
+                src={url || "https://placehold.co/50x50/cccccc/333333?text=N/A"}
+                alt="ảnh sản phẩm"
+                style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
+            />
+        ),
     },
     { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
-    {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true, // Hiển thị dấu ba chấm nếu quá dài
-    },
-    {
-      title: "Giá bán",
-      dataIndex: "price",
-      key: "price",
-      render: (text: number) => `${text.toLocaleString()} VND`,
-    },
-    // {
-    //   title: "Giá cũ", 
-    //   dataIndex: "old_price",
-    //   key: "old_price",
-    //   render: (text: number | null) =>
-    //     text ? `${text.toLocaleString()} VND` : "-", // Hiển thị "-" nếu không có giá cũ
-    // },
-    {
-      title: "Danh mục", 
-      dataIndex: "category_id",
-      key: "category_id",
-      render: (categoryId: number) => getCategoryName(categoryId), // Hiển thị tên danh mục
-    },
-    {
-      title: "Trạng thái",
-      key: "status",
-      render: (_: any, record: Product) => (
-        <Tag color={getProductStatusColor(record.status)}>
-          {getProductStatusText(record.status)}
-        </Tag>
-      ),
-    },
-    // {
-    //   title: "Tổng tồn kho",
-    //   dataIndex: "total_stock", // Trường này được thêm vào khi fetchData
-    //   key: "total_stock",
-    //   render: (totalStock: number) => getStockTag(totalStock),
-    // },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_: any, record: Product) => (
-        <Space size="middle">
-           <Button type="default"  icon={<EyeOutlined />}  onClick={() => navigate(`/admin/products/detail/${record.id}`)}>
-                    {/* Xem */}
-                </Button>
-          <Button   icon={<EditOutlined />}  onClick={() => navigate(`/admin/products/edit/${record.id}`)}>
-            {/* Sửa */}
-          </Button>
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xoá?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xoá"
-            cancelText="Huỷ"
-          >
-            <Tooltip title="Xóa">
-                        <Button 
-                            type="text" 
-                            danger 
-                            icon={<DeleteOutlined />} 
-                        />
-                    </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+    { title: "Giá bán", dataIndex: "price", key: "price", render: (text) => `${Number(text).toLocaleString()} VND` },
+    { title: "Danh mục", dataIndex: "category_id", key: "category_id", render: (catId) => getCategoryName(catId) },
+    { title: "Trạng thái", dataIndex: "status", key: "status", render: (status) => (
+        <Tag color={status ? "green" : "red"}>{status ? "Đang bán" : "Ngừng bán"}</Tag>
+    )},
+    { 
+        title: "Hành động", 
+        key: "action",
+        align: 'center',
+        width: 120,
+        render: (_, record) => (
+            <Space size="middle">
+                <Tooltip title="Xem chi tiết"><Button type="text" icon={<EyeOutlined />} onClick={() => navigate(`/admin/products/detail/${record.id}`)} /></Tooltip>
+                <Tooltip title="Chỉnh sửa"><Button type="text" icon={<EditOutlined />} onClick={() => navigate(`/admin/products/edit/${record.id}`)} /></Tooltip>
+                <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record.id)}><Tooltip title="Xóa"><Button type="text" danger icon={<DeleteOutlined />} /></Tooltip></Popconfirm>
+            </Space>
+        ),
     },
   ];
 
@@ -241,24 +149,25 @@ export default function ProductList() {
     <div>
       <Title level={3}>Danh sách sản phẩm</Title>
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
-        <Button
-          type="primary"
-          onClick={() => navigate("/admin/products/create")}
-        >
-          Thêm mới
-        </Button>
+        <Button type="primary" onClick={() => navigate("/admin/products/create")}>Thêm mới</Button>
         <Search
-          placeholder="Tìm kiếm theo tên..."
-          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm kiếm theo tên sản phẩm..."
+          // SỬA LẠI: Dùng onChange để tìm kiếm khi người dùng gõ
+          onChange={(e) => setSearchTerm(e.target.value)}
           enterButton
         />
       </Space>
       <Table
         columns={columns}
-        dataSource={filtered}
+        dataSource={products}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={{
+            current: pagination.currentPage,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+        }}
+        onChange={handleTableChange}
       />
     </div>
   );
