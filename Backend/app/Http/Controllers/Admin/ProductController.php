@@ -12,11 +12,20 @@ use Illuminate\Support\Str; // THÊM: Import Str để tạo slug
 
 class ProductController extends Controller
 {
-    public function index()
+     public function index(Request $request)
     {
-        return Product::latest()->paginate(10);
-    }
+        $query = Product::query();
 
+        // THÊM MỚI: Logic xử lý tìm kiếm
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            // Tìm ở cột 'name'
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
+        return $query->orderBy('id', 'asc')->paginate(5);
+    }
     public function store(Request $request)
     {
         $validatedData = $request->validate([

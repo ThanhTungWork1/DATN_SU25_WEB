@@ -3,10 +3,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\CartController;
@@ -49,7 +49,7 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
 // Public Routes (Không cần xác thực)
-Route::get('/categories', [CategoryController::class, 'index']);
+// Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
@@ -82,6 +82,9 @@ Route::prefix('admin')->group(function () {
 
     // Các route admin khác của bạn giữ nguyên
     Route::apiResource('orders', OrderController::class);
+
+       // THÊM MỚI: Categories
+    Route::apiResource('categories', CategoryController::class);
 });
 
 // Các route Admin khác VẪN CẦN XÁC THỰC
