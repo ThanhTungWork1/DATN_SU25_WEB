@@ -42,6 +42,7 @@ export const ContactClient = () => {
               value={form.name}
               onChange={handleChange}
               required
+              autoComplete="name"
             />
 
             <label htmlFor="email">Email</label>
@@ -52,6 +53,7 @@ export const ContactClient = () => {
               value={form.email}
               onChange={handleChange}
               required
+              autoComplete="email"
             />
 
             <label htmlFor="message">Nội dung</label>

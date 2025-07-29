@@ -112,7 +112,7 @@ export default function OrderForm() {
               name="user_id"
               rules={[{ required: true, message: "Vui lòng nhập User ID" }]}
             >
-              <Input type="number" />
+              <Input type="number" autoComplete="off" />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -123,7 +123,7 @@ export default function OrderForm() {
                 { required: true, message: "Vui lòng nhập tên khách hàng" },
               ]}
             >
-              <Input />
+              <Input autoComplete="name" />
             </Form.Item>
           </Col>
         </Row>
@@ -141,7 +141,7 @@ export default function OrderForm() {
                 },
               ]}
             >
-              <Input />
+              <Input autoComplete="email" />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -152,7 +152,7 @@ export default function OrderForm() {
                 { required: true, message: "Vui lòng nhập số điện thoại" },
               ]}
             >
-              <Input />
+              <Input autoComplete="tel" />
             </Form.Item>
           </Col>
         </Row>
@@ -164,7 +164,7 @@ export default function OrderForm() {
             { required: true, message: "Vui lòng nhập địa chỉ giao hàng" },
           ]}
         >
-          <TextArea rows={3} />
+          <TextArea rows={3} autoComplete="street-address" />
         </Form.Item>
 
         <Row gutter={16}>
@@ -176,7 +176,7 @@ export default function OrderForm() {
                 { required: true, message: "Vui lòng nhập tổng tiền sản phẩm" },
               ]}
             >
-              <Input type="number" min={0} />
+              <Input type="number" min={0} autoComplete="off" />
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -187,7 +187,7 @@ export default function OrderForm() {
                 { required: true, message: "Vui lòng nhập phí vận chuyển" },
               ]}
             >
-              <Input type="number" min={0} />
+              <Input type="number" min={0} autoComplete="off" />
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -198,7 +198,7 @@ export default function OrderForm() {
                 { required: true, message: "Vui lòng nhập số tiền giảm giá" },
               ]}
             >
-              <Input type="number" min={0} />
+              <Input type="number" min={0} autoComplete="off" />
             </Form.Item>
           </Col>
         </Row>
@@ -209,7 +209,7 @@ export default function OrderForm() {
             { required: true, message: "Vui lòng nhập tổng tiền cuối cùng" },
           ]}
         >
-          <Input type="number" min={0} />
+          <Input type="number" min={0} autoComplete="off" />
         </Form.Item>
 
         <Form.Item

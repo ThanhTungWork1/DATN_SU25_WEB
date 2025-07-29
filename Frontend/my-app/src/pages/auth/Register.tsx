@@ -86,7 +86,7 @@ export const Register = () => {
           validateStatus={fieldErrors.name ? "error" : undefined}
           help={fieldErrors.name ? fieldErrors.name[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="name" />
         </Form.Item>
 
         <Form.Item
@@ -99,7 +99,7 @@ export const Register = () => {
           validateStatus={fieldErrors.email ? "error" : undefined}
           help={fieldErrors.email ? fieldErrors.email[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="email" />
         </Form.Item>
 
         <Form.Item
@@ -109,7 +109,7 @@ export const Register = () => {
           validateStatus={fieldErrors.phone ? "error" : undefined}
           help={fieldErrors.phone ? fieldErrors.phone[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="tel" />
         </Form.Item>
 
         <Form.Item
@@ -119,7 +119,7 @@ export const Register = () => {
           validateStatus={fieldErrors.address ? "error" : undefined}
           help={fieldErrors.address ? fieldErrors.address[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="street-address" />
         </Form.Item>
 
         <Form.Item
@@ -140,7 +140,7 @@ export const Register = () => {
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item
@@ -160,7 +160,7 @@ export const Register = () => {
             }),
           ]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item label={null}>

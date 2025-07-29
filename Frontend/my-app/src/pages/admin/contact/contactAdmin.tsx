@@ -133,7 +133,7 @@ export const ContactAdmin = () => {
             label="Nội dung phản hồi"
             rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
           >
-            <Input.TextArea rows={4} placeholder="Nhập phản hồi tại đây..." />
+            <Input.TextArea rows={4} placeholder="Nhập phản hồi tại đây..." autoComplete="off" />
           </Form.Item>
           <Button type="primary" htmlType="submit">
             Gửi phản hồi

@@ -44,12 +44,19 @@ const dataProvider = {
   getList: async ({ resource }: getListType) => {
     // Sử dụng route admin cho tất cả resources
     const endpoint = `/admin/${resource}`;
+    console.log(`Fetching ${resource} from:`, endpoint);
+    console.log(`Full URL will be: http://localhost:8000/api${endpoint}`);
 
     // Debug authentication
     const token =
       localStorage.getItem("admin_token") || localStorage.getItem("user_token");
+    console.log(
+      `Using token for ${resource}:`,
+      token ? "Token exists" : "No token"
+    );
 
     const response = await axiosInstance.get(endpoint);
+    console.log(`${resource} response:`, response.data);
 
     // Handle different response formats
     let data;
@@ -79,8 +86,16 @@ const dataProvider = {
   createOne: async ({ resource, variables }: createType) => {
     // Sử dụng route admin cho tất cả resources
     const endpoint = `/admin/${resource}`;
-
+    console.log(
+      "Creating resource:",
+      resource,
+      "at endpoint:",
+      endpoint,
+      "with data:",
+      variables
+    );
     const response = await axiosInstance.post(endpoint, variables);
+    console.log("Create response:", response);
     return {
       data: response.data,
     };

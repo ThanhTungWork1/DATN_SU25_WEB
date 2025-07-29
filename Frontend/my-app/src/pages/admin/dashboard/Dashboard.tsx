@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   ShoppingOutlined,
   UserOutlined,
+  ContactsOutlined,
 } from "@ant-design/icons";
 
 import UserChart from "../../../components/dashboard/UserChart";
@@ -53,8 +54,8 @@ const Dashboard = () => {
         <Card>
           <Statistic
             title="Liên hệ"
-            value={data?.contact}
-            prefix={<ShoppingOutlined />}
+            value={data?.contacts}
+            prefix={<ContactsOutlined />}
           />
         </Card>
       </Col>

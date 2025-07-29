@@ -6,7 +6,7 @@ import { config } from "../../../api/axios";
 import { Link } from "react-router-dom";
 
 const UserList = () => {
-  const { data, isLoading, refetch } = useList({ resource: "users" });
+  const { data, isLoading, refetch } = useList({ resource: "admin/users" });
   const [searchText, setSearchText] = useState("");
 
   if (isLoading) return <div>Loading...</div>;
@@ -19,10 +19,13 @@ const UserList = () => {
   };
 
   const userArray =
-    data && typeof data === "object" && data.data && Array.isArray(data.data)
-      ? data.data
+    data &&
+    typeof data === "object" &&
+    data.data &&
+    typeof data.data === "object" &&
+    Array.isArray(data.data.data)
+      ? data.data.data
       : [];
-
   const dataSource = userArray
     .map((user: IUser) => ({
       key: user.id,
@@ -35,13 +38,11 @@ const UserList = () => {
 
   const handleStatusChange = async (userId: number, newStatus: boolean) => {
     try {
-      const response = await config.put(`/admin/users/${userId}`, {
-        status: newStatus,
-      });
+      await config.patch(`/users/${userId}`, { status: newStatus });
       message.success("Cập nhật trạng thái thành công");
       refetch?.(); // Làm mới danh sách
     } catch (err) {
-      console.error("Status update error:", err);
+      console.error(err);
       message.error("Có lỗi xảy ra khi cập nhật");
     }
   };
@@ -55,17 +56,11 @@ const UserList = () => {
       title: "Chức vụ",
       dataIndex: "role",
       key: "role",
-      render: (role: string) => {
-        const roleConfig = {
-          admin: { color: "volcano", label: "Admin" },
-          moderator: { color: "orange", label: "Moderator" },
-          user: { color: "blue", label: "User" },
-        };
-
-        const config = roleConfig[role] || { color: "default", label: role };
-
-        return <Tag color={config.color}>{config.label}</Tag>;
-      },
+      render: (role: number | string) => (
+        <Tag color={role == 1 ? "volcano" : "blue"}>
+          {role == 1 ? "Admin" : "User"}
+        </Tag>
+      ),
     },
     {
       title: "Trạng thái",
@@ -95,6 +90,18 @@ const UserList = () => {
           />
         </div>
       ),
+    },
+
+    {
+      title: "Xác minh",
+      dataIndex: "is_verified",
+      key: "is_verified",
+      render: (v: boolean) =>
+        v ? (
+          <Tag color="green">Đã xác minh</Tag>
+        ) : (
+          <Tag color="orange">Chưa xác minh</Tag>
+        ),
     },
   ];
 

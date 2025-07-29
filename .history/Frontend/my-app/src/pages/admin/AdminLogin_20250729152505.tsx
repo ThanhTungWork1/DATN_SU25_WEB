@@ -16,35 +16,24 @@ export default function AdminLogin() {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      console.log("Admin login attempt:", values);
-      
       // Gửi thông tin đăng nhập đến Laravel backend
       const response = await axios.post(LOGIN_URL, {
         email: values.email,
         password: values.password,
       });
 
-      console.log("Admin login response:", response.data);
-
       // Nếu đăng nhập thành công, Laravel sẽ trả về token và thông tin user
-      const { token, user } = response.data;
+      const token = response.data.token;
 
-      // Lưu token vào localStorage với key đúng cho admin
-      localStorage.setItem("admin_token", token);
-      localStorage.setItem("role", user.role);
+      // Lưu token vào localStorage (để axiosInstance có thể sử dụng)
+      localStorage.setItem("authToken", token);
 
-      message.success("Đăng nhập admin thành công! Chuyển hướng đến trang quản lý.");
+      message.success("Đăng nhập thành công! Chuyển hướng đến trang quản lý.");
 
-      // Chuyển hướng đến trang dashboard admin
-      setTimeout(() => {
-        navigate("/admin/dashboard");
-        // Backup: nếu navigate không hoạt động
-        setTimeout(() => {
-          window.location.href = "/admin/dashboard";
-        }, 1000);
-      }, 500);
+      // Chuyển hướng đến trang sản phẩm admin
+      navigate("/admin/products");
     } catch (error: any) {
-      console.error("Admin login failed:", error);
+      console.error("Login failed:", error);
       if (error.response && error.response.status === 401) {
         message.error(
           "Thông tin đăng nhập không chính xác hoặc bạn không có quyền Admin."
@@ -87,7 +76,10 @@ export default function AdminLogin() {
             name="password"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
           >
-            <Input.Password placeholder="Mật khẩu" autoComplete="current-password" />
+            <Input.Password
+              placeholder="Mật khẩu"
+              autoComplete="current-password"
+            />
           </Form.Item>
 
           <Form.Item>

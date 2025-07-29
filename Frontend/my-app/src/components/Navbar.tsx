@@ -250,11 +250,22 @@ const Navbar = () => {
           title="Tài khoản"
           style={{ cursor: "pointer" }}
           onClick={() => {
-            navigate("/register");
+            navigate("/login");
             setMenuOpen(false);
           }}
         >
           &#128100;
+        </div>
+        <div
+          className="icon-btn"
+          title="Admin Login"
+          style={{ cursor: "pointer", marginLeft: "10px" }}
+          onClick={() => {
+            navigate("/login/admin");
+            setMenuOpen(false);
+          }}
+        >
+          👨‍💼
         </div>
       </div>
 

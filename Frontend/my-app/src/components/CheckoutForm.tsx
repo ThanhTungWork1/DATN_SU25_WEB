@@ -21,9 +21,9 @@ export default function CheckoutForm({ selectedItems, totalAmount, onSubmit }: P
 
   return (
     <form onSubmit={handleSubmit} className="mt-4">
-      <input name="name" placeholder="Họ tên" className="form-control mb-2" required onChange={handleChange} />
-      <input name="phone" placeholder="Số điện thoại" className="form-control mb-2" required onChange={handleChange} />
-      <input name="address" placeholder="Địa chỉ" className="form-control mb-2" required onChange={handleChange} />
+      <input name="name" placeholder="Họ tên" className="form-control mb-2" required onChange={handleChange} autoComplete="name" />
+      <input name="phone" placeholder="Số điện thoại" className="form-control mb-2" required onChange={handleChange} autoComplete="tel" />
+      <input name="address" placeholder="Địa chỉ" className="form-control mb-2" required onChange={handleChange} autoComplete="street-address" />
       <button className="btn btn-success mt-2" type="submit">Xác nhận đặt hàng</button>
     </form>
   );

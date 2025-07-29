@@ -68,7 +68,7 @@ const UserProfile = () => {
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
         >
-          <Input />
+          <Input autoComplete="name" />
         </Form.Item>
 
         <Form.Item
@@ -76,11 +76,11 @@ const UserProfile = () => {
           name="email"
           rules={[{ required: true, message: "Vui lòng nhập email" }]}
         >
-          <Input />
+          <Input autoComplete="email" />
         </Form.Item>
 
         <Form.Item label="Số điện thoại" name="phone">
-          <Input />
+          <Input autoComplete="tel" />
         </Form.Item>
 
         <Form.Item label="Giới tính" name="gender">

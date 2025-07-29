@@ -12,7 +12,7 @@ import CheckoutPage from "../pages/client/Cart/CheckoutPage";
 import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
 import UserProfile from "../pages/client/Home/UserProfile";
-import Login from "../pages/auth/Login";
+import UserLogin from "../pages/auth/userLogin";
 import AdminLogin from "../pages/auth/adminLogin";
 import RequireAuth from "./RequireAuth";
 import { ContactClient } from "../pages/client/Contact/Contact";
@@ -24,7 +24,7 @@ const ClientRoute = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<UserLogin />} />
         <Route path="/login/admin" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<ListProduct />} />

@@ -155,11 +155,11 @@ export default function ProductForm() {
       <Title level={3}>{isEditing ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm"}</Title>
       <Form form={formRef} onFinish={onFinish} layout="vertical">
         <Divider orientation="left">Thông tin chung sản phẩm</Divider>
-        <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true }]}><Input /></Form.Item>
-        <Form.Item label="Slug" name="slug"><Input placeholder="Tự động tạo nếu để trống" /></Form.Item>
+        <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
+        <Form.Item label="Slug" name="slug"><Input placeholder="Tự động tạo nếu để trống" autoComplete="off" /></Form.Item>
         <Row gutter={16}>
-            <Col span={12}><Form.Item label="Giá bán chung" name="price" rules={[{ required: true }]}><Input type="number" min={0} /></Form.Item></Col>
-            <Col span={12}><Form.Item label="Giá cũ" name="old_price"><Input type="number" min={0} /></Form.Item></Col>
+            <Col span={12}><Form.Item label="Giá bán chung" name="price" rules={[{ required: true }]}><Input type="number" min={0} autoComplete="off" /></Form.Item></Col>
+            <Col span={12}><Form.Item label="Giá cũ" name="old_price"><Input type="number" min={0} autoComplete="off" /></Form.Item></Col>
         </Row>
         <Form.Item label="Danh mục" name="category_id" rules={[{ required: true }]}><Select placeholder="Chọn danh mục">{categories.map((cat) => (<Option key={cat.id} value={cat.id}>{cat.name}</Option>))}</Select></Form.Item>
         
@@ -178,7 +178,7 @@ export default function ProductForm() {
         <Form.Item label="Mô tả" name="description"><TextArea rows={4} /></Form.Item>
         
         <Form.Item label="Số lượng đã bán" name="sold">
-            <Input type="number" min={0} readOnly={isEditing} />
+            <Input type="number" min={0} readOnly={isEditing} autoComplete="off" />
         </Form.Item>
         
         <Divider orientation="left">Quản lý Biến thể Sản phẩm</Divider>
@@ -190,10 +190,10 @@ export default function ProductForm() {
                   <Form.Item {...restField} name={[name, 'id']} hidden />
                   <Form.Item {...restField} name={[name, 'color_id']} rules={[{ required: true}]} style={{ minWidth: 120 }}><Select placeholder="Màu sắc">{colors.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}</Select></Form.Item>
                   <Form.Item {...restField} name={[name, 'size_id']} rules={[{ required: true}]} style={{ minWidth: 120 }}><Select placeholder="Kích thước">{sizes.map(s => <Option key={s.id} value={s.id}>{s.name}</Option>)}</Select></Form.Item>
-                  <Form.Item {...restField} name={[name, 'stock']} rules={[{ required: true}]} style={{ width: 100 }}><Input type="number" min={0} placeholder="Tồn kho" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true}]} style={{ width: 120 }}><Input type="number" min={0} placeholder="Giá" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'image']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="URL ảnh (tùy chọn)" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'sku']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="SKU (tùy chọn)" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'stock']} rules={[{ required: true}]} style={{ width: 100 }}><Input type="number" min={0} placeholder="Tồn kho" autoComplete="off" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true}]} style={{ width: 120 }}><Input type="number" min={0} placeholder="Giá" autoComplete="off" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'image']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="URL ảnh (tùy chọn)" autoComplete="off" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'sku']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="SKU (tùy chọn)" autoComplete="off" /></Form.Item>
                   <MinusCircleOutlined onClick={() => remove(name)} />
                 </Space>
               ))}

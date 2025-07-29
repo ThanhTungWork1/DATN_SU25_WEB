@@ -85,11 +85,15 @@ class UserController extends Controller
                 'password' => 'required|string|min:6',
                 'phone' => 'nullable|string|max:20',
                 'address' => 'required|string|max:255',
-                'role' => 'nullable|integer',
+                'role' => 'nullable|string|in:admin,moderator,user',
             ]);
 
             $data['password'] = Hash::make($data['password']);
-            $data['role'] = $data['role'] ?? 0;
+            
+            // Đảm bảo role là string hợp lệ
+            if (!isset($data['role'])) {
+                $data['role'] = 'user'; // Default to user
+            }
 
             $user = User::create($data);
 
@@ -111,15 +115,34 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $data = $request->only(['name', 'email', 'password', 'phone', 'address', 'role']);
+        // Validate the request data
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'password' => 'sometimes|string|min:6',
+            'phone' => 'sometimes|string|max:20',
+            'address' => 'sometimes|string|max:255',
+            'role' => 'sometimes|string|in:admin,moderator,user',
+            'status' => 'sometimes|boolean',
+        ]);
+
+        $data = $request->only(['name', 'email', 'password', 'phone', 'address', 'role', 'status']);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
+        // Đảm bảo role là string hợp lệ nếu có
+        if (isset($data['role']) && !in_array($data['role'], ['admin', 'moderator', 'user'])) {
+            $data['role'] = 'user'; // Default to user if invalid
+        }
+
         $user->update($data);
 
-        return $user;
+        return response()->json([
+            'message' => 'Cập nhật thành công',
+            'data' => $user
+        ]);
     }
 
     public function unlock($id)

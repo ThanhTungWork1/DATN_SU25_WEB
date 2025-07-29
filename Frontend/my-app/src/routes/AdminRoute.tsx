@@ -20,6 +20,7 @@ const AdminRoute = () => {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="users" element={<UserList />} />
+          <Route path="users/list" element={<UserList />} />
           <Route path="users/create" element={<UserAdd />} />
           <Route path="users/edit/:id" element={<UserEdit />} />
           <Route path="products" element={<ProductList />} />

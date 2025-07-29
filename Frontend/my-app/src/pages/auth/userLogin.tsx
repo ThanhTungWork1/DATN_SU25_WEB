@@ -10,12 +10,20 @@ const UserLogin = () => {
   const onFinish = (values: { login: string; password: string }) => {
     loginUser(values, {
       onSuccess: (data: any) => {
-        if (data?.user?.role !== "1") {
-          localStorage.setItem("token", data.token); // thay vì "user_token"
-          message.success("Đăng nhập người dùng thành công!");
-          navigate("/profile");
+        console.log("UserLogin success data:", data);
+        
+        if (data?.user?.role === "admin") {
+          // Admin đăng nhập qua user login -> chuyển đến admin dashboard
+          localStorage.setItem("admin_token", data.token);
+          localStorage.setItem("role", data.user.role);
+          message.success("Đăng nhập admin thành công!");
+          navigate("/admin/dashboard");
         } else {
-          message.error("Tài khoản admin không được dùng ở đây!");
+          // User thường
+          localStorage.setItem("user_token", data.token);
+          localStorage.setItem("role", data.user.role);
+          message.success("Đăng nhập người dùng thành công!");
+          navigate("/");
         }
       },
       onError: (error: any) => {
@@ -43,14 +51,14 @@ const UserLogin = () => {
           name="login"
           rules={[{ required: true, message: "Vui lòng nhập email" }]}
         >
-          <Input />
+          <Input autoComplete="username" />
         </Form.Item>
         <Form.Item
           label="Mật khẩu"
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="current-password" />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={isPending} block>

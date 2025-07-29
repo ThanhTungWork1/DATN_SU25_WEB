@@ -1,6 +1,5 @@
 import { Button, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
-import useLogin from "../../hook/useLogin";
 
 const formItemLayout = {
   labelCol: { xs: { span: 24 }, sm: { span: 6 } },
@@ -10,35 +9,55 @@ const formItemLayout = {
 export const Login = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const { mutate } = useLogin({ resource: "login" });
 
-  const onFinish = (formData: { email: string; password: string }) => {
-    mutate(
-      {
-        login: formData.email,
-        password: formData.password,
-      },
-      {
-        onSuccess: (user: any) => {
-          // Lưu token đã được xử lý trong useLogin
-          const role = user.role === "1" ? "1" : "0";
-          localStorage.setItem("role", role);
-
-          messageApi.success("Đăng nhập thành công");
-
-          if (role === "1") {
-            navigate("/admin/dashboard");
+  const onFinish = async (formData: { email: string; password: string }) => {
+    console.log("Form submitted with:", formData);
+    
+    try {
+      // Thử gọi API trực tiếp
+      const response = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          login: formData.email,
+          password: formData.password,
+        }),
+      });
+      
+      const data = await response.json();
+      console.log("Direct API response:", data);
+      
+      if (response.ok) {
+        const role = data.user.role;
+        localStorage.setItem("user_token", data.token);
+        localStorage.setItem("role", role);
+        
+        messageApi.success("Đăng nhập thành công");
+        
+        console.log("Role:", role);
+        console.log("Navigating to:", role === "admin" ? "/admin/dashboard" : "/");
+        
+        // Thử chuyển hướng
+        setTimeout(() => {
+          const baseUrl = window.location.origin;
+          if (role === "admin") {
+            console.log("Redirecting to admin dashboard...");
+            window.location.href = `${baseUrl}/admin/dashboard`;
           } else {
-            navigate("/");
+            console.log("Redirecting to home page...");
+            window.location.href = `${baseUrl}/`;
           }
-        },
-
-        onError: (error: any) => {
-          const msg = error?.response?.data?.message || "Đăng nhập thất bại!";
-          messageApi.error(msg);
-        },
+        }, 100);
+      } else {
+        messageApi.error(data.message || "Đăng nhập thất bại!");
       }
-    );
+    } catch (error) {
+      console.error("Direct API error:", error);
+      messageApi.error("Đăng nhập thất bại!");
+    }
   };
 
   return (
@@ -51,14 +70,14 @@ export const Login = () => {
           name="email"
           rules={[{ required: true, message: "Vui lòng nhập email hoặc SĐT!" }]}
         >
-          <Input />
+          <Input autoComplete="username" />
         </Form.Item>
         <Form.Item
           label="Mật khẩu"
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="current-password" />
         </Form.Item>
         <Form.Item label=" ">
           <Button type="primary" htmlType="submit">

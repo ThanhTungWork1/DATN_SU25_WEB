@@ -11,8 +11,10 @@ const AdminLogin = () => {
   const onFinish = (values: { login: string; password: string }) => {
     loginAdmin(values, {
       onSuccess: (data: any) => {
-        if (data?.user?.role == 1) {
+        console.log("Login response:", data);
+        if (data?.user?.role === "admin") {
           localStorage.setItem("admin_token", data.token);
+          localStorage.setItem("role", data.user.role);
           message.success("Đăng nhập admin thành công!");
           navigate("/admin/dashboard");
         } else {
@@ -44,14 +46,14 @@ const AdminLogin = () => {
           name="login"
           rules={[{ required: true, message: "Vui lòng nhập email" }]}
         >
-          <Input />
+          <Input autoComplete="username" />
         </Form.Item>
         <Form.Item
           label="Mật khẩu"
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="current-password" />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={isPending} block>

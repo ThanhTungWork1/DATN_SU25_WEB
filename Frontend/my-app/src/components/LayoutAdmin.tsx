@@ -29,12 +29,11 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem("Dashboard", "/admin/dashboard", <DesktopOutlined />),
-  getItem("Thành viên", "/admin/users", <UserOutlined />, [
-    getItem("Tất cả người dùng", "/admin/users"),
-  ]),
+  getItem("Thành viên", "/admin/users", <UserOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
+  getItem("Đăng xuất", "logout", <LogoutOutlined />),
 ];
 
 const LayoutAdmin: React.FC = () => {
@@ -63,7 +62,13 @@ const LayoutAdmin: React.FC = () => {
           defaultSelectedKeys={["/admin/dashboard"]}
           mode="inline"
           items={items}
-          onClick={({ key }) => navigate(key)}
+          onClick={({ key }) => {
+            if (key === "logout") {
+              handleLogout();
+            } else {
+              navigate(key);
+            }
+          }}
         />
       </Sider>
       <Layout>
@@ -76,13 +81,7 @@ const LayoutAdmin: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <Button
-            type="primary"
-            danger
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            style={{ marginBottom: 24 }}
-          ></Button>
+          {/* Removed the red logout button from the header */}
         </Header>
         <Content style={{ margin: "0 16px" }}>
           <div
