@@ -40,10 +40,30 @@ class ClientOrderController extends Controller
 
             $orders = $query->paginate(10);
 
+            $customer = $user;
+            $ordersData = collect($orders->items())->map(function ($order) use ($customer) {
+                return [
+                    'id' => $order->id,
+                    'customer_name' => $customer->name,
+                    'customer_email' => $customer->email,
+                    'customer_phone' => $customer->phone,
+                    'shipping_address' => $order->shipping_address,
+                    'payment_method' => $order->payment_method,
+                    'discount_amount' => $order->discount_amount,
+                    'total_amount' => $order->total_amount,
+                    'shipping_fee' => $order->shipping_fee,
+                    'status' => $order->status,
+                    'is_paid' => $order->is_paid,
+                    'note' => $order->note,
+                    'created_at' => $order->created_at,
+                    'items' => $order->items,
+                ];
+            });
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy danh sách đơn hàng thành công',
-                'data' => $orders->items(),
+                'data' => $ordersData,
                 'pagination' => [
                     'current_page' => $orders->currentPage(),
                     'last_page' => $orders->lastPage(),
@@ -77,10 +97,31 @@ class ClientOrderController extends Controller
                 ], 404);
             }
 
+            // Lấy thông tin user
+            $customer = $user;
+
+            // Trả về đúng format FE yêu cầu
+            $orderData = [
+                'id' => $order->id,
+                'customer_name' => $customer->name,
+                'customer_email' => $customer->email,
+                'customer_phone' => $customer->phone,
+                'shipping_address' => $order->shipping_address,
+                'payment_method' => $order->payment_method,
+                'discount_amount' => $order->discount_amount,
+                'total_amount' => $order->total_amount,
+                'shipping_fee' => $order->shipping_fee,
+                'status' => $order->status,
+                'is_paid' => $order->is_paid,
+                'note' => $order->note,
+                'created_at' => $order->created_at,
+                'items' => $order->items,
+            ];
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy chi tiết đơn hàng thành công',
-                'data' => $order
+                'data' => $orderData
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -102,6 +143,8 @@ class ClientOrderController extends Controller
                 'shipping_phone' => 'required|string|max:20',
                 'shipping_name' => 'required|string|max:255',
                 'note' => 'nullable|string|max:1000',
+                'payment_method' => 'required|string|max:100',
+                'discount_amount' => 'nullable|numeric|min:0',
                 'items' => 'required|array|min:1',
                 'items.*.variant_id' => 'required|exists:product_variants,id',
                 'items.*.quantity' => 'required|integer|min:1',
@@ -160,7 +203,9 @@ class ClientOrderController extends Controller
                     'shipping_address' => $data['shipping_address'],
                     'shipping_phone' => $data['shipping_phone'],
                     'shipping_name' => $data['shipping_name'],
-                    'note' => $data['note'] ?? null
+                    'note' => $data['note'] ?? null,
+                    'payment_method' => $data['payment_method'],
+                    'discount_amount' => $data['discount_amount'] ?? 0,
                 ]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho

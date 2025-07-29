@@ -12,14 +12,14 @@ class Order extends Model
         'is_paid',
         'total_amount',
         'shipping_fee',
-        'sold_number',
-        'created_at',
-        'updated_at',
+        'shipping_address',
+        'shipping_phone',
+        'shipping_name',
+        'note',
+        'payment_method',
+        'discount_amount',
     ];
-    protected $casts = [
-        'is_paid' => 'boolean',
-        'sold_number' => 'decimal:10,2', // Định dạng số thập phân
-    ];
+
     public function items()
     {
         return $this->hasMany(\App\Models\OrderItem::class);
