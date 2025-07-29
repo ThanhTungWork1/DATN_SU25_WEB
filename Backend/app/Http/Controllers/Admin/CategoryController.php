@@ -1,22 +1,23 @@
 <?php
 
-// SỬA LẠI: Đổi namespace thành Admin
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule; // Thêm Rule để validation
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
     /**
-     * Lấy danh sách tất cả danh mục.
+     * Lấy danh sách tất cả danh mục, kèm theo số lượng sản phẩm.
      */
     public function index()
     {
-        return Category::orderBy('name', 'asc')->get();
+        // Dùng withCount('products') để đếm số sản phẩm trong mỗi danh mục.
+        // Laravel sẽ tự động thêm một trường 'products_count' vào kết quả trả về.
+        return Category::withCount('products')->orderBy('name', 'asc')->get();
     }
 
     /**
