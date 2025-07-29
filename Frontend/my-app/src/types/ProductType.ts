@@ -3,10 +3,10 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  old_price: number | null; 
+  old_price: number | null;
   status: boolean | number;
-  slug: string; 
-  category_id: number; 
+  slug: string;
+  category_id: number;
   image: string;
   hover_image: string | null;
   material: string | string[] | null;
@@ -41,16 +41,18 @@ export interface ProductVariant {
   stock: number; // Đổi từ stock_quantity thành stock
   price: number; // Thêm trường price
   image: string | null;
-   image_url?: string;
+  image_url?: string;
   sku: string | null; // Sửa lại cho khớp
   created_at: string;
   updated_at: string;
 }
 
 export interface Category {
-    id: number;
-    name: string;
-    status: 'active' | 'inactive';
-    created_at?: string;
-    updated_at?: string;
+  id: number;
+  name: string;
+  slug: string;
+  status: "active" | "inactive";
+  products_count?: number;
+  created_at?: string;
+  updated_at?: string;
 }

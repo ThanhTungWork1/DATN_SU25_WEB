@@ -50,7 +50,7 @@ export default function CategoryList() {
       form.setFieldsValue({ name: category.name, status: category.status });
     } else {
       form.resetFields();
-      form.setFieldsValue({ status: true }); // Mặc định là active
+      form.setFieldsValue({ status: true });
     }
     setIsModalVisible(true);
   };
@@ -89,10 +89,19 @@ export default function CategoryList() {
   const columns: TableProps<Category>['columns'] = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Tên danh mục', dataIndex: 'name', key: 'name' },
+    // THÊM MỚI: Cột hiển thị số lượng sản phẩm
+    {
+      title: 'Số lượng sản phẩm',
+      dataIndex: 'products_count',
+      key: 'products_count',
+      align: 'center',
+      render: (count: number) => `${count} sản phẩm`,
+    },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
+      align: 'center',
       render: (status: boolean) => (
         <Tag color={status ? 'green' : 'red'}>{status ? 'Hoạt động' : 'Tạm ẩn'}</Tag>
       ),
@@ -110,8 +119,9 @@ export default function CategoryList() {
             onConfirm={() => handleDelete(record.id)}
             okText="Xóa"
             cancelText="Hủy"
+            disabled={record.products_count !== undefined && record.products_count > 0} // Vô hiệu hóa nút xóa nếu có sản phẩm
           >
-            <Button icon={<DeleteOutlined />} danger />
+            <Button icon={<DeleteOutlined />} danger disabled={record.products_count !== undefined && record.products_count > 0} />
           </Popconfirm>
         </Space>
       ),
@@ -143,7 +153,7 @@ export default function CategoryList() {
             <Input />
           </Form.Item>
           <Form.Item name="status" label="Trạng thái" valuePropName="checked">
-            <Switch checkedChildren="Hoạt động" unCheckedChildren="Tạm ẩn" />
+            <Switch checkedChildren="Hoạt động" unCheckedChildren="Tạm ẩn" defaultChecked />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
