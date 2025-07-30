@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ComplaintController;
@@ -126,6 +127,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('delete/{id}', [OrderController::class, 'destroy']);
     });
 
+    //Users - chỉ cho admin (role = 1)
     Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/{id}', [UserController::class, 'show']);
@@ -150,4 +152,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    // Comment management for Admin (duyệt, ẩn, xoá, lọc spam)
+    Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {
+        Route::get('/', [CommentController::class, 'index']); // xem toàn bộ
+        Route::put('/approve/{id}', [CommentController::class, 'approve']); // duyệt
+        Route::put('/hide/{id}', [CommentController::class, 'hide']); // ẩn
+        Route::delete('/{id}', [CommentController::class, 'destroy']); // xoá
+        Route::get('/filter/spam', [CommentController::class, 'filterSpam']); // lọc từ khoá xấu
+    });
+
 });
