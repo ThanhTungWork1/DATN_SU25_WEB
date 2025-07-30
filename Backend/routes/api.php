@@ -24,6 +24,8 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\InventoryLogController;
 
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
@@ -75,6 +77,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
+    // Quản lý kho
+    Route::prefix('inventories')->group(function () {
+        Route::post('/import', [InventoryController::class, 'import']);
+        Route::post('/export', [InventoryController::class, 'export']);
+        Route::get('/low-stock', [InventoryController::class, 'lowStock']);
+    });
+
+    Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
 
 
 });
