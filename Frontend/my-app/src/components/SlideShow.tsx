@@ -4,6 +4,7 @@ import banner1 from "../assets/image/banner1.png";
 import banner2 from "../assets/image/banner2.png";
 import banner3 from "../assets/image/banner3.png";
 import "../assets/styles/slideShow.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const banners = [
   {
@@ -55,17 +56,14 @@ export default function Slideshow() {
       ))}
 
       {/* Nút điều hướng */}
-      <button
-        onClick={prevSlide}
-        className="slideshow-arrow left"
-      >
+      <button onClick={prevSlide} className="slideshow-arrow left">
         <ChevronLeft />
+        {/* <FaChevronLeft /> */}
       </button>
-      <button
-        onClick={nextSlide}
-        className="slideshow-arrow right"
-      >
+      <button onClick={nextSlide} className="slideshow-arrow right">
         <ChevronRight />
+
+        {/* <FaChevronRight /> */}
       </button>
 
       {/* Dot indicator */}

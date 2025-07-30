@@ -10,6 +10,7 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
           const code = (color.code || color.hex_code || "").toLowerCase();
           const isWhite = code === "#fff" || code === "#ffffff";
           const isRed = code === "#ff0000" || code === "red";
+
           const classes = [
             "color-circle",
             isSelected && !isWhite && !isRed && "color-circle--selected",

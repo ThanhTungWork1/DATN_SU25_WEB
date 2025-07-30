@@ -18,7 +18,7 @@ const AdminLogin = () => {
           message.success("Đăng nhập admin thành công!");
           navigate("/admin/dashboard");
         } else {
-          message.error("❌ Bạn không có quyền truy cập admin.");
+          message.error("Bạn không có quyền truy cập admin.");
         }
       },
       onError: (error: any) => {

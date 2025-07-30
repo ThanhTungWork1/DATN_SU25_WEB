@@ -4,16 +4,18 @@ type MainImageProps = {
   imageUrl: string;
 };
 
-const MainImage = ({ imageUrl }: MainImageProps) => {
+/**
+ * Banner quảng cáo giữa trang detail
+ */
+const Banner: React.FC<BannerProps> = ({
+  imageUrl,
+  alt = "Banner quảng cáo",
+}) => {
   return (
     <div className="main-image-container">
-      <img
-        src={imageUrl}
-        alt="Main Product"
-        className="main-image"
-      />
+      <img src={imageUrl} alt="Main Product" className="main-image" />
     </div>
   );
 };
 
-export default MainImage;
+export default Banner;

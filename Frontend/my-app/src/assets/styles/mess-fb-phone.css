@@ -19,7 +19,7 @@
   height: 34px;
   border-radius: 50%;
   font-size: 16px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
   text-decoration: none;
   transition: all 0.3s ease;
   border: none;
@@ -30,7 +30,3 @@
   background-color: #00b29a;
   transform: scale(1.08);
 }
-
-
-
-

@@ -17,6 +17,7 @@
   text-decoration: none;
   transition: color 0.2s;
 }
+
 .breadcrumb-link:hover {
   color: #125ea2;
   text-decoration: underline;
@@ -32,7 +33,3 @@
   margin-right: 4px;
   font-size: 16px;
 }
-
-
-
-

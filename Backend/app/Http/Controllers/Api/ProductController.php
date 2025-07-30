@@ -451,4 +451,33 @@ class ProductController extends Controller
             'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
         ]);
     }
+    public function topSellingProducts(Request $request)
+{
+    $limit = $request->get('limit', 8);
+
+    $products = Product::with(['category', 'variants.color', 'variants.size'])
+        ->where('status', true)
+        ->orderByDesc('sold') // Hoặc là cột khác tuỳ vào DB bạn có
+        ->limit($limit)
+        ->get();
+
+    $products->transform(function ($product) {
+        $product->final_price = $product->discount > 0
+            ? $product->price - ($product->price * $product->discount / 100)
+            : $product->price;
+
+        $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+        $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+        return $product;
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Lấy sản phẩm bán chạy thành công',
+        'data' => $products
+    ]);
+}
+
+
+
 }

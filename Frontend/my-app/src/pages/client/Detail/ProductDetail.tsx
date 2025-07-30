@@ -8,7 +8,6 @@ import Size from "./Size";
 import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
-
 import RelatedProducts from "./RelatedProducts";
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
 import { Breadcrumb } from "../../../components/Breadcrumb";
@@ -46,6 +45,7 @@ const ProductDetail = () => {
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
   const [allColors, setAllColors] = useState<ColorType[]>([]);
+
   useEffect(() => {
     getBanners().then((banners) => {
       const found = banners.find((b) => b.public_id === "banner2");
@@ -53,8 +53,6 @@ const ProductDetail = () => {
     });
     getAllColors().then((res: ColorType[]) => setAllColors(res));
   }, []);
-
-  useEffect(() => {}, [id]);
 
   if (isLoading) return <p>Đang tải...</p>;
   if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
@@ -66,7 +64,6 @@ const ProductDetail = () => {
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-  // Lấy unique colors từ variants, loại bỏ undefined
   const uniqueColors = Array.from(
     new Map(
       (product.variants || [])
@@ -78,7 +75,6 @@ const ProductDetail = () => {
     ).values()
   );
 
-  // Lấy thumbnail cho Aside: lấy ảnh đầu tiên của mỗi màu từ variants
   let colorThumbnails: string[] = [];
   const colorSet = new Set();
   if (product?.variants) {
@@ -97,7 +93,6 @@ const ProductDetail = () => {
         ? [product.image]
         : [];
 
-  // Map allColors để đảm bảo có trường code
   const mappedColors = allColors.map((c) => ({
     ...c,
     code: c.code || (c as any).hex_code || "",
@@ -146,7 +141,7 @@ const ProductDetail = () => {
               <Color
                 colors={uniqueColors}
                 selectedColor={selectedColor}
-                onSelectColor={(color) => {
+                onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
                     (v) =>
