@@ -105,7 +105,7 @@ export default function OrderDetail() {
         <Descriptions.Item label="Tổng tiền sản phẩm">{(order.total_amount || 0).toLocaleString()} VND</Descriptions.Item>
         <Descriptions.Item label="Phí vận chuyển">{(order.shipping_fee || 0).toLocaleString()} VND</Descriptions.Item>
         <Descriptions.Item label="Giảm giá">{(order.discount_amount || 0).toLocaleString()} VND</Descriptions.Item>
-        <Descriptions.Item label="Tổng cộng cuối cùng">
+        <Descriptions.Item label="Tổng cộng">
             <Tag color="blue" style={{ fontSize: 16, padding: '4px 8px' }}>
                 {(order.final_amount || 0).toLocaleString()} VND
             </Tag>

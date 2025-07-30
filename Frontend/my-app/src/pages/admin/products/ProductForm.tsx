@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+// SỬA LẠI: Tách import ra cho rõ ràng và chính xác
 import {
   createProduct,
   getProduct,
   updateProduct,
-  getCategories,
-  getColors,
-  getSizes,
   getProductVariants,
+  getColors, // Giả sử getColors và getSizes vẫn ở trong file product.ts
+  getSizes,
 } from "../../../api/product";
+import { getCategories } from "../../../api/category"; // Import getCategories từ file riêng
 import { Product, ProductVariant, Category, Color, Size } from "../../../types/ProductType";
 import { Form, Input, Button, Typography, Select, message, Space, Divider, Row, Col, Upload } from "antd";
 import type { UploadFile, UploadProps } from 'antd';
@@ -23,16 +24,19 @@ const PRODUCT_STATUS_OPTIONS = [
   { value: false, label: "Ngừng bán/Hết hàng" },
 ];
 
-// SỬA ĐỔI: Tạo một danh sách chất liệu cố định
 const MATERIAL_OPTIONS = [
     { value: 'Cotton', label: 'Cotton' },
     { value: 'Polyester', label: 'Polyester' },
-    { value: 'Len', label: 'Len (Wool)' },
-    { value: 'Lụa', label: 'Lụa (Silk)' },
-    { value: 'Kaki', label: 'Kaki' },
-    { value: 'Nylon', label: 'Nylon' },
+    { value: 'Plastic', label: 'Plastic' },
     { value: 'Spandex', label: 'Spandex' },
+    { value: 'Fleece', label: 'Fleece' },
+
 ];
+
+// Interface để quản lý state của các file ảnh biến thể
+interface VariantImageState {
+    [key: number]: UploadFile[]; // key là index của biến thể
+}
 
 export default function ProductForm() {
   const [formRef] = Form.useForm();
@@ -42,6 +46,8 @@ export default function ProductForm() {
 
   const [mainImageFileList, setMainImageFileList] = useState<UploadFile[]>([]);
   const [hoverImageFileList, setHoverImageFileList] = useState<UploadFile[]>([]);
+  const [variantImageFiles, setVariantImageFiles] = useState<VariantImageState>({});
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [sizes, setSizes] = useState<Size[]>([]);
@@ -60,10 +66,10 @@ export default function ProductForm() {
           const productId = Number(id);
           const [productRes, variantsRes] = await Promise.all([ getProduct(productId), getProductVariants(productId) ]);
           
-          const productData: Product = productRes.data;
+          const productData: Product = productRes.data.data || productRes.data;
           
-          if (productData) {
-            const variantsData: ProductVariant[] = Array.isArray(variantsRes.data.data) ? variantsRes.data.data : variantsRes.data;
+          if (productData && typeof productData === 'object' && productData.id) {
+            const variantsData: ProductVariant[] = Array.isArray(variantsRes.data.data) ? variantsRes.data.data : (variantsRes.data || []);
 
             formRef.setFieldsValue({
                 ...productData,
@@ -74,7 +80,7 @@ export default function ProductForm() {
             if (productData.image_url) setMainImageFileList([{ uid: '-1', name: 'main_image.png', status: 'done', url: productData.image_url }]);
             if (productData.hover_image_url) setHoverImageFileList([{ uid: '-2', name: 'hover_image.png', status: 'done', url: productData.hover_image_url }]);
           } else {
-            message.error("Không tìm thấy dữ liệu sản phẩm.");
+            message.error("Không tìm thấy dữ liệu sản phẩm hợp lệ.");
           }
         } else {
             formRef.setFieldsValue({ status: true, sold: 0, variants: [{ stock: 0, price: 0 }] });
@@ -100,7 +106,7 @@ export default function ProductForm() {
         }
     });
     
-    if (values.variants) formData.append('variants', JSON.stringify(values.variants));
+    formData.append('variants', JSON.stringify(values.variants));
 
     if (mainImageFileList.length > 0 && mainImageFileList[0].originFileObj) {
         formData.append('image', mainImageFileList[0].originFileObj);
@@ -108,6 +114,13 @@ export default function ProductForm() {
     if (hoverImageFileList.length > 0 && hoverImageFileList[0].originFileObj) {
         formData.append('hover_image', hoverImageFileList[0].originFileObj);
     }
+
+    Object.keys(variantImageFiles).forEach(index => {
+        const fileList = variantImageFiles[Number(index)];
+        if (fileList && fileList.length > 0 && fileList[0].originFileObj) {
+            formData.append(`variant_images[${index}]`, fileList[0].originFileObj);
+        }
+    });
     
     try {
       if (isEditing) {
@@ -148,6 +161,26 @@ export default function ProductForm() {
     maxCount: 1,
   };
 
+  const getVariantImageUploadProps = (index: number): UploadProps => ({
+    onRemove: () => {
+        setVariantImageFiles(prev => {
+            const newState = { ...prev };
+            delete newState[index];
+            return newState;
+        });
+    },
+    onChange: ({ fileList }) => {
+        setVariantImageFiles(prev => ({
+            ...prev,
+            [index]: fileList,
+        }));
+    },
+    beforeUpload: () => false,
+    fileList: variantImageFiles[index] || [],
+    listType: "picture",
+    maxCount: 1,
+  });
+
   if (loading) return <Title level={4}>Đang tải dữ liệu...</Title>
 
   return (
@@ -162,24 +195,23 @@ export default function ProductForm() {
             <Col span={12}><Form.Item label="Giá cũ" name="old_price"><Input type="number" min={0} autoComplete="off" /></Form.Item></Col>
         </Row>
         <Form.Item label="Danh mục" name="category_id" rules={[{ required: true }]}><Select placeholder="Chọn danh mục">{categories.map((cat) => (<Option key={cat.id} value={cat.id}>{cat.name}</Option>))}</Select></Form.Item>
-        
-        {/* SỬA ĐỔI: Chuyển từ 'tags' sang 'multiple' và dùng danh sách có sẵn */}
         <Form.Item label="Chất liệu" name="material">
             <Select mode="multiple" placeholder="Chọn các loại chất liệu">
-                {MATERIAL_OPTIONS.map(opt => (
-                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                ))}
+                {MATERIAL_OPTIONS.map(opt => (<Option key={opt.value} value={opt.value}>{opt.label}</Option>))}
             </Select>
         </Form.Item>
-
         <Form.Item label="Trạng thái" name="status" rules={[{ required: true }]}><Select>{PRODUCT_STATUS_OPTIONS.map(opt => <Option key={String(opt.value)} value={opt.value}>{opt.label}</Option>)}</Select></Form.Item>
         <Form.Item label="Ảnh chính" rules={[{ required: !isEditing && mainImageFileList.length === 0, message: "Vui lòng tải lên ảnh chính" }]}><Upload {...mainImageUploadProps}><Button icon={<UploadOutlined />}>Chọn file</Button></Upload></Form.Item>
         <Form.Item label="Ảnh phụ (hover)"><Upload {...hoverImageUploadProps}><Button icon={<UploadOutlined />}>Chọn file</Button></Upload></Form.Item>
         <Form.Item label="Mô tả" name="description"><TextArea rows={4} /></Form.Item>
+<<<<<<< HEAD
         
         <Form.Item label="Số lượng đã bán" name="sold">
             <Input type="number" min={0} readOnly={isEditing} autoComplete="off" />
         </Form.Item>
+=======
+        <Form.Item label="Số lượng đã bán" name="sold"><Input type="number" min={0} readOnly={isEditing} /></Form.Item>
+>>>>>>> origin/hung-feature/product-and-order
         
         <Divider orientation="left">Quản lý Biến thể Sản phẩm</Divider>
         <Form.List name="variants" rules={[{ validator: async (_, variants) => { if (!variants || variants.length < 1) { return Promise.reject(new Error('Phải có ít nhất 1 biến thể')); }}}]}>
@@ -190,10 +222,21 @@ export default function ProductForm() {
                   <Form.Item {...restField} name={[name, 'id']} hidden />
                   <Form.Item {...restField} name={[name, 'color_id']} rules={[{ required: true}]} style={{ minWidth: 120 }}><Select placeholder="Màu sắc">{colors.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}</Select></Form.Item>
                   <Form.Item {...restField} name={[name, 'size_id']} rules={[{ required: true}]} style={{ minWidth: 120 }}><Select placeholder="Kích thước">{sizes.map(s => <Option key={s.id} value={s.id}>{s.name}</Option>)}</Select></Form.Item>
+<<<<<<< HEAD
                   <Form.Item {...restField} name={[name, 'stock']} rules={[{ required: true}]} style={{ width: 100 }}><Input type="number" min={0} placeholder="Tồn kho" autoComplete="off" /></Form.Item>
                   <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true}]} style={{ width: 120 }}><Input type="number" min={0} placeholder="Giá" autoComplete="off" /></Form.Item>
                   <Form.Item {...restField} name={[name, 'image']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="URL ảnh (tùy chọn)" autoComplete="off" /></Form.Item>
                   <Form.Item {...restField} name={[name, 'sku']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="SKU (tùy chọn)" autoComplete="off" /></Form.Item>
+=======
+                  <Form.Item {...restField} name={[name, 'stock']} rules={[{ required: true}]} style={{ width: 100 }}><Input type="number" min={0} placeholder="Tồn kho" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true}]} style={{ width: 120 }}><Input type="number" min={0} placeholder="Giá" /></Form.Item>
+                  <Form.Item {...restField} name={[name, 'sku']} style={{ flexGrow: 1, minWidth: 150 }}><Input placeholder="SKU (tùy chọn)" /></Form.Item>
+                  <Form.Item>
+                    <Upload {...getVariantImageUploadProps(name)}>
+                        <Button icon={<UploadOutlined />} size="small">Ảnh</Button>
+                    </Upload>
+                  </Form.Item>
+>>>>>>> origin/hung-feature/product-and-order
                   <MinusCircleOutlined onClick={() => remove(name)} />
                 </Space>
               ))}

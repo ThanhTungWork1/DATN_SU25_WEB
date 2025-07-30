@@ -8,10 +8,15 @@ import { Order, OrderItem } from "../types/ProductType";
 // const BASE_URL = "http://localhost:3000"; 
 
 // API cho Orders (Admin Routes)
-export const getOrders = () => axiosInstance.get<Order[]>(`/admin/orders`);
+export const getOrders = (params: { page?: number, search?: string } = {}) => {
+    // Gửi các tham số đến backend
+    return axiosInstance.get('/admin/orders', { params });
+};
 export const getOrder = (id: string | number) => axiosInstance.get<Order>(`/admin/orders/${id}`);
 export const createOrder = (data: Omit<Order, 'id' | 'created_at' | 'updated_at'>) => axiosInstance.post<Order>(`/admin/orders`, data);
-export const updateOrder = (id: string | number, data: Partial<Order>) => axiosInstance.put<Order>(`/admin/orders/${id}`, data);
+export const updateOrder = (id: number, data: Partial<Order>) => {
+    return axiosInstance.put(`/admin/orders/${id}`, data);
+};
 export const deleteOrder = (id: string | number) => axiosInstance.delete<void>(`/admin/orders/${id}`);
 
 // API cho Order Items (Đường dẫn từ routes/api.php có thể cần xác thực)

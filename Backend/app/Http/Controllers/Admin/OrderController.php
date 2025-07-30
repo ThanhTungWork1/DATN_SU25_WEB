@@ -5,30 +5,38 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // THÊM: Import DB để dùng transaction
-use Illuminate\Validation\Rule; // THÊM: Import Rule để validation status
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
     /**
-     * Lấy danh sách đơn hàng, có phân trang và sắp xếp.
+     * Lấy danh sách đơn hàng, có phân trang và tìm kiếm.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // CẢI TIẾN: Sắp xếp đơn hàng mới nhất lên đầu và phân trang
-        // Giúp trang admin không bị chậm khi có nhiều đơn hàng.
-        return Order::with('items')->latest()->paginate(15);
+        $query = Order::query();
+
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_name', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        return $query->with('items')->latest()->paginate(15);
     }
 
     /**
-     * Tạo đơn hàng mới (không thay đổi logic, chỉ đảm bảo validation đầy đủ).
+     * Tạo đơn hàng mới.
      */
     public function store(Request $request)
     {
-        // CẢI TIẾN: Bọc trong transaction để đảm bảo toàn vẹn dữ liệu
-        // Nếu tạo OrderItem lỗi, toàn bộ đơn hàng sẽ được hủy bỏ.
-        DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request) {
             $data = $request->validate([
                 'user_id' => 'required|exists:users,id',
                 'status' => 'required|string',
@@ -44,18 +52,29 @@ class OrderController extends Controller
                 'payment_method' => 'required|string',
                 'notes' => 'nullable|string',
                 'items' => 'required|array',
-                'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1'
+                'items.*.variant_id' => 'required|exists:product_variants,id',
+                'items.*.quantity' => 'required|integer|min:1',
             ]);
 
             $order = Order::create($data);
 
+            // Tạo các sản phẩm trong đơn hàng (order items)
             foreach ($data['items'] as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity']
-                ]);
+                $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+                if ($variant) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'variant_id' => $variant->id,
+                        'quantity' => $item['quantity'],
+                        'price' => $variant->price, // Lấy giá từ biến thể để đảm bảo chính xác
+                        // Lưu lại thông tin "snapshot"
+                        'product_name' => $variant->product->name,
+                        'variant_color_name' => $variant->color->name,
+                        'variant_size_name' => $variant->size->name,
+                        'variant_sku' => $variant->sku,
+                        'variant_image' => $variant->image,
+                    ]);
+                }
             }
             return $order->load('items');
         });
@@ -66,7 +85,6 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        // Logic này đã tốt, không cần thay đổi.
         return Order::with('items')->findOrFail($id);
     }
 
@@ -77,14 +95,33 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
 
-        // CẢI TIẾN: Validate chặt chẽ hơn
         $validatedData = $request->validate([
-            'status' => ['sometimes', 'required', Rule::in(['pending', 'confirmed', 'processing', 'shipping', 'delivered', 'cancelled', 'completed'])],
+            'status' => ['sometimes', 'required', Rule::in(['pending_confirmation', 'confirmed', 'processing', 'shipping', 'delivered', 'completed', 'cancelled'])],
             'is_paid' => 'sometimes|required|boolean',
             'notes' => 'nullable|string',
         ]);
 
+        // Kịch bản 1: Cập nhật trạng thái đơn hàng
+        if (isset($validatedData['status'])) {
+            if (in_array($validatedData['status'], ['delivered', 'completed'])) {
+                $validatedData['is_paid'] = true;
+            }
+        }
+
+        // Kịch bản 2: Cập nhật trạng thái thanh toán
+        if (isset($validatedData['is_paid'])) {
+            if ($validatedData['is_paid'] === true || $validatedData['is_paid'] == 1) {
+                if ($order->status === 'delivered') {
+                    $validatedData['status'] = 'completed';
+                }
+                if ($order->status === 'pending_confirmation') {
+                    $validatedData['status'] = 'confirmed';
+                }
+            }
+        }
+
         $order->update($validatedData);
+        $order->refresh();
 
         return response()->json([
             'message' => 'Cập nhật đơn hàng thành công!',
@@ -98,9 +135,7 @@ class OrderController extends Controller
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
-        $order->delete(); // Xóa các order items liên quan sẽ được tự động xử lý bởi onDelete('cascade') trong migration
-
-        // CẢI TIẾN: Trả về một thông báo JSON chuẩn
+        $order->delete();
         return response()->json(['message' => 'Xóa đơn hàng thành công!']);
     }
 

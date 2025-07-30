@@ -2,10 +2,17 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthenticationController;
+<<<<<<< HEAD
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ClientOrderController;
+use App\Http\Controllers\Api\DashboardController;
+=======
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+>>>>>>> origin/hung-feature/product-and-order
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
@@ -52,9 +59,14 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
+<<<<<<< HEAD
 // -------------------- Public Routes --------------------
 
 Route::get('/categories', [CategoryController::class, 'index']);
+=======
+// Public Routes (Không cần xác thực)
+// Route::get('/categories', [CategoryController::class, 'index']);
+>>>>>>> origin/hung-feature/product-and-order
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);

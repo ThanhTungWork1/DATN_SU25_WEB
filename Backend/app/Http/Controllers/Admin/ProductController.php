@@ -12,11 +12,20 @@ use Illuminate\Support\Str; // THÊM: Import Str để tạo slug
 
 class ProductController extends Controller
 {
-    public function index()
+     public function index(Request $request)
     {
-        return Product::latest()->paginate(10);
-    }
+        $query = Product::query();
 
+        // THÊM MỚI: Logic xử lý tìm kiếm
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            // Tìm ở cột 'name'
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
+        return $query->orderBy('id', 'asc')->paginate(5);
+    }
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -32,7 +41,11 @@ class ProductController extends Controller
             'sold' => 'nullable|integer|min:0',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'variants' => 'required|string',
+
+             // Validation cho dữ liệu biến thể
+            'variants' => 'required|string', // Vẫn nhận chuỗi JSON
+            'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
+            'variant_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate từng file trong mảng
         ]);
 
         $variantsData = json_decode($validatedData['variants'], true);
@@ -66,8 +79,19 @@ class ProductController extends Controller
             // 1. Lưu sản phẩm cha vào DB
             $product->save();
 
-            // 2. Lặp qua và tạo các biến thể
-            foreach ($variantsData as $variant) {
+           // Logic tạo biến thể để xử lý ảnh
+            foreach ($variantsData as $index => $variant) {
+                // Kiểm tra xem có file ảnh nào được gửi lên cho biến thể ở vị trí $index không
+                if ($request->hasFile("variant_images.{$index}")) {
+                    // Lưu file và lấy đường dẫn
+                    $imagePath = $request->file("variant_images.{$index}")->store('variants', 'public');
+                    // Gán đường dẫn vào dữ liệu của biến thể
+                    $variant['image'] = $imagePath;
+                } else {
+                    // Nếu không có file mới, giữ lại ảnh cũ (nếu có) hoặc đặt là null
+                    $variant['image'] = $variant['image'] ?? null;
+                }
+
                 $product->variants()->create($variant);
             }
             return $product;
@@ -119,9 +143,24 @@ class ProductController extends Controller
             if ($request->has('variants')) {
                 $variants = json_decode($request->input('variants'), true);
                 $incomingVariantIds = collect($variants)->pluck('id')->filter();
+             // Xóa các biến thể không còn được gửi lên
                 $product->variants()->whereNotIn('id', $incomingVariantIds)->delete();
 
-                foreach ($variants as $variantData) {
+                // Cập nhật hoặc Tạo mới các biến thể
+                foreach ($variants as $index => $variantData) {
+                    // Kiểm tra xem có file ảnh mới cho biến thể này không
+                    if ($request->hasFile("variant_images.{$index}")) {
+                        // Tìm biến thể cũ để xóa ảnh cũ (nếu có)
+                        if (isset($variantData['id'])) {
+                            $oldVariant = $product->variants()->find($variantData['id']);
+                            if ($oldVariant && $oldVariant->image) {
+                                Storage::disk('public')->delete($oldVariant->image);
+                            }
+                        }
+                        // Lưu ảnh mới và cập nhật đường dẫn
+                        $variantData['image'] = $request->file("variant_images.{$index}")->store('variants', 'public');
+                    }
+
                     $product->variants()->updateOrCreate(
                         ['id' => $variantData['id'] ?? null],
                         $variantData

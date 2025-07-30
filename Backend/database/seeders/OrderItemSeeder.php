@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Order; // THÊM MỚI: Import Order model
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\DB; // SỬA LỖI: Thêm dòng này để import lớp DB
 
 class OrderItemSeeder extends Seeder
 {
@@ -14,52 +16,60 @@ class OrderItemSeeder extends Seeder
      */
     public function run(): void
     {
+        // Xóa dữ liệu cũ để làm mới
         Schema::disableForeignKeyConstraints();
         OrderItem::truncate();
         Schema::enableForeignKeyConstraints();
 
+        // Lấy các biến thể sản phẩm có sẵn
         $variant1 = ProductVariant::with(['product', 'color', 'size'])->find(1);
         $variant2 = ProductVariant::with(['product', 'color', 'size'])->find(2);
         $variant3 = ProductVariant::with(['product', 'color', 'size'])->find(3);
 
-        if ($variant1 && $variant2) {
+        // --- BẮT ĐẦU XỬ LÝ ĐƠN HÀNG #1 ---
+        $order1 = Order::find(1);
+        if ($order1 && $variant1 && $variant2) {
+            // Thêm sản phẩm vào đơn hàng
             OrderItem::create([
-                'order_id' => 1,
-                'variant_id' => $variant1->id, // SỬA LẠI TẠI ĐÂY
-                'quantity' => 2,
-                'price' => $variant1->price,
-                'product_name' => $variant1->product->name,
-                'variant_color_name' => $variant1->color->name,
-                'variant_size_name' => $variant1->size->name,
-                'variant_sku' => $variant1->sku,
-                'variant_image' => $variant1->image,
+                'order_id' => 1, 'variant_id' => $variant1->id, 'quantity' => 2, 'price' => $variant1->price,
+                'product_name' => $variant1->product->name, 'variant_color_name' => $variant1->color->name,
+                'variant_size_name' => $variant1->size->name, 'variant_sku' => $variant1->sku, 'variant_image' => $variant1->image,
+            ]);
+            OrderItem::create([
+                'order_id' => 1, 'variant_id' => $variant2->id, 'quantity' => 1, 'price' => $variant2->price,
+                'product_name' => $variant2->product->name, 'variant_color_name' => $variant2->color->name,
+                'variant_size_name' => $variant2->size->name, 'variant_sku' => $variant2->sku, 'variant_image' => $variant2->image,
             ]);
 
-            OrderItem::create([
-                'order_id' => 1,
-                'variant_id' => $variant2->id, // SỬA LẠI TẠI ĐÂY
-                'quantity' => 1,
-                'price' => $variant2->price,
-                'product_name' => $variant2->product->name,
-                'variant_color_name' => $variant2->color->name,
-                'variant_size_name' => $variant2->size->name,
-                'variant_sku' => $variant2->sku,
-                'variant_image' => $variant2->image,
+            // Tự động tính toán và cập nhật lại tổng tiền cho đơn hàng
+            $totalAmount = $order1->items()->sum(DB::raw('price * quantity'));
+            $finalAmount = ($totalAmount + $order1->shipping_fee) - $order1->discount_amount;
+            $order1->update([
+                'total_amount' => $totalAmount,
+                'final_amount' => $finalAmount,
             ]);
         }
+        // --- KẾT THÚC XỬ LÝ ĐƠN HÀNG #1 ---
 
-        if ($variant3) {
+
+        // --- BẮT ĐẦU XỬ LÝ ĐƠN HÀNG #2 ---
+        $order2 = Order::find(2);
+        if ($order2 && $variant3) {
+            // Thêm sản phẩm vào đơn hàng
             OrderItem::create([
-                'order_id' => 2,
-                'variant_id' => $variant3->id, // SỬA LẠI TẠI ĐÂY
-                'quantity' => 5,
-                'price' => $variant3->price,
-                'product_name' => $variant3->product->name,
-                'variant_color_name' => $variant3->color->name,
-                'variant_size_name' => $variant3->size->name,
-                'variant_sku' => $variant3->sku,
-                'variant_image' => $variant3->image,
+                'order_id' => 2, 'variant_id' => $variant3->id, 'quantity' => 5, 'price' => $variant3->price,
+                'product_name' => $variant3->product->name, 'variant_color_name' => $variant3->color->name,
+                'variant_size_name' => $variant3->size->name, 'variant_sku' => $variant3->sku, 'variant_image' => $variant3->image,
+            ]);
+
+            // Tự động tính toán và cập nhật lại tổng tiền cho đơn hàng
+            $totalAmount = $order2->items()->sum(DB::raw('price * quantity'));
+            $finalAmount = ($totalAmount + $order2->shipping_fee) - $order2->discount_amount;
+            $order2->update([
+                'total_amount' => $totalAmount,
+                'final_amount' => $finalAmount,
             ]);
         }
+        // --- KẾT THÚC XỬ LÝ ĐƠN HÀNG #2 ---
     }
 }
