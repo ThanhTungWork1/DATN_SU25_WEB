@@ -24,7 +24,7 @@ class AuthenticationController extends Controller
                 'address' => 'required|string|max:255'
             ]);
 
-            $role = User::count() === 0 ? 'admin' : 'user'; // user đầu tiên là admin, còn lại là user
+            $role = User::count() === 0 ? 1 : 0; // user đầu tiên là admin (1), còn lại là user (0)
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -116,7 +116,7 @@ class AuthenticationController extends Controller
                 ], 404);
             }
 
-            if ($user->role !== 'admin') {
+            if ($user->role !== 1) {
                 return response()->json([
                     'message' => 'Tài khoản không phải admin!',
                     'status_code' => 403,

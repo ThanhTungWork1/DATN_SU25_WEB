@@ -38,12 +38,12 @@ export const Login = () => {
         messageApi.success("Đăng nhập thành công");
         
         console.log("Role:", role);
-        console.log("Navigating to:", role === "admin" ? "/admin/dashboard" : "/");
+        console.log("Navigating to:", role === "1" ? "/admin/dashboard" : "/");
         
         // Thử chuyển hướng
         setTimeout(() => {
           const baseUrl = window.location.origin;
-          if (role === "admin") {
+          if (role === "1") {
             console.log("Redirecting to admin dashboard...");
             window.location.href = `${baseUrl}/admin/dashboard`;
           } else {

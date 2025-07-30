@@ -85,14 +85,14 @@ class UserController extends Controller
                 'password' => 'required|string|min:6',
                 'phone' => 'nullable|string|max:20',
                 'address' => 'required|string|max:255',
-                'role' => 'nullable|string|in:admin,moderator,user',
+                'role' => 'nullable|integer|in:0,1,2',
             ]);
 
             $data['password'] = Hash::make($data['password']);
             
-            // Đảm bảo role là string hợp lệ
+            // Đảm bảo role là integer hợp lệ
             if (!isset($data['role'])) {
-                $data['role'] = 'user'; // Default to user
+                $data['role'] = 0; // Default to user (0)
             }
 
             $user = User::create($data);
@@ -122,7 +122,7 @@ class UserController extends Controller
             'password' => 'sometimes|string|min:6',
             'phone' => 'sometimes|string|max:20',
             'address' => 'sometimes|string|max:255',
-            'role' => 'sometimes|string|in:admin,moderator,user',
+            'role' => 'sometimes|integer|in:0,1,2',
             'status' => 'sometimes|boolean',
         ]);
 
@@ -132,9 +132,9 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        // Đảm bảo role là string hợp lệ nếu có
-        if (isset($data['role']) && !in_array($data['role'], ['admin', 'moderator', 'user'])) {
-            $data['role'] = 'user'; // Default to user if invalid
+        // Đảm bảo role là integer hợp lệ nếu có
+        if (isset($data['role']) && !in_array($data['role'], [0, 1, 2])) {
+            $data['role'] = 0; // Default to user (0) if invalid
         }
 
         $user->update($data);

@@ -14,15 +14,15 @@ const UserEdit = () => {
 
   // Lấy current user từ localStorage (giả định bạn đã lưu khi đăng nhập)
   const currentUser = JSON.parse(localStorage.getItem("admin_token") ? "{}" : localStorage.getItem("currentUser") || "{}");
-  const isAdmin = currentUser.role === "admin" || localStorage.getItem("role") === "1";
-  const isModerator = currentUser.role === "moderator" || localStorage.getItem("role") === "2";
+  const isAdmin = currentUser.role === "1" || localStorage.getItem("role") === "1";
+  const isModerator = currentUser.role === "2" || localStorage.getItem("role") === "2";
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getOne({ resource: "users", id: Number(id) });
-        setUser(response.data);
-        form.setFieldsValue(response.data);
+        setUser(response.data as IUser);
+        form.setFieldsValue(response.data as IUser);
       } catch (error) {
         messageApi.error("Không tìm thấy người dùng");
       } finally {
@@ -125,9 +125,9 @@ const UserEdit = () => {
             rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
           >
             <Select>
-              <Select.Option value="admin">Admin</Select.Option>
-              <Select.Option value="moderator">Moderator</Select.Option>
-              <Select.Option value="user">User</Select.Option>
+              <Select.Option value="1">Admin</Select.Option>
+              <Select.Option value="2">Moderator</Select.Option>
+              <Select.Option value="0">User</Select.Option>
             </Select>
           </Form.Item>
         )}

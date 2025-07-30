@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'status' => 'boolean',
         'is_verified' => 'boolean',
+        'role' => 'integer',
     ];
 
     public function comments()

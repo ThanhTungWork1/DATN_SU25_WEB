@@ -12,16 +12,16 @@ const UserLogin = () => {
       onSuccess: (data: any) => {
         console.log("UserLogin success data:", data);
         
-        if (data?.user?.role === "admin") {
+        if (data?.user?.role === 1) {
           // Admin đăng nhập qua user login -> chuyển đến admin dashboard
           localStorage.setItem("admin_token", data.token);
-          localStorage.setItem("role", data.user.role);
+          localStorage.setItem("role", data.user.role.toString());
           message.success("Đăng nhập admin thành công!");
           navigate("/admin/dashboard");
         } else {
           // User thường
           localStorage.setItem("user_token", data.token);
-          localStorage.setItem("role", data.user.role);
+          localStorage.setItem("role", data.user.role.toString());
           message.success("Đăng nhập người dùng thành công!");
           navigate("/");
         }

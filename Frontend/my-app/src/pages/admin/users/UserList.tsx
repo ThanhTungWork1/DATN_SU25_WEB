@@ -13,9 +13,9 @@ const UserList = () => {
 
   // Sắp xếp theo vai trò
   const rolePriority: Record<string, number> = {
-    admin: 1,
-    moderator: 2,
-    user: 3,
+    "1": 1, // admin
+    "2": 2, // moderator
+    "0": 3, // user
   };
 
   const userArray =
@@ -56,10 +56,10 @@ const UserList = () => {
       dataIndex: "role",
       key: "role",
       render: (role: string) => {
-        const roleConfig = {
-          admin: { color: "volcano", label: "Admin" },
-          moderator: { color: "orange", label: "Moderator" },
-          user: { color: "blue", label: "User" },
+        const roleConfig: Record<string, { color: string; label: string }> = {
+          "1": { color: "volcano", label: "Admin" },
+          "2": { color: "orange", label: "Moderator" },
+          "0": { color: "blue", label: "User" },
         };
 
         const config = roleConfig[role] || { color: "default", label: role };

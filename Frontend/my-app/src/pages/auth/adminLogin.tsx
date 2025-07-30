@@ -12,9 +12,9 @@ const AdminLogin = () => {
     loginAdmin(values, {
       onSuccess: (data: any) => {
         console.log("Login response:", data);
-        if (data?.user?.role === "admin") {
+        if (data?.user?.role === 1) {
           localStorage.setItem("admin_token", data.token);
-          localStorage.setItem("role", data.user.role);
+          localStorage.setItem("role", data.user.role.toString());
           message.success("Đăng nhập admin thành công!");
           navigate("/admin/dashboard");
         } else {

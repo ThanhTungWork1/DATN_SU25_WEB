@@ -21,15 +21,15 @@ const useLogin = ({ resource = "/login", forAdmin = false }: useLoginParams) => 
       if (!token) throw new Error("❌ Token không tồn tại");
 
       if (forAdmin) {
-        if (user.role !== "admin") {
+        if (user.role !== 1) {
           throw new Error("❌ Bạn không có quyền truy cập admin");
         }
         localStorage.setItem("admin_token", token);
-        localStorage.setItem("role", "admin");
+        localStorage.setItem("role", "1");
         console.log("✅ Đăng nhập admin thành công:", user);
       } else {
         localStorage.setItem("user_token", token);
-        localStorage.setItem("role", user.role);
+        localStorage.setItem("role", user.role.toString());
         console.log("✅ Đăng nhập user thành công:", user);
       }
 

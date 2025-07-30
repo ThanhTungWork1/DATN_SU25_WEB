@@ -103,9 +103,9 @@ export const UserAdd = () => {
           rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
         >
           <Select placeholder="Chọn vai trò">
-            <Option value="admin">Admin</Option>
-            <Option value="moderator">Moderator</Option>
-            <Option value="user">User</Option>
+            <Option value="1">Admin</Option>
+            <Option value="2">Moderator</Option>
+            <Option value="0">User</Option>
           </Select>
         </Form.Item>
 

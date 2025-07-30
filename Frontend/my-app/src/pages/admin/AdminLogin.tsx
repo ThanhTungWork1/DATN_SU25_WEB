@@ -31,7 +31,7 @@ export default function AdminLogin() {
 
       // Lưu token vào localStorage với key đúng cho admin
       localStorage.setItem("admin_token", token);
-      localStorage.setItem("role", user.role);
+      localStorage.setItem("role", user.role.toString());
 
       message.success("Đăng nhập admin thành công! Chuyển hướng đến trang quản lý.");
 

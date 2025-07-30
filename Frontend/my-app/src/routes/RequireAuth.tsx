@@ -5,9 +5,9 @@ type Props = {
 };
 
 const mapRole = (roleValue: string | null): "admin" | "user" | null => {
-  if (roleValue === "admin") return "admin";
-  if (roleValue === "user") return "user";
-  if (roleValue === "moderator") return "admin"; // Moderator có quyền admin
+  if (roleValue === "1") return "admin";
+  if (roleValue === "0") return "user";
+  if (roleValue === "2") return "admin"; // Moderator có quyền admin
   return null;
 };
 
