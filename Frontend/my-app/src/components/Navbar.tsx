@@ -246,11 +246,10 @@ const Navbar = () => {
         ) : user ? (
           <div
             className="icon-btn"
-            title="Đăng xuất"
+            title="Hồ sơ cá nhân"
             onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/");
-              window.location.reload();
+              navigate("/profile");
+              setMenuOpen(false);
             }}
           >
             👤 {user.name}

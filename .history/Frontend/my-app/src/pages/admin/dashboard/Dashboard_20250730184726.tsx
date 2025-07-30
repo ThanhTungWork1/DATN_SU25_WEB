@@ -53,15 +53,6 @@ const Dashboard = () => {
       <Col span={6}>
         <Card>
           <Statistic
-            title="Danh mục"
-            value={data?.categories}
-            prefix={<AppstoreOutlined />}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
             title="Liên hệ"
             value={data?.contacts}
             prefix={<ContactsOutlined />}

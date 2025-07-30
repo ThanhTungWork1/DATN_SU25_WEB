@@ -19,7 +19,10 @@ class Order extends Model
         'note',
         'payment_method',
         'discount_amount',
-         'final_amount',
+        'final_amount',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
         'created_at',
         'updated_at',
     ];

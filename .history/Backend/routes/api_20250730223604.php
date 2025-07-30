@@ -31,7 +31,8 @@ Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
-Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
+Route::get('/top-selling-products', [ProductController::class, 'topSellingProducts']);
+Route::get('/product', [ProductController::class, 'index']);
 
 // Email Verification
 Route::post('/email/verification-notification', function (Request $request) {
@@ -62,11 +63,11 @@ Route::get('/comments/product/{product_id}', [CommentController::class, 'getByPr
 
 // Cho phép truy cập sản phẩm không cần token (sửa tại đây)
 Route::prefix('product')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
-    Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
-    Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
-    Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
-    Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/search', [ProductController::class, 'search']);
+    Route::get('/featured', [ProductController::class, 'featured']);
+    Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
+    Route::get('/{id}', [ProductController::class, 'show']);
 });
 
 // Authentication

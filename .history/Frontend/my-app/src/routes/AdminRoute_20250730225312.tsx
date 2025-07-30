@@ -11,7 +11,7 @@ import RequireAuth from "./RequireAuth";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
-import CategoryList from "../pages/admin/categories/CategoryList";
+// import CategoryList from "@pages/admin/categories/CategoryList";
 
 const AdminRoute = () => {
   return (
@@ -32,7 +32,7 @@ const AdminRoute = () => {
           <Route path="orders/edit/:id" element={<OrderForm />} />
           <Route path="orders/detail/:id" element={<OrderDetail />} />
           <Route path="contacts" element={<ContactAdmin />} />
-          <Route path="categories" element={<CategoryList />} />
+          {/* <Route path="categories" element={<CategoryList />} /> */}
         </Route>
       </Route>
     </Routes>

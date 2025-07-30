@@ -91,21 +91,21 @@ const UserProfile = () => {
         </Form.Item>
 
         <Form.Item>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start' }}>
-            <Button type="primary" htmlType="submit" loading={isPending}>
-              Cập nhật
-            </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<LogoutOutlined />}
-              onClick={handleLogout}
-            >
-              Đăng xuất
-            </Button>
-          </div>
+          <Button type="primary" htmlType="submit" loading={isPending}>
+            Cập nhật
+          </Button>
         </Form.Item>
       </Form>
+
+      <Button
+        type="primary"
+        danger
+        icon={<LogoutOutlined />}
+        onClick={handleLogout}
+        style={{ marginBottom: 24 }}
+      >
+        Đăng xuất
+      </Button>
     </div>
   );
 };

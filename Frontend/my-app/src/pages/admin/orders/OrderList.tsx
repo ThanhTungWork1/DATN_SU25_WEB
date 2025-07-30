@@ -56,9 +56,16 @@ export default function OrderList() {
     const fetchData = async (page = 1, search = "") => {
         setLoading(true);
         try {
+            console.log("🔍 [FRONTEND DEBUG] Fetching orders with page:", page, "search:", search);
+            
             // Giả sử hàm getOrders của bạn có thể nhận tham số
             const res = await getOrders({ page, search }); 
+            console.log("🔍 [FRONTEND DEBUG] Raw API response:", res);
+            
             const paginatedData: PaginatedResponse<Order> = res.data;
+            console.log("🔍 [FRONTEND DEBUG] Paginated data:", paginatedData);
+            console.log("🔍 [FRONTEND DEBUG] Orders array:", paginatedData.data);
+            
             setOrders(paginatedData.data);
             setPagination({
                 currentPage: paginatedData.current_page,
@@ -102,7 +109,17 @@ export default function OrderList() {
 
     const columns: TableProps<Order>['columns'] = [
         { title: "Mã đơn", dataIndex: "id", key: "id", render: (text) => `#${text}` },
-        { title: "Khách hàng", dataIndex: "customer_name", key: "customer_name" },
+        { 
+            title: "Khách hàng", 
+            dataIndex: "customer_name", 
+            key: "customer_name",
+            render: (text, record) => {
+                console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
+                console.log("🔍 [FRONTEND DEBUG] Customer name:", text);
+                console.log("🔍 [FRONTEND DEBUG] Full order record:", record);
+                return text || "Không có tên";
+            }
+        },
         { title: "Ngày đặt", dataIndex: "created_at", key: "created_at", render: (text) => new Date(text).toLocaleDateString() },
         { title: "Số lượng", dataIndex: "total_quantity", key: "total_quantity", render: (qty) => `${qty} Sản phẩm` },
         { title: "Tổng tiền", dataIndex: "final_amount", key: "final_amount", render: (text) => `${Number(text).toLocaleString()} VND` },

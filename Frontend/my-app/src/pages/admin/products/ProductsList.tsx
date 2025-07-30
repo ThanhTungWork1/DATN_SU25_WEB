@@ -62,8 +62,14 @@ export default function ProductList() {
   const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
+      console.log("🔍 [FRONTEND DEBUG] Fetching products with page:", page, "search:", search);
+      
       const productsRes = await getProducts({ page, search });
+      console.log("🔍 [FRONTEND DEBUG] Raw API response:", productsRes);
+      
       const paginatedData: PaginatedResponse<Product> = productsRes.data;
+      console.log("🔍 [FRONTEND DEBUG] Paginated data:", paginatedData);
+      console.log("🔍 [FRONTEND DEBUG] Products array:", paginatedData.data);
 
       if (categories.length === 0) {
           const categoriesRes = await getCategories();
@@ -116,13 +122,20 @@ export default function ProductList() {
         title: "Ảnh",
         dataIndex: "image_url",
         key: "image",
-        render: (url: string) => (
-            <img
-                src={url || "https://placehold.co/50x50/cccccc/333333?text=N/A"}
-                alt="ảnh sản phẩm"
-                style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
-            />
-        ),
+        render: (url: string, record: any) => {
+            console.log("🔍 [FRONTEND DEBUG] Product ID:", record.id);
+            console.log("🔍 [FRONTEND DEBUG] Product Name:", record.name);
+            console.log("🔍 [FRONTEND DEBUG] Image URL:", url);
+            console.log("🔍 [FRONTEND DEBUG] Full record:", record);
+            
+            return (
+                <img
+                    src={url || "https://placehold.co/50x50/cccccc/333333?text=N/A"}
+                    alt="ảnh sản phẩm"
+                    style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
+                />
+            );
+        },
     },
     { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
     { title: "Giá bán", dataIndex: "price", key: "price", render: (text) => `${Number(text).toLocaleString()} VND` },

@@ -360,6 +360,7 @@ export default function ProductForm() {
         <Form.Item label="Mô tả" name="description">
           <TextArea rows={4} />
         </Form.Item>
+
         <Form.Item label="Số lượng đã bán" name="sold">
           <Input type="number" min={0} readOnly={isEditing} />
         </Form.Item>
@@ -448,7 +449,6 @@ export default function ProductForm() {
                       </Button>
                     </Upload>
                   </Form.Item>
-
                   <MinusCircleOutlined onClick={() => remove(name)} />
                 </Space>
               ))}

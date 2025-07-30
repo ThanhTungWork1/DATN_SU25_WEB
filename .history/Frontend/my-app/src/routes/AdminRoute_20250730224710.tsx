@@ -11,7 +11,7 @@ import RequireAuth from "./RequireAuth";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
-import CategoryList from "../pages/admin/categories/CategoryList";
+import CategoryList from "@pages/admin/categories/CategoryList";
 
 const AdminRoute = () => {
   return (

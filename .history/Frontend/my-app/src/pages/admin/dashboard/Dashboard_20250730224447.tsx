@@ -9,6 +9,7 @@ import {
 
 import UserChart from "../../../components/dashboard/UserChart";
 import UserGrowthCard from "../../../components/dashboard/UserGrowthCard";
+import AdminLayout from "layouts/Admin/AdminLayout";
 
 const Dashboard = () => {
   const { data, isLoading } = useDashboardStats();
@@ -54,8 +55,8 @@ const Dashboard = () => {
         <Card>
           <Statistic
             title="Danh mục"
-            value={data?.categories}
-            prefix={<AppstoreOutlined />}
+            // value={data?.orders}
+            prefix={<AdminLayout />}
           />
         </Card>
       </Col>
