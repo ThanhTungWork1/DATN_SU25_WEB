@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Voucher</title>
+</head>
+<body>
+    <h1>Test Voucher API</h1>
+    <div>
+        <input type="text" id="voucherCode" placeholder="Nhập mã voucher..." value="SAVE10">
+        <input type="number" id="totalAmount" placeholder="Tổng tiền..." value="100000">
+        <button onclick="testVoucher()">Test Voucher</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        async function testVoucher() {
+            try {
+                const code = document.getElementById('voucherCode').value;
+                const totalAmount = parseInt(document.getElementById('totalAmount').value);
+                
+                const response = await fetch('http://localhost:8000/api/test-voucher', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        total_amount: totalAmount
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.status === 'success') {
+                    alert(`Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND`);
+                } else {
+                    alert(data.message || 'Voucher không hợp lệ');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html> 

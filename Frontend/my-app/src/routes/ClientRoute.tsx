@@ -23,6 +23,7 @@ import UserProfile from "../pages/client/Home/UserProfile";
 import UserLogin from "../pages/auth/userLogin";
 import RequireAuth from "./RequireAuth";
 import AdminLogin from "../pages/auth/adminLogin";
+import OrderSuccess from "../pages/checkout/OrderSuccess";
 
 const ClientRoute = () => {
   return (
@@ -46,6 +47,7 @@ const ClientRoute = () => {
         </Route>
         <Route path="/wishlist" element={<LikeProduct />} />
         <Route path="/contact" element={<ContactClient />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
       </Routes>
       <Footer />
       <ContactFloating />

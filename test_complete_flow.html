@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Complete Order Flow</title>
+</head>
+<body>
+    <h1>Test Complete Order Flow</h1>
+    <button onclick="createTestUser()">1. Tạo User Test</button>
+    <button onclick="testOrder()">2. Test Đặt Hàng</button>
+    <button onclick="checkUser()">3. Kiểm tra User</button>
+    <div id="result"></div>
+
+    <script>
+        async function createTestUser() {
+            try {
+                const response = await fetch('http://localhost:8000/api/create-test-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.status === 'success') {
+                    // Lưu user vào localStorage
+                    localStorage.setItem('user', JSON.stringify(data.data));
+                    alert('User test đã được tạo và lưu vào localStorage!');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testOrder() {
+            try {
+                const response = await fetch('http://localhost:8000/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: 1,
+                        shipping_address: "123 Test Street, Test Ward, Test District, Test Province",
+                        shipping_phone: "0123456789",
+                        shipping_name: "Test User",
+                        note: "Test order",
+                        items: [
+                            {
+                                variant_id: 1,
+                                quantity: 1,
+                                price: 100000
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function checkUser() {
+            const userStr = localStorage.getItem("user");
+            const token = localStorage.getItem("token");
+            
+            let user = {};
+            try {
+                user = JSON.parse(userStr || "{}");
+            } catch (error) {
+                console.error("Error parsing user:", error);
+            }
+            
+            const result = {
+                userString: userStr,
+                parsedUser: user,
+                hasId: !!user.id,
+                hasUserId: !!user.user_id,
+                token: token,
+                userId: user.id || user.user_id
+            };
+            
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        }
+    </script>
+</body>
+</html> 
