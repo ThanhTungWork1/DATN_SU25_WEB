@@ -11,8 +11,13 @@ import CartPage from "../pages/client/Cart/CartPage";
 import CheckoutPage from "../pages/client/Cart/CheckoutPage";
 import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
+
+// import UserProfile from "../pages/client/Home/UserProfile"
+// import AdminLogin from "../pages/admin/AdminLogin";
+// import RequireAuth from "./RequireAuth";
 import { ContactClient } from "../pages/client/Contact/Contact";
 import { ContactFloating } from "../components/ContactFloating";
+
 import UserProfile from "../pages/client/Home/UserProfile";
 import UserLogin from "../pages/auth/userLogin";
 import RequireAuth from "./RequireAuth";
@@ -38,7 +43,6 @@ const ClientRoute = () => {
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
         </Route>
-
         <Route path="/wishlist" element={<LikeProduct />} />
         <Route path="/contact" element={<ContactClient />} />
       </Routes>

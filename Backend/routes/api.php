@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\CartController;
@@ -103,12 +104,36 @@ Route::prefix('admin')->group(function () {
 // -------------------- Admin Routes --------------------
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
-    Route::get('dashboard', [DashboardController::class, 'index']);
+    
+    // Dashboard routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::get('/revenue-by-time', [DashboardController::class, 'revenueByTime']);
+        Route::get('/orders-by-status', [DashboardController::class, 'ordersByStatus']);
+        Route::get('/top-selling-products', [DashboardController::class, 'topSellingProducts']);
+        Route::get('/recent-orders', [DashboardController::class, 'recentOrders']);
+        Route::get('/recent-users', [DashboardController::class, 'recentUsers']);
+        Route::get('/users-by-month', [DashboardController::class, 'usersByMonth']);
+        Route::get('/user-growth', [DashboardController::class, 'userGrowth']);
+        Route::get('/rating-stats', [DashboardController::class, 'ratingStats']);
+        Route::get('/recent-reviews', [DashboardController::class, 'recentReviews']);
+        Route::get('/low-stock-products', [DashboardController::class, 'lowStockProducts']);
+        Route::get('/all-stats', [DashboardController::class, 'allStats']);
+    });
+    
     Route::get('vouchers', [VoucherController::class, 'index']);
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
+
+    // Inventory routes
+    Route::prefix('inventory')->group(function () {
+        Route::get('/stats', [InventoryController::class, 'stats']);
+        Route::get('/list', [InventoryController::class, 'list']);
+        Route::get('/low-stock-alerts', [InventoryController::class, 'lowStockAlerts']);
+        Route::post('/update-stock-for-order', [InventoryController::class, 'updateStockForOrder']);
+    });
 
 });
 

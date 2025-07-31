@@ -17,6 +17,8 @@ class ProductVariant extends Model
         'color_id',
         'size_id',
         'stock',
+        'stock_reserved',
+        'stock_available',
         'price',
         'old_price',
         'image',
@@ -57,5 +59,54 @@ class ProductVariant extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * Update stock available based on stock and reserved
+     */
+    public function updateStockAvailable()
+    {
+        $this->stock_available = $this->stock - $this->stock_reserved;
+        $this->save();
+    }
+
+    /**
+     * Reserve stock for an order
+     */
+    public function reserveStock($quantity)
+    {
+        if ($this->stock_available >= $quantity) {
+            $this->stock_reserved += $quantity;
+            $this->updateStockAvailable();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Release reserved stock (when order is cancelled)
+     */
+    public function releaseStock($quantity)
+    {
+        if ($this->stock_reserved >= $quantity) {
+            $this->stock_reserved -= $quantity;
+            $this->updateStockAvailable();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Deduct stock (when order is confirmed)
+     */
+    public function deductStock($quantity)
+    {
+        if ($this->stock >= $quantity && $this->stock_reserved >= $quantity) {
+            $this->stock -= $quantity;
+            $this->stock_reserved -= $quantity;
+            $this->updateStockAvailable();
+            return true;
+        }
+        return false;
     }
 }

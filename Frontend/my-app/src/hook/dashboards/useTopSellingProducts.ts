@@ -1,27 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { getList } from "../../provider/dataProvider1";
 
-export const useUserGrowth = () => {
+export const useTopSellingProducts = (limit: number = 10) => {
   return useQuery({
-    queryKey: ["user-growth"],
+    queryKey: ['top-selling-products', limit],
     queryFn: async () => {
       try {
-        const response = await getList({ resource: "dashboard/user-growth" });
-        console.log("User Growth API Response:", response);
+        const response = await getList({ 
+          resource: "dashboard/top-selling-products",
+          params: { limit }
+        });
         return response.data;
       } catch (error) {
-        console.error("Error fetching user growth:", error);
-        return {
-          thisMonth: "",
-          lastMonth: "",
-          thisCount: 0,
-          lastCount: 0,
-          growthPercent: 0,
-        };
+        console.error("Error fetching top selling products:", error);
+        return [];
       }
     },
     staleTime: 0, // Không cache, luôn fetch mới
     refetchInterval: 10 * 1000, // Tự động refetch mỗi 10 giây
     refetchOnWindowFocus: true, // Refetch khi focus vào window
   });
-};
+}; 

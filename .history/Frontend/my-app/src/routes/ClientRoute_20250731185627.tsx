@@ -38,7 +38,6 @@ const ClientRoute = () => {
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
         </Route>
-
         <Route path="/wishlist" element={<LikeProduct />} />
         <Route path="/contact" element={<ContactClient />} />
       </Routes>
