@@ -47,8 +47,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('dashboard', [DashboardController::class, 'index']);
 
     // ✅ (Tuỳ chọn) Nếu muốn admin quản lý voucher:
-    Route::get('vouchers', [VoucherController::class, 'index']);
-    Route::get('vouchers/{code}', [VoucherController::class, 'show']);
+    Route::apiResource('vouchers', VoucherController::class);
+    Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
+    Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
 });
 
 // ===========================
@@ -89,23 +90,23 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     //Payment routes
-Route::prefix('payments')->group(function () {
-    Route::get('/{order_id}', [PaymentController::class, 'show']);
-    Route::post('/', [PaymentController::class, 'store']);
+    Route::prefix('payments')->group(function () {
+        Route::get('/{order_id}', [PaymentController::class, 'show']);
+        Route::post('/', [PaymentController::class, 'store']);
 
-    //VNPay routes
-    Route::prefix('vnpay')->group(function () {
-        Route::post('/create', [VNPayController::class, 'createPayment']);
-        Route::get('/callback', [VNPayController::class, 'callback']);
-        Route::post('/ipn', [VNPayController::class, 'ipn']);
-    });
+        //VNPay routes
+        Route::prefix('vnpay')->group(function () {
+            Route::post('/create', [VNPayController::class, 'createPayment']);
+            Route::get('/callback', [VNPayController::class, 'callback']);
+            Route::post('/ipn', [VNPayController::class, 'ipn']);
+        });
 
-    //ZaloPay routes
-    Route::prefix('zalopay')->group(function () {
-        Route::post('/create', [\App\Http\Controllers\Api\ZaloPayController::class, 'createOrder']);
-        Route::post('/callback', [\App\Http\Controllers\Api\ZaloPayController::class, 'callback']);
+        //ZaloPay routes
+        Route::prefix('zalopay')->group(function () {
+            Route::post('/create', [\App\Http\Controllers\Api\ZaloPayController::class, 'createOrder']);
+            Route::post('/callback', [\App\Http\Controllers\Api\ZaloPayController::class, 'callback']);
+        });
     });
-});
 
 
     Route::apiResource('/cart', CartController::class);
@@ -115,4 +116,9 @@ Route::prefix('payments')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Voucher routes for users
+    Route::get('vouchers/active', [VoucherController::class, 'active']);
+    Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
+    Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
 });
