@@ -32,7 +32,6 @@ class OrderController extends Controller
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
-            'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
@@ -46,13 +45,9 @@ class OrderController extends Controller
         // Kiểm tra tồn kho
         foreach ($data['items'] as $item) {
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
-            if (!$variant) {
-                return response()->json(['message' => 'Không tìm thấy biến thể sản phẩm!'], 404);
-            }
-
-            if ($variant->stock < $item['quantity']) {
+            if (!$variant || $variant->stock < $item['quantity']) {
                 return response()->json([
-                    'message' => 'Sản phẩm ' . ($variant->product->name ?? '') . ' (màu: ' . ($variant->color->name ?? '') . ', size: ' . ($variant->size->name ?? '') . ') không đủ tồn kho!'
+                    'message' => 'Sản phẩm không đủ tồn kho hoặc không tồn tại'
                 ], 422);
             }
         }
@@ -68,11 +63,10 @@ class OrderController extends Controller
         ]);
 
         foreach ($data['items'] as $item) {
-            // Trừ tồn kho nếu ngay lập tức xác nhận đơn
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
+
             if ($data['status'] === OrderStatus::CONFIRMED) {
-                $variant->stock -= $item['quantity'];
-                $variant->save();
+                $variant->decrement('stock', $item['quantity']);
             }
 
             OrderItem::create([
@@ -83,7 +77,28 @@ class OrderController extends Controller
             ]);
         }
 
-        return response()->json($order->load('items.variant.product'), 201);
+        // QR thanh toán MB Bank
+        $mbBankCode = '970422';
+        $mbAccount = '0686809012005';
+        $mbAccountName = 'LE KHAI HOAN';
+        $transferNote = 'ORDER_' . $order->id;
+        $qrTemplate = 'compact'; // Hoặc 'print', 'vertical'
+        $amount = $order->total_amount + $order->shipping_fee;
+        $qrImageUrl = "https://img.vietqr.io/image/{$mbBankCode}-{$mbAccount}-{$qrTemplate}.png?amount={$amount}&addInfo={$transferNote}";
+
+        return response()->json([
+            'message' => 'Đặt hàng thành công, vui lòng chuyển khoản đúng thông tin bên dưới',
+            'order_id' => $order->id,
+            'amount' => $amount,
+            'bank_transfer' => [
+                'bank_name' => 'MB Bank',
+                'account_number' => $mbAccount,
+                'account_name' => $mbAccountName,
+                'transfer_note' => $transferNote,
+                'qr_code_url' => $qrImageUrl
+            ],
+            'order' => $order->load('items.variant.product')
+        ], 201);
     }
 
     public function show($id)
@@ -97,8 +112,10 @@ class OrderController extends Controller
             'status' => 'sometimes|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'sometimes|boolean',
         ]);
+
         $order = Order::findOrFail($id);
         $order->update($data);
+
         return $order->load('items.variant.product');
     }
 
@@ -119,24 +136,40 @@ class OrderController extends Controller
         }
 
         DB::transaction(function () use ($order, $oldStatus, $newStatus) {
-            // Từ pending → confirmed: trừ kho
             if ($oldStatus === OrderStatus::PENDING && $newStatus === OrderStatus::CONFIRMED) {
                 foreach ($order->items as $item) {
                     $item->variant->decrement('stock', $item->quantity);
                 }
             }
 
-            // Từ confirmed → canceled: cộng lại kho
             if ($oldStatus === OrderStatus::CONFIRMED && $newStatus === OrderStatus::CANCELED) {
                 foreach ($order->items as $item) {
                     $item->variant->increment('stock', $item->quantity);
                 }
             }
 
-            // Cập nhật trạng thái đơn hàng
             $order->update(['status' => $newStatus]);
         });
 
         return response()->json(['message' => 'Cập nhật trạng thái thành công']);
+    }
+
+    public function markAsPaid($id)
+    {
+        $order = Order::findOrFail($id);
+
+        if ($order->is_paid) {
+            return response()->json(['message' => 'Đơn hàng đã được thanh toán'], 400);
+        }
+
+        $order->update([
+            'is_paid' => true,
+            'status' => OrderStatus::CONFIRMED
+        ]);
+
+        return response()->json([
+            'message' => 'Xác nhận thanh toán thành công',
+            'order' => $order->load('items.variant.product')
+        ]);
     }
 }
