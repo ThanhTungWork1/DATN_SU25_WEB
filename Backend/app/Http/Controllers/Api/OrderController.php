@@ -7,14 +7,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use App\Enums\OrderStatus;
 
 class OrderController extends Controller
 {
 
     public function __construct(
         protected OrderService $orderService
-    ) {
-    }
+    ) {}
 
     public function index()
     {
@@ -30,7 +30,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'status' => 'required|string',
+            'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
@@ -86,8 +86,12 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
+        $data = $request->validate([
+            'status' => 'sometimes|string|in:' . implode(',', OrderStatus::all()),
+            'is_paid' => 'sometimes|boolean',
+        ]);
         $order = Order::findOrFail($id);
-        $order->update($request->only(['status', 'is_paid']));
+        $order->update($data);
         return $order->load('items.variant.product');
     }
 
