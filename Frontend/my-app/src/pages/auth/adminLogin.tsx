@@ -13,8 +13,17 @@ const AdminLogin = () => {
       onSuccess: (data: any) => {
         console.log("Login response:", data);
         if (data?.user?.role === 1) {
+          // Lưu token và role
           localStorage.setItem("admin_token", data.token);
           localStorage.setItem("role", data.user.role.toString());
+          localStorage.setItem("user", JSON.stringify(data.user));
+          
+          console.log("Stored in localStorage:", {
+            admin_token: data.token,
+            role: data.user.role.toString(),
+            user: data.user
+          });
+          
           message.success("Đăng nhập admin thành công!");
           navigate("/admin/dashboard");
         } else {

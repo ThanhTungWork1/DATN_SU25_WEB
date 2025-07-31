@@ -15,8 +15,10 @@ axiosInstance.interceptors.request.use(
         // Luôn chấp nhận phản hồi JSON từ server
         config.headers['Accept'] = 'application/json';
 
-        // Lấy token từ localStorage
-        const token = localStorage.getItem('authToken'); 
+        // Lấy token từ localStorage - ưu tiên admin_token trước
+        const adminToken = localStorage.getItem('admin_token');
+        const userToken = localStorage.getItem('authToken');
+        const token = adminToken || userToken;
         
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -43,7 +45,11 @@ axiosInstance.interceptors.response.use(
     error => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.error("Authentication error. Redirecting to login.");
+            // Xóa cả admin_token và authToken
+            localStorage.removeItem('admin_token');
             localStorage.removeItem('authToken');
+            localStorage.removeItem('role');
+            localStorage.removeItem('user');
             window.location.href = '/admin/login';
         }
         return Promise.reject(error);

@@ -13,10 +13,16 @@ import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
 import InventoryPage from "../pages/admin/inventory/InventoryPage";
+import VoucherPage from "../pages/admin/voucher/Voucher";
+import AdminLogin from "../pages/auth/adminLogin";
 
 const AdminRoute = () => {
   return (
     <Routes>
+      {/* Login route không cần authentication */}
+      <Route path="login" element={<AdminLogin />} />
+      
+      {/* Các route khác cần authentication */}
       <Route element={<RequireAuth allowedRoles={["admin"]} />}>
         <Route path="" element={<LayoutAdmin />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -35,6 +41,7 @@ const AdminRoute = () => {
           <Route path="contacts" element={<ContactAdmin />} />
           <Route path="categories" element={<CategoryList />} />
           <Route path="inventory" element={<InventoryPage />} />
+          <Route path="voucher" element={<VoucherPage />} />
         </Route>
       </Route>
     </Routes>

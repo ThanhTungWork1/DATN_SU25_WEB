@@ -8,9 +8,31 @@ import { Order, OrderItem } from "../types/ProductType";
 // const BASE_URL = "http://localhost:3000"; 
 
 // API cho Orders (Admin Routes)
-export const getOrders = (params: { page?: number, search?: string } = {}) => {
+export const getOrders = (params: { 
+    page?: number, 
+    search?: string, 
+    status?: string, 
+    is_paid?: boolean,
+    date_from?: string,
+    date_to?: string 
+} = {}) => {
     // Gửi các tham số đến backend
     return axiosInstance.get('/admin/orders', { params });
+};
+
+export const getOrderStatistics = () => {
+    return axiosInstance.get('/admin/orders/statistics');
+};
+
+export const exportOrders = (params: {
+    search?: string,
+    status?: string,
+    is_paid?: boolean
+} = {}) => {
+    return axiosInstance.get('/admin/orders/export', { 
+        params,
+        responseType: 'blob'
+    });
 };
 export const getOrder = (id: string | number) => axiosInstance.get<Order>(`/admin/orders/${id}`);
 export const createOrder = (data: Omit<Order, 'id' | 'created_at' | 'updated_at'>) => axiosInstance.post<Order>(`/admin/orders`, data);

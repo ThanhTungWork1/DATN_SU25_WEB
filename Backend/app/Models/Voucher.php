@@ -10,4 +10,10 @@ class Voucher extends Model
         'title', 'code', 'value', 'max_value', 'quantity',
         'description', 'start_date', 'end_date', 'status'
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrders, updateOrder } from "../../../api/order";
+import { getOrders, updateOrder, getOrderStatistics, exportOrders } from "../../../api/order";
 import { Order } from "../../../types/ProductType"; 
 import {
   Table,
@@ -9,13 +9,20 @@ import {
   message,
   Typography,
   Input,
-  Select
+  Select,
+  DatePicker,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Tooltip
 } from "antd";
 import type { TableProps } from "antd";
 import { 
     ORDER_STATUS_OPTIONS, 
     PAYMENT_STATUS_OPTIONS 
-} from "../../../utils/orderStatus"; 
+} from "../../../utils/orderStatus";
+import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons"; 
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -34,6 +41,11 @@ export default function OrderList() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+    const [statusFilter, setStatusFilter] = useState<string>("");
+    const [paymentFilter, setPaymentFilter] = useState<string>("");
+    const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+    const [statistics, setStatistics] = useState<any>(null);
+    const [statsLoading, setStatsLoading] = useState(false);
     const navigate = useNavigate();
 
     const [pagination, setPagination] = useState({
@@ -53,13 +65,18 @@ export default function OrderList() {
         };
     }, [searchTerm]);
 
-    const fetchData = async (page = 1, search = "") => {
+    const fetchData = async (page = 1, search = "", status = "", isPaid = "", dateFrom = "", dateTo = "") => {
         setLoading(true);
         try {
-            console.log("🔍 [FRONTEND DEBUG] Fetching orders with page:", page, "search:", search);
+            console.log("🔍 [FRONTEND DEBUG] Fetching orders with filters:", { page, search, status, isPaid, dateFrom, dateTo });
             
-            // Giả sử hàm getOrders của bạn có thể nhận tham số
-            const res = await getOrders({ page, search }); 
+            const params: any = { page, search };
+            if (status) params.status = status;
+            if (isPaid !== "") params.is_paid = isPaid;
+            if (dateFrom) params.date_from = dateFrom;
+            if (dateTo) params.date_to = dateTo;
+            
+            const res = await getOrders(params); 
             console.log("🔍 [FRONTEND DEBUG] Raw API response:", res);
             
             const paginatedData: PaginatedResponse<Order> = res.data;
@@ -80,10 +97,59 @@ export default function OrderList() {
         }
     };
 
+    const fetchStatistics = async () => {
+        setStatsLoading(true);
+        try {
+            const res = await getOrderStatistics();
+            setStatistics(res.data);
+        } catch (error) {
+            console.error("Fetch statistics error:", error);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            const params: any = {};
+            if (debouncedSearchTerm) params.search = debouncedSearchTerm;
+            if (statusFilter) params.status = statusFilter;
+            if (paymentFilter !== "") params.is_paid = paymentFilter;
+            
+            const res = await exportOrders(params);
+            
+            // Tạo download link
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `orders_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            
+            message.success("Xuất file thành công!");
+        } catch (error) {
+            message.error("Không thể xuất file.");
+            console.error("Export error:", error);
+        }
+    };
+
     // Gọi lại API mỗi khi từ khóa tìm kiếm (đã được debounce) hoặc trang thay đổi
     useEffect(() => {
-        fetchData(pagination.currentPage, debouncedSearchTerm);
-    }, [debouncedSearchTerm, pagination.currentPage]);
+        fetchData(
+            pagination.currentPage, 
+            debouncedSearchTerm, 
+            statusFilter, 
+            paymentFilter,
+            dateRange ? dateRange[0] : "",
+            dateRange ? dateRange[1] : ""
+        );
+    }, [debouncedSearchTerm, pagination.currentPage, statusFilter, paymentFilter, dateRange]);
+
+    // Load statistics khi component mount
+    useEffect(() => {
+        fetchStatistics();
+    }, []);
 
 
     const handleUpdateStatus = async (orderId: number, field: 'status' | 'is_paid', value: any) => {
@@ -121,8 +187,24 @@ export default function OrderList() {
             }
         },
         { title: "Ngày đặt", dataIndex: "created_at", key: "created_at", render: (text) => new Date(text).toLocaleDateString() },
-        { title: "Số lượng", dataIndex: "total_quantity", key: "total_quantity", render: (qty) => `${qty} Sản phẩm` },
-        { title: "Tổng tiền", dataIndex: "final_amount", key: "final_amount", render: (text) => `${Number(text).toLocaleString()} VND` },
+        { 
+            title: "Số lượng", 
+            dataIndex: "total_quantity", 
+            key: "total_quantity", 
+            render: (qty) => {
+                const quantity = Number(qty) || 0;
+                return `${quantity} Sản phẩm`;
+            }
+        },
+        { 
+            title: "Tổng tiền", 
+            dataIndex: "final_amount", 
+            key: "final_amount", 
+            render: (text) => {
+                const amount = Number(text) || 0;
+                return `${amount.toLocaleString()} VND`;
+            }
+        },
         {
             title: "Trạng thái ĐH",
             dataIndex: "status",
@@ -189,12 +271,157 @@ export default function OrderList() {
     return (
         <div>
             <Title level={3}>Quản lý đơn hàng</Title>
-            <Search 
-                placeholder="Tìm theo mã đơn hoặc tên khách hàng..." 
-                onChange={(e) => setSearchTerm(e.target.value)}
-                enterButton 
-                style={{ marginBottom: 16, width: 400 }}
-            />
+            
+            {/* Statistics Cards */}
+            {statistics && (
+                <Row gutter={16} style={{ marginBottom: 24 }}>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Tổng đơn hàng" 
+                                value={statistics.total} 
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Chờ xác nhận" 
+                                value={statistics.pending_confirmation} 
+                                valueStyle={{ color: '#faad14' }}
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Đang xử lý" 
+                                value={statistics.processing} 
+                                valueStyle={{ color: '#1890ff' }}
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Đã giao" 
+                                value={statistics.delivered} 
+                                valueStyle={{ color: '#52c41a' }}
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Đã thanh toán" 
+                                value={statistics.paid} 
+                                valueStyle={{ color: '#52c41a' }}
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                    <Col span={4}>
+                        <Card>
+                            <Statistic 
+                                title="Đã hủy" 
+                                value={statistics.cancelled} 
+                                valueStyle={{ color: '#ff4d4f' }}
+                                loading={statsLoading}
+                            />
+                        </Card>
+                    </Col>
+                </Row>
+            )}
+            
+            {/* Debug info */}
+            {process.env.NODE_ENV === 'development' && (
+                <Card style={{ marginBottom: 16 }}>
+                    <p>🔍 Debug: Statistics loaded: {statistics ? 'Yes' : 'No'}</p>
+                    <p>🔍 Debug: Stats loading: {statsLoading ? 'Yes' : 'No'}</p>
+                    {statistics && <pre>{JSON.stringify(statistics, null, 2)}</pre>}
+                </Card>
+            )}
+
+            {/* Filters */}
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col span={6}>
+                    <Search 
+                        placeholder="Tìm theo mã đơn, tên, email, SĐT..." 
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        enterButton 
+                    />
+                </Col>
+                <Col span={4}>
+                    <Select
+                        placeholder="Trạng thái đơn hàng"
+                        style={{ width: '100%' }}
+                        allowClear
+                        value={statusFilter}
+                        onChange={setStatusFilter}
+                    >
+                        {ORDER_STATUS_OPTIONS.map(option => (
+                            <Select.Option key={option.value} value={option.value}>
+                                {option.label}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Col>
+                <Col span={4}>
+                    <Select
+                        placeholder="Trạng thái thanh toán"
+                        style={{ width: '100%' }}
+                        allowClear
+                        value={paymentFilter}
+                        onChange={setPaymentFilter}
+                    >
+                        <Select.Option value="1">Đã thanh toán</Select.Option>
+                        <Select.Option value="0">Chưa thanh toán</Select.Option>
+                    </Select>
+                </Col>
+                <Col span={6}>
+                    <DatePicker.RangePicker
+                        style={{ width: '100%' }}
+                        placeholder={['Từ ngày', 'Đến ngày']}
+                        onChange={(dates) => {
+                            if (dates) {
+                                setDateRange([
+                                    dates[0]?.format('YYYY-MM-DD') || '',
+                                    dates[1]?.format('YYYY-MM-DD') || ''
+                                ]);
+                            } else {
+                                setDateRange(null);
+                            }
+                        }}
+                    />
+                </Col>
+                <Col span={4}>
+                    <Space>
+                        <Tooltip title="Làm mới">
+                            <Button 
+                                icon={<ReloadOutlined />} 
+                                onClick={() => {
+                                    setSearchTerm("");
+                                    setStatusFilter("");
+                                    setPaymentFilter("");
+                                    setDateRange(null);
+                                    fetchStatistics();
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Xuất file CSV">
+                            <Button 
+                                icon={<DownloadOutlined />} 
+                                onClick={handleExport}
+                            />
+                        </Tooltip>
+                    </Space>
+                </Col>
+            </Row>
+
             <Table 
                 columns={columns} 
                 dataSource={orders} 

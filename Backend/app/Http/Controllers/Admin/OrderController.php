@@ -22,16 +22,40 @@ class OrderController extends Controller
         
         $query = Order::query();
 
+        // Tìm kiếm theo mã đơn hàng hoặc tên khách hàng
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
 
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('id', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('customer_name', 'like', '%' . $searchTerm . '%');
+                  ->orWhere('customer_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_email', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_phone', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        $orders = $query->with('items')->latest()->paginate(15);
+        // Filter theo trạng thái đơn hàng
+        if ($request->has('status') && $request->input('status') != '') {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Filter theo trạng thái thanh toán
+        if ($request->has('is_paid') && $request->input('is_paid') !== '') {
+            $query->where('is_paid', $request->input('is_paid'));
+        }
+
+        // Filter theo khoảng thời gian
+        if ($request->has('date_from') && $request->input('date_from') != '') {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+
+        if ($request->has('date_to') && $request->input('date_to') != '') {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+
+        $orders = $query->with(['items' => function($query) {
+            $query->select('id', 'order_id', 'quantity');
+        }])->latest()->paginate(15);
         
         \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
         
@@ -161,5 +185,107 @@ class OrderController extends Controller
         }
 
         return response()->json($orders);
+    }
+
+    /**
+     * Lấy thống kê đơn hàng theo trạng thái.
+     */
+    public function getOrderStatistics()
+    {
+        $statistics = [
+            'total' => Order::count(),
+            'pending_confirmation' => Order::where('status', 'pending_confirmation')->count(),
+            'confirmed' => Order::where('status', 'confirmed')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'shipping' => Order::where('status', 'shipping')->count(),
+            'delivered' => Order::where('status', 'delivered')->count(),
+            'completed' => Order::where('status', 'completed')->count(),
+            'cancelled' => Order::where('status', 'cancelled')->count(),
+            'paid' => Order::where('is_paid', true)->count(),
+            'unpaid' => Order::where('is_paid', false)->count(),
+        ];
+
+        return response()->json($statistics);
+    }
+
+    /**
+     * Export đơn hàng ra file CSV.
+     */
+    public function export(Request $request)
+    {
+        $query = Order::query();
+
+        // Áp dụng các filter tương tự như index
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_email', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('customer_phone', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->has('status') && $request->input('status') != '') {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->has('is_paid') && $request->input('is_paid') !== '') {
+            $query->where('is_paid', $request->input('is_paid'));
+        }
+
+        $orders = $query->with('items')->latest()->get();
+
+        $filename = 'orders_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($orders) {
+            $file = fopen('php://output', 'w');
+            
+            // Header CSV
+            fputcsv($file, [
+                'Mã đơn hàng',
+                'Tên khách hàng',
+                'Email',
+                'Số điện thoại',
+                'Địa chỉ giao hàng',
+                'Trạng thái',
+                'Đã thanh toán',
+                'Tổng tiền',
+                'Phí vận chuyển',
+                'Giảm giá',
+                'Thành tiền',
+                'Phương thức thanh toán',
+                'Ghi chú',
+                'Ngày tạo'
+            ]);
+
+            foreach ($orders as $order) {
+                fputcsv($file, [
+                    $order->id,
+                    $order->customer_name,
+                    $order->customer_email,
+                    $order->customer_phone,
+                    $order->shipping_address,
+                    $order->status,
+                    $order->is_paid ? 'Đã thanh toán' : 'Chưa thanh toán',
+                    $order->total_amount,
+                    $order->shipping_fee,
+                    $order->discount_amount,
+                    $order->final_amount,
+                    $order->payment_method,
+                    $order->notes,
+                    $order->created_at
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

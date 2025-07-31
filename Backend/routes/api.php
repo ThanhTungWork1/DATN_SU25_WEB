@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\ClientOrderController;
 use App\Http\Controllers\Api\SizeController;
 use App\Http\Controllers\Api\ColorController;
 use App\Http\Controllers\Api\FavoriteController;
@@ -94,8 +95,6 @@ Route::prefix('admin')->group(function () {
     // --- KẾT THÚC SỬA LỖI ---
 
     // Các route admin khác của bạn giữ nguyên
-    Route::apiResource('orders', OrderController::class);
-
        // THÊM MỚI: Categories
     Route::apiResource('categories', CategoryController::class);
 });
@@ -104,6 +103,13 @@ Route::prefix('admin')->group(function () {
 // -------------------- Admin Routes --------------------
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
+    
+    // Order statistics và export - phải đặt TRƯỚC apiResource
+    Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);
+    Route::get('orders/export', [OrderController::class, 'export']);
+    
+    // Order routes
+    Route::apiResource('orders', OrderController::class);
     
     // Dashboard routes
     Route::prefix('dashboard')->group(function () {
@@ -121,6 +127,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
         Route::get('/all-stats', [DashboardController::class, 'allStats']);
     });
     
+    Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('vouchers', [VoucherController::class, 'index']);
     Route::get('vouchers/{code}', [VoucherController::class, 'show']);
     Route::get('contacts', [ContactController::class, 'index']);
@@ -136,6 +143,17 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
 
 });
+
+    // routes/api.php
+Route::prefix('vouchers')->group(function () {
+    Route::get('/', [VoucherController::class, 'index']);
+    Route::post('/', [VoucherController::class, 'store']);
+    Route::put('/{id}', [VoucherController::class, 'update']);
+    Route::patch('/{id}/toggle', [VoucherController::class, 'toggle']);
+});
+
+
+
 
 Route::post('/contact', [ContactController::class, 'store']);
 
