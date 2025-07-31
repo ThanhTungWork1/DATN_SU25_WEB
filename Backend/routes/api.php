@@ -81,8 +81,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
     Route::get('dashboard', [DashboardController::class, 'index']);
-    Route::get('vouchers', [VoucherController::class, 'index']);
-    Route::get('vouchers/{code}', [VoucherController::class, 'show']);
+    Route::apiResource('vouchers', VoucherController::class);
+    Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
+    Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
 
@@ -147,6 +148,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('vouchers')->group(function () {
         Route::get('/', [VoucherController::class, 'index']);
         Route::get('/{code}', [VoucherController::class, 'show']);
+    });
+
+    //Payment routes
+    Route::prefix('payments')->group(function () {
+        Route::get('/{order_id}', [PaymentController::class, 'show']);
+        Route::post('/', [PaymentController::class, 'store']);
+
+        //VNPay routes
+        Route::prefix('vnpay')->group(function () {
+            Route::post('/create', [VNPayController::class, 'createPayment']);
+            Route::get('/callback', [VNPayController::class, 'callback']);
+            Route::post('/ipn', [VNPayController::class, 'ipn']);
+        });
+
+        //ZaloPay routes
+        Route::prefix('zalopay')->group(function () {
+            Route::post('/create', [\App\Http\Controllers\Api\ZaloPayController::class, 'createOrder']);
+            Route::post('/callback', [\App\Http\Controllers\Api\ZaloPayController::class, 'callback']);
+        });
     });
 
     // Payments

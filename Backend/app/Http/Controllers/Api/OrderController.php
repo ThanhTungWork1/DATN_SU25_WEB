@@ -32,6 +32,7 @@ class OrderController extends Controller
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
+            'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
@@ -92,8 +93,12 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
+        $data = $request->validate([
+            'status' => 'sometimes|string|in:' . implode(',', OrderStatus::all()),
+            'is_paid' => 'sometimes|boolean',
+        ]);
         $order = Order::findOrFail($id);
-        $order->update($request->only(['status', 'is_paid']));
+        $order->update($data);
         return $order->load('items.variant.product');
     }
 
