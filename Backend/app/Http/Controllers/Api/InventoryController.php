@@ -43,7 +43,7 @@ class InventoryController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $variant = ProductVariant::find($request->product_variant_id);
+            $variant = ProductVariant::findOrFail($request->product_variant_id);
 
             if ($variant->stock < $request->quantity) {
                 abort(400, 'Tồn kho không đủ để xuất');
@@ -68,5 +68,14 @@ class InventoryController extends Controller
         $variants = ProductVariant::where('stock', '<=', 5)->with('product')->get();
         return response()->json($variants);
     }
+    public function index()
+    {
+        $inventories = ProductVariant::with(['product', 'color', 'size'])
+            ->select('id', 'product_id', 'color_id', 'size_id', 'stock')
+            ->get();
+
+        return response()->json($inventories);
+    }
+
 }
 

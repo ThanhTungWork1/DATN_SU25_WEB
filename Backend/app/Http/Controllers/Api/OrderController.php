@@ -7,10 +7,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Enums\OrderStatus;
 
 class OrderController extends Controller
 {
-
     public function __construct(
         protected OrderService $orderService
     ) {
@@ -18,9 +19,9 @@ class OrderController extends Controller
 
     public function index()
     {
-
         return Order::with('items.variant.product')->paginate();
     }
+
     public function add(Request $request)
     {
         return $this->store($request);
@@ -30,7 +31,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'status' => 'required|string',
+            'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
@@ -41,12 +42,13 @@ class OrderController extends Controller
             'items.*.price' => 'required|numeric'
         ]);
 
-        // Kiểm tra tồn kho cho từng sản phẩm
+        // Kiểm tra tồn kho
         foreach ($data['items'] as $item) {
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
             if (!$variant) {
                 return response()->json(['message' => 'Không tìm thấy biến thể sản phẩm!'], 404);
             }
+
             if ($variant->stock < $item['quantity']) {
                 return response()->json([
                     'message' => 'Sản phẩm ' . ($variant->product->name ?? '') . ' (màu: ' . ($variant->color->name ?? '') . ', size: ' . ($variant->size->name ?? '') . ') không đủ tồn kho!'
@@ -61,14 +63,16 @@ class OrderController extends Controller
             'is_paid' => $data['is_paid'],
             'total_amount' => $data['total_amount'],
             'shipping_fee' => $data['shipping_fee'],
-            'sold_number' => 'nullable|numeric',
+            'sold_number' => $data['sold_number'] ?? null,
         ]);
 
         foreach ($data['items'] as $item) {
-            // Trừ tồn kho
+            // Trừ tồn kho nếu ngay lập tức xác nhận đơn
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
-            $variant->stock -= $item['quantity'];
-            $variant->save();
+            if ($data['status'] === OrderStatus::CONFIRMED) {
+                $variant->stock -= $item['quantity'];
+                $variant->save();
+            }
 
             OrderItem::create([
                 'order_id' => $order->id,
@@ -96,5 +100,38 @@ class OrderController extends Controller
     public function destroy($id)
     {
         return Order::destroy($id);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::with('items.variant')->findOrFail($id);
+
+        $oldStatus = $order->status;
+        $newStatus = $request->input('status');
+
+        if (!in_array($newStatus, OrderStatus::all())) {
+            return response()->json(['message' => 'Trạng thái không hợp lệ'], 400);
+        }
+
+        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
+            // Từ pending → confirmed: trừ kho
+            if ($oldStatus === OrderStatus::PENDING && $newStatus === OrderStatus::CONFIRMED) {
+                foreach ($order->items as $item) {
+                    $item->variant->decrement('stock', $item->quantity);
+                }
+            }
+
+            // Từ confirmed → canceled: cộng lại kho
+            if ($oldStatus === OrderStatus::CONFIRMED && $newStatus === OrderStatus::CANCELED) {
+                foreach ($order->items as $item) {
+                    $item->variant->increment('stock', $item->quantity);
+                }
+            }
+
+            // Cập nhật trạng thái đơn hàng
+            $order->update(['status' => $newStatus]);
+        });
+
+        return response()->json(['message' => 'Cập nhật trạng thái thành công']);
     }
 }
