@@ -6,6 +6,7 @@ import useProfile from "../../hook/useProfile";
 import type { IUser } from "../../types/users";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined } from "@ant-design/icons";
+import OrderList from "./Orders/OrderList";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -56,6 +57,10 @@ const UserProfile = () => {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
       <h1>Thông tin cá nhân</h1>
+      <div className="max-w-3xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Lịch sử đơn hàng</h2>
+      <OrderList />
+    </div>
         <Button
           type="primary"
           danger

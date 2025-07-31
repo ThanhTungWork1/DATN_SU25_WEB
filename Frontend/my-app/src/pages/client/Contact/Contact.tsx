@@ -1,6 +1,6 @@
 import "../../../assets/styles/contact.css";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+// import { ToastContainer } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
 import { useContactForm } from "../../../hook/contact/useContactForm";
 
 export const ContactClient = () => {
@@ -72,7 +72,7 @@ export const ContactClient = () => {
           </form>
         </div>
       </section>
-      <ToastContainer position="top-right" newestOnTop />
+      {/* <position="top-right" newestOnTop /> */}
     </main>
   );
 };

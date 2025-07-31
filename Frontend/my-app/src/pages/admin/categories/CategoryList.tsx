@@ -32,7 +32,7 @@ export default function CategoryList() {
     setLoading(true);
     try {
       const res = await getCategories();
-      setCategories(res.data.data || res.data);
+      setCategories(res.data);
     } catch (error) {
       message.error('Không thể tải danh sách danh mục.');
     } finally {

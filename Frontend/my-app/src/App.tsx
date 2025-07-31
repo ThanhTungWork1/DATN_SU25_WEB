@@ -5,12 +5,12 @@ import ClientRoute from "./routes/ClientRoute";
 import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
 import AOS from "aos";
-import "aos/dist/aos.css";
+// import "aos/dist/aos.css";
 
 function App() {
-  useEffect(() => {
-    AOS.init({ once: true });
-  }, []);
+  // useEffect(() => {
+  //   AOS.init({ once: true });
+  // }, []);
   return (
     <WishlistProvider>
       <Routes>

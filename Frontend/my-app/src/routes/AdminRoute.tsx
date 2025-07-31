@@ -12,6 +12,7 @@ import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
+import VoucherPage from "../pages/admin/voucher/Voucher";
 
 const AdminRoute = () => {
   return (
@@ -33,6 +34,7 @@ const AdminRoute = () => {
           <Route path="orders/detail/:id" element={<OrderDetail />} />
           <Route path="contacts" element={<ContactAdmin />} />
           <Route path="categories" element={<CategoryList />} />
+          <Route path="voucher" element={<VoucherPage />} />
         </Route>
       </Route>
     </Routes>

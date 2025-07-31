@@ -60,6 +60,7 @@ const Dashboard = () => {
         </Card>
       </Col>
       <Col span={6}>
+      <Col span={6}></Col>
         <Card>
           <Statistic
             title="Liên hệ"
