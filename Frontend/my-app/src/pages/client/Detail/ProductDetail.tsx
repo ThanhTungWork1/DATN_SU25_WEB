@@ -17,6 +17,7 @@ import type { Banner as BannerType } from "../../../types/BannerType";
 import type { Product } from "../../../types/DetailType";
 import { getAllColors } from "../../../api/ApiProduct";
 import type { ColorType } from "../../../types/ColorType";
+import "../../../assets/styles/color.css";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -47,7 +48,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     getBanners().then((banners) => {
-      const found = banners.find((b) => Number(b.id) === 2);
+      const found = banners.find((b) => b.public_id === "banner2");
       setBanner2(found || null);
     });
     getAllColors().then((res: ColorType[]) => setAllColors(res));
@@ -57,7 +58,8 @@ const ProductDetail = () => {
   if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size?.name === selectedSize && v.color?.name === selectedColor?.name
+    (v) =>
+      v.size?.name === selectedSize && v.color?.name === selectedColor?.name
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -65,8 +67,11 @@ const ProductDetail = () => {
   const uniqueColors = Array.from(
     new Map(
       (product.variants || [])
-        .filter((v) => v.color)
-        .map((v) => [v.color!.id, v.color!])
+        .map((v) => v.color)
+        .filter(
+          (color): color is ColorType => color !== undefined && color !== null
+        )
+        .map((color) => [color.id, color])
     ).values()
   );
 
@@ -83,10 +88,10 @@ const ProductDetail = () => {
   const thumbnailImages = colorThumbnails.length
     ? colorThumbnails
     : product?.images && product.images.length
-    ? product.images
-    : product?.image
-    ? [product.image]
-    : [];
+      ? product.images
+      : product?.image
+        ? [product.image]
+        : [];
 
   const mappedColors = allColors.map((c) => ({
     ...c,
@@ -108,20 +113,17 @@ const ProductDetail = () => {
 
       <div className="container py-5 product-detail-container">
         <div className="product-detail-wrapper">
-          <div className="row g-4">
-            <div className="col-lg-2 col-md-3 d-none d-md-block">
+          <div className="row g-0">
+            <div className="col-lg-6 d-flex">
               <Aside
                 images={thumbnailImages}
                 onSelect={setSelectedImage}
                 selectedImage={selectedImage}
               />
-            </div>
-
-            <div className="col-lg-5 col-md-9 col-12">
               <MainImage imageUrl={selectedImage} />
             </div>
 
-            <div className="col-lg-5 col-md-4 col-12">
+            <div className="col-lg-6 product-info-col">
               <ProductInfo
                 product={product}
                 selectedVariantStock={selectedVariantStock}
@@ -137,12 +139,13 @@ const ProductDetail = () => {
               <hr />
 
               <Color
-                colors={mappedColors}
+                colors={uniqueColors}
                 selectedColor={selectedColor}
                 onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) => v.color?.id === color.id && v.size?.name === selectedSize
+                    (v) =>
+                      v.color?.id === color.id && v.size?.name === selectedSize
                   );
                   if (variant?.image) {
                     setSelectedImage(variant.image);
@@ -157,20 +160,20 @@ const ProductDetail = () => {
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
                 maxQuantity={10}
+                disabled={!selectedSize || !selectedColor}
               />
               <hr />
             </div>
           </div>
 
           <ProductTabs product={product} />
+          <RelatedProducts categoryId={product.category_id} />
 
           {banner2 && (
-            <div className="container banner-detail-middle">
+            <div className="banner-detail-middle">
               <Banner imageUrl={banner2.image_url} />
             </div>
           )}
-
-          <RelatedProducts categoryId={product.category_id} />
         </div>
       </div>
     </>

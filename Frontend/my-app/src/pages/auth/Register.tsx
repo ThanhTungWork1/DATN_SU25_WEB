@@ -2,6 +2,7 @@ import { Button, Form, Input, message, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
 import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
+import { useState } from "react";
 
 const formItemLayout = {
   labelCol: {
@@ -19,39 +20,42 @@ export const Register = () => {
   const navigate = useNavigate();
   const { mutate: registerMutate } = useRegister({ resource: "register" });
   const { mutate: loginMutate } = useLogin({ resource: "login" });
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>(
+    {}
+  );
 
   const onFinish = (formData: any) => {
-  const {
-    confirm, // lấy confirm ra nhưng không gửi
-    gender,  // nếu backend không yêu cầu gender, có thể bỏ
-    ...rest
-  } = formData;
+    const {
+      confirm, // lấy confirm ra nhưng không gửi
+      gender, // nếu backend không yêu cầu gender, có thể bỏ
+      ...rest
+    } = formData;
 
-  const submitData = {
-    ...rest,
-    password_confirmation: confirm, // Laravel expects this!
-  };
+    const submitData = {
+      ...rest,
+      password_confirmation: confirm, // Laravel expects this!
+    };
 
-  registerMutate(submitData, {
-    onSuccess: () => {
-      loginMutate(
-        { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
-        {
-          onSuccess: (data) => {
-            const res: any = data;
-            if (res && res.token) {
-              localStorage.setItem("token", res.token);
-            }
-            messageApi.success("Đăng ký & đăng nhập thành công!");
-            navigate("/");
-          },
-          onError: () => {
-            messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
-            navigate("/login");
-          },
-        }
-      );
-    },
+    registerMutate(submitData, {
+      onSuccess: () => {
+        loginMutate(
+          { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
+          {
+            onSuccess: (data) => {
+              const res: any = data;
+              if (res && res.token) {
+                localStorage.setItem("token", res.token);
+              }
+              messageApi.success("Đăng ký & đăng nhập thành công!");
+              navigate("/");
+            },
+            onError: () => {
+              messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
+              navigate("/login");
+            },
+          }
+        );
+      },
       onError: (error: any) => {
         const res = error?.response?.data;
         if (typeof res === "string") {
@@ -79,8 +83,10 @@ export const Register = () => {
           label="Họ tên"
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+          validateStatus={fieldErrors.name ? "error" : undefined}
+          help={fieldErrors.name ? fieldErrors.name[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="name" />
         </Form.Item>
 
         <Form.Item
@@ -90,24 +96,30 @@ export const Register = () => {
             { required: true, message: "Vui lòng nhập email!" },
             { type: "email", message: "Email không hợp lệ!" },
           ]}
+          validateStatus={fieldErrors.email ? "error" : undefined}
+          help={fieldErrors.email ? fieldErrors.email[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="email" />
         </Form.Item>
 
         <Form.Item
           label="Số điện thoại"
           name="phone"
           rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+          validateStatus={fieldErrors.phone ? "error" : undefined}
+          help={fieldErrors.phone ? fieldErrors.phone[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="tel" />
         </Form.Item>
 
         <Form.Item
           label="Địa chỉ"
           name="address"
           rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+          validateStatus={fieldErrors.address ? "error" : undefined}
+          help={fieldErrors.address ? fieldErrors.address[0] : undefined}
         >
-          <Input />
+          <Input autoComplete="street-address" />
         </Form.Item>
 
         <Form.Item
@@ -128,7 +140,7 @@ export const Register = () => {
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item
@@ -148,7 +160,7 @@ export const Register = () => {
             }),
           ]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item label={null}>

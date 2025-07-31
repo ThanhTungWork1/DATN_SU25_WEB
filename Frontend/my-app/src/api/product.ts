@@ -1,13 +1,49 @@
-import axios from "axios";
+// src/api/product.ts
 
-const API_URL = "http://localhost:8000/api/product";
+import axiosInstance from "../utils/axiosInstance";
+import { Product, ProductVariant, Color, Size, Category } from "../types/ProductType"; 
 
-export const getProducts = () => axios.get(API_URL);
+// ====================================================================
+// API cho Products (Admin Routes)
+// ====================================================================
 
-export const getProduct = (id: string) => axios.get(`${API_URL}/${id}`);
+export const getProducts = (params: { page?: number, search?: string } = {}) => {
+    // Gửi các tham số đến backend
+    return axiosInstance.get('/admin/products', { params });
+};
 
-export const updateProduct = (id: string, data: any) => axios.put(`${API_URL}/${id}`, data);
 
-export const createProduct = (data: any) => axios.post(API_URL, data);
+export const getProduct = (id: string | number) => axiosInstance.get<Product>(`/admin/products/${id}`);
 
-export const deleteProduct = (id: string) => axios.delete(`${API_URL}/${id}`);
+/**
+ * TẠO MỚI sản phẩm.
+ * Phải nhận vào kiểu 'FormData' để gửi file.
+ */
+export const createProduct = (data: FormData) => {
+    return axiosInstance.post<Product>(`/admin/products`, data);
+};
+
+/**
+ * CẬP NHẬT sản phẩm.
+ * Phải nhận vào kiểu 'FormData' và dùng phương thức 'post'.
+ */
+export const updateProduct = (id: string | number, data: FormData) => {
+    return axiosInstance.post<Product>(`/admin/products/${id}`, data);
+};
+
+export const deleteProduct = (id: string | number) => axiosInstance.delete<void>(`/admin/products/${id}`);
+
+
+
+
+export const getColors = () => axiosInstance.get<Color[]>(`/colors`);
+export const getColor = (id: string | number) => axiosInstance.get<Color>(`/colors/${id}`);
+
+export const getSizes = () => axiosInstance.get<Size[]>(`/sizes`);
+export const getSize = (id: string | number) => axiosInstance.get<Size>(`/sizes/${id}`);
+
+export const getProductVariants = (productId: string | number) => axiosInstance.get<ProductVariant[]>(`/product-variants/${productId}`);
+export const getProductVariant = (id: string | number) => axiosInstance.get<ProductVariant>(`/product-variants/${id}`);
+export const createProductVariant = (data: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => axiosInstance.post<ProductVariant>(`/product-variants`, data);
+export const updateProductVariant = (id: string | number, data: Partial<ProductVariant>) => axiosInstance.put<ProductVariant>(`/product-variants/${id}`, data);
+export const deleteProductVariant = (id: string | number) => axiosInstance.delete<void>(`/product-variants/${id}`);

@@ -5,25 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Color;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ColorController extends Controller
 {
     public function index()
     {
-        $colors = Color::withCount([
-            'productVariants' => function ($query) {
-
-                $query->whereHas('product', function ($q) {
-                    $q->where('status', true);
-                });
-            }
-        ])->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách màu sắc thành công',
-            'data' => $colors
-        ]);
+        $colors = Cache::remember('colors_all', 3600, function () {
+            return Color::all();
+        });
+        return response()->json(['data' => $colors]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Size;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SizeController extends Controller
 {
@@ -13,17 +14,10 @@ class SizeController extends Controller
      */
     public function index()
     {
-        $sizes = Size::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách kích thước thành công',
-            'data' => $sizes
-        ]);
+        $sizes = Cache::remember('sizes_all', 3600, function () {
+            return Size::all();
+        });
+        return response()->json(['data' => $sizes]);
     }
 
     /**

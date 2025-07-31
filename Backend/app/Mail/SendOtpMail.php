@@ -19,7 +19,8 @@ class SendOtpMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Mã OTP đặt lại mật khẩu')
+        return $this->subject('Mã OTP đặt lại mật khẩu - StrideX')
+            ->from(config('mail.from.address'), config('mail.from.name'))
             ->view('emails.otp');
     }
 }

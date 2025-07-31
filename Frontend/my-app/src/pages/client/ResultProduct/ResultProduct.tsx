@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useProductPagination } from "../../../hook/useProductList";
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
-import { Section } from "../../../components/Section";
+import "../../../assets/styles/resultSerch.css";
 
 // Trang kết quả tìm kiếm sản phẩm
 const ResultProduct = () => {
@@ -33,11 +31,10 @@ const ResultProduct = () => {
 
   return (
     <>
-      <Section />
       <div className="container my-4 search-result-container">
         {/* Nút quay về trang tổng sản phẩm */}
         <h4 className="mb-3">
-          Kết quả tìm kiếm cho: {" "}
+          Kết quả tìm kiếm cho:{" "}
           <span style={{ color: "#09dbc7" }}>{query}</span>
         </h4>
         <div className="mb-1">
@@ -81,7 +78,9 @@ const ResultProduct = () => {
               {pagination.total_pages > 1 && (
                 <nav className="pagination-nav">
                   <ul className="pagination justify-content-center">
-                    <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
+                    <li
+                      className={`page-item${currentPage === 1 ? " disabled" : ""}`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => setCurrentPage(currentPage - 1)}
@@ -90,7 +89,10 @@ const ResultProduct = () => {
                         &laquo;
                       </button>
                     </li>
-                    {Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                    {Array.from(
+                      { length: pagination.total_pages },
+                      (_, i) => i + 1
+                    ).map((page) => (
                       <li
                         key={page}
                         className={`page-item${page === currentPage ? " active" : ""}`}
@@ -103,7 +105,9 @@ const ResultProduct = () => {
                         </button>
                       </li>
                     ))}
-                    <li className={`page-item${currentPage === pagination.total_pages ? " disabled" : ""}`}>
+                    <li
+                      className={`page-item${currentPage === pagination.total_pages ? " disabled" : ""}`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => setCurrentPage(currentPage + 1)}

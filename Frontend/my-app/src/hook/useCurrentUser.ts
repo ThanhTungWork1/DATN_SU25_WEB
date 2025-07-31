@@ -3,7 +3,7 @@ import axios from "axios";
 import type { IUser } from "../types/users"; // Đảm bảo đúng path
 
 const useCurrentUser = () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("user_token");
 
   return useQuery<IUser>({
     queryKey: ["currentUser"],

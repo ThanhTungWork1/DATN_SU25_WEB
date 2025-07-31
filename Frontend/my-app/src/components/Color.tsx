@@ -1,12 +1,9 @@
-// src/components/Color.tsx
-
 import type { ColorProps } from "../types/ColorType";
 import "../assets/styles/color.css";
 
 const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
   return (
     <div className="mb-3">
-      <div>Test render Color</div>
       <div className="d-flex gap-2 flex-wrap mt-2">
         {colors.map((color) => {
           const isSelected = selectedColor?.id === color.id;
@@ -22,7 +19,6 @@ const Color = ({ colors, selectedColor, onSelectColor }: ColorProps) => {
           ]
             .filter(Boolean)
             .join(" ");
-
           return (
             <span
               key={color.id}

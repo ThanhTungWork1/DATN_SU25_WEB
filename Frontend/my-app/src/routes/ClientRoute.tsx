@@ -1,5 +1,5 @@
-// src/routes/ClientRoute.tsx
 import { Routes, Route } from "react-router-dom";
+import HomePage from "../pages/client/Home/Home";
 import Register from "../pages/auth/Register";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -11,10 +11,17 @@ import CartPage from "../pages/client/Cart/CartPage";
 import CheckoutPage from "../pages/client/Cart/CheckoutPage";
 import OrderHistory from "../pages/client/Orders/OrderHistory";
 import OrderDetail from "../pages/client/Orders/OrderDetail";
-import UserProfile from "../pages/client/userProfile";
+
+// import UserProfile from "../pages/client/Home/UserProfile";
+// import Login from "../pages/auth/Login";
+// import AdminLogin from "../pages/auth/adminLogin";
+// import RequireAuth from "./RequireAuth";
+import { ContactClient } from "../pages/client/Contact/Contact";
+import { ContactFloating } from "../components/ContactFloating";
+
+import UserProfile from "../pages/client/Home/UserProfile";
 import UserLogin from "../pages/auth/userLogin";
 import RequireAuth from "./RequireAuth";
-import HomePage from "../pages/client/Home/Home";
 import AdminLogin from "../pages/auth/adminLogin";
 
 const ClientRoute = () => {
@@ -32,14 +39,16 @@ const ClientRoute = () => {
 
         <Route element={<RequireAuth allowedRoles={["user"]} />}>
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/wishlist" element={<LikeProduct />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
         </Route>
+        <Route path="/wishlist" element={<LikeProduct />} />
+        <Route path="/contact" element={<ContactClient />} />
       </Routes>
       <Footer />
+      <ContactFloating />
     </>
   );
 };

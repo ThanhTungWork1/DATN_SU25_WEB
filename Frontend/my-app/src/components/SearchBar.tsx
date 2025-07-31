@@ -62,16 +62,15 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, autoFocus }) => {
     if (e.target.value.trim() === "") {
       // Nếu đang ở trang search thì điều hướng về trang trước hoặc /products
       if (window.location.pathname === "/search") {
-        window.history.length > 1 ? window.history.back() : window.location.assign("/products");
+        window.history.length > 1
+          ? window.history.back()
+          : window.location.assign("/products");
       }
     }
   };
 
   return (
-    <div
-      className={`searchbar-container custom-searchbar`}
-      ref={containerRef}
-    >
+    <div className={`searchbar-container custom-searchbar`} ref={containerRef}>
       <form className="searchbar-form" onSubmit={handleSubmit}>
         <input
           ref={inputRef}
@@ -88,7 +87,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, autoFocus }) => {
             borderRadius: 24,
             border: "none",
             outline: "none",
-            background: "#fff"
+            background: "#fff",
           }}
         />
       </form>
