@@ -1,5 +1,5 @@
 import axiosInstance from "../utils/axios";
- // dùng đúng axiosInstance từ utils/axios.ts
+// dùng đúng axiosInstance từ utils/axios.ts
 import type { IUser } from "../types/users";
 
 type AuthParams = {
@@ -15,18 +15,32 @@ type LoginResponse = {
   user: IUser;
 };
 
-export const login = async ({ resource, variables }: AuthParams): Promise<LoginResponse> => {
-  const { data } = await axiosInstance.post<LoginResponse>(`/${resource}`, variables);
+export const login = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
+  const { data } = await axiosInstance.post<LoginResponse>(
+    `/${resource}`,
+    variables
+  );
   return data;
 };
 
-export const register = async ({ resource, variables }: AuthParams): Promise<LoginResponse> => {
+export const register = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
   try {
-    const { data } = await axiosInstance.post<LoginResponse>(`/${resource}`, variables);
+    const { data } = await axiosInstance.post<LoginResponse>(
+      `/${resource}`,
+      variables
+    );
     return data;
   } catch (error: any) {
-    console.error("❌ Register API error:", error.response?.data || error.message);
+    console.error(
+      "❌ Register API error:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
-

@@ -30,11 +30,9 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: mainImage,
+      product_id: product.id,
       quantity: 1,
+      price: product.price,
     });
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };

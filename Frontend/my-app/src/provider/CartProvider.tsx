@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import type { CartItem, CartContextType } from "../types/CartType";
+import React, { createContext, useContext } from "react";
+import useCartHook from "../hook/useCart";
+import type { CartContextType } from "../types/CartType";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -9,45 +10,13 @@ export const useCart = () => {
   return ctx;
 };
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const stored = localStorage.getItem("cartItems");
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const addToCart = (item: CartItem) => {
-    setCartItems((prev) => {
-      const exist = prev.find(
-        (i) =>
-          i.id === item.id && i.color === item.color && i.size === item.size
-      );
-      if (exist) {
-        return prev.map((i) =>
-          i.id === item.id && i.color === item.color && i.size === item.size
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i
-        );
-      }
-      return [...prev, item];
-    });
-  };
-
-  const removeFromCart = (id: number) => {
-    setCartItems((prev) => prev.filter((i) => i.id !== id));
-  };
-
-  const clearCart = () => setCartItems([]);
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Lấy token từ localStorage (hoặc context Auth nếu có)
+  const token = localStorage.getItem("token") || "";
+  const cart = useCartHook(token);
 
   return (
-    <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, clearCart }}
-    >
+    <CartContext.Provider value={cart}>
       {children}
     </CartContext.Provider>
   );

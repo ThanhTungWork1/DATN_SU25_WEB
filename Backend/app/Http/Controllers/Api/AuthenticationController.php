@@ -24,7 +24,7 @@ class AuthenticationController extends Controller
                 'address' => 'required|string|max:255'
             ]);
 
-            $role = User::count() === 0 ? 1 : 0; // user đầu tiên là admin (1), còn lại là client (0)
+            $role = User::count() === 0 ? 1 : 0; // user đầu tiên là admin (1), còn lại là user (0)
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -33,8 +33,8 @@ class AuthenticationController extends Controller
                 'address' => $validated['address'],
                 'password' => Hash::make($validated['password']),
                 'role' => $role,
-                'status' => 1,
-                'is_verified' => 0
+                'status' => true,
+                'is_verified' => false
             ]);
 
 
@@ -78,7 +78,7 @@ class AuthenticationController extends Controller
                 return response()->json(['message' => 'Không tìm thấy người dùng!'], 404);
             }
 
-            if ($user->status == 0) {
+            if (!$user->status) {
                 return response()->json(['message' => 'Tài khoản bị khoá!'], 403);
             }
 

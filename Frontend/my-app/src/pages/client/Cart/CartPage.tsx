@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 // import type { CartItem } from "../../../hook/useCart";
 import useCart from "../../../hook/useCart";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
@@ -11,10 +11,31 @@ const CartPage = () => {
   const { cartItems, updateQuantity, removeItem, clearCart } = useCart(token);
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
+  const [localQuantities, setLocalQuantities] = useState<{ [key: number]: number }>({});
   const { register, handleSubmit, setValue } = useForm();
+
+  // Tự động chọn tất cả sản phẩm khi cartItems thay đổi
+  useEffect(() => {
+    const allSelected = cartItems.reduce((acc, item) => {
+      acc[item.id] = true;
+      return acc;
+    }, {} as { [key: number]: boolean });
+    setSelectedItems(allSelected);
+
+    // Khởi tạo local quantities
+    const quantities = cartItems.reduce((acc, item) => {
+      acc[item.id] = item.quantity;
+      return acc;
+    }, {} as { [key: number]: number });
+    setLocalQuantities(quantities);
+  }, [cartItems]);
 
   const toggleSelectItem = (id: number) => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleQuantityChange = (id: number, newQuantity: number) => {
+    setLocalQuantities(prev => ({ ...prev, [id]: newQuantity }));
   };
 
   const onSubmit = (data: any) => {
@@ -22,13 +43,19 @@ const CartPage = () => {
     Object.keys(data).forEach((key) => {
       const id = Number(key.replace("qty-", ""));
       const quantity = Number(data[key]);
-      if (quantity > 0) updateQuantity(id, quantity);
+      if (quantity > 0) {
+        updateQuantity(id, quantity);
+        setLocalQuantities(prev => ({ ...prev, [id]: quantity }));
+      }
     });
   };
 
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
   const totalAmount = selectedProducts.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => {
+      const quantity = localQuantities[item.id] || item.quantity;
+      return total + (item.price * 1000) * quantity;
+    },
     0
   );
 
@@ -53,16 +80,17 @@ const CartPage = () => {
                   <img src={item.image} alt={item.name} className="img-thumbnail" width={80} />
                   <div className="ms-3 w-50">
                     <h5 className="fw-bold">{item.name}</h5>
-                    <p className="text-danger fw-bold">{item.price.toLocaleString()} VND</p>
+                    <p className="text-danger fw-bold">{(item.price * 1000).toLocaleString("vi-VN")} VND</p>
                   </div>
                   <input
                     type="number"
                     min="1"
-                    defaultValue={item.quantity}
+                    value={localQuantities[item.id] || item.quantity}
                     className="form-control w-25 mx-2"
                     {...register(`qty-${item.id}`)}
+                    onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
                   />
-                  <p className="fw-bold">{(item.price * item.quantity).toLocaleString()} VND</p>
+                  <p className="fw-bold">{((item.price * 1000) * (localQuantities[item.id] || item.quantity)).toLocaleString("vi-VN")} VND</p>
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}

@@ -1,4 +1,5 @@
 import type { ProductFilter } from "../../../types/ProductFilterType";
+import "../../../assets/styles/filte.css";
 /**
  * Bộ lọc sản phẩm (lọc theo tên, giá, màu, size, chất liệu)
  */

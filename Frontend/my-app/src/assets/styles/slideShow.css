@@ -42,12 +42,15 @@
   cursor: pointer;
   z-index: 2;
 }
+
 .slideshow-arrow.left {
   left: 20px;
 }
+
 .slideshow-arrow.right {
   right: 20px;
 }
+
 .slideshow-arrow:hover {
   background: #fff;
 }

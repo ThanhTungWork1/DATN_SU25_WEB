@@ -1,4 +1,5 @@
-export const SearchProducts = () => {
+export function SearchProducts(props) {
+  console.log("RENDER SearchProducts", props);
   return (
     <>
       <div className="row mb-3">

@@ -4,14 +4,9 @@ import SearchBar from "./SearchBar";
 import MegaMenu from "./MegaMenu";
 import useCurrentUser from "../hook/useCurrentUser";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
-import {
-  MEGA_MENU_NAM,
-  MEGA_MENU_NU,
-  MEGA_MENU_PHUKIEN,
-} from "./megaMenuData";
-
 import "../assets/styles/navbar.css";
 import "../assets/styles/menu.css";
+import { MEGA_MENU_NAM, MEGA_MENU_NU, MEGA_MENU_PHUKIEN } from "./megaMenuData";
 
 const MENU = [{ label: "Nam" }, { label: "Nữ" }, { label: "Phụ kiện" }];
 
@@ -20,9 +15,7 @@ const Navbar = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
-
   const { data: user, isLoading } = useCurrentUser();
-
   const isProductsPage =
     location.pathname === "/products" &&
     ![
@@ -31,8 +24,11 @@ const Navbar = () => {
       ...CATEGORY_MENU.PHU_KIEN,
     ].includes(Number(categoryParam));
 
+  // Nam: active khi category thuộc NAM_IDS
   const isNamActive = CATEGORY_MENU.NAM_IDS.includes(Number(categoryParam));
+  // Nữ: active khi category thuộc NU_IDS
   const isNuActive = CATEGORY_MENU.NU_IDS.includes(Number(categoryParam));
+  // Phụ kiện: active khi category là PHU_KIEN, PHU_KIEN_KINH, PHU_KIEN_MU
   const isPhuKienActive = [
     ...CATEGORY_MENU.PHU_KIEN,
     CATEGORY_MENU.PHU_KIEN_KINH,
@@ -43,6 +39,10 @@ const Navbar = () => {
     if (query.trim()) {
       navigate(`/search?query=${encodeURIComponent(query)}`);
     }
+  };
+
+  const handleClickPhuKien = () => {
+    navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
   };
 
   const goToCart = () => {
@@ -147,19 +147,19 @@ const Navbar = () => {
                 menu.label === "Nam"
                   ? handleMouseEnterNam
                   : menu.label === "Nữ"
-                  ? handleMouseEnterNu
-                  : menu.label === "Phụ kiện"
-                  ? handleMouseEnterPhuKien
-                  : undefined
+                    ? handleMouseEnterNu
+                    : menu.label === "Phụ kiện"
+                      ? handleMouseEnterPhuKien
+                      : undefined
               }
               onMouseLeave={
                 menu.label === "Nam"
                   ? handleMouseLeaveNam
                   : menu.label === "Nữ"
-                  ? handleMouseLeaveNu
-                  : menu.label === "Phụ kiện"
-                  ? handleMouseLeavePhuKien
-                  : undefined
+                    ? handleMouseLeaveNu
+                    : menu.label === "Phụ kiện"
+                      ? handleMouseLeavePhuKien
+                      : undefined
               }
               style={{ position: "relative" }}
             >
@@ -170,19 +170,18 @@ const Navbar = () => {
                       ? "active"
                       : ""
                     : menu.label === "Nữ"
-                    ? isNuActive
-                      ? "active"
-                      : ""
-                    : menu.label === "Phụ kiện"
-                    ? isPhuKienActive
-                      ? "active"
-                      : ""
-                    : ""
+                      ? isNuActive
+                        ? "active"
+                        : ""
+                      : menu.label === "Phụ kiện"
+                        ? isPhuKienActive
+                          ? "active"
+                          : ""
+                        : ""
                 }
               >
                 {menu.label}
               </button>
-
               {menu.label === "Nam" && showMegaMenuNam && (
                 <MegaMenu menuData={MEGA_MENU_NAM} />
               )}
@@ -195,7 +194,6 @@ const Navbar = () => {
             </div>
           </li>
         ))}
-
         <li>
           <NavLink
             to="/contact"
@@ -206,22 +204,22 @@ const Navbar = () => {
           </NavLink>
         </li>
       </ul>
-
       <div className="icon-group" ref={iconGroupRef}>
         {showSearch && <SearchBar onSearch={handleSearch} autoFocus />}
-
         <button
           className="searchbar-icon"
           aria-label="Tìm kiếm"
           type="button"
           onClick={() => setShowSearch((prev) => !prev)}
         >
-          🔍
+          <span role="img" aria-label="search" style={{ fontSize: 20 }}>
+            🔍
+          </span>
         </button>
-
         <div
           className="icon-btn icon-favorite-navbar"
           title="Yêu thích"
+          style={{ cursor: "pointer" }}
           onClick={() => {
             navigate("/wishlist");
             setMenuOpen(false);
@@ -229,13 +227,12 @@ const Navbar = () => {
         >
           <i className="far fa-heart"></i>
         </div>
-
         <div
           className="icon-btn"
           title="Giỏ hàng"
           onClick={() => {
             goToCart();
-            navigate("/cart")
+            navigate("/cart");
             setMenuOpen(false);
           }}
         >
@@ -249,14 +246,13 @@ const Navbar = () => {
         ) : user ? (
           <div
             className="icon-btn"
-            title="Đăng xuất"
+            title="Hồ sơ cá nhân"
             onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/");
-              window.location.reload();
+              navigate("/profile");
+              setMenuOpen(false);
             }}
           >
-            👤 {user.name}  
+            👤 {user.name}
           </div>
         ) : (
           <div

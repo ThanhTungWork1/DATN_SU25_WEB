@@ -16,17 +16,15 @@ class CartController extends Controller
         protected Cart $model,
         protected CartItem $cartItemModel,
     ) {}
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $userId = Auth::id();
+        $cart = Cart::with('cartItems.product')->where('user_id', $userId)->latest()->first();
+        if (!$cart) {
+            return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
+        }
+        return response()->json($cart);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateCartRequest $request)
     {
         return DB::transaction(function () use ($request) {
@@ -38,9 +36,14 @@ class CartController extends Controller
 
             $record = $this->model->create($cart);
 
-            $cartItem = collect($data['cartItems'])->map(function ($item) {
+            $cartItem = collect($data['cartItems'])->map(function ($item) use ($record) {
+                // Tìm variant_id từ product_id và size/color nếu có
+                $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                $variant_id = $variant ? $variant->id : null;
+                
                 return [
-                    'product_id' => $item['product_id'],
+                    'cart_id' => $record->id,
+                    'variant_id' => $variant_id,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ];
@@ -48,39 +51,55 @@ class CartController extends Controller
 
             $record->cartItems()->createMany($cartItem);
 
-            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
+            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
         });
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $userId = Auth::id();
+        $cart = Cart::with('cartItems.product')->where('user_id', $userId)->where('id', $id)->first();
+        if (!$cart) {
+            return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
+        }
+        return response()->json($cart);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+
+    public function update(Request $request, $id)
     {
-        //
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->where('id', $id)->first();
+        if (!$cart) {
+            return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
+        }
+        $data = $request->validate([
+            'cartItems' => 'required|array',
+            'cartItems.*.id' => 'required|exists:cart_items,id',
+            'cartItems.*.quantity' => 'required|integer|min:1',
+        ]);
+        foreach ($data['cartItems'] as $item) {
+            $cartItem = $cart->cartItems()->where('id', $item['id'])->first();
+            if ($cartItem) {
+                $cartItem->quantity = $item['quantity'];
+                $cartItem->save();
+            }
+        }
+        return response()->json(['message' => 'Cập nhật giỏ hàng thành công!']);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->where('id', $id)->first();
+        if (!$cart) {
+            return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
+        }
+        $cart->cartItems()->delete();
+        $cart->delete();
+        return response()->json(['message' => 'Đã xóa giỏ hàng!']);
     }
 }

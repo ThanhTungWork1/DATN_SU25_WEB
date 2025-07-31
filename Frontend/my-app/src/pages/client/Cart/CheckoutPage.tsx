@@ -115,7 +115,6 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <Header />
       <div className="container my-5">
         <h2 className="fw-bold text-center">🛍️ Thanh toán</h2>
         <div className="row">
@@ -174,14 +173,15 @@ const CheckoutPage = () => {
               <div className="mt-4 text-center">
                 <h5>QR chuyển khoản MB Bank</h5>
                 <img
-                  src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png`}
+                  src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${totalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX`}
                   alt="QR MB Bank"
                   style={{ width: 200, height: 200 }}
                 />
                 <p className="mt-3">
                   <b>Số TK:</b> {mbAccount} <br />
                   <b>Ngân hàng:</b> MB Bank <br />
-                  <b>Chủ TK:</b> LÊ KHẢI HOÀN
+                  <b>Chủ TK:</b> LÊ KHẢI HOÀN <br />
+                  <b>Số tiền:</b> <span className="text-danger fw-bold">{totalAmount.toLocaleString()} VND</span>
                 </p>
               </div>
             )}
@@ -208,7 +208,6 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

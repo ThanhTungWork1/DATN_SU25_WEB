@@ -1,5 +1,8 @@
-import React from "react";
-import type { BannerProps } from "../../../types/BannerType";
+import "../../../assets/styles/mainImage.css";
+
+type MainImageProps = {
+  imageUrl: string;
+};
 
 /**
  * Banner quảng cáo giữa trang detail
@@ -9,8 +12,8 @@ const Banner: React.FC<BannerProps> = ({
   alt = "Banner quảng cáo",
 }) => {
   return (
-    <div className="banner-detail-image-wrapper">
-      <img src={imageUrl} alt={alt} className="banner-detail-image" />
+    <div className="main-image-container">
+      <img src={imageUrl} alt="Main Product" className="main-image" />
     </div>
   );
 };

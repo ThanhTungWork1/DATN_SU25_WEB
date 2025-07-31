@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import banner1 from "../assets/image/banner1.png";
 import banner2 from "../assets/image/banner2.png";
 import banner3 from "../assets/image/banner3.png";
@@ -55,17 +56,14 @@ export default function Slideshow() {
       ))}
 
       {/* Nút điều hướng */}
-      <button
-        onClick={prevSlide}
-        className="slideshow-arrow left"
-      >
-        <FaChevronLeft />
+      <button onClick={prevSlide} className="slideshow-arrow left">
+        <ChevronLeft />
+        {/* <FaChevronLeft /> */}
       </button>
-      <button
-        onClick={nextSlide}
-        className="slideshow-arrow right"
-      >
-        <FaChevronRight />
+      <button onClick={nextSlide} className="slideshow-arrow right">
+        <ChevronRight />
+
+        {/* <FaChevronRight /> */}
       </button>
 
       {/* Dot indicator */}

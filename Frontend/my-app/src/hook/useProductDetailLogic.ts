@@ -3,9 +3,11 @@ import type { ColorType, Product } from "../types/DetailType";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
 import { validateProductDetail } from "../validation/productDetailValidation";
+import { useNavigate } from "react-router-dom";
 
 export function useProductDetailLogic(product: Product | undefined) {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ColorType | null>(null);
@@ -29,11 +31,9 @@ export function useProductDetailLogic(product: Product | undefined) {
       toast.error(message);
       return;
     }
-    const fallbackImage =
-      product.image || (product.images && product.images[0]) || "";
     addToCart({
-      id: product.id,
-      name: product.name,
+      product_id: product.id,
+      quantity,
       price:
         product.discount && product.discount > 0 && product.discount < 100
           ? Math.max(
@@ -41,16 +41,41 @@ export function useProductDetailLogic(product: Product | undefined) {
               Math.round(product.price * (1 - product.discount / 100)),
             )
           : product.price,
-      image: selectedImage || fallbackImage,
-      quantity,
-      color: selectedColor!.name,
-      size: selectedSize!,
     });
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
-  const handleBuyNow = () => {
-    // Logic mua ngay nếu cần
+  const handleBuyNow = (quantity: number) => {
+    if (!product) return;
+    // Validate chọn size và màu
+    const { valid, message } = validateProductDetail(
+      selectedSize,
+      selectedColor,
+    );
+    if (!valid) {
+      toast.error(message);
+      return;
+    }
+    const item = {
+      product_id: product.id,
+      quantity,
+      price:
+        product.discount && product.discount > 0 && product.discount < 100
+          ? Math.max(
+              0,
+              Math.round(product.price * (1 - product.discount / 100)),
+            )
+          : product.price,
+    };
+    addToCart(item);
+    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    // Chuyển sang trang thanh toán, truyền sản phẩm vừa chọn
+    navigate("/checkout", {
+      state: {
+        selectedProducts: [item],
+        totalAmount: item.price * item.quantity,
+      },
+    });
   };
 
   // Hàm xử lý chọn size (cho phép bỏ chọn)

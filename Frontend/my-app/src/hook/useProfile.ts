@@ -7,7 +7,7 @@ type UseProfileProps = {
 };
 
 const useProfile = ({ resource, id }: UseProfileProps) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("user_token");
 
   return useMutation({
     mutationFn: async (updatedData: any) => {

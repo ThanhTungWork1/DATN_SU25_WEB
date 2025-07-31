@@ -9,8 +9,12 @@ class CartItem extends Model
 {
     use HasFactory;
 
+  // Thêm dòng này để Laravel biết tên bảng chính xác
+    protected $table = 'cartitems';
+
     protected $fillable = [
         'cart_id',
+        'product_id',
         'variant_id',
         'quantity',
         'price'

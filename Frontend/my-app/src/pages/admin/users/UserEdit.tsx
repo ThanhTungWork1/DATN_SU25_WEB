@@ -13,16 +13,16 @@ const UserEdit = () => {
   const [loading, setLoading] = useState(true);
 
   // Lấy current user từ localStorage (giả định bạn đã lưu khi đăng nhập)
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-  const isAdmin = currentUser.role === "admin";
-  const isModerator = currentUser.role === "moderator";
+  const currentUser = JSON.parse(localStorage.getItem("admin_token") ? "{}" : localStorage.getItem("currentUser") || "{}");
+  const isAdmin = currentUser.role === "1" || localStorage.getItem("role") === "1";
+  const isModerator = currentUser.role === "2" || localStorage.getItem("role") === "2";
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getOne({ resource: "users", id: Number(id) });
-        setUser(response.data);
-        form.setFieldsValue(response.data);
+        setUser(response.data as IUser);
+        form.setFieldsValue(response.data as IUser);
       } catch (error) {
         messageApi.error("Không tìm thấy người dùng");
       } finally {
@@ -49,7 +49,30 @@ const UserEdit = () => {
       messageApi.success("Cập nhật người dùng thành công");
       setTimeout(() => navigate("/admin/users"), 1000);
     } catch (error: any) {
-      messageApi.error("Lỗi khi cập nhật người dùng");
+      console.error("Error updating user:", error);
+      
+      // Xử lý lỗi một cách an toàn
+      let errorMessage = "Lỗi khi cập nhật người dùng";
+      
+      if (error?.response?.data) {
+        const errorData = error.response.data;
+        
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (errorData?.error) {
+          errorMessage = errorData.error;
+        } else if (errorData?.errors) {
+          // Xử lý validation errors
+          const errorList = Object.values(errorData.errors).flat();
+          errorMessage = Array.isArray(errorList) ? errorList[0] : errorMessage;
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      messageApi.error(errorMessage);
     }
   };
 
@@ -76,7 +99,7 @@ const UserEdit = () => {
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
         >
-          <Input />
+          <Input autoComplete="name" />
         </Form.Item>
 
         <Form.Item
@@ -84,15 +107,15 @@ const UserEdit = () => {
           name="email"
           rules={[{ required: true, message: "Vui lòng nhập email" }]}
         >
-          <Input type="email" disabled={!isAdmin} />
+          <Input type="email" disabled={!isAdmin} autoComplete="email" />
         </Form.Item>
 
         <Form.Item label="Số điện thoại" name="phone">
-          <Input />
+          <Input autoComplete="tel" />
         </Form.Item>
 
         <Form.Item label="Địa chỉ" name="address">
-          <Input />
+          <Input autoComplete="street-address" />
         </Form.Item>
 
         {isAdmin && (
@@ -102,9 +125,9 @@ const UserEdit = () => {
             rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
           >
             <Select>
-              <Select.Option value="admin">Admin</Select.Option>
-              <Select.Option value="moderator">Moderator</Select.Option>
-              <Select.Option value="user">User</Select.Option>
+              <Select.Option value="1">Admin</Select.Option>
+              <Select.Option value="2">Moderator</Select.Option>
+              <Select.Option value="0">User</Select.Option>
             </Select>
           </Form.Item>
         )}
