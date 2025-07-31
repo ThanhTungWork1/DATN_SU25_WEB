@@ -15,6 +15,7 @@ const VoucherPage = () => {
 
   const fetchVouchers = async () => {
     const res = await axios.get<Voucher[]>("/api/vouchers");
+    console.log("Voucher response:", res.data);
     setVouchers(res.data);
   };
 

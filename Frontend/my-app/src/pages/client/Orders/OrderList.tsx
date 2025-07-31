@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { useOrders } from '../../../hook/useOrders';
 import OrderItem from './OrderItem';
+import { UseOrder } from '../../../types/UseOrder';
+import '../../../assets/styles/OrderList.css';
 
 const OrderList = () => {
   const [status, setStatus] = useState<string>('all');
   const { getOrders, getOrdersByStatus, cancelOrder } = useOrders();
 
-  const {
-    data: orders = [],
-    isLoading,
-    isError,
-  } = status === 'all' ? getOrders() : getOrdersByStatus(status);
+  const allOrdersQuery = getOrders();
+  const statusOrdersQuery = getOrdersByStatus(status);
+
+  const activeQuery = status === 'all' ? allOrdersQuery : statusOrdersQuery;
+
+  const orders = Array.isArray(activeQuery.data) ? activeQuery.data : [];
+  const isLoading = activeQuery.isLoading;
+  const isError = activeQuery.isError;
 
   const handleCancel = (id: number) => {
     if (window.confirm('Bạn chắc chắn muốn huỷ đơn hàng này?')) {
@@ -23,6 +28,7 @@ const OrderList = () => {
 
   return (
     <div>
+      <h1>Danh sách đơn hàng</h1>
       <select
         onChange={(e) => setStatus(e.target.value)}
         value={status}
@@ -42,6 +48,7 @@ const OrderList = () => {
           <OrderItem key={order.id} order={order} onCancel={handleCancel} />
         ))
       )}
+      
     </div>
   );
 };

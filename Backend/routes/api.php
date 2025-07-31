@@ -110,6 +110,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
+    // routes/api.php
+Route::prefix('vouchers')->group(function () {
+    Route::get('/', [VoucherController::class, 'index']);
+    Route::post('/', [VoucherController::class, 'store']);
+    Route::put('/{id}', [VoucherController::class, 'update']);
+    Route::patch('/{id}/toggle', [VoucherController::class, 'toggle']);
+});
+
 
 });
 
