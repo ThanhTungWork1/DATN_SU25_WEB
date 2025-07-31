@@ -24,7 +24,7 @@ const { Title } = Typography;
 export default function CategoryList() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // SỬA LẠI: Dùng isModalOpen
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [form] = Form.useForm();
 
@@ -32,9 +32,13 @@ export default function CategoryList() {
     setLoading(true);
     try {
       const res = await getCategories();
-      setCategories(res.data.data || res.data);
+      // SỬA LỖI: Xử lý dữ liệu trả về một cách an toàn
+      // Kiểm tra xem res.data.data có phải là mảng không, nếu không thì kiểm tra res.data
+      const categoriesData = Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+      setCategories(categoriesData);
     } catch (error) {
       message.error('Không thể tải danh sách danh mục.');
+      console.error("Fetch categories error:", error);
     } finally {
       setLoading(false);
     }
@@ -52,11 +56,11 @@ export default function CategoryList() {
       form.resetFields();
       form.setFieldsValue({ status: true });
     }
-    setIsModalVisible(true);
+    setIsModalOpen(true); // SỬA LẠI: Dùng setIsModalOpen
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setIsModalOpen(false); // SỬA LẠI: Dùng setIsModalOpen
     setEditingCategory(null);
   };
 
@@ -89,13 +93,12 @@ export default function CategoryList() {
   const columns: TableProps<Category>['columns'] = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Tên danh mục', dataIndex: 'name', key: 'name' },
-    // THÊM MỚI: Cột hiển thị số lượng sản phẩm
     {
       title: 'Số lượng sản phẩm',
       dataIndex: 'products_count',
       key: 'products_count',
       align: 'center',
-      render: (count: number) => `${count} sản phẩm`,
+      render: (count: number) => `${count || 0} sản phẩm`,
     },
     {
       title: 'Trạng thái',
@@ -119,7 +122,7 @@ export default function CategoryList() {
             onConfirm={() => handleDelete(record.id)}
             okText="Xóa"
             cancelText="Hủy"
-            disabled={record.products_count !== undefined && record.products_count > 0} // Vô hiệu hóa nút xóa nếu có sản phẩm
+            disabled={record.products_count !== undefined && record.products_count > 0}
           >
             <Button icon={<DeleteOutlined />} danger disabled={record.products_count !== undefined && record.products_count > 0} />
           </Popconfirm>
@@ -140,7 +143,8 @@ export default function CategoryList() {
 
       <Modal
         title={editingCategory ? 'Chỉnh sửa Danh mục' : 'Tạo mới Danh mục'}
-        visible={isModalVisible}
+        // SỬA LẠI: Dùng 'open' thay vì 'visible'
+        open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
       >

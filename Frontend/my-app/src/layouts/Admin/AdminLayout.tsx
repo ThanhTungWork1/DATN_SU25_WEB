@@ -8,6 +8,7 @@ import {
     ShoppingCartOutlined,
     AppstoreOutlined, // THÊM MỚI: Icon cho danh mục
     LogoutOutlined,
+CommentOutlined
 } from "@ant-design/icons";
 
 // Import logo và Ant Design CSS (nếu chưa được import ở main.tsx)
@@ -26,6 +27,7 @@ function SidebarMenu() {
         path.startsWith("/admin/products") ? "1"
         : path.startsWith("/admin/orders") ? "2"
         : path.startsWith("/admin/categories") ? "3" // Thêm điều kiện cho danh mục
+: path.startsWith("/admin/comments") ? "4" // THÊM MỚI: Logic highlight cho menu Đánh giá
         : "";
 
     return (
@@ -49,6 +51,11 @@ function SidebarMenu() {
                     key: "3",
                     icon: <AppstoreOutlined />,
                     label: <a href="/admin/categories">Danh mục</a>,
+                },
+{
+                    key: "4",
+                    icon: <CommentOutlined />,
+                    label: <a href="/admin/comments">Đánh giá</a>,
                 },
             ]}
         />
