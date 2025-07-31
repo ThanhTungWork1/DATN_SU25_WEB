@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
@@ -19,36 +20,135 @@ class Order extends Model
         'note',
         'payment_method',
         'discount_amount',
-        'final_amount',
-        'customer_name',
-        'customer_email',
-        'customer_phone',
-        'created_at',
-        'updated_at',
+        'final_amount'
     ];
-   /**
-     * THÊM MỚI: Thêm 'total_quantity' vào mảng appends.
-     * Điều này sẽ tự động thêm trường 'total_quantity' vào mỗi khi
-     * một đối tượng Order được chuyển thành JSON để gửi về frontend.
+
+    protected $casts = [
+        'is_paid' => 'boolean',
+        'total_amount' => 'decimal:2',
+        'shipping_fee' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'final_amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+    /**
+     * Automatically append computed attributes when converting to JSON
      */
     protected $appends = ['total_quantity'];
 
     /**
-     * THÊM MỚI: Accessor để tính toán tổng số lượng sản phẩm.
-     * Tên hàm phải là get...Attribute và theo dạng camelCase.
+     * Calculate total quantity of items in this order
      */
     public function getTotalQuantityAttribute()
     {
-        // Hàm này sẽ tính tổng của cột 'quantity' từ tất cả các 'items'
-        // liên quan đến đơn hàng này.
         return $this->items->sum('quantity');
     }
 
     /**
-     * Một đơn hàng có nhiều sản phẩm (items).
+     * Calculate total price including shipping fee and discounts
+     */
+    public function getTotalPriceAttribute()
+    {
+        $total = $this->total_amount + $this->shipping_fee - $this->discount_amount;
+        return max(0, $total); // Ensure total is never negative
+    }
+
+    /**
+     * Get the user that owns the order
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get all items for this order
      */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get all payments for this order
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get all notifications for this order
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get all complaints for this order
+     */
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(Complaint::class);
+    }
+
+    /**
+     * Scope to filter orders by status
+     */
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope to filter paid orders
+     */
+    public function scopePaid($query)
+    {
+        return $query->where('is_paid', true);
+    }
+
+    /**
+     * Scope to filter unpaid orders
+     */
+    public function scopeUnpaid($query)
+    {
+        return $query->where('is_paid', false);
+    }
+
+    /**
+     * Check if order can be cancelled
+     */
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, ['pending', 'processing']);
+    }
+
+    /**
+     * Check if order can be modified
+     */
+    public function canBeModified(): bool
+    {
+        return in_array($this->status, ['pending']);
+    }
+
+    /**
+     * Get status display name in Vietnamese
+     */
+    public function getStatusDisplayAttribute(): string
+    {
+        $statusMap = [
+            'pending' => 'Chờ xử lý',
+            'processing' => 'Đang xử lý',
+            'shipped' => 'Đã gửi hàng',
+            'delivered' => 'Đã giao hàng',
+            'cancelled' => 'Đã hủy',
+            'completed' => 'Hoàn thành'
+        ];
+
+        return $statusMap[$this->status] ?? $this->status;
     }
 }
