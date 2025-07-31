@@ -14,8 +14,19 @@ const VoucherPage = () => {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchVouchers = async () => {
-    const res = await axios.get<Voucher[]>("/api/vouchers");
-    setVouchers(res.data);
+    try {
+      const res = await axios.get<Voucher[]>("/api/vouchers");
+      // Ensure res.data is an array before setting it
+      if (Array.isArray(res.data)) {
+        setVouchers(res.data);
+      } else {
+        console.error("API response is not an array:", res.data);
+        setVouchers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
+      setVouchers([]);
+    }
   };
 
   useEffect(() => {
@@ -34,13 +45,17 @@ const VoucherPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing && editId !== null) {
-      await axios.put(`/api/vouchers/${editId}`, form);
-    } else {
-      await axios.post("/api/vouchers", form);
+    try {
+      if (isEditing && editId !== null) {
+        await axios.put(`/api/vouchers/${editId}`, form);
+      } else {
+        await axios.post("/api/vouchers", form);
+      }
+      fetchVouchers();
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting voucher:", error);
     }
-    fetchVouchers();
-    resetForm();
   };
 
   const resetForm = () => {
@@ -60,8 +75,12 @@ const VoucherPage = () => {
   };
 
   const handleToggleActive = async (id: number) => {
-    await axios.patch(`/api/vouchers/${id}/toggle`);
-    fetchVouchers();
+    try {
+      await axios.patch(`/api/vouchers/${id}/toggle`);
+      fetchVouchers();
+    } catch (error) {
+      console.error("Error toggling voucher status:", error);
+    }
   };
 
   return (
@@ -109,7 +128,7 @@ const VoucherPage = () => {
           </tr>
         </thead>
         <tbody>
-          {vouchers.map((v) => (
+          {Array.isArray(vouchers) && vouchers.map((v) => (
             <tr key={v.id}>
               <td>{v.code}</td>
               <td>{v.discount_amount.toLocaleString()}₫</td>
