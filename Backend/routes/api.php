@@ -92,6 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 
     // ✅ KHÔNG cần giữ lại product ở đây vì đã move ra ngoài

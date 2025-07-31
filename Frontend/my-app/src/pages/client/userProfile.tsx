@@ -51,7 +51,7 @@ const UserProfile = () => {
     });
   };
 
-  if (isLoading || !user?.id) return <Spin tip="Đang tải hồ sơ..." />;
+  if (isLoading || !user?.id) return <Spin spinning={true} tip="Đang tải hồ sơ..." />;
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
