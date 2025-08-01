@@ -16,6 +16,7 @@ import {
   ShoppingCartOutlined,
   ContactsOutlined,
   LogoutOutlined,
+  GiftOutlined, // Icon cho voucher
 } from "@ant-design/icons";
 
 // Import logo và Ant Design CSS (nếu chưa được import ở main.tsx)
@@ -42,8 +43,10 @@ function SidebarMenu() {
             ? "5" // Thêm điều kiện cho tồn kho
             : path.startsWith("/admin/orders")
               ? "6"
-              : path.startsWith("/admin/contacts")
+              : path.startsWith("/admin/voucher")
                 ? "7"
+              : path.startsWith("/admin/contacts")
+                ? "8"
                 : "";
 
   return (
@@ -85,6 +88,11 @@ function SidebarMenu() {
         },
         {
           key: "7",
+          icon: <GiftOutlined />,
+          label: <a href="/admin/voucher">Voucher</a>,
+        },
+        {
+          key: "8",
           icon: <ContactsOutlined />,
           label: <a href="/admin/contacts">Liên hệ</a>,
         },

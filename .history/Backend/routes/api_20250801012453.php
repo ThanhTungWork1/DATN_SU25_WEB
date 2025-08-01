@@ -128,6 +128,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
     
     Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::get('vouchers', [VoucherController::class, 'index']);
+    Route::get('vouchers/{code}', [VoucherController::class, 'show']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);

@@ -12,7 +12,12 @@ class VoucherController extends Controller
     // GET /api/vouchers
     public function index()
     {
-        return response()->json(Voucher::where('status', 1)->get(), 200);
+        $vouchers = Voucher::orderBy('id', 'desc')->paginate(10);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Vouchers retrieved successfully',
+            'data' => $vouchers
+        ], 200);
     }
 
     // GET /api/vouchers/{code}
@@ -38,11 +43,15 @@ class VoucherController extends Controller
     {
         try {
             \Log::info('Voucher store request:', $request->all());
+            \Log::info('Date format check:', [
+                'expires_at' => $request->expires_at,
+                'parsed_date' => \Carbon\Carbon::parse($request->expires_at)->format('Y-m-d')
+            ]);
             
             $validator = Validator::make($request->all(), [
                 'code' => 'required|string|unique:vouchers,code|max:50',
                 'discount_amount' => 'required|numeric|min:0',
-                'expires_at' => 'required|date_format:Y-m-d|after_or_equal:today',
+                'expires_at' => 'required|date|after_or_equal:today',
             ]);
 
             if ($validator->fails()) {
@@ -103,7 +112,7 @@ class VoucherController extends Controller
             $validator = Validator::make($request->all(), [
                 'code' => 'required|string|max:50|unique:vouchers,code,' . $id,
                 'discount_amount' => 'required|numeric|min:0',
-                'expires_at' => 'required|date_format:Y-m-d|after_or_equal:today',
+                'expires_at' => 'required|date|after_or_equal:today',
             ]);
 
             if ($validator->fails()) {

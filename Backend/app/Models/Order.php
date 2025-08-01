@@ -31,7 +31,7 @@ class Order extends Model
      * Điều này sẽ tự động thêm trường 'total_quantity' vào mỗi khi
      * một đối tượng Order được chuyển thành JSON để gửi về frontend.
      */
-    protected $appends = ['total_quantity'];
+    protected $appends = ['total_quantity', 'calculated_final_amount'];
 
     /**
      * THÊM MỚI: Accessor để tính toán tổng số lượng sản phẩm.
@@ -42,6 +42,28 @@ class Order extends Model
         // Hàm này sẽ tính tổng của cột 'quantity' từ tất cả các 'items'
         // liên quan đến đơn hàng này.
         return $this->items->sum('quantity');
+    }
+
+    /**
+     * THÊM MỚI: Accessor để tính toán lại final_amount từ items.
+     * Sử dụng khi final_amount trong database không chính xác.
+     */
+    public function getCalculatedFinalAmountAttribute()
+    {
+        // Nếu không có items, trả về 0
+        if ($this->items->isEmpty()) {
+            return 0;
+        }
+        
+        // Tính tổng tiền từ items
+        $totalFromItems = $this->items->sum(function($item) {
+            return $item->price * $item->quantity;
+        });
+        
+        // Thêm phí vận chuyển và trừ giảm giá
+        $calculatedAmount = $totalFromItems + $this->shipping_fee - $this->discount_amount;
+        
+        return max(0, $calculatedAmount); // Đảm bảo không âm
     }
 
     /**

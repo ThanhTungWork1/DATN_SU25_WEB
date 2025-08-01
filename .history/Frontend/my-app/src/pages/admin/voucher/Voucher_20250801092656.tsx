@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../../assets/styles/Voucher.css";
+import "../../../assets/styles/VoucherPage.css";
 import axiosInstance from "../../../utils/axiosInstance";
 import { Voucher } from "../../../types/Voucher";
 

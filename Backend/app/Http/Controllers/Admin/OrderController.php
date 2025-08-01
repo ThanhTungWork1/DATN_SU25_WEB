@@ -54,7 +54,7 @@ class OrderController extends Controller
         }
 
         $orders = $query->with(['items' => function($query) {
-            $query->select('id', 'order_id', 'quantity');
+            $query->select('id', 'order_id', 'quantity', 'price');
         }])->latest()->paginate(15);
         
         \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
@@ -134,20 +134,18 @@ class OrderController extends Controller
 
         // Kịch bản 1: Cập nhật trạng thái đơn hàng
         if (isset($validatedData['status'])) {
-            if (in_array($validatedData['status'], ['delivered', 'completed'])) {
-                $validatedData['is_paid'] = true;
-            }
+            // Không tự động set is_paid khi chuyển sang delivered/completed
+            // Admin phải tự set trạng thái thanh toán
         }
 
         // Kịch bản 2: Cập nhật trạng thái thanh toán
         if (isset($validatedData['is_paid'])) {
             if ($validatedData['is_paid'] === true || $validatedData['is_paid'] == 1) {
+                // Chỉ tự động chuyển status khi thanh toán và đang ở delivered
                 if ($order->status === 'delivered') {
                     $validatedData['status'] = 'completed';
                 }
-                if ($order->status === 'pending_confirmation') {
-                    $validatedData['status'] = 'confirmed';
-                }
+                // Không tự động chuyển từ pending_confirmation sang confirmed
             }
         }
 
@@ -192,17 +190,22 @@ class OrderController extends Controller
      */
     public function getOrderStatistics()
     {
+        // Chỉ tính đơn hàng có items với quantity > 0
+        $validOrdersQuery = Order::whereHas('items', function($q) {
+            $q->where('quantity', '>', 0);
+        });
+
         $statistics = [
-            'total' => Order::count(),
-            'pending_confirmation' => Order::where('status', 'pending_confirmation')->count(),
-            'confirmed' => Order::where('status', 'confirmed')->count(),
-            'processing' => Order::where('status', 'processing')->count(),
-            'shipping' => Order::where('status', 'shipping')->count(),
-            'delivered' => Order::where('status', 'delivered')->count(),
-            'completed' => Order::where('status', 'completed')->count(),
-            'cancelled' => Order::where('status', 'cancelled')->count(),
-            'paid' => Order::where('is_paid', true)->count(),
-            'unpaid' => Order::where('is_paid', false)->count(),
+            'total' => $validOrdersQuery->count(),
+            'pending_confirmation' => $validOrdersQuery->where('status', 'pending_confirmation')->count(),
+            'confirmed' => $validOrdersQuery->where('status', 'confirmed')->count(),
+            'processing' => $validOrdersQuery->where('status', 'processing')->count(),
+            'shipping' => $validOrdersQuery->where('status', 'shipping')->count(),
+            'delivered' => $validOrdersQuery->where('status', 'delivered')->count(),
+            'completed' => $validOrdersQuery->where('status', 'completed')->count(),
+            'cancelled' => $validOrdersQuery->where('status', 'cancelled')->count(),
+            'paid' => $validOrdersQuery->where('is_paid', true)->count(),
+            'unpaid' => $validOrdersQuery->where('is_paid', false)->count(),
         ];
 
         return response()->json($statistics);
@@ -234,7 +237,9 @@ class OrderController extends Controller
             $query->where('is_paid', $request->input('is_paid'));
         }
 
-        $orders = $query->with('items')->latest()->get();
+        $orders = $query->whereHas('items', function($q) {
+            $q->where('quantity', '>', 0);
+        })->with('items')->latest()->get();
 
         $filename = 'orders_' . date('Y-m-d_H-i-s') . '.csv';
         

@@ -193,14 +193,20 @@ export default function OrderList() {
             key: "total_quantity", 
             render: (qty) => {
                 const quantity = Number(qty) || 0;
+                if (quantity === 0) {
+                    return <span style={{color: '#ff4d4f', fontWeight: 'bold'}}>Không có sản phẩm</span>;
+                }
                 return `${quantity} Sản phẩm`;
             }
         },
         { 
             title: "Tổng tiền", 
-            dataIndex: "final_amount", 
-            key: "final_amount", 
-            render: (text) => {
+            dataIndex: "calculated_final_amount", 
+            key: "calculated_final_amount", 
+            render: (text, record) => {
+                console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
+                console.log("🔍 [FRONTEND DEBUG] Calculated final amount:", text);
+                console.log("🔍 [FRONTEND DEBUG] Full record:", record);
                 const amount = Number(text) || 0;
                 return `${amount.toLocaleString()} VND`;
             }
@@ -337,14 +343,7 @@ export default function OrderList() {
                 </Row>
             )}
             
-            {/* Debug info */}
-            {process.env.NODE_ENV === 'development' && (
-                <Card style={{ marginBottom: 16 }}>
-                    <p>🔍 Debug: Statistics loaded: {statistics ? 'Yes' : 'No'}</p>
-                    <p>🔍 Debug: Stats loading: {statsLoading ? 'Yes' : 'No'}</p>
-                    {statistics && <pre>{JSON.stringify(statistics, null, 2)}</pre>}
-                </Card>
-            )}
+
 
             {/* Filters */}
             <Row gutter={16} style={{ marginBottom: 16 }}>
