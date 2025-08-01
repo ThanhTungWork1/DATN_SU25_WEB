@@ -52,9 +52,9 @@ const ProductSection = ({ title, apiUrl, showViewAll = true }: ProductSectionPro
             />
             <div className="fashion-name">{product.name}</div>
             <div>
-              <span className="fashion-price">{product.price}đ</span>
+              <span className="fashion-price">{(product.price * 1000).toLocaleString("vi-VN")} VND</span>
               {product.old_price && (
-                <span className="fashion-oldprice">{product.old_price}đ</span>
+                <span className="fashion-oldprice">{(product.old_price * 1000).toLocaleString("vi-VN")} VND</span>
               )}
             </div>
             <div className="fashion-rate">

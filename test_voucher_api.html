@@ -1,44 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Voucher API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
 </head>
 <body>
-    <h1>Test Voucher API</h1>
+    <h1>🧪 Test Voucher API</h1>
     
-    <h2>Test Database Connection</h2>
-    <button onclick="testDB()">Test DB Connection</button>
-    <div id="dbResult"></div>
-    
-    <h2>Test Voucher Validation</h2>
-    <div>
-        <input type="text" id="voucherCode" placeholder="Nhập mã voucher..." value="MUA HE 2025">
-        <input type="number" id="totalAmount" placeholder="Tổng tiền..." value="100000">
-        <button onclick="testVoucher()">Test Voucher</button>
+    <div class="test-section">
+        <h2>📋 Danh sách Voucher Test</h2>
+        <div class="info">
+            <h3>Vouchers có sẵn:</h3>
+            <ul>
+                <li><strong>SAVE10</strong> - Giảm 10% (tối đa 50,000 VND)</li>
+                <li><strong>SAVE20</strong> - Giảm 20% (tối đa 100,000 VND)</li>
+                <li><strong>FIXED30K</strong> - Giảm cố định 30,000 VND</li>
+                <li><strong>MUA HE 2025</strong> - Giảm 10% (tối đa 50,000 VND)</li>
+            </ul>
+        </div>
     </div>
-    <div id="result"></div>
 
-    <h2>Test Available Vouchers</h2>
-    <button onclick="testAvailableVouchers()">Get Available Vouchers</button>
-    <div id="availableResult"></div>
+    <div class="test-section">
+        <h2>🔍 Test Validate Voucher</h2>
+        <div class="form-group">
+            <label for="voucherCode">Mã Voucher:</label>
+            <input type="text" id="voucherCode" placeholder="Nhập mã voucher..." value="SAVE10">
+        </div>
+        <div class="form-group">
+            <label for="totalAmount">Tổng tiền đơn hàng (VND):</label>
+            <input type="number" id="totalAmount" placeholder="Nhập tổng tiền..." value="200000">
+        </div>
+        <button onclick="testVoucher()">Test Voucher</button>
+        <div id="voucherResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Cases</h2>
+        <button onclick="runAllTests()">Chạy tất cả test cases</button>
+        <div id="testResults"></div>
+    </div>
 
     <script>
-        async function testDB() {
-            try {
-                const response = await fetch('http://localhost:8000/api/test-db');
-                const data = await response.json();
-                document.getElementById('dbResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            } catch (error) {
-                document.getElementById('dbResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
-            }
-        }
-
         async function testVoucher() {
+            const code = document.getElementById('voucherCode').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const resultDiv = document.getElementById('voucherResult');
+
+            if (!code || !totalAmount) {
+                resultDiv.innerHTML = '<div class="error">Vui lòng nhập đầy đủ thông tin!</div>';
+                return;
+            }
+
             try {
-                const code = document.getElementById('voucherCode').value;
-                const totalAmount = parseInt(document.getElementById('totalAmount').value);
-                
-                const response = await fetch('http://localhost:8000/api/vouchers/validate', {
+                const response = await fetch('http://localhost:8000/api/test-voucher', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -50,27 +121,124 @@
                 });
 
                 const data = await response.json();
-                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
                 
                 if (data.status === 'success') {
-                    alert(`Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND`);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Voucher hợp lệ!</h3>
+                            <p><strong>Mã voucher:</strong> ${data.data.voucher.code}</p>
+                            <p><strong>Tên voucher:</strong> ${data.data.voucher.title}</p>
+                            <p><strong>Mô tả:</strong> ${data.data.voucher.description}</p>
+                            <p><strong>Giảm giá:</strong> ${data.data.discount_amount.toLocaleString()} VND</p>
+                            <p><strong>Tổng tiền gốc:</strong> ${totalAmount.toLocaleString()} VND</p>
+                            <p><strong>Tổng tiền sau giảm:</strong> ${data.data.final_amount.toLocaleString()} VND</p>
+                        </div>
+                    `;
                 } else {
-                    alert(data.message || 'Voucher không hợp lệ');
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Voucher không hợp lệ!</h3>
+                            <p><strong>Lỗi:</strong> ${data.message}</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
-                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Lỗi kết nối!</h3>
+                        <p><strong>Lỗi:</strong> ${error.message}</p>
+                        <p>Hãy đảm bảo backend Laravel đang chạy ở localhost:8000</p>
+                    </div>
+                `;
             }
         }
 
-        async function testAvailableVouchers() {
-            try {
-                const response = await fetch('http://localhost:8000/api/vouchers/available/list');
-                const data = await response.json();
-                document.getElementById('availableResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            } catch (error) {
-                document.getElementById('availableResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+        async function runAllTests() {
+            const testCases = [
+                { code: 'SAVE10', amount: 200000, expected: 'success' },
+                { code: 'SAVE20', amount: 300000, expected: 'success' },
+                { code: 'FIXED30K', amount: 200000, expected: 'success' },
+                { code: 'INVALID', amount: 200000, expected: 'error' },
+                { code: 'SAVE10', amount: 50000, expected: 'success' }
+            ];
+
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h3>🧪 Đang chạy test cases...</h3>';
+
+            let results = [];
+
+            for (let i = 0; i < testCases.length; i++) {
+                const testCase = testCases[i];
+                
+                try {
+                    const response = await fetch('http://localhost:8000/api/test-voucher', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            code: testCase.code,
+                            total_amount: testCase.amount
+                        })
+                    });
+
+                    const data = await response.json();
+                    const actualStatus = data.status;
+                    const passed = actualStatus === testCase.expected;
+
+                    results.push({
+                        testCase: i + 1,
+                        code: testCase.code,
+                        amount: testCase.amount,
+                        expected: testCase.expected,
+                        actual: actualStatus,
+                        passed: passed,
+                        message: data.message || 'N/A'
+                    });
+                } catch (error) {
+                    results.push({
+                        testCase: i + 1,
+                        code: testCase.code,
+                        amount: testCase.amount,
+                        expected: testCase.expected,
+                        actual: 'error',
+                        passed: false,
+                        message: error.message
+                    });
+                }
             }
+
+            // Hiển thị kết quả
+            let html = '<h3>📊 Kết quả Test Cases:</h3>';
+            let passedCount = 0;
+
+            results.forEach(result => {
+                const statusClass = result.passed ? 'success' : 'error';
+                const statusIcon = result.passed ? '✅' : '❌';
+                
+                html += `
+                    <div class="${statusClass}">
+                        <h4>${statusIcon} Test Case ${result.testCase}</h4>
+                        <p><strong>Voucher:</strong> ${result.code}</p>
+                        <p><strong>Amount:</strong> ${result.amount.toLocaleString()} VND</p>
+                        <p><strong>Expected:</strong> ${result.expected}</p>
+                        <p><strong>Actual:</strong> ${result.actual}</p>
+                        <p><strong>Message:</strong> ${result.message}</p>
+                    </div>
+                `;
+
+                if (result.passed) passedCount++;
+            });
+
+            html += `<h3>📈 Tổng kết: ${passedCount}/${results.length} test cases passed</h3>`;
+            resultsDiv.innerHTML = html;
         }
+
+        // Auto-test khi load trang
+        window.onload = function() {
+            console.log('🧪 Voucher API Test Page loaded');
+            console.log('📋 Available vouchers: SAVE10, SAVE20, FIXED30K, MUA HE 2025');
+        };
     </script>
 </body>
 </html> 

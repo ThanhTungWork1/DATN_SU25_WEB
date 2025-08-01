@@ -1,56 +1,210 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test Cart Clear Function</title>
+    <title>Test Cart Clear</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .success { color: green; background: #d4edda; padding: 10px; margin: 10px 0; }
+        .error { color: red; background: #f8d7da; padding: 10px; margin: 10px 0; }
+        .info { background: #d1ecf1; padding: 10px; margin: 10px 0; }
+    </style>
 </head>
 <body>
-    <h1>Test Cart Clear Function</h1>
+    <h1>🧪 Test Cart Clear API</h1>
     
-    <h2>Mô phỏng luồng thanh toán</h2>
-    <div>
-        <h3>Bước 1: Giỏ hàng hiện tại</h3>
-        <ul id="cartItems">
-            <li>Áo thun nam - 99.000 VND x 2 = 198.000 VND</li>
-            <li>Quần jean - 150.000 VND x 1 = 150.000 VND</li>
-        </ul>
-        <p><strong>Tổng: 348.000 VND</strong></p>
+    <div class="info">
+        <h3>📋 Hướng dẫn test:</h3>
+        <ol>
+            <li>Đảm bảo backend Laravel đang chạy ở localhost:8000</li>
+            <li>Đăng nhập và thêm sản phẩm vào giỏ hàng</li>
+            <li>Nhấn "Test Clear Cart" để xóa toàn bộ giỏ hàng</li>
+        </ol>
     </div>
 
+    <h2>🔍 Test Clear Cart</h2>
     <div>
-        <h3>Bước 2: Thanh toán</h3>
-        <button onclick="simulateOrder()">Mô phỏng đặt hàng</button>
+        <button onclick="testClearCart()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; cursor: pointer;">
+            Test Clear Cart
+        </button>
     </div>
+    
+    <div id="result"></div>
 
+    <h2>📊 Test Cart Operations</h2>
     <div>
-        <h3>Bước 3: Kết quả</h3>
-        <div id="result"></div>
+        <button onclick="testGetCart()" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+            Get Cart
+        </button>
+        <button onclick="testAddToCart()" style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
+            Add Test Item
+        </button>
     </div>
+    <div id="cartResult"></div>
 
     <script>
-        const cartItems = [
-            { id: 1, name: 'Áo thun nam', price: 99000, quantity: 2 },
-            { id: 2, name: 'Quần jean', price: 150000, quantity: 1 }
-        ];
-
-        function simulateOrder() {
+        async function testClearCart() {
             const resultDiv = document.getElementById('result');
             
-            // Mô phỏng đặt hàng thành công
-            resultDiv.innerHTML = '<p style="color: green;">✅ Đặt hàng thành công!</p>';
-            
-            // Mô phỏng xóa sản phẩm khỏi giỏ hàng
-            setTimeout(() => {
-                resultDiv.innerHTML += '<p style="color: blue;">🛒 Đang xóa sản phẩm khỏi giỏ hàng...</p>';
+            try {
+                console.log('🧪 Testing clear cart...');
                 
-                setTimeout(() => {
-                    resultDiv.innerHTML += '<p style="color: green;">✅ Đã xóa sản phẩm khỏi giỏ hàng!</p>';
-                    resultDiv.innerHTML += '<p><strong>Giỏ hàng hiện tại: Trống</strong></p>';
-                    
-                    // Cập nhật hiển thị giỏ hàng
-                    document.getElementById('cartItems').innerHTML = '<li style="color: gray;">Giỏ hàng trống</li>';
-                }, 1000);
-            }, 500);
+                const token = localStorage.getItem('user_token') || localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="error">❌ Chưa đăng nhập! Vui lòng đăng nhập trước.</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8000/api/cart-clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                console.log('📡 API Response:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Xóa giỏ hàng thành công!</h3>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Lỗi xóa giỏ hàng!</h3>
+                            <p><strong>Lỗi:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Lỗi kết nối!</h3>
+                        <p><strong>Lỗi:</strong> ${error.message}</p>
+                        <p>Hãy đảm bảo backend Laravel đang chạy ở localhost:8000</p>
+                    </div>
+                `;
+            }
         }
+
+        async function testGetCart() {
+            const resultDiv = document.getElementById('cartResult');
+            
+            try {
+                const token = localStorage.getItem('user_token') || localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="error">❌ Chưa đăng nhập!</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8000/api/cart', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const items = data.cart_items || [];
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Giỏ hàng hiện tại:</h3>
+                            <p><strong>Số lượng sản phẩm:</strong> ${items.length}</p>
+                            ${items.map(item => `
+                                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0;">
+                                    <p><strong>ID:</strong> ${item.id}</p>
+                                    <p><strong>Product ID:</strong> ${item.product_id}</p>
+                                    <p><strong>Tên:</strong> ${item.name}</p>
+                                    <p><strong>Số lượng:</strong> ${item.quantity}</p>
+                                    <p><strong>Giá:</strong> ${item.price.toLocaleString()} VND</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Lỗi lấy giỏ hàng!</h3>
+                            <p><strong>Lỗi:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Lỗi kết nối!</h3>
+                        <p><strong>Lỗi:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAddToCart() {
+            const resultDiv = document.getElementById('cartResult');
+            
+            try {
+                const token = localStorage.getItem('user_token') || localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="error">❌ Chưa đăng nhập!</div>';
+                    return;
+                }
+                
+                const testItem = {
+                    cartItems: [
+                        {
+                            product_id: 1,
+                            quantity: 1,
+                            price: 100000
+                        }
+                    ]
+                };
+                
+                const response = await fetch('http://localhost:8000/api/cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testItem)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Thêm sản phẩm thành công!</h3>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Lỗi thêm sản phẩm!</h3>
+                            <p><strong>Lỗi:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Lỗi kết nối!</h3>
+                        <p><strong>Lỗi:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-test khi load trang
+        window.onload = function() {
+            console.log('🧪 Cart Clear Test Page loaded');
+        };
     </script>
 </body>
 </html> 

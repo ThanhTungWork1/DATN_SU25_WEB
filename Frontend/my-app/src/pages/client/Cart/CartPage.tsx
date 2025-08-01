@@ -43,9 +43,12 @@ const CartPage = () => {
     });
   };
 
-  const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
+  const selectedProducts = cartItems.filter((item) => selectedItems[item.id]).map(item => ({
+    ...item,
+    quantity: quantities[item.id] || item.quantity
+  }));
   const totalAmount = selectedProducts.reduce(
-    (total, item) => total + (item.price * 1000) * (quantities[item.id] || item.quantity),
+    (total, item) => total + (item.price * 1000) * item.quantity,
     0
   );
 

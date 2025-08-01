@@ -26,7 +26,7 @@ const CheckoutPage = () => {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token") || "";
-  const { removeItem } = useCart(token);
+  const { removeItem, clearCart } = useCart(token);
 
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -43,9 +43,7 @@ const CheckoutPage = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(() => {
-    return selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
-  });
+  const [finalAmount, setFinalAmount] = useState(totalAmount);
 
   const mbAccount = "0686809012005";
   const mbBankCode = "970422";
@@ -60,11 +58,11 @@ const CheckoutPage = () => {
       .catch(() => alert("Không thể tải địa chỉ"));
   }, []);
 
-  // Cập nhật finalAmount khi selectedProducts thay đổi
+  // Cập nhật finalAmount khi totalAmount hoặc selectedProducts thay đổi
   useEffect(() => {
     const newTotal = selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
     setFinalAmount(newTotal);
-  }, [selectedProducts]);
+  }, [selectedProducts, totalAmount]);
 
   const handleProvinceChange = (code: string) => {
     const selected = provinces.find((p) => p.code.toString() === code);
@@ -133,13 +131,12 @@ const CheckoutPage = () => {
   // Function để xóa sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công
   const clearOrderedItems = async () => {
     try {
-      for (const product of selectedProducts) {
-        await removeItem(parseInt(product.id));
-      }
-      console.log("✅ Đã xóa sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công");
+      // Xóa toàn bộ giỏ hàng sau khi đặt hàng thành công
+      await clearCart();
+      console.log("✅ Đã xóa toàn bộ giỏ hàng sau khi đặt hàng thành công");
       return true;
     } catch (error) {
-      console.error("❌ Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
+      console.error("❌ Lỗi khi xóa giỏ hàng:", error);
       return false;
     }
   };

@@ -94,11 +94,11 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
       <Link to={`/products/${product.id}`} style={{ textDecoration: "none" }}>
         <div>
           <span className="fashion-price">
-            {Number(product.price * 1000).toLocaleString("vi-VN")}đ
+            {Number(product.price * 1000).toLocaleString("vi-VN")} VND
           </span>
           {product.old_price && (
             <span className="fashion-oldprice">
-              {Number(product.old_price * 1000).toLocaleString("vi-VN")}đ
+              {Number(product.old_price * 1000).toLocaleString("vi-VN")} VND
             </span>
           )}
         </div>

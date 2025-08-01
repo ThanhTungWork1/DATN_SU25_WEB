@@ -266,6 +266,17 @@ Route::post('/test-voucher', function(Request $request) {
                 'start_date' => '2025-01-01',
                 'end_date' => '2025-12-31',
                 'status' => true
+            ],
+            'MUA HE 2025' => [
+                'title' => 'MUA HE',
+                'code' => 'MUA HE 2025',
+                'value' => 10.00,
+                'max_value' => 50000.00,
+                'quantity' => 100,
+                'description' => 'Voucher giảm 10% cho đơn từ 100k, tối đa 50k',
+                'start_date' => '2025-08-01',
+                'end_date' => '2025-08-31',
+                'status' => true
             ]
         ];
         
@@ -328,6 +339,7 @@ Route::post('/test-voucher', function(Request $request) {
     });
 
     Route::apiResource('/cart', CartController::class);
+    Route::post('/cart-clear', [CartController::class, 'clearCart']);
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);

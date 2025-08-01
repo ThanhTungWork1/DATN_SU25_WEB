@@ -27,34 +27,37 @@ export default function useCart(token: string) {
 
   const updateQuantity = async (id: number, quantity: number) => {
     try {
-      await axios.put(`http://localhost:8000/api/cart/${id}`, { quantity }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("🧪 Updating quantity for cart item ID:", id, "to:", quantity);
+      await axios.put(`/cart/${id}`, { quantity });
+      console.log("✅ Update quantity successful");
       fetchCart();
     } catch (error) {
-      console.error("Lỗi cập nhật:", error);
+      console.error("❌ Lỗi cập nhật:", error);
+      console.error("Error response:", error.response?.data);
     }
   };
 
   const removeItem = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/cart/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("🧪 Removing cart item ID:", id);
+      await axios.delete(`/cart/${id}`);
+      console.log("✅ Remove item successful");
       fetchCart();
     } catch (error) {
-      console.error("Lỗi xóa:", error);
+      console.error("❌ Lỗi xóa:", error);
+      console.error("Error response:", error.response?.data);
     }
   };
 
   const clearCart = async () => {
     try {
-      await axios.post("http://localhost:8000/api/cart-clear", {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("🧪 Clearing entire cart");
+      await axios.post("/cart-clear", {});
+      console.log("✅ Clear cart successful");
       setCartItems([]);
     } catch (error) {
-      console.error("Lỗi xóa toàn bộ:", error);
+      console.error("❌ Lỗi xóa toàn bộ:", error);
+      console.error("Error response:", error.response?.data);
     }
   };
 

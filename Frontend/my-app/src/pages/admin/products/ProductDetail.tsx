@@ -69,7 +69,7 @@ export default function ProductDetail() {
     { title: "Màu sắc", dataIndex: ['color', 'name'], key: "color" },
     { title: "Kích thước", dataIndex: ['size', 'name'], key: "size" },
     { title: "Tồn kho", dataIndex: "stock", key: "stock", render: (stock) => <Tag color={stock > 0 ? 'blue' : 'red'}>{stock}</Tag> },
-    { title: "Giá", dataIndex: "price", key: "price", render: (price) => `${Number(price).toLocaleString()} VND` },
+    { title: "Giá", dataIndex: "price", key: "price", render: (price) => `${(Number(price) * 1000).toLocaleString()} VND` },
     { title: "SKU", dataIndex: "sku", key: "sku", render: (sku) => sku || 'N/A' },
     { 
       title: "Ảnh riêng", 
@@ -98,7 +98,7 @@ export default function ProductDetail() {
             <Descriptions title="Thông tin chung" bordered column={1}>
                 <Descriptions.Item label="Tên sản phẩm">{product.name}</Descriptions.Item>
                 <Descriptions.Item label="Slug">{product.slug}</Descriptions.Item>
-                <Descriptions.Item label="Giá bán">{Number(product.price).toLocaleString()} VND</Descriptions.Item>
+                <Descriptions.Item label="Giá bán">{(Number(product.price) * 1000).toLocaleString()} VND</Descriptions.Item>
                 <Descriptions.Item label="Trạng thái"><Tag color={product.status ? 'green' : 'red'}>{product.status ? 'Đang bán' : 'Ngừng bán'}</Tag></Descriptions.Item>
                 <Descriptions.Item label="Chất liệu">{product.material || 'Chưa cập nhật'}</Descriptions.Item>
                 <Descriptions.Item label="Mô tả">{product.description || 'Chưa có mô tả'}</Descriptions.Item>

@@ -72,10 +72,28 @@ class CartController extends Controller
     public function update(Request $request, $id)
     {
         $userId = Auth::id();
+        
+        // Kiểm tra xem $id có phải là cart item ID không
+        $cartItem = CartItem::whereHas('cart', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->where('id', $id)->first();
+        
+        if ($cartItem) {
+            // Cập nhật cart item
+            $data = $request->validate([
+                'quantity' => 'required|integer|min:1',
+            ]);
+            $cartItem->quantity = $data['quantity'];
+            $cartItem->save();
+            return response()->json(['message' => 'Cập nhật số lượng thành công!']);
+        }
+        
+        // Nếu không phải cart item, thử cập nhật cart
         $cart = Cart::where('user_id', $userId)->where('id', $id)->first();
         if (!$cart) {
-            return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
+            return response()->json(['message' => 'Không tìm thấy giỏ hàng hoặc sản phẩm!'], 404);
         }
+        
         $data = $request->validate([
             'cartItems' => 'required|array',
             'cartItems.*.id' => 'required|exists:cart_items,id',
@@ -94,12 +112,40 @@ class CartController extends Controller
     public function destroy($id)
     {
         $userId = Auth::id();
+        
+        // Kiểm tra xem $id có phải là cart item ID không
+        $cartItem = CartItem::whereHas('cart', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->where('id', $id)->first();
+        
+        if ($cartItem) {
+            // Xóa cart item
+            $cartItem->delete();
+            return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng!']);
+        }
+        
+        // Nếu không phải cart item, thử xóa cart
         $cart = Cart::where('user_id', $userId)->where('id', $id)->first();
         if (!$cart) {
-            return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
+            return response()->json(['message' => 'Không tìm thấy giỏ hàng hoặc sản phẩm!'], 404);
         }
         $cart->cartItems()->delete();
         $cart->delete();
         return response()->json(['message' => 'Đã xóa giỏ hàng!']);
+    }
+
+    public function clearCart()
+    {
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->latest()->first();
+        
+        if (!$cart) {
+            return response()->json(['message' => 'Không có giỏ hàng để xóa!'], 404);
+        }
+        
+        $cart->cartItems()->delete();
+        $cart->delete();
+        
+        return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng!']);
     }
 }
