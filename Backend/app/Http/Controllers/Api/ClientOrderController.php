@@ -98,6 +98,7 @@ class ClientOrderController extends Controller
 
             // Validate
             $validator = Validator::make($request->all(), [
+                'user_id' => 'required|exists:users,id',
                 'shipping_address' => 'required|string|max:500',
                 'shipping_phone' => 'required|string|max:20',
                 'shipping_name' => 'required|string|max:255',
@@ -150,18 +151,18 @@ class ClientOrderController extends Controller
             DB::beginTransaction();
 
             try {
-                // Tạo đơn hàng
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'status' => 'pending',
-                    'is_paid' => false,
-                    'total_amount' => $total_amount,
-                    'shipping_fee' => $shipping_fee,
-                    'shipping_address' => $data['shipping_address'],
-                    'shipping_phone' => $data['shipping_phone'],
-                    'shipping_name' => $data['shipping_name'],
-                    'note' => $data['note'] ?? null
-                ]);
+                            // Tạo đơn hàng
+            $order = Order::create([
+                'user_id' => $data['user_id'],
+                'status' => 'pending',
+                'is_paid' => false,
+                'total_amount' => $total_amount,
+                'shipping_fee' => $shipping_fee,
+                'shipping_address' => $data['shipping_address'],
+                'shipping_phone' => $data['shipping_phone'],
+                'shipping_name' => $data['shipping_name'],
+                'note' => $data['note'] ?? null
+            ]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
                 $orderItems = [];

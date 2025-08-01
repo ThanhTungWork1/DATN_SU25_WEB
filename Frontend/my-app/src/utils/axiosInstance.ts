@@ -7,6 +7,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 // Bỏ phần 'headers' mặc định ở đây để interceptor toàn quyền xử lý
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: false,
 });
 
 // Thêm Interceptor cho Request - Phiên bản hoàn chỉnh và mạnh mẽ hơn

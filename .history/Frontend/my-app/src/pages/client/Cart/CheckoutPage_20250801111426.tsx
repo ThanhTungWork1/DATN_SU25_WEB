@@ -1,11 +1,11 @@
 // ✅ File: src/pages/client/Cart/CheckoutPage.tsx
-
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import useCart from "../../../hook/useCart";
 
 // Kiểu dữ liệu
+
 type Ward = { code: number; name: string };
 type District = { code: number; name: string; wards: Ward[] };
 type Province = { code: number; name: string; districts: District[] };
@@ -22,7 +22,10 @@ const CheckoutPage = () => {
   const {
     selectedProducts = [],
     totalAmount = 0,
-  }: { selectedProducts: Product[]; totalAmount: number } = state || {};
+  }: {
+    selectedProducts: Product[];
+    totalAmount: number;
+  } = state || {};
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token") || "";
@@ -58,6 +61,7 @@ const CheckoutPage = () => {
       .catch(() => alert("Không thể tải địa chỉ"));
   }, []);
 
+  // Cập nhật finalAmount khi totalAmount hoặc selectedProducts thay đổi
   useEffect(() => {
     const newTotal = selectedProducts.reduce(
       (total, item) => total + item.price * 1000 * item.quantity,
@@ -68,38 +72,42 @@ const CheckoutPage = () => {
 
   const handleProvinceChange = (code: string) => {
     const selected = provinces.find((p) => p.code.toString() === code);
-    if (selected) {
-      setDistricts(selected.districts || []);
-      setWards([]);
-      setAddress({
-        province: selected.name,
-        district: "",
-        ward: "",
-        street: "",
-      });
-    }
+    setDistricts(selected?.districts || []);
+    setWards([]);
+    setAddress({
+      province: selected?.name || "",
+      district: "",
+      ward: "",
+      street: "",
+    });
   };
 
   const handleDistrictChange = (code: string) => {
     const selected = districts.find((d) => d.code.toString() === code);
-    if (selected) {
-      setWards(selected.wards || []);
-      setAddress((prev) => ({
-        ...prev,
-        district: selected.name,
-        ward: "",
-      }));
-    }
+    setWards(selected?.wards || []);
+    setAddress((prev) => ({
+      ...prev,
+      district: selected?.name || "",
+      ward: "",
+    }));
   };
 
   const handleValidateVoucher = async () => {
-    if (!voucherCode.trim()) return alert("Vui lòng nhập mã voucher!");
+    if (!voucherCode.trim()) {
+      alert("Vui lòng nhập mã voucher!");
+      return;
+    }
 
     try {
-      const response = await fetch("http://localhost:8000/api/test-voucher", {
+      const response = await fetch(http://localhost:8000/api/test-voucher, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: voucherCode, total_amount: finalAmount }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: voucherCode,
+          total_amount: finalAmount,
+        }),
       });
 
       const data = await response.json();
@@ -109,7 +117,7 @@ const CheckoutPage = () => {
         setDiscountAmount(data.data.discount_amount);
         setFinalAmount(data.data.final_amount);
         alert(
-          `Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND`
+          Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND
         );
       } else {
         alert(data.message || "Voucher không hợp lệ");
@@ -131,9 +139,12 @@ const CheckoutPage = () => {
     setVoucherCode("");
   };
 
+  // Function để xóa sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công
   const clearOrderedItems = async () => {
     try {
+      // Xóa toàn bộ giỏ hàng sau khi đặt hàng thành công
       await clearCart();
+      console.log("✅ Đã xóa toàn bộ giỏ hàng sau khi đặt hàng thành công");
       return true;
     } catch (error) {
       console.error("❌ Lỗi khi xóa giỏ hàng:", error);
@@ -161,11 +172,12 @@ const CheckoutPage = () => {
       return;
     }
 
+    // Lấy thông tin user từ token
     let user = null;
     try {
       const response = await fetch("http://localhost:8000/api/me", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: Bearer ${token},
           "Content-Type": "application/json",
         },
       });
@@ -178,12 +190,14 @@ const CheckoutPage = () => {
         return;
       }
     } catch (error) {
+      console.error("Error fetching user:", error);
       alert("Có lỗi xảy ra khi lấy thông tin người dùng!");
       return;
     }
 
+    const userId = user.id;
     const orderData = {
-      user_id: parseInt(user.id),
+      user_id: parseInt(userId),
       items: selectedProducts,
       total_amount: finalAmount,
       address,
@@ -192,9 +206,15 @@ const CheckoutPage = () => {
       createdAt: new Date().toISOString(),
     };
 
-    if (paymentMethod.includes("chuyển khoản")) {
+    if (paymentMethod === "Ví điện tử (Momo/ZaloPay)") {
       alert(
-        `Vui lòng chuyển khoản ${finalAmount.toLocaleString()} VND rồi nhấn OK.`
+        Vui lòng quét mã Momo và chuyển khoản ${finalAmount.toLocaleString()} VND xong hãy nhấn OK.
+      );
+    }
+
+    if (paymentMethod === "Chuyển khoản ngân hàng") {
+      alert(
+        Vui lòng quét mã QR và chuyển khoản ${finalAmount.toLocaleString()} VND xong hãy nhấn OK.
       );
     }
 
@@ -207,6 +227,7 @@ const CheckoutPage = () => {
       if (!res.ok) throw new Error("Lỗi server");
       const data = await res.json();
 
+      // Xóa sản phẩm đã đặt hàng khỏi giỏ hàng
       await clearOrderedItems();
 
       alert("Đặt hàng thành công!");
@@ -243,9 +264,13 @@ const CheckoutPage = () => {
               <p>{(item.price * 1000 * item.quantity).toLocaleString()} VND</p>
             </div>
           ))}
-          <h5 className="mt-3 text-danger fw-bold">
-            Tổng: {finalAmount.toLocaleString()} VND
+          <h5 className="mt-3">
+            Tổng:{" "}
+            <span className="text-danger">
+              {finalAmount.toLocaleString()} VND
+            </span>
           </h5>
+
           {appliedVoucher && (
             <div className="mt-2 p-2 bg-success bg-opacity-10 border border-success rounded">
               <p className="mb-1">
@@ -267,12 +292,8 @@ const CheckoutPage = () => {
         <div className="col-lg-6">
           <h4 className="fw-bold">Thông tin giao hàng</h4>
 
-          {/* Province */}
           <select
             className="form-select my-2"
-            value={
-              provinces.find((p) => p.name === address.province)?.code || ""
-            }
             onChange={(e) => handleProvinceChange(e.target.value)}
           >
             <option value="">Chọn Tỉnh/Thành</option>
@@ -283,12 +304,8 @@ const CheckoutPage = () => {
             ))}
           </select>
 
-          {/* District */}
           <select
             className="form-select my-2"
-            value={
-              districts.find((d) => d.name === address.district)?.code || ""
-            }
             onChange={(e) => handleDistrictChange(e.target.value)}
             disabled={!districts.length}
           >
@@ -300,13 +317,9 @@ const CheckoutPage = () => {
             ))}
           </select>
 
-          {/* Ward */}
           <select
             className="form-select my-2"
-            value={address.ward}
-            onChange={(e) =>
-              setAddress((prev) => ({ ...prev, ward: e.target.value }))
-            }
+            onChange={(e) => setAddress({ ...address, ward: e.target.value })}
             disabled={!wards.length}
           >
             <option value="">Chọn Xã/Phường</option>
@@ -322,12 +335,9 @@ const CheckoutPage = () => {
             className="form-control my-2"
             placeholder="Số nhà, đường..."
             value={address.street}
-            onChange={(e) =>
-              setAddress((prev) => ({ ...prev, street: e.target.value }))
-            }
+            onChange={(e) => setAddress({ ...address, street: e.target.value })}
           />
 
-          {/* Voucher */}
           <h4 className="fw-bold mt-4">Mã giảm giá</h4>
           <div className="d-flex gap-2 mb-3">
             <input
@@ -357,7 +367,6 @@ const CheckoutPage = () => {
             )}
           </div>
 
-          {/* Payment */}
           <h4 className="fw-bold mt-4">Phương thức thanh toán</h4>
           <select
             className="form-select my-2"
@@ -372,12 +381,11 @@ const CheckoutPage = () => {
             ))}
           </select>
 
-          {/* QR Hiển thị nếu chọn phương thức */}
           {paymentMethod === "Chuyển khoản ngân hàng" && (
             <div className="mt-4 text-center">
               <h5>QR chuyển khoản MB Bank</h5>
               <img
-                src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX`}
+                src={https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX}
                 alt="QR MB Bank"
                 style={{ width: 200, height: 200 }}
               />
@@ -419,6 +427,5 @@ const CheckoutPage = () => {
       </div>
     </div>
   );
-};
 
 export default CheckoutPage;

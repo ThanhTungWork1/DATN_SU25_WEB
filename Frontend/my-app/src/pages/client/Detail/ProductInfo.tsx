@@ -15,10 +15,10 @@ const ProductInfo = ({
 
   // Format giá tiền chuẩn VN
   const formattedPrice = product.price
-    ? (Number(product.price) * 1000).toLocaleString("vi-VN") + "đ"
+    ? Number(product.price).toLocaleString("vi-VN") + "đ"
     : "N/A";
   const formattedOldPrice = originalPrice
-    ? (Number(originalPrice) * 1000).toLocaleString("vi-VN") + "đ"
+    ? Number(originalPrice).toLocaleString("vi-VN") + "đ"
     : "";
 
   return (

@@ -58,6 +58,14 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Kiểm tra xem user có quyền cập nhật thông tin này không
+        $currentUser = $request->user();
+        if ($currentUser->id != $id && $currentUser->role != 1) {
+            return response()->json([
+                'message' => 'Không có quyền cập nhật thông tin người dùng khác'
+            ], 403);
+        }
+
         $user = User::findOrFail($id);
 
         $data = $request->validate([
@@ -67,11 +75,15 @@ class UserController extends Controller
             'gender' => 'nullable|in:male,female,other',
             'birthdate' => 'nullable|date',
             'address' => 'nullable|string|max:255',
-            'role' => 'sometimes|in:0,1',
-            'status' => 'nullable|boolean',
-            'is_verified' => 'nullable|boolean',
             'password' => 'nullable|min:6'
         ]);
+
+        // Chỉ admin mới có thể cập nhật role và status
+        if ($currentUser->role != 1) {
+            unset($data['role']);
+            unset($data['status']);
+            unset($data['is_verified']);
+        }
 
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);

@@ -14,11 +14,16 @@ import { ContactFloating } from "../components/ContactFloating";
 import UserProfile from "../pages/client/Home/UserProfile";
 import UserLogin from "../pages/auth/userLogin";
 import RequireAuth from "./RequireAuth";
+<<<<<<< HEAD
 import AdminLogin from "../pages/admin/AdminLogin";
+
 // import Login from "../pages/auth/Login";
 import OrderList from "../pages/client/Orders/OrderList";
 // import OrderItem from "../pages/client/Orders/OrderItem";
+=======
+import AdminLogin from "../pages/auth/adminLogin";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
+>>>>>>> origin/hoan-cart
 
 const ClientRoute = () => {
   return (
