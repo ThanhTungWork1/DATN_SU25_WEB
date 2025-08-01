@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cart Clear Function</title>
+</head>
+<body>
+    <h1>Test Cart Clear Function</h1>
+    
+    <h2>Mô phỏng luồng thanh toán</h2>
+    <div>
+        <h3>Bước 1: Giỏ hàng hiện tại</h3>
+        <ul id="cartItems">
+            <li>Áo thun nam - 99.000 VND x 2 = 198.000 VND</li>
+            <li>Quần jean - 150.000 VND x 1 = 150.000 VND</li>
+        </ul>
+        <p><strong>Tổng: 348.000 VND</strong></p>
+    </div>
+
+    <div>
+        <h3>Bước 2: Thanh toán</h3>
+        <button onclick="simulateOrder()">Mô phỏng đặt hàng</button>
+    </div>
+
+    <div>
+        <h3>Bước 3: Kết quả</h3>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const cartItems = [
+            { id: 1, name: 'Áo thun nam', price: 99000, quantity: 2 },
+            { id: 2, name: 'Quần jean', price: 150000, quantity: 1 }
+        ];
+
+        function simulateOrder() {
+            const resultDiv = document.getElementById('result');
+            
+            // Mô phỏng đặt hàng thành công
+            resultDiv.innerHTML = '<p style="color: green;">✅ Đặt hàng thành công!</p>';
+            
+            // Mô phỏng xóa sản phẩm khỏi giỏ hàng
+            setTimeout(() => {
+                resultDiv.innerHTML += '<p style="color: blue;">🛒 Đang xóa sản phẩm khỏi giỏ hàng...</p>';
+                
+                setTimeout(() => {
+                    resultDiv.innerHTML += '<p style="color: green;">✅ Đã xóa sản phẩm khỏi giỏ hàng!</p>';
+                    resultDiv.innerHTML += '<p><strong>Giỏ hàng hiện tại: Trống</strong></p>';
+                    
+                    // Cập nhật hiển thị giỏ hàng
+                    document.getElementById('cartItems').innerHTML = '<li style="color: gray;">Giỏ hàng trống</li>';
+                }, 1000);
+            }, 500);
+        }
+    </script>
+</body>
+</html> 

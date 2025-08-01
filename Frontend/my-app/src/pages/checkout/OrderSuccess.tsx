@@ -33,6 +33,11 @@ const OrderSuccess = () => {
     <div className="container my-5 text-center">
       <h2 className="text-success fw-bold">🎉 Đơn hàng của bạn đã được đặt thành công!</h2>
       <p className="mt-4">Cảm ơn bạn đã mua hàng tại <b>StrideX</b>.</p>
+      
+      <div className="alert alert-info mx-auto" style={{ maxWidth: 600 }}>
+        <i className="fas fa-info-circle me-2"></i>
+        Sản phẩm đã được xóa khỏi giỏ hàng của bạn
+      </div>
 
       <div className="border p-4 mt-4 text-start mx-auto" style={{ maxWidth: 600 }}>
         <h4 className="fw-bold">Thông tin đơn hàng</h4>
@@ -53,7 +58,7 @@ const OrderSuccess = () => {
               <div key={index} className="border-bottom py-2">
                 <p className="mb-1"><b>{item.name}</b></p>
                 <p className="mb-1">Số lượng: {item.quantity}</p>
-                <p className="text-danger">{(item.price * 1000).toLocaleString()} VND</p>
+                <p className="text-danger">{((item.price * 1000) * item.quantity).toLocaleString()} VND</p>
               </div>
             ))}
           </div>

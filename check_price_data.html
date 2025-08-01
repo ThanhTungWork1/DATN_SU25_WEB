@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Price Data</title>
+</head>
+<body>
+    <h1>Kiểm tra dữ liệu giá từ API</h1>
+    
+    <h2>Test các trường hợp giá</h2>
+    <div>
+        <h3>Trường hợp 1: Giá = 94</h3>
+        <p>Giá gốc: <span id="price1">94</span></p>
+        <p>Giá hiển thị: <span id="display1">94 VND</span></p>
+        <p>Số lượng 3: <span id="total1">282 VND</span></p>
+    </div>
+
+    <div>
+        <h3>Trường hợp 2: Giá = 94000</h3>
+        <p>Giá gốc: <span id="price2">94000</span></p>
+        <p>Giá hiển thị: <span id="display2">94,000 VND</span></p>
+        <p>Số lượng 3: <span id="total2">282,000 VND</span></p>
+    </div>
+
+    <div>
+        <h3>Trường hợp 3: Giá = 94.00</h3>
+        <p>Giá gốc: <span id="price3">94.00</span></p>
+        <p>Giá hiển thị: <span id="display3">94 VND</span></p>
+        <p>Số lượng 3: <span id="total3">282 VND</span></p>
+    </div>
+
+    <h2>Kiểm tra dữ liệu thực từ API</h2>
+    <button onclick="checkCartData()">Kiểm tra giỏ hàng</button>
+    <div id="apiResult"></div>
+
+    <script>
+        // Test các trường hợp giá
+        const price1 = 94;
+        const price2 = 94000;
+        const price3 = 94.00;
+
+        document.getElementById('price1').textContent = price1;
+        document.getElementById('display1').textContent = price1 + ' VND';
+        document.getElementById('total1').textContent = (price1 * 3) + ' VND';
+
+        document.getElementById('price2').textContent = price2;
+        document.getElementById('display2').textContent = price2.toLocaleString('vi-VN') + ' VND';
+        document.getElementById('total2').textContent = (price2 * 3).toLocaleString('vi-VN') + ' VND';
+
+        document.getElementById('price3').textContent = price3;
+        document.getElementById('display3').textContent = price3 + ' VND';
+        document.getElementById('total3').textContent = (price3 * 3) + ' VND';
+
+        async function checkCartData() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>Đang kiểm tra...</p>';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<p style="color: red;">Chưa đăng nhập!</p>';
+                    return;
+                }
+
+                const response = await fetch('http://localhost:8000/api/cart', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                let html = '<h3>Dữ liệu từ API:</h3>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.cart_items && data.cart_items.length > 0) {
+                    html += '<h3>Phân tích giá:</h3>';
+                    data.cart_items.forEach((item, index) => {
+                        const unitPrice = item.price;
+                        const quantity = item.quantity;
+                        const total = unitPrice * quantity;
+                        
+                        html += `
+                            <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                                <h4>Sản phẩm ${index + 1}: ${item.name}</h4>
+                                <p><strong>Giá gốc từ API:</strong> ${unitPrice} (kiểu: ${typeof unitPrice})</p>
+                                <p><strong>Giá hiển thị:</strong> ${unitPrice.toLocaleString('vi-VN')} VND</p>
+                                <p><strong>Số lượng:</strong> ${quantity}</p>
+                                <p><strong>Tổng tiền:</strong> ${total.toLocaleString('vi-VN')} VND</p>
+                                <p><strong>Vấn đề:</strong> ${unitPrice < 1000 ? 'Giá quá thấp, có thể bị thiếu 000' : 'Giá có vẻ ổn'}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Lỗi: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 

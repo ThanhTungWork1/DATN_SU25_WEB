@@ -11,6 +11,7 @@ const CartPage = () => {
   const { cartItems, updateQuantity, removeItem, clearCart } = useCart(token);
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
+  const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
   const { register, handleSubmit, setValue } = useForm();
 
   // Tự động chọn tất cả sản phẩm khi cartItems thay đổi
@@ -20,24 +21,31 @@ const CartPage = () => {
       return acc;
     }, {} as { [key: number]: boolean });
     setSelectedItems(allSelected);
+    
+    // Khởi tạo quantities từ cartItems
+    const initialQuantities = cartItems.reduce((acc, item) => {
+      acc[item.id] = item.quantity;
+      return acc;
+    }, {} as { [key: number]: number });
+    setQuantities(initialQuantities);
   }, [cartItems]);
 
   const toggleSelectItem = (id: number) => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const onSubmit = (data: any) => {
-    // Dữ liệu trả về dạng: { "qty-1": "2", "qty-2": "1" }
-    Object.keys(data).forEach((key) => {
-      const id = Number(key.replace("qty-", ""));
-      const quantity = Number(data[key]);
+  const onSubmit = () => {
+    // Cập nhật số lượng từ state quantities
+    Object.keys(quantities).forEach((idStr) => {
+      const id = Number(idStr);
+      const quantity = quantities[id];
       if (quantity > 0) updateQuantity(id, quantity);
     });
   };
 
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
   const totalAmount = selectedProducts.reduce(
-    (total, item) => total + (item.price * 1000) * item.quantity,
+    (total, item) => total + (item.price * 1000) * (quantities[item.id] || item.quantity),
     0
   );
 
@@ -48,7 +56,7 @@ const CartPage = () => {
       {cartItems.length === 0 ? (
         <p className="text-center text-muted">Giỏ hàng trống.</p>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
           <div className="row">
             <div className="col-lg-8">
               {cartItems.map((item) => (
@@ -67,11 +75,17 @@ const CartPage = () => {
                   <input
                     type="number"
                     min="1"
-                    defaultValue={item.quantity}
+                    value={quantities[item.id] || item.quantity}
+                    onChange={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 1;
+                      setQuantities(prev => ({
+                        ...prev,
+                        [item.id]: newQuantity
+                      }));
+                    }}
                     className="form-control w-25 mx-2"
-                    {...register(`qty-${item.id}`)}
                   />
-                  <p className="fw-bold">{((item.price * 1000) * item.quantity).toLocaleString("vi-VN")} VND</p>
+                  <p className="fw-bold">{((item.price * 1000) * (quantities[item.id] || item.quantity)).toLocaleString("vi-VN")} VND</p>
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}

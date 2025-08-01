@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useCart from "../../../hook/useCart";
 
 // Kiểu dữ liệu
 
@@ -24,6 +25,8 @@ const CheckoutPage = () => {
   } = state || {};
 
   const navigate = useNavigate();
+  const token = localStorage.getItem("token") || "";
+  const { removeItem } = useCart(token);
 
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -40,8 +43,9 @@ const CheckoutPage = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(totalAmount);
-  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
+  const [finalAmount, setFinalAmount] = useState(() => {
+    return selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
+  });
 
   const mbAccount = "0686809012005";
   const mbBankCode = "970422";
@@ -56,19 +60,11 @@ const CheckoutPage = () => {
       .catch(() => alert("Không thể tải địa chỉ"));
   }, []);
 
+  // Cập nhật finalAmount khi selectedProducts thay đổi
   useEffect(() => {
-    // Load danh sách voucher có sẵn
-    fetch('http://localhost:8000/api/vouchers/available/list')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          setAvailableVouchers(data.data);
-        }
-      })
-      .catch(error => {
-        console.error('Error loading vouchers:', error);
-      });
-  }, []);
+    const newTotal = selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
+    setFinalAmount(newTotal);
+  }, [selectedProducts]);
 
   const handleProvinceChange = (code: string) => {
     const selected = provinces.find((p) => p.code.toString() === code);
@@ -99,16 +95,14 @@ const CheckoutPage = () => {
     }
 
     try {
-      const currentTotal = selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
-      
-      const response = await fetch(`http://localhost:8000/api/vouchers/validate`, {
+      const response = await fetch(`http://localhost:8000/api/test-voucher`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           code: voucherCode,
-          total_amount: currentTotal
+          total_amount: finalAmount
         })
       });
 
@@ -123,6 +117,7 @@ const CheckoutPage = () => {
         alert(data.message || 'Voucher không hợp lệ');
       }
     } catch (error) {
+      console.error('Voucher error:', error);
       alert('Có lỗi xảy ra khi kiểm tra voucher');
     }
   };
@@ -130,8 +125,23 @@ const CheckoutPage = () => {
   const handleRemoveVoucher = () => {
     setAppliedVoucher(null);
     setDiscountAmount(0);
-    setFinalAmount(selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0));
+    const newTotal = selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0);
+    setFinalAmount(newTotal);
     setVoucherCode("");
+  };
+
+  // Function để xóa sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công
+  const clearOrderedItems = async () => {
+    try {
+      for (const product of selectedProducts) {
+        await removeItem(parseInt(product.id));
+      }
+      console.log("✅ Đã xóa sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công");
+      return true;
+    } catch (error) {
+      console.error("❌ Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
+      return false;
+    }
   };
 
   const handleOrder = async () => {
@@ -146,32 +156,41 @@ const CheckoutPage = () => {
       return;
     }
 
-    const userStr = localStorage.getItem("user");
-    console.log("User from localStorage:", userStr);
-    
-    let user = {};
-    try {
-      user = JSON.parse(userStr || "{}");
-    } catch (error) {
-      console.error("Error parsing user:", error);
+    const token = localStorage.getItem("user_token") || localStorage.getItem("token");
+    if (!token) {
+      alert("Vui lòng đăng nhập!");
+      navigate("/login");
+      return;
     }
-    
-    console.log("Parsed user:", user);
-    
-    // Tạm thời sử dụng user ID cố định để test
-    const userId = user.id || user.user_id || 1;
-    
-    // Bỏ qua việc kiểm tra đăng nhập để test
-    // if (!userId) {
-    //   alert("Vui lòng đăng nhập!");
-    //   navigate("/login");
-    //   return;
-    // }
 
+    // Lấy thông tin user từ token
+    let user = null;
+    try {
+      const response = await fetch("http://localhost:8000/api/me", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (response.ok) {
+        user = await response.json();
+      } else {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        navigate("/login");
+        return;
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      alert("Có lỗi xảy ra khi lấy thông tin người dùng!");
+      return;
+    }
+
+    const userId = user.id;
     const orderData = {
-      userId: user.id,
+      user_id: parseInt(userId),
       items: selectedProducts,
-      totalAmount,
+      total_amount: finalAmount,
       address,
       paymentMethod,
       status: "Chờ xử lý",
@@ -179,59 +198,42 @@ const CheckoutPage = () => {
     };
 
     if (paymentMethod === "Ví điện tử (Momo/ZaloPay)") {
-      alert("Vui lòng quét mã Momo và chuyển khoản xong hãy nhấn OK.");
+      alert(`Vui lòng quét mã Momo và chuyển khoản ${finalAmount.toLocaleString()} VND xong hãy nhấn OK.`);
+    }
+    
+    if (paymentMethod === "Chuyển khoản ngân hàng") {
+      alert(`Vui lòng quét mã QR và chuyển khoản ${finalAmount.toLocaleString()} VND xong hãy nhấn OK.`);
     }
 
     try {
       const res = await fetch("http://localhost:8000/api/test-order", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          total_amount: finalAmount,
-          voucher_code: appliedVoucher?.code || null,
-          discount_amount: discountAmount,
-          items: selectedProducts.map(item => ({
-            variant_id: item.id,
-            quantity: item.quantity,
-            price: item.price * 1000
-          }))
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
       });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Lỗi server");
-      }
-      
+      if (!res.ok) throw new Error("Lỗi server");
       const data = await res.json();
-      console.log("Response data:", data);
       
-      // Chuyển đến trang OrderSuccess với đầy đủ thông tin
+      // Xóa sản phẩm đã đặt hàng khỏi giỏ hàng
+      await clearOrderedItems();
+      
+      alert("Đặt hàng thành công!");
       navigate("/order-success", {
         state: {
-          orderId: data.data?.id || data.id || "001",
-          address: {
-            street: address.street,
-            ward: address.ward,
-            district: address.district,
-            province: address.province
-          },
+          orderId: data.data?.id || "001",
+          address,
           totalAmount: finalAmount,
-          paymentMethod: paymentMethod,
-          createdAt: new Date().toISOString(),
+          paymentMethod,
+          createdAt: orderData.createdAt,
           items: selectedProducts,
-          customerName: user.name || "Khách hàng",
+          customerName: user.name || user.username || "Khách hàng",
           customerPhone: user.phone || "",
           voucherCode: appliedVoucher?.code || null,
           discountAmount: discountAmount
         },
       });
-    } catch (error) {
-      console.error("Lỗi đặt hàng:", error);
-      alert(error instanceof Error ? error.message : "Xảy ra lỗi, thử lại sau.");
+    } catch {
+      alert("Xảy ra lỗi, thử lại sau.");
     }
   };
 
@@ -249,19 +251,17 @@ const CheckoutPage = () => {
               <p>{((item.price * 1000) * item.quantity).toLocaleString()} VND</p>
             </div>
           ))}
-          <h5 className="mt-3">
-            Tổng: <span className="text-danger">
-              {selectedProducts.reduce((total, item) => total + ((item.price * 1000) * item.quantity), 0).toLocaleString()} VND
-            </span>
-          </h5>
-          
-          {appliedVoucher && (
-            <div className="mt-2 p-2 bg-success bg-opacity-10 border border-success rounded">
-              <p className="mb-1"><b>Voucher áp dụng:</b> {appliedVoucher.code}</p>
-              <p className="mb-1 text-success">Giảm giá: {discountAmount.toLocaleString()} VND</p>
-              <p className="mb-0"><b>Thành tiền:</b> <span className="text-danger fw-bold">{finalAmount.toLocaleString()} VND</span></p>
-            </div>
-          )}
+                      <h5 className="mt-3">
+              Tổng: <span className="text-danger">{finalAmount.toLocaleString()} VND</span>
+            </h5>
+            
+            {appliedVoucher && (
+              <div className="mt-2 p-2 bg-success bg-opacity-10 border border-success rounded">
+                <p className="mb-1"><b>Voucher áp dụng:</b> {appliedVoucher.code}</p>
+                <p className="mb-1 text-success">Giảm giá: {discountAmount.toLocaleString()} VND</p>
+                <p className="mb-0"><b>Thành tiền:</b> <span className="text-danger fw-bold">{finalAmount.toLocaleString()} VND</span></p>
+              </div>
+            )}
         </div>
 
         <div className="col-lg-6">
@@ -330,25 +330,6 @@ const CheckoutPage = () => {
               </button>
             )}
           </div>
-          
-          {availableVouchers.length > 0 && (
-            <div className="mb-3">
-              <small className="text-muted">Voucher có sẵn:</small>
-              <div className="mt-1">
-                {availableVouchers.map((voucher, index) => (
-                  <span 
-                    key={index}
-                    className="badge bg-light text-dark me-2 mb-1"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setVoucherCode(voucher.code)}
-                    title={voucher.description}
-                  >
-                    {voucher.code} - {voucher.value <= 100 ? `${voucher.value}%` : `${voucher.value.toLocaleString()} VND`}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           <h4 className="fw-bold mt-4">Phương thức thanh toán</h4>
           <select className="form-select my-2" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
@@ -364,7 +345,7 @@ const CheckoutPage = () => {
             <div className="mt-4 text-center">
               <h5>QR chuyển khoản MB Bank</h5>
               <img
-                src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${totalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX`}
+                src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX`}
                 alt="QR MB Bank"
                 style={{ width: 200, height: 200 }}
               />
@@ -372,7 +353,7 @@ const CheckoutPage = () => {
                 <b>Số TK:</b> {mbAccount} <br />
                 <b>Ngân hàng:</b> MB Bank <br />
                 <b>Chủ TK:</b> LÊ KHẢI HOÀN <br />
-                <b>Số tiền:</b> <span className="text-danger fw-bold">{totalAmount.toLocaleString()} VND</span>
+                <b>Số tiền:</b> <span className="text-danger fw-bold">{finalAmount.toLocaleString()} VND</span>
               </p>
             </div>
           )}
@@ -383,7 +364,8 @@ const CheckoutPage = () => {
               <img src="/qr-momo.png" alt="QR Momo" style={{ width: 200, height: 200 }} />
               <p className="mt-3">
                 <b>Số điện thoại:</b> {momoPhone} <br />
-                <b>Chủ ví:</b> {momoName}
+                <b>Chủ ví:</b> {momoName} <br />
+                <b>Số tiền:</b> <span className="text-danger fw-bold">{finalAmount.toLocaleString()} VND</span>
               </p>
             </div>
           )}

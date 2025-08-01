@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Price Display</title>
+</head>
+<body>
+    <h1>Test Price Display</h1>
+    
+    <h2>Test các trường hợp giá</h2>
+    <div>
+        <h3>Giá gốc từ API: 94</h3>
+        <p>Giá hiển thị: <span id="displayPrice1">94 VND</span></p>
+        <p>Giá với số lượng 3: <span id="totalPrice1">282 VND</span></p>
+    </div>
+
+    <div>
+        <h3>Giá đã format: 94,000</h3>
+        <p>Giá hiển thị: <span id="displayPrice2">94,000 VND</span></p>
+        <p>Giá với số lượng 3: <span id="totalPrice2">282,000 VND</span></p>
+    </div>
+
+    <div>
+        <h3>Test số lượng thay đổi</h3>
+        <label>Số lượng: <input type="number" id="quantity" value="3" min="1"></label>
+        <p>Giá đơn vị: <span id="unitPrice">94,000 VND</span></p>
+        <p>Tổng tiền: <span id="totalPrice">282,000 VND</span></p>
+    </div>
+
+    <script>
+        // Test giá gốc từ API
+        const originalPrice = 94;
+        document.getElementById('displayPrice1').textContent = originalPrice + ' VND';
+        document.getElementById('totalPrice1').textContent = (originalPrice * 3) + ' VND';
+
+        // Test giá đã format
+        const formattedPrice = 94000;
+        document.getElementById('displayPrice2').textContent = formattedPrice.toLocaleString('vi-VN') + ' VND';
+        document.getElementById('totalPrice2').textContent = (formattedPrice * 3).toLocaleString('vi-VN') + ' VND';
+
+        // Test thay đổi số lượng
+        const unitPrice = 94000;
+        const quantityInput = document.getElementById('quantity');
+        const totalPriceSpan = document.getElementById('totalPrice');
+        const unitPriceSpan = document.getElementById('unitPrice');
+
+        unitPriceSpan.textContent = unitPrice.toLocaleString('vi-VN') + ' VND';
+
+        function updateTotal() {
+            const quantity = parseInt(quantityInput.value) || 1;
+            const total = unitPrice * quantity;
+            totalPriceSpan.textContent = total.toLocaleString('vi-VN') + ' VND';
+        }
+
+        quantityInput.addEventListener('input', updateTotal);
+        updateTotal();
+    </script>
+</body>
+</html> 

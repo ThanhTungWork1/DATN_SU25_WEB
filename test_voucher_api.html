@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Voucher API</title>
+</head>
+<body>
+    <h1>Test Voucher API</h1>
+    
+    <h2>Test Database Connection</h2>
+    <button onclick="testDB()">Test DB Connection</button>
+    <div id="dbResult"></div>
+    
+    <h2>Test Voucher Validation</h2>
+    <div>
+        <input type="text" id="voucherCode" placeholder="Nhập mã voucher..." value="MUA HE 2025">
+        <input type="number" id="totalAmount" placeholder="Tổng tiền..." value="100000">
+        <button onclick="testVoucher()">Test Voucher</button>
+    </div>
+    <div id="result"></div>
+
+    <h2>Test Available Vouchers</h2>
+    <button onclick="testAvailableVouchers()">Get Available Vouchers</button>
+    <div id="availableResult"></div>
+
+    <script>
+        async function testDB() {
+            try {
+                const response = await fetch('http://localhost:8000/api/test-db');
+                const data = await response.json();
+                document.getElementById('dbResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('dbResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+
+        async function testVoucher() {
+            try {
+                const code = document.getElementById('voucherCode').value;
+                const totalAmount = parseInt(document.getElementById('totalAmount').value);
+                
+                const response = await fetch('http://localhost:8000/api/vouchers/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        total_amount: totalAmount
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.status === 'success') {
+                    alert(`Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND`);
+                } else {
+                    alert(data.message || 'Voucher không hợp lệ');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+
+        async function testAvailableVouchers() {
+            try {
+                const response = await fetch('http://localhost:8000/api/vouchers/available/list');
+                const data = await response.json();
+                document.getElementById('availableResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('availableResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html> 
