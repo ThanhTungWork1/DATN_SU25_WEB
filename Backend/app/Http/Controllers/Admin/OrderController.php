@@ -17,17 +17,19 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        \Log::info('🔍 [BACKEND DEBUG] Admin orders index called');
-        \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
-        
-        $query = Order::query();
+        try {
+            \Log::info('🔍 [BACKEND DEBUG] Admin orders index called');
+            \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
+            
+            $query = Order::query();
 
-        // Tìm kiếm theo mã đơn hàng hoặc tên khách hàng
+        // Tìm kiếm theo mã đơn hàng, order_code hoặc tên khách hàng
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
 
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('id', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('order_code', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_name', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_email', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_phone', 'like', '%' . $searchTerm . '%');
@@ -53,13 +55,27 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->input('date_to'));
         }
 
-        $orders = $query->with(['items' => function($query) {
+        // Chỉ lấy đơn hàng có ít nhất 1 sản phẩm với quantity > 0
+        $orders = $query->whereHas('items', function($q) {
+            $q->where('quantity', '>', 0);
+        })->with(['items' => function($query) {
             $query->select('id', 'order_id', 'quantity', 'price');
         }])->latest()->paginate(15);
         
-        \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
-        
-        return $orders;
+            \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
+            
+            return $orders;
+        } catch (\Exception $e) {
+            \Log::error('🔍 [BACKEND ERROR] Admin orders index error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Có lỗi xảy ra khi tải danh sách đơn hàng',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -82,10 +98,19 @@ class OrderController extends Controller
                 'shipping_address' => 'required|string',
                 'payment_method' => 'required|string',
                 'notes' => 'nullable|string',
-                'items' => 'required|array',
+                'items' => 'required|array|min:1', // Đảm bảo có ít nhất 1 item
                 'items.*.variant_id' => 'required|exists:product_variants,id',
                 'items.*.quantity' => 'required|integer|min:1',
             ]);
+
+            // Validate thêm: đảm bảo có ít nhất 1 sản phẩm với quantity > 0
+            $totalQuantity = collect($data['items'])->sum('quantity');
+            if ($totalQuantity <= 0) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], []), 
+                    'Đơn hàng phải có ít nhất 1 sản phẩm với số lượng lớn hơn 0.'
+                );
+            }
 
             $order = Order::create($data);
 
@@ -190,25 +215,37 @@ class OrderController extends Controller
      */
     public function getOrderStatistics()
     {
-        // Chỉ tính đơn hàng có items với quantity > 0
-        $validOrdersQuery = Order::whereHas('items', function($q) {
-            $q->where('quantity', '>', 0);
-        });
+        try {
+            // Chỉ tính đơn hàng có items với quantity > 0
+            $validOrdersQuery = Order::whereHas('items', function($q) {
+                $q->where('quantity', '>', 0);
+            });
 
-        $statistics = [
-            'total' => $validOrdersQuery->count(),
-            'pending_confirmation' => $validOrdersQuery->where('status', 'pending_confirmation')->count(),
-            'confirmed' => $validOrdersQuery->where('status', 'confirmed')->count(),
-            'processing' => $validOrdersQuery->where('status', 'processing')->count(),
-            'shipping' => $validOrdersQuery->where('status', 'shipping')->count(),
-            'delivered' => $validOrdersQuery->where('status', 'delivered')->count(),
-            'completed' => $validOrdersQuery->where('status', 'completed')->count(),
-            'cancelled' => $validOrdersQuery->where('status', 'cancelled')->count(),
-            'paid' => $validOrdersQuery->where('is_paid', true)->count(),
-            'unpaid' => $validOrdersQuery->where('is_paid', false)->count(),
-        ];
+            $statistics = [
+                'total' => $validOrdersQuery->count(),
+                'pending_confirmation' => $validOrdersQuery->where('status', 'pending_confirmation')->count(),
+                'confirmed' => $validOrdersQuery->where('status', 'confirmed')->count(),
+                'processing' => $validOrdersQuery->where('status', 'processing')->count(),
+                'shipping' => $validOrdersQuery->where('status', 'shipping')->count(),
+                'delivered' => $validOrdersQuery->where('status', 'delivered')->count(),
+                'completed' => $validOrdersQuery->where('status', 'completed')->count(),
+                'cancelled' => $validOrdersQuery->where('status', 'cancelled')->count(),
+                'paid' => $validOrdersQuery->where('is_paid', true)->count(),
+                'unpaid' => $validOrdersQuery->where('is_paid', false)->count(),
+            ];
 
-        return response()->json($statistics);
+            return response()->json($statistics);
+        } catch (\Exception $e) {
+            \Log::error('🔍 [BACKEND ERROR] getOrderStatistics error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Có lỗi xảy ra khi tải thống kê đơn hàng',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -223,6 +260,7 @@ class OrderController extends Controller
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('id', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('order_code', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_name', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_email', 'like', '%' . $searchTerm . '%')
                   ->orWhere('customer_phone', 'like', '%' . $searchTerm . '%');
@@ -237,6 +275,7 @@ class OrderController extends Controller
             $query->where('is_paid', $request->input('is_paid'));
         }
 
+        // Chỉ export đơn hàng có ít nhất 1 sản phẩm với quantity > 0
         $orders = $query->whereHas('items', function($q) {
             $q->where('quantity', '>', 0);
         })->with('items')->latest()->get();
@@ -254,6 +293,7 @@ class OrderController extends Controller
             // Header CSV
             fputcsv($file, [
                 'Mã đơn hàng',
+                'Order Code',
                 'Tên khách hàng',
                 'Email',
                 'Số điện thoại',
@@ -272,6 +312,7 @@ class OrderController extends Controller
             foreach ($orders as $order) {
                 fputcsv($file, [
                     $order->id,
+                    $order->order_code,
                     $order->customer_name,
                     $order->customer_email,
                     $order->customer_phone,

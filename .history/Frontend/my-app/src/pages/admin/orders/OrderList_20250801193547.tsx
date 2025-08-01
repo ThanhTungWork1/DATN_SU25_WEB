@@ -29,8 +29,6 @@ import {
 } from "../../../utils/orderStatus";
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import CancelledOrderPaymentStatus from "../../../components/CancelledOrderPaymentStatus";
-import { formatCurrency, formatCurrencyWithColor } from "../../../utils/currencyFormatter";
-import { formatDateVietnam } from "../../../utils/dateFormatter";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -222,7 +220,10 @@ export default function OrderList() {
       title: "Khách hàng",
       dataIndex: "customer_name",
       key: "customer_name",
-      render: (text) => {
+      render: (text, record) => {
+        console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
+        console.log("🔍 [FRONTEND DEBUG] Customer name:", text);
+        console.log("🔍 [FRONTEND DEBUG] Full order record:", record);
         return text || "Không có tên";
       },
     },
@@ -230,7 +231,7 @@ export default function OrderList() {
       title: "Ngày đặt",
       dataIndex: "created_at",
       key: "created_at",
-      render: (text) => formatDateVietnam(text),
+      render: (text) => new Date(text).toLocaleDateString(),
     },
     {
       title: "Số lượng",
@@ -248,10 +249,12 @@ export default function OrderList() {
       title: "Tổng tiền",
       dataIndex: "calculated_final_amount",
       key: "calculated_final_amount",
-      render: (text) => {
+      render: (text, record) => {
+        console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
+        console.log("🔍 [FRONTEND DEBUG] Calculated final amount:", text);
+        console.log("🔍 [FRONTEND DEBUG] Full record:", record);
         const amount = Number(text) || 0;
-        const formatted = formatCurrencyWithColor(amount);
-        return <span style={formatted.style}>{formatted.text}</span>;
+        return `${amount.toLocaleString()} VND`;
       },
     },
     {
@@ -360,7 +363,6 @@ export default function OrderList() {
                 title="Tổng đơn hàng"
                 value={statistics.total}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -371,7 +373,6 @@ export default function OrderList() {
                 value={statistics.pending_confirmation}
                 valueStyle={{ color: "#faad14" }}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -382,7 +383,6 @@ export default function OrderList() {
                 value={statistics.processing}
                 valueStyle={{ color: "#1890ff" }}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -393,7 +393,6 @@ export default function OrderList() {
                 value={statistics.delivered}
                 valueStyle={{ color: "#52c41a" }}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -404,7 +403,6 @@ export default function OrderList() {
                 value={statistics.paid}
                 valueStyle={{ color: "#52c41a" }}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -415,7 +413,6 @@ export default function OrderList() {
                 value={statistics.cancelled}
                 valueStyle={{ color: "#ff4d4f" }}
                 loading={statsLoading}
-                suffix="đơn"
               />
             </Card>
           </Col>
@@ -425,87 +422,73 @@ export default function OrderList() {
       {/* Filters */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
-          <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Tìm kiếm</div>
-            <Search
-              placeholder="Tìm theo order code, tên, email, SĐT..."
-              onChange={(e) => setSearchTerm(e.target.value)}
-              enterButton
-            />
-          </div>
+          <Search
+            placeholder="Tìm theo order code, tên, email, SĐT..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+            enterButton
+          />
         </Col>
         <Col span={4}>
-          <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Trạng thái đơn hàng</div>
-            <Select
-              placeholder="Chọn trạng thái"
-              style={{ width: "100%" }}
-              allowClear
-              value={statusFilter}
-              onChange={setStatusFilter}
-            >
-              {ORDER_STATUS_OPTIONS.map((option) => (
-                <Select.Option key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
+          <Select
+            placeholder="Trạng thái đơn hàng"
+            style={{ width: "100%" }}
+            allowClear
+            value={statusFilter}
+            onChange={setStatusFilter}
+          >
+            {ORDER_STATUS_OPTIONS.map((option) => (
+              <Select.Option key={option.value} value={option.value}>
+                {option.label}
+              </Select.Option>
+            ))}
+          </Select>
         </Col>
         <Col span={4}>
-          <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Trạng thái thanh toán</div>
-            <Select
-              placeholder="Chọn trạng thái"
-              style={{ width: "100%" }}
-              allowClear
-              value={paymentFilter}
-              onChange={setPaymentFilter}
-            >
-              <Select.Option value="1">Đã thanh toán</Select.Option>
-              <Select.Option value="0">Chưa thanh toán</Select.Option>
-            </Select>
-          </div>
+          <Select
+            placeholder="Trạng thái thanh toán"
+            style={{ width: "100%" }}
+            allowClear
+            value={paymentFilter}
+            onChange={setPaymentFilter}
+          >
+            <Select.Option value="1">Đã thanh toán</Select.Option>
+            <Select.Option value="0">Chưa thanh toán</Select.Option>
+          </Select>
         </Col>
         <Col span={6}>
-          <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Khoảng thời gian</div>
-            <DatePicker.RangePicker
-              style={{ width: "100%" }}
-              placeholder={["Từ ngày", "Đến ngày"]}
-              onChange={(dates) => {
-                if (dates) {
-                  setDateRange([
-                    dates[0]?.format("YYYY-MM-DD") || "",
-                    dates[1]?.format("YYYY-MM-DD") || "",
-                  ]);
-                } else {
-                  setDateRange(null);
-                }
-              }}
-            />
-          </div>
+          <DatePicker.RangePicker
+            style={{ width: "100%" }}
+            placeholder={["Từ ngày", "Đến ngày"]}
+            onChange={(dates) => {
+              if (dates) {
+                setDateRange([
+                  dates[0]?.format("YYYY-MM-DD") || "",
+                  dates[1]?.format("YYYY-MM-DD") || "",
+                ]);
+              } else {
+                setDateRange(null);
+              }
+            }}
+          />
         </Col>
         <Col span={4}>
-          <div style={{ marginTop: 24 }}>
-            <Space>
-              <Tooltip title="Làm mới">
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={() => {
-                    setSearchTerm("");
-                    setStatusFilter("");
-                    setPaymentFilter("");
-                    setDateRange(null);
-                    fetchStatistics();
-                  }}
-                />
-              </Tooltip>
-              <Tooltip title="Xuất file CSV">
-                <Button icon={<DownloadOutlined />} onClick={handleExport} />
-              </Tooltip>
-            </Space>
-          </div>
+          <Space>
+            <Tooltip title="Làm mới">
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("");
+                  setPaymentFilter("");
+                  setDateRange(null);
+                  fetchStatistics();
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="Xuất file CSV">
+              <Button icon={<DownloadOutlined />} onClick={handleExport} />
+            </Tooltip>
+          </Space>
         </Col>
       </Row>
 

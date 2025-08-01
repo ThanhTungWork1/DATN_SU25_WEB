@@ -19,11 +19,21 @@ use App\Http\Controllers\Api\ClientOrderController;
 use App\Http\Controllers\Api\SizeController;
 use App\Http\Controllers\Api\ColorController;
 use App\Http\Controllers\Api\CommentController as ApiCommentController;
+use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductVariantController;
+use App\Http\Controllers\Api\SizeController;
+use App\Http\Controllers\Api\VoucherController;
 // --- ADMIN Controllers ---
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\UserController;
 // --- Middleware ---
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
@@ -153,7 +163,7 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
 });
 // Các route Admin khác VẪN CẦN XÁC THỰC
 // -------------------- Admin Routes --------------------
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     
     // Order statistics và export - phải đặt TRƯỚC apiResource
     Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);

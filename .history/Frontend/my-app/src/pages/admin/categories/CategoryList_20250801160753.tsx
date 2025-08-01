@@ -1,5 +1,5 @@
 // src/pages/admin/categories/CategoryList.tsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -36,17 +36,20 @@ export default function CategoryList() {
     setLoading(true);
     try {
       const res = await getCategories();
-      // SỬA LỖI: Xử lý dữ liệu trả về một cách an toàn
-      // Kiểm tra xem res.data.data có phải là mảng không, nếu không thì kiểm tra res.data
-      const categoriesData = Array.isArray(res.data.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-          ? res.data
-          : [];
-      setCategories(categoriesData);
+<<<<<<< HEAD
+      //       setCategories(res.data.data || res.data);
+      setCategories(res.data);
     } catch (error) {
       message.error("Không thể tải danh sách danh mục.");
+=======
+      // SỬA LỖI: Xử lý dữ liệu trả về một cách an toàn
+      // Kiểm tra xem res.data.data có phải là mảng không, nếu không thì kiểm tra res.data
+      const categoriesData = Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+      setCategories(categoriesData);
+    } catch (error) {
+      message.error('Không thể tải danh sách danh mục.');
       console.error("Fetch categories error:", error);
+>>>>>>> origin/hung-feature/product-and-order
     } finally {
       setLoading(false);
     }
@@ -98,6 +101,7 @@ export default function CategoryList() {
     }
   };
 
+<<<<<<< HEAD
   const columns: TableProps<Category>["columns"] = [
     { title: "ID", dataIndex: "id", key: "id", width: 80 },
     { title: "Tên danh mục", dataIndex: "name", key: "name" },
@@ -108,6 +112,17 @@ export default function CategoryList() {
       key: "products_count",
       align: "center",
       render: (count: number) => `${count} sản phẩm`,
+=======
+  const columns: TableProps<Category>['columns'] = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+    { title: 'Tên danh mục', dataIndex: 'name', key: 'name' },
+    {
+      title: 'Số lượng sản phẩm',
+      dataIndex: 'products_count',
+      key: 'products_count',
+      align: 'center',
+      render: (count: number) => `${count || 0} sản phẩm`,
+>>>>>>> origin/hung-feature/product-and-order
     },
     {
       title: "Trạng thái",
@@ -133,9 +148,13 @@ export default function CategoryList() {
             onConfirm={() => handleDelete(record.id)}
             okText="Xóa"
             cancelText="Hủy"
+<<<<<<< HEAD
             disabled={
               record.products_count !== undefined && record.products_count > 0
             } // Vô hiệu hóa nút xóa nếu có sản phẩm
+=======
+            disabled={record.products_count !== undefined && record.products_count > 0}
+>>>>>>> origin/hung-feature/product-and-order
           >
             <Button
               icon={<DeleteOutlined />}
@@ -176,9 +195,14 @@ export default function CategoryList() {
       />
 
       <Modal
+<<<<<<< HEAD
         title={editingCategory ? "Chỉnh sửa Danh mục" : "Tạo mới Danh mục"}
+        visible={isModalVisible}
+=======
+        title={editingCategory ? 'Chỉnh sửa Danh mục' : 'Tạo mới Danh mục'}
         // SỬA LẠI: Dùng 'open' thay vì 'visible'
         open={isModalOpen}
+>>>>>>> origin/hung-feature/product-and-order
         onCancel={handleCancel}
         footer={null}
       >

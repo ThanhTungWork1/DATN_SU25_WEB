@@ -9,6 +9,7 @@ class Order extends Model
 {
     protected $fillable = [
         'user_id',
+        'order_code',
         'status',
         'is_paid',
         'total_amount',
@@ -32,6 +33,48 @@ class Order extends Model
      * một đối tượng Order được chuyển thành JSON để gửi về frontend.
      */
     protected $appends = ['total_quantity', 'calculated_final_amount'];
+
+    /**
+     * Boot method để tự động tạo order_code khi tạo order mới
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($order) {
+            if (empty($order->order_code)) {
+                // Sử dụng ngày đặt hàng thực tế để tạo mã
+                $orderDate = $order->created_at ? \Carbon\Carbon::parse($order->created_at) : null;
+                $order->order_code = self::generateOrderCode($orderDate);
+            }
+        });
+    }
+
+    /**
+     * Tạo mã đơn hàng tự động
+     * Format: ORD-YYYYMMDD-XXXX (VD: ORD-20250731-0001)
+     * Sử dụng ngày đặt hàng thực tế, không phải ngày hiện tại
+     */
+    public static function generateOrderCode($orderDate = null)
+    {
+        // Sử dụng ngày đặt hàng nếu có, không thì dùng ngày hiện tại
+        $date = $orderDate ? $orderDate->format('Ymd') : now()->format('Ymd');
+        $prefix = "ORD-{$date}-";
+        
+        // Tìm số thứ tự cuối cùng của ngày đó
+        $lastOrder = self::where('order_code', 'like', $prefix . '%')
+                         ->orderBy('order_code', 'desc')
+                         ->first();
+        
+        if ($lastOrder) {
+            $lastNumber = (int) substr($lastOrder->order_code, -4);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
 
     /**
      * THÊM MỚI: Accessor để tính toán tổng số lượng sản phẩm.

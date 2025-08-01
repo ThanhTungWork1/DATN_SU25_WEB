@@ -56,3 +56,22 @@ export interface Category {
   created_at?: string;
   updated_at?: string;
 }
+
+
+export interface Comment {
+  id: number;
+  product_id: number;
+  user_id: number;
+  content: string;
+  rating: number;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+  // Dữ liệu được eager load từ backend
+  user: {
+    name: string;
+  };
+  product: {
+    name: string;
+  };
+}

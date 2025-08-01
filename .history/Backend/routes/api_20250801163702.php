@@ -153,7 +153,7 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
 });
 // Các route Admin khác VẪN CẦN XÁC THỰC
 // -------------------- Admin Routes --------------------
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     
     // Order statistics và export - phải đặt TRƯỚC apiResource
     Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);

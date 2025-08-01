@@ -1,5 +1,6 @@
 export interface Order {
   id: number;
+  order_code: string;
   user_id: number;
   //thêm 3 trường này
   customer_name: string;
@@ -12,7 +13,7 @@ export interface Order {
   final_amount: number; // Tổng tiền cuối cùng = total_amount + shipping_fee - discount_amount
   status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'completed' | 'cancelled'; // Trạng thái đơn hàng
   payment_method: string;
-  is_paid: 'unpaid' | 'paid' | 'refunded' | 'part_paid';
+  is_paid: boolean | number | 'unpaid' | 'paid' | 'refunded' | 'part_paid';
   notes: string | null;
    items?: OrderItem[]; 
    total_quantity?: number; // THÊM MỚI: Để nhận tổng số lượng

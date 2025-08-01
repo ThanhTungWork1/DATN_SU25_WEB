@@ -113,7 +113,7 @@ export default function OrderDetail() {
       title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `${price.toLocaleString()} VND`
+      render: (price: number) => `${(price || 0).toLocaleString()} VND`
     },
     {
       title: "Số lượng",
@@ -123,7 +123,7 @@ export default function OrderDetail() {
     {
       title: "Thành tiền",
       key: "subtotal",
-      render: (record: any) => `${(record.price * record.quantity).toLocaleString()} VND`
+      render: (record: any) => `${((record.price || 0) * (record.quantity || 0)).toLocaleString()} VND`
     }
   ];
 
@@ -134,6 +134,12 @@ export default function OrderDetail() {
   if (!order) {
     return <div>Không tìm thấy đơn hàng</div>;
   }
+
+  // Đảm bảo các giá trị số không undefined
+  const totalAmount = order.total_amount || 0;
+  const shippingFee = order.shipping_fee || 0;
+  const discountAmount = order.discount_amount || 0;
+  const finalAmount = order.final_amount || 0;
 
   return (
     <div>
@@ -217,7 +223,7 @@ export default function OrderDetail() {
                     <Text strong>Tổng cộng</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    <Text strong>{order.final_amount.toLocaleString()} VND</Text>
+                    <Text strong>{finalAmount.toLocaleString()} VND</Text>
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
               )}
@@ -230,18 +236,18 @@ export default function OrderDetail() {
           <Card title="Tổng quan đơn hàng">
             <Descriptions column={1}>
               <Descriptions.Item label="Tổng tiền hàng">
-                <Text>{order.total_amount.toLocaleString()} VND</Text>
+                <Text>{totalAmount.toLocaleString()} VND</Text>
               </Descriptions.Item>
               <Descriptions.Item label="Phí vận chuyển">
-                <Text>{order.shipping_fee.toLocaleString()} VND</Text>
+                <Text>{shippingFee.toLocaleString()} VND</Text>
               </Descriptions.Item>
               <Descriptions.Item label="Giảm giá">
-                <Text type="danger">-{order.discount_amount.toLocaleString()} VND</Text>
+                <Text type="danger">-{discountAmount.toLocaleString()} VND</Text>
               </Descriptions.Item>
               <Divider />
               <Descriptions.Item label="Thành tiền">
                 <Text strong style={{ fontSize: "18px" }}>
-                  {order.final_amount.toLocaleString()} VND
+                  {finalAmount.toLocaleString()} VND
                 </Text>
               </Descriptions.Item>
             </Descriptions>

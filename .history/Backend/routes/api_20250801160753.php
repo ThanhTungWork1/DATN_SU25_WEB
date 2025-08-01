@@ -1,7 +1,10 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// --- API Controllers (Public & User) ---
 use App\Http\Controllers\Api\AuthenticationController;
+<<<<<<< HEAD
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -17,20 +20,49 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\ClientOrderController;
 use App\Http\Controllers\Api\SizeController;
+=======
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\CartController;
+>>>>>>> origin/hung-feature/product-and-order
 use App\Http\Controllers\Api\ColorController;
 use App\Http\Controllers\Api\CommentController as ApiCommentController;
+use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductVariantController;
+use App\Http\Controllers\Api\SizeController;
+use App\Http\Controllers\Api\VoucherController;
+
 // --- ADMIN Controllers ---
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\UserController;
+
 // --- Middleware ---
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
+<<<<<<< HEAD
 use App\Http\Controllers\Api\ContactController;
+=======
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+>>>>>>> origin/hung-feature/product-and-order
+
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+
+<<<<<<< HEAD
+
 
 // Forgot Password
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
@@ -39,6 +71,12 @@ Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPa
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
 
 // Email Verification
+=======
+// Forgot Password & Email Verification Routes
+Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
+Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
+Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
+>>>>>>> origin/hung-feature/product-and-order
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return response()->json(['message' => 'Đã gửi lại email xác minh']);
@@ -54,16 +92,22 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
+<<<<<<< HEAD
 // -------------------- Public Routes --------------------
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
+=======
+// Public Routes (Không cần xác thực)
+Route::get('/categories', [CategoryController::class, 'index']); // Public API để lấy danh sách danh mục
+>>>>>>> origin/hung-feature/product-and-order
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [ApiCommentController::class, 'getByProduct']);
 
+<<<<<<< HEAD
 // Public orders endpoint for testing
 Route::post('/orders', [\App\Http\Controllers\Api\ClientOrderController::class, 'store']);
 
@@ -131,6 +175,9 @@ Route::prefix('product')->group(function () {
 });
 
 // Authentication
+=======
+// Authentication Routes
+>>>>>>> origin/hung-feature/product-and-order
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
@@ -145,15 +192,22 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
     Route::post('products', [ProductController::class, 'store']);
     Route::post('products/{id}', [ProductController::class, 'update']);
 
+<<<<<<< HEAD
+    // Các route admin khác của bạn giữ nguyên
+       // THÊM MỚI: Categories
+=======
     // Orders
     Route::apiResource('orders', OrderController::class);
 
     // Categories
+>>>>>>> origin/hung-feature/product-and-order
     Route::apiResource('categories', CategoryController::class);
-});
+
+<<<<<<< HEAD
 // Các route Admin khác VẪN CẦN XÁC THỰC
 // -------------------- Admin Routes --------------------
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
+    Route::apiResource('users', UserController::class);
     
     // Order statistics và export - phải đặt TRƯỚC apiResource
     Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);
@@ -178,6 +232,7 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
         Route::get('/all-stats', [DashboardController::class, 'allStats']);
     });
     
+=======
     // Comments / Reviews
     Route::get('comments', [AdminCommentController::class, 'index']);
     Route::put('comments/{id}/status', [AdminCommentController::class, 'updateStatus']);
@@ -187,6 +242,7 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
     Route::apiResource('users', UserController::class);
 
     // Dashboard & Vouchers
+>>>>>>> origin/hung-feature/product-and-order
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
@@ -211,6 +267,9 @@ Route::prefix('vouchers')->group(function () {
 });
 
 
+
+<<<<<<< HEAD
+
 Route::post('/contact', [ContactController::class, 'store']);
 
 // Authenticated User Routes
@@ -218,10 +277,7 @@ Route::post('/contact', [ContactController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', function (Request $request) {
         return response()->json($request->user());
-    });
-});
-
-
+=======
 // Authenticated User Routes (Yêu cầu xác thực)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('product')->group(function () {
@@ -230,6 +286,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/featured', [ProductController::class, 'featured']);
         Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
         Route::get('/{id}', [ProductController::class, 'show']);
+>>>>>>> origin/hung-feature/product-and-order
     });
 
     Route::get('/users/{id}', [UserController::class, 'show']);
@@ -263,6 +320,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('delete/{id}', [OrderController::class, 'destroy']);
     });
 
+<<<<<<< HEAD
     Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/{id}', [UserController::class, 'show']);
@@ -380,10 +438,13 @@ Route::post('/test-voucher', function(Request $request) {
         Route::post('/', [PaymentController::class, 'store']);
     });
 
+=======
+>>>>>>> origin/hung-feature/product-and-order
     Route::apiResource('/cart', CartController::class);
     Route::post('/comments', [ApiCommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
+<<<<<<< HEAD
     Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
@@ -515,3 +576,6 @@ Route::post('/test-order', function(Request $request) {
         ], 500);
     }
 });
+=======
+});
+>>>>>>> origin/hung-feature/product-and-order

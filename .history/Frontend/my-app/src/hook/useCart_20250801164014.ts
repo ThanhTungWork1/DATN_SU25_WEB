@@ -7,9 +7,20 @@ export default function useCart(token: string) {
 
   const fetchCart = async () => {
     try {
+      console.log("=== DEBUG FETCH CART ===");
       const res = await axios.get<CartResponse>("/cart");
+      console.log("Cart response:", res.data);
+      console.log("Cart items:", res.data.cart_items); // SỬA LẠI: cart_items thay vì cartItems
+      // Backend trả về toàn bộ cart object, cart_items nằm trong đó
       setCartItems(res.data.cart_items || []); // SỬA LẠI: cart_items thay vì cartItems
+      console.log(
+        "✅ Fetch cart successful, items count:",
+        res.data.cart_items?.length || 0
+      ); // SỬA LẠI: cart_items
     } catch (error) {
+      console.error("❌ Lỗi khi lấy giỏ hàng:", error);
+      console.error("Error response:", error.response?.data);
+      // Nếu không có giỏ hàng, set rỗng
       if (error.response?.status === 404) {
         setCartItems([]);
       }

@@ -36,8 +36,27 @@ export const getAllCategories = async () => {
  * Lấy toàn bộ sản phẩm (không phân trang)
  */
 export const getAllProducts = async () => {
+  console.log('🔍 [getAllProducts DEBUG] Starting API call...');
+  
+  // Gọi API trực tiếp không có tham số
   const { data } = await config.get("/product");
-  return data as Product[];
+  
+  console.log('🔍 [getAllProducts DEBUG] Raw API response:', data);
+  
+  // Nếu trả về dữ liệu phân trang, lấy mảng data
+  if (data && data.data && Array.isArray(data.data)) {
+    console.log('🔍 [getAllProducts DEBUG] Returning paginated data.data:', data.data);
+    return data.data as Product[];
+  }
+  
+  // Nếu trả về mảng trực tiếp
+  if (Array.isArray(data)) {
+    console.log('🔍 [getAllProducts DEBUG] Returning direct array:', data);
+    return data as Product[];
+  }
+  
+  console.log('🔍 [getAllProducts DEBUG] Returning empty array');
+  return [] as Product[];
 };
 
 /**

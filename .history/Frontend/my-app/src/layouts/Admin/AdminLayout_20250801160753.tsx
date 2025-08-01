@@ -1,7 +1,14 @@
 // src/layouts/admin/AdminLayout.tsx
-import { Outlet, useLocation } from "react-router-dom";
-import { Layout, Menu } from "antd";
 import {
+  Outlet,
+  useLocation,
+  useNavigate,
+  Routes,
+  Route,
+} from "react-router-dom";
+import { Layout, Menu, Space } from "antd";
+import {
+<<<<<<< HEAD
   DashboardOutlined,
   UserOutlined,
   AppstoreOutlined,
@@ -9,7 +16,15 @@ import {
   InboxOutlined, // Icon cho tồn kho
   ShoppingCartOutlined,
   ContactsOutlined,
+  LogoutOutlined,
   GiftOutlined, // Icon cho voucher
+=======
+    ShoppingOutlined,
+    ShoppingCartOutlined,
+    AppstoreOutlined, // THÊM MỚI: Icon cho danh mục
+    LogoutOutlined,
+CommentOutlined
+>>>>>>> origin/hung-feature/product-and-order
 } from "@ant-design/icons";
 
 // Import logo và Ant Design CSS (nếu chưa được import ở main.tsx)
@@ -23,6 +38,7 @@ function SidebarMenu() {
   const location = useLocation();
   const path = location.pathname;
 
+<<<<<<< HEAD
   // SỬA ĐỔI: Thêm logic để highlight đúng menu item
   const selectedKey = path.startsWith("/admin/dashboard")
     ? "1"
@@ -38,9 +54,9 @@ function SidebarMenu() {
               ? "6"
               : path.startsWith("/admin/voucher")
                 ? "7"
-                : path.startsWith("/admin/contacts")
-                  ? "8"
-                  : "";
+              : path.startsWith("/admin/contacts")
+                ? "8"
+                : "";
 
   return (
     <Menu
@@ -68,6 +84,7 @@ function SidebarMenu() {
           icon: <ShoppingOutlined />,
           label: <a href="/admin/products">Sản phẩm</a>,
         },
+        // THÊM MỚI: Thêm mục menu cho trang quản lý tồn kho
         {
           key: "5",
           icon: <InboxOutlined />,
@@ -91,6 +108,46 @@ function SidebarMenu() {
       ]}
     />
   );
+=======
+    // SỬA ĐỔI: Thêm logic để highlight đúng menu item
+    const selectedKey =
+        path.startsWith("/admin/products") ? "1"
+        : path.startsWith("/admin/orders") ? "2"
+        : path.startsWith("/admin/categories") ? "3" // Thêm điều kiện cho danh mục
+: path.startsWith("/admin/comments") ? "4" // THÊM MỚI: Logic highlight cho menu Đánh giá
+        : "";
+
+    return (
+        <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[selectedKey]}
+            items={[
+                {
+                    key: "1",
+                    icon: <ShoppingOutlined />,
+                    label: <a href="/admin/products">Sản phẩm</a>,
+                },
+                {
+                    key: "2",
+                    icon: <ShoppingCartOutlined />,
+                    label: <a href="/admin/orders">Đơn hàng</a>,
+                },
+                // THÊM MỚI: Thêm mục menu cho trang quản lý danh mục
+                {
+                    key: "3",
+                    icon: <AppstoreOutlined />,
+                    label: <a href="/admin/categories">Danh mục</a>,
+                },
+{
+                    key: "4",
+                    icon: <CommentOutlined />,
+                    label: <a href="/admin/comments">Đánh giá</a>,
+                },
+            ]}
+        />
+    );
+>>>>>>> origin/hung-feature/product-and-order
 }
 
 // --- Định nghĩa AdminLayout (Thay thế AppLayout trước đó) ---

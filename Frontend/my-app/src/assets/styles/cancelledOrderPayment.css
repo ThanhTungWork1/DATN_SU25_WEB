@@ -1,0 +1,33 @@
+.cancelled-order-payment {
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: bold;
+}
+
+.cancelled-order-payment.paid {
+    color: #ff4d4f;
+}
+
+.cancelled-order-payment.paid .sub-text {
+    font-size: 11px;
+    color: #ff7875;
+    margin-top: 2px;
+}
+
+.cancelled-order-payment.cod {
+    color: #faad14;
+}
+
+.cancelled-order-payment.cod .sub-text {
+    font-size: 11px;
+    color: #ffc53d;
+    margin-top: 2px;
+}
+
+.cancelled-order-payment.unpaid {
+    color: #52c41a;
+}
+
+.cancelled-order-payment .main-text {
+    margin-bottom: 2px;
+} 
