@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Product } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
 
+
 // ======================= GET PRODUCT BY ID ========================
 export const getProductById = async (id: string): Promise<Product> => {
   try {

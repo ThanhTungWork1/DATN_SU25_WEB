@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -141,7 +142,19 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        return Order::with('items')->findOrFail($id);
+        $order = Order::with(['items.variant.product', 'items.variant.color', 'items.variant.size' => function($query) {
+            $query->orderBy('created_at', 'asc');
+        }])->findOrFail($id);
+
+        // Tính toán thêm thông tin
+        $order->total_items = $order->items->count();
+        $order->total_quantity = $order->items->sum('quantity');
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Lấy chi tiết đơn hàng thành công',
+            'data' => $order
+        ]);
     }
 
     /**
@@ -155,12 +168,29 @@ class OrderController extends Controller
             'status' => ['sometimes', 'required', Rule::in(['pending_confirmation', 'confirmed', 'processing', 'shipping', 'delivered', 'completed', 'cancelled'])],
             'is_paid' => 'sometimes|required|boolean',
             'notes' => 'nullable|string',
+            'shipping_company' => 'nullable|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
+            'estimated_delivery_date' => 'nullable|date',
+            'shipping_date' => 'nullable|date',
+            'delivered_at' => 'nullable|date',
         ]);
 
         // Kịch bản 1: Cập nhật trạng thái đơn hàng
         if (isset($validatedData['status'])) {
-            // Không tự động set is_paid khi chuyển sang delivered/completed
-            // Admin phải tự set trạng thái thanh toán
+            // Tự động set ngày xác nhận khi chuyển từ pending_confirmation sang confirmed
+            if ($validatedData['status'] === 'confirmed' && $order->status === 'pending_confirmation') {
+                $validatedData['confirmed_at'] = now();
+            }
+            
+            // Tự động set ngày giao hàng khi chuyển sang delivered
+            if ($validatedData['status'] === 'delivered' && $order->status !== 'delivered') {
+                $validatedData['delivered_at'] = now();
+            }
+            
+            // Tự động set ngày vận chuyển khi chuyển sang shipping
+            if ($validatedData['status'] === 'shipping' && $order->status !== 'shipping') {
+                $validatedData['shipping_date'] = now();
+            }
         }
 
         // Kịch bản 2: Cập nhật trạng thái thanh toán
@@ -178,8 +208,9 @@ class OrderController extends Controller
         $order->refresh();
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Cập nhật đơn hàng thành công!',
-            'data' => $order
+            'data' => $order->load('items')
         ]);
     }
 

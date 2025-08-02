@@ -11,12 +11,19 @@ export interface Order {
   shipping_fee: number; // Phí vận chuyển
   discount_amount: number; // Số tiền giảm giá
   final_amount: number; // Tổng tiền cuối cùng = total_amount + shipping_fee - discount_amount
-  status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'completed' | 'cancelled'; // Trạng thái đơn hàng
+  status: 'pending_confirmation' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'completed' | 'cancelled'; // Trạng thái đơn hàng
   payment_method: string;
   is_paid: boolean | number | 'unpaid' | 'paid' | 'refunded' | 'part_paid';
   notes: string | null;
-   items?: OrderItem[]; 
-   total_quantity?: number; // THÊM MỚI: Để nhận tổng số lượng
+  // Thông tin giao hàng mới
+  delivered_at?: string | null;
+  shipping_date?: string | null;
+  estimated_delivery_date?: string | null;
+  tracking_number?: string | null;
+  shipping_company?: string | null;
+  items?: OrderItem[]; 
+  total_quantity?: number; // THÊM MỚI: Để nhận tổng số lượng
+  total_items?: number; // THÊM MỚI: Để nhận tổng số sản phẩm
   created_at: string;
   updated_at: string;
 }
@@ -24,7 +31,7 @@ export interface Order {
 export interface OrderItem {
   id: number;
   order_id: number;
-  ariant_id: number | null;
+  variant_id: number | null;
   quantity: number;
   price: number;
   product_name: string;

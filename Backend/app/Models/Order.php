@@ -24,6 +24,11 @@ class Order extends Model
         'customer_name',
         'customer_email',
         'customer_phone',
+        'delivered_at',
+        'shipping_date',
+        'estimated_delivery_date',
+        'tracking_number',
+        'shipping_company',
         'created_at',
         'updated_at',
     ];
