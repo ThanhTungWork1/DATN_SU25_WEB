@@ -27,10 +27,10 @@ class InventoryService
             ->distinct('product_id')
             ->count('product_id');
             
-        $totalValue = ProductVariant::join('products', 'product_variants.product_id', '=', 'products.id')
+        $totalValueResult = ProductVariant::join('products', 'product_variants.product_id', '=', 'products.id')
             ->selectRaw('SUM(product_variants.stock_available * products.price) as total_value')
-            ->first()
-            ->total_value ?? 0;
+            ->first();
+        $totalValue = $totalValueResult ? $totalValueResult->total_value : 0;
 
         return [
             'total_products' => $totalProducts,
