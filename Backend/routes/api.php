@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
 // Controllers
 use App\Http\Controllers\Api\{
+    HomeSectionController,
+    HomeSectionProductController,
     AuthenticationController,
     BannerController,
     CartController,
@@ -41,6 +43,7 @@ Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
 // Forgot Password
 Route::prefix('forgot-password')->group(function () {
@@ -75,6 +78,8 @@ Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [CommentController::class, 'getByProduct']);
 Route::post('/contact', [ContactController::class, 'store']);
+Route::get('/home-sections', [HomeSectionController::class, 'index']);
+Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
 
 // ========== Admin ==========
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
@@ -87,6 +92,15 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
+    // Home Sections
+    Route::apiResource('home-sections', HomeSectionController::class)->only(['store', 'update', 'destroy']);
+
+
+    Route::prefix('home-section-products')->group(function () {
+        Route::post('/', [HomeSectionProductController::class, 'store']);
+        Route::delete('/{section_id}/product/{product_id}', [HomeSectionProductController::class, 'destroy']);
+    });
+
 
     // Inventory
     Route::prefix('inventories')->group(function () {
@@ -113,6 +127,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
         Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
     });
+
+
 
     // Orders cho user
     Route::prefix('client/orders')->group(function () {

@@ -44,5 +44,12 @@ class Product extends Model
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
+    public function homeSections()
+    {
+        return $this->belongsToMany(HomeSection::class, 'home_section_products')
+            ->withPivot('sort_order')
+            ->withTimestamps();
+    }
+
 
 }
