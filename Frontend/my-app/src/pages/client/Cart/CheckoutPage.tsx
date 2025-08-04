@@ -184,14 +184,19 @@ const CheckoutPage = () => {
     }
 
     const userId = user.id;
+    
+    // Chuẩn bị dữ liệu đơn hàng theo format của ClientOrderController
     const orderData = {
       user_id: parseInt(userId),
-      items: selectedProducts,
-      total_amount: finalAmount,
-      address,
-      paymentMethod,
-      status: "Chờ xử lý",
-      createdAt: new Date().toISOString(),
+      shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
+      shipping_phone: user.phone || "0123456789",
+      shipping_name: user.name || user.username || "Khách hàng",
+      note: `Phương thức thanh toán: ${paymentMethod}`,
+      items: selectedProducts.map(item => ({
+        variant_id: item.variant_id || 1, // Cần có variant_id thực tế
+        quantity: item.quantity,
+        price: item.price
+      }))
     };
 
     if (paymentMethod === "Ví điện tử (Momo/ZaloPay)") {
@@ -203,13 +208,52 @@ const CheckoutPage = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/test-order", {
+      // Tạo đơn hàng
+      const orderRes = await fetch("http://localhost:8000/api/test-order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(orderData),
       });
-      if (!res.ok) throw new Error("Lỗi server");
-      const data = await res.json();
+      
+      if (!orderRes.ok) {
+        const errorData = await orderRes.json();
+        throw new Error(errorData.message || "Lỗi tạo đơn hàng");
+      }
+      
+      const orderData_response = await orderRes.json();
+      const orderId = orderData_response.data?.id;
+      
+      if (!orderId) {
+        throw new Error("Không nhận được ID đơn hàng");
+      }
+      
+      // Tạo thanh toán
+      const paymentData = {
+        order_id: orderId,
+        method: paymentMethod,
+        amount: finalAmount,
+        transaction_id: `TXN_${Date.now()}_${orderId}`,
+        bank_code: paymentMethod === "Chuyển khoản ngân hàng" ? "MB" : null
+      };
+      
+      const paymentRes = await fetch("http://localhost:8000/api/payments", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(paymentData),
+      });
+      
+      if (!paymentRes.ok) {
+        const errorData = await paymentRes.json();
+        throw new Error(errorData.message || "Lỗi tạo thanh toán");
+      }
+      
+      const paymentResponse = await paymentRes.json();
       
       // Xóa sản phẩm đã đặt hàng khỏi giỏ hàng
       await clearOrderedItems();
@@ -217,20 +261,22 @@ const CheckoutPage = () => {
       alert("Đặt hàng thành công!");
       navigate("/order-success", {
         state: {
-          orderId: data.data?.id || "001",
+          orderId: orderId,
           address,
           totalAmount: finalAmount,
           paymentMethod,
-          createdAt: orderData.createdAt,
+          createdAt: new Date().toISOString(),
           items: selectedProducts,
           customerName: user.name || user.username || "Khách hàng",
           customerPhone: user.phone || "",
           voucherCode: appliedVoucher?.code || null,
-          discountAmount: discountAmount
+          discountAmount: discountAmount,
+          paymentStatus: paymentResponse.payment?.status || 'pending'
         },
       });
-    } catch {
-      alert("Xảy ra lỗi, thử lại sau.");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert(error.message || "Xảy ra lỗi, thử lại sau.");
     }
   };
 

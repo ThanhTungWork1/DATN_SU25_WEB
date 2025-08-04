@@ -101,34 +101,8 @@ Route::get('/comments/product/{product_id}', [CommentController::class, 'getByPr
 Route::post('/orders', [\App\Http\Controllers\Api\ClientOrderController::class, 'store']);
 
 // Simple test order endpoint
-Route::post('/test-order', function(Request $request) {
-    try {
-        $data = $request->validate([
-            'user_id' => 'required|integer',
-            'total_amount' => 'required|numeric',
-            'items' => 'required|array'
-        ]);
-        
-        // Tạo order giả để test (không cần database)
-        $orderId = time(); // Sử dụng timestamp làm ID
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order created successfully',
-            'data' => [
-                'id' => $orderId,
-                'user_id' => $data['user_id'],
-                'total_amount' => $data['total_amount'],
-                'status' => 'pending'
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
+// Use ClientOrderController for real order creation
+Route::post('/test-order', [ClientOrderController::class, 'store']);
 
 // Create test user endpoint
 Route::post('/create-test-user', function() {
@@ -268,7 +242,13 @@ Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
+        Route::get('/status/{order_id}', [PaymentController::class, 'checkStatus']);
     });
+
+    // Webhook routes (không cần authentication)
+    Route::post('/payment-webhook', [PaymentController::class, 'webhook']);
+    Route::post('/momo-webhook', [PaymentController::class, 'webhook']);
+    Route::post('/banking-webhook', [PaymentController::class, 'webhook']);
 
     Route::apiResource('/cart', CartController::class);
     Route::post('/cart-clear', [CartController::class, 'clearCart']);
@@ -386,23 +366,4 @@ Route::post('/test-voucher', function(Request $request) {
 });
 
 // PUBLIC ORDER ROUTES (không cần authentication)
-Route::post('/test-order', function(Request $request) {
-    try {
-        $orderData = $request->all();
-        
-        // Mock order creation
-        $orderId = 'ORD' . date('YmdHis') . rand(100, 999);
-        
-        return response()->json([
-            'success' => true,
-            'id' => $orderId,
-            'message' => 'Đặt hàng thành công',
-            'order' => $orderData
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-        ], 500);
-    }
-});
+// Removed duplicate test-order route - using ClientOrderController above
