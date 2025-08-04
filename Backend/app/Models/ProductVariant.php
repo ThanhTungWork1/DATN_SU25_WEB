@@ -25,16 +25,27 @@ class ProductVariant extends Model
         'sku'
     ];
 
-     protected $appends = ['image_url'];
+    // protected static function booted()
+    // {
+    //     static::creating(function ($variant) {
+    //         \Log::info('🔍 [MODEL DEBUG] Creating ProductVariant with data:', $variant->toArray());
+    //     });
 
-    public function getImageUrlAttribute()
-    {
-        if ($this->image && Storage::disk('public')->exists($this->image)) {
-            // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
-            return asset('storage/' . $this->image);
-        }
-        return null;
-    }
+    //     static::created(function ($variant) {
+    //         \Log::info('🔍 [MODEL DEBUG] ProductVariant created successfully with ID: ' . $variant->id);
+    //     });
+    // }
+
+     // protected $appends = ['image_url'];
+
+    // public function getImageUrlAttribute()
+    // {
+    //     if ($this->image && Storage::disk('public')->exists($this->image)) {
+    //         // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
+    //         return asset('storage/' . $this->image);
+    //     }
+    //     return null;
+    // }
 
 
     public function product()

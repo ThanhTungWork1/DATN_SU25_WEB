@@ -123,11 +123,14 @@ Route::post('/create-test-user', function() {
 
 // Cho phép truy cập sản phẩm không cần token (sửa tại đây)
 Route::prefix('product')->group(function () {
+    Route::get('/test', [\App\Http\Controllers\Api\ProductController::class, 'test']);
+    Route::get('/debug/{id}', [\App\Http\Controllers\Api\ProductController::class, 'debug']);
+    Route::get('/detail/{id}', [\App\Http\Controllers\Api\ProductController::class, 'debug']);
     Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
     Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
     Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
-    Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
+    Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'showProduct']);
 });
 
 // Authentication
@@ -200,6 +203,12 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
         Route::post('/update-stock-for-order', [InventoryController::class, 'updateStockForOrder']);
     });
 
+    // Voucher routes
+    Route::apiResource('vouchers', \App\Http\Controllers\Admin\VoucherController::class);
+    Route::get('vouchers/statistics', [\App\Http\Controllers\Admin\VoucherController::class, 'statistics']);
+    Route::get('vouchers/{id}/usage', [\App\Http\Controllers\Admin\VoucherController::class, 'usageDetails']);
+    Route::patch('vouchers/{id}/toggle', [\App\Http\Controllers\Admin\VoucherController::class, 'toggle']);
+
 });
 
     // routes/api.php
@@ -225,11 +234,11 @@ Route::middleware('auth:sanctum')->group(function () {
 // Authenticated User Routes (Yêu cầu xác thực)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('product')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::get('/search', [ProductController::class, 'search']);
-        Route::get('/featured', [ProductController::class, 'featured']);
-        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
-        Route::get('/{id}', [ProductController::class, 'show']);
+        Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
+        Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
+        Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
+        Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
     });
 
     Route::get('/users/{id}', [UserController::class, 'show']);
