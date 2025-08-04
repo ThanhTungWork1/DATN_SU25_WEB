@@ -9,7 +9,7 @@ import useCart from "../../../hook/useCart";
 type Ward = { code: number; name: string };
 type District = { code: number; name: string; wards: Ward[] };
 type Province = { code: number; name: string; districts: District[] };
-type Product = { id: string; name: string; quantity: number; price: number };
+type Product = { id: string; name: string; quantity: number; price: number; image?: string };
 
 const paymentMethods = [
   "COD",
@@ -241,11 +241,22 @@ const CheckoutPage = () => {
         <div className="col-lg-6">
           <h4 className="fw-bold">Đơn hàng</h4>
           {selectedProducts.map((item) => (
-            <div key={item.id} className="border-bottom py-2">
-              <p>
-                {item.name} x {item.quantity}
-              </p>
-              <p>{((item.price * 1000) * item.quantity).toLocaleString()} VND</p>
+            <div key={item.id} className="d-flex align-items-center border-bottom py-3">
+              {item.image && (
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  className="img-thumbnail me-3" 
+                  width={60} 
+                  height={60}
+                  style={{ objectFit: 'cover' }}
+                />
+              )}
+              <div className="flex-grow-1">
+                <h6 className="mb-1">{item.name}</h6>
+                <p className="mb-1 text-muted">Số lượng: {item.quantity}</p>
+                <p className="mb-0 fw-bold text-danger">{((item.price * 1000) * item.quantity).toLocaleString()} VND</p>
+              </div>
             </div>
           ))}
                       <h5 className="mt-3">

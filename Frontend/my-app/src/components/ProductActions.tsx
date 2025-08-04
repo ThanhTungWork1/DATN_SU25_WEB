@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 👈 import useNavigate
 import { FaShoppingCart } from "react-icons/fa";
 import "../assets/styles/action.css";
 
@@ -16,14 +17,19 @@ const ProductActions = ({
   disabled = false,
 }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
+  const navigate = useNavigate(); // 👈 Khởi tạo navigate
 
   const increase = () =>
     setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
+  const handleBuyNow = () => {
+    onAddToCart(quantity); // 👈 Thêm sản phẩm vào giỏ (nếu cần)
+    navigate("/checkout", { state: { fromBuyNow: true } }); // 👈 Điều hướng sang trang thanh toán
+  };
+
   return (
     <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
-      {/* Bộ đếm số lượng */}
       <div className="quantity-control">
         <button onClick={decrease} className="quantity-btn" type="button">
           −
@@ -46,7 +52,6 @@ const ProductActions = ({
         </button>
       </div>
 
-      {/* Nút thêm giỏ hàng */}
       <button
         className={`btn-add-cart d-flex align-items-center${disabled ? " disabled" : ""}`}
         onClick={() => onAddToCart(quantity)}
@@ -55,10 +60,9 @@ const ProductActions = ({
         <FaShoppingCart className="me-1" /> Thêm
       </button>
 
-      {/* Nút mua ngay */}
       <button
         className={`btn-buy-now${disabled ? " disabled" : ""}`}
-        onClick={onBuyNow}
+        onClick={handleBuyNow}
         disabled={disabled}
       >
         Mua ngay
