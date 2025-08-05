@@ -47,13 +47,14 @@ class Voucher extends Model
     // Tính toán giảm giá
     public function calculateDiscount($orderAmount)
     {
-        if ($this->discount_type === 'percentage') {
+        if ($this->discount_type === 'percent') {
             $discount = ($orderAmount * $this->value) / 100;
             return min($discount, $this->max_value);
         } else {
             return min($this->value, $orderAmount);
         }
     }
+
 
     // Kiểm tra điều kiện áp dụng
     public function canApplyToOrder($orderAmount, $userType = 'existing', $productIds = [])

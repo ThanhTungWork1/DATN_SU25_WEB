@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Voucher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class VoucherController extends Controller
 {
@@ -16,48 +17,18 @@ class VoucherController extends Controller
         return response()->json($vouchers, 200);
     }
 
-    // GET /api/vouchers/active - Lấy danh sách voucher đang hoạt động (cho user)
-    public function active()
-    {
-        $vouchers = Voucher::where('status', 1)
-            ->where('used_count', '<', 'usage_limit')
-            ->where('start_date', '<=', now()->toDateString())
-            ->where('end_date', '>=', now()->toDateString())
-            ->get();
-        return response()->json($vouchers, 200);
-    }
-
-    // GET /api/vouchers/{id} - Xem chi tiết voucher
-    public function show($id)
-    {
-        $voucher = Voucher::find($id);
-
-        if (!$voucher) {
-            return response()->json(['message' => 'Voucher not found'], 404);
-        }
-
-        return response()->json($voucher, 200);
-    }
-
-    // POST /api/vouchers - Tạo voucher mới
+    // POST /api/vouchers - Thêm voucher mới
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:vouchers,code',
-            'value' => 'required|numeric|min:0',
-            'max_value' => 'required|numeric|min:0',
-            'min_order_amount' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:1',
-            'usage_limit' => 'required|integer|min:1',
-            'user_type' => 'required|in:all,new,existing',
-            'discount_type' => 'required|in:percentage,fixed',
-            'description' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'status' => 'boolean',
-            'product_categories' => 'nullable|array',
-            'excluded_products' => 'nullable|array',
+            'code' => 'required|unique:vouchers,code',
+            'discount_type' => 'required|in:percent,fixed',
+            'discount_value' => 'required|numeric|min:0',
+            'min_order_amount' => 'nullable|numeric|min:0',
+            'max_discount' => 'nullable|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'usage_limit' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -65,34 +36,37 @@ class VoucherController extends Controller
         }
 
         $voucher = Voucher::create($request->all());
+
         return response()->json($voucher, 201);
+    }
+
+    // GET /api/vouchers/{id} - Chi tiết voucher
+    public function show($id)
+    {
+        $voucher = Voucher::find($id);
+        if (!$voucher) {
+            return response()->json(['message' => 'Voucher not found'], 404);
+        }
+        return response()->json($voucher);
     }
 
     // PUT /api/vouchers/{id} - Cập nhật voucher
     public function update(Request $request, $id)
     {
         $voucher = Voucher::find($id);
-
         if (!$voucher) {
             return response()->json(['message' => 'Voucher not found'], 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'title' => 'sometimes|required|string|max:100',
-            'code' => 'sometimes|required|string|max:50|unique:vouchers,code,' . $id,
-            'value' => 'sometimes|required|numeric|min:0',
-            'max_value' => 'sometimes|required|numeric|min:0',
-            'min_order_amount' => 'sometimes|required|numeric|min:0',
-            'quantity' => 'sometimes|required|integer|min:1',
-            'usage_limit' => 'sometimes|required|integer|min:1',
-            'user_type' => 'sometimes|required|in:all,new,existing',
-            'discount_type' => 'sometimes|required|in:percentage,fixed',
-            'description' => 'sometimes|required|string',
-            'start_date' => 'sometimes|required|date',
-            'end_date' => 'sometimes|required|date|after:start_date',
-            'status' => 'sometimes|boolean',
-            'product_categories' => 'sometimes|nullable|array',
-            'excluded_products' => 'sometimes|nullable|array',
+            'code' => 'required|unique:vouchers,code,' . $voucher->id,
+            'discount_type' => 'required|in:percent,fixed',
+            'discount_value' => 'required|numeric|min:0',
+            'min_order_amount' => 'nullable|numeric|min:0',
+            'max_discount' => 'nullable|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'usage_limit' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -100,30 +74,29 @@ class VoucherController extends Controller
         }
 
         $voucher->update($request->all());
-        return response()->json($voucher, 200);
+
+        return response()->json($voucher);
     }
 
-    // DELETE /api/vouchers/{id} - Xóa voucher
+    // DELETE /api/vouchers/{id} - Xoá voucher
     public function destroy($id)
     {
         $voucher = Voucher::find($id);
-
         if (!$voucher) {
             return response()->json(['message' => 'Voucher not found'], 404);
         }
 
         $voucher->delete();
-        return response()->json(['message' => 'Voucher deleted successfully'], 200);
+        return response()->json(['message' => 'Voucher deleted']);
     }
 
-    // POST /api/vouchers/validate - Kiểm tra voucher (cho user)
-    public function validateVoucher(Request $request)
+
+    // POST /api/vouchers/apply - Áp dụng voucher khi đặt hàng
+    public function applyVoucher(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'code' => 'required|string',
             'order_amount' => 'required|numeric|min:0',
-            'user_type' => 'required|in:new,existing',
-            'product_ids' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -136,39 +109,37 @@ class VoucherController extends Controller
             return response()->json(['message' => 'Voucher không tồn tại'], 404);
         }
 
-        if (!$voucher->isUsable()) {
-            return response()->json(['message' => 'Voucher không còn hiệu lực hoặc đã hết lượt sử dụng'], 400);
+        if ($voucher->start_date && now()->lt(Carbon::parse($voucher->start_date))) {
+            return response()->json(['message' => 'Voucher chưa được áp dụng'], 400);
         }
 
-        if (!$voucher->canApplyToOrder($request->order_amount, $request->user_type, $request->product_ids ?? [])) {
-            return response()->json(['message' => 'Voucher không áp dụng được cho đơn hàng này'], 400);
+        if ($voucher->end_date && now()->gt(Carbon::parse($voucher->end_date))) {
+            return response()->json(['message' => 'Voucher đã hết hạn'], 400);
         }
 
-        $discount = $voucher->calculateDiscount($request->order_amount);
-        $finalAmount = $request->order_amount - $discount;
+        if ($voucher->usage_limit !== null && $voucher->used >= $voucher->usage_limit) {
+            return response()->json(['message' => 'Voucher đã được sử dụng hết'], 400);
+        }
+
+        if ($voucher->min_order_amount && $request->order_amount < $voucher->min_order_amount) {
+            return response()->json(['message' => 'Đơn hàng không đủ điều kiện áp dụng voucher'], 400);
+        }
+
+        // Tính giảm giá
+        $discount = 0;
+        if ($voucher->discount_type === 'percent') {
+            $discount = $request->order_amount * $voucher->discount_value / 100;
+            if ($voucher->max_discount && $discount > $voucher->max_discount) {
+                $discount = $voucher->max_discount;
+            }
+        } else {
+            $discount = $voucher->discount_value;
+        }
 
         return response()->json([
-            'voucher' => $voucher,
-            'discount' => $discount,
-            'final_amount' => $finalAmount,
-            'message' => 'Voucher hợp lệ'
-        ], 200);
-    }
-
-    // POST /api/vouchers/{id}/use - Sử dụng voucher
-    public function useVoucher($id)
-    {
-        $voucher = Voucher::find($id);
-
-        if (!$voucher) {
-            return response()->json(['message' => 'Voucher not found'], 404);
-        }
-
-        if (!$voucher->isUsable()) {
-            return response()->json(['message' => 'Voucher không còn hiệu lực'], 400);
-        }
-
-        $voucher->increment('used_count');
-        return response()->json(['message' => 'Voucher đã được sử dụng'], 200);
+            'voucher_id' => $voucher->id,
+            'discount_amount' => round($discount),
+            'message' => 'Áp dụng voucher thành công',
+        ]);
     }
 }

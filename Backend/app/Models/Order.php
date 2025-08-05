@@ -18,10 +18,17 @@ class Order extends Model
         'note',
         'payment_method',
         'discount_amount',
+        'voucher_id', // <- thêm dòng này
+
     ];
 
     public function items()
     {
         return $this->hasMany(\App\Models\OrderItem::class);
     }
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
 }

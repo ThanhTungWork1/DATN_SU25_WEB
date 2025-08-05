@@ -168,22 +168,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{code}', [VoucherController::class, 'show']);
     });
 
-    // Payment routes
+    // Payments (ZaloPay + VNPay)
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
 
-        // VNPay
+        Route::prefix('zalopay')->group(function () {
+            Route::post('/create', [ZaloPayController::class, 'createOrder']);
+            Route::post('/callback', [ZaloPayController::class, 'callback']);
+        });
+
         Route::prefix('vnpay')->group(function () {
             Route::post('/create', [VNPayController::class, 'createPayment']);
             Route::get('/callback', [VNPayController::class, 'callback']);
             Route::post('/ipn', [VNPayController::class, 'ipn']);
-        });
-
-        // ZaloPay
-        Route::prefix('zalopay')->group(function () {
-            Route::post('/create', [ZaloPayController::class, 'createOrder']);
-            Route::post('/callback', [ZaloPayController::class, 'callback']);
         });
     });
 
