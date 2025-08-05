@@ -3,8 +3,16 @@ import type { ColorType } from "./ColorType";
 export interface Variant {
   size?: { id: number; name: string; created_at?: string; updated_at?: string };
   stock: number;
-  color?: { id: number; name: string; hex_code?: string; created_at?: string; updated_at?: string };
+  color?: {
+    id: number;
+    name: string;
+    hex_code?: string;
+    created_at?: string;
+    updated_at?: string;
+  };
   image?: string;
+  image_url?: string; // ✅ Thêm image_url cho variant
+  price?: number; // ✅ Thêm price cho variant
   sku?: string;
 }
 
@@ -19,6 +27,9 @@ export interface Product {
   slug?: string;
   category_id?: number;
   image?: string;
+  image_url?: string; // ✅ Thêm image_url từ backend
+  hover_image?: string; // ✅ Thêm hover_image từ DB
+  hover_image_url?: string; // ✅ Thêm hover_image_url từ backend
   material?: string;
   sold?: number;
   discount?: number;

@@ -7,18 +7,23 @@ import "../../../assets/styles/info.css";
 
 const ProductInfo = ({
   product,
+  selectedVariant,
   selectedVariantStock,
   sku,
 }: ProductInfoProps) => {
   // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
   const originalPrice = product.original_price || (product as any).old_price;
 
-  // Format giá tiền chuẩn VN
-  const formattedPrice = product.price
-    ? (Number(product.price) * 1000).toLocaleString("vi-VN") + " VND"
+  // ✅ Ưu tiên giá từ biến thể sản phẩm (variant), fallback về giá chính
+  const displayPrice = selectedVariant?.price || product.price;
+
+  // Format giá tiền VN - nhân 1000 để đồng bộ với hệ thống (nếu lưu giá theo nghìn)
+  const formattedPrice = displayPrice
+    ? Number(displayPrice * 1000).toLocaleString("vi-VN") + "đ"
     : "N/A";
+
   const formattedOldPrice = originalPrice
-    ? (Number(originalPrice) * 1000).toLocaleString("vi-VN") + " VND"
+    ? Number(originalPrice * 1000).toLocaleString("vi-VN") + "đ"
     : "";
 
   return (
@@ -29,15 +34,13 @@ const ProductInfo = ({
       {/* Giá sản phẩm và giá gốc nếu có */}
       <div className="d-flex align-items-end gap-2 my-3">
         <h2 className="text-danger fw-bolder mb-0">{formattedPrice}</h2>
-        {/* Hiển thị giá gốc nếu có và lớn hơn giá bán */}
-        {originalPrice && Number(originalPrice) > Number(product.price) && (
+        {originalPrice && Number(originalPrice) > Number(displayPrice) && (
           <span className="price-original">{formattedOldPrice}</span>
         )}
       </div>
 
       {/* Trạng thái kho, số lượng, đã bán, mã SP */}
       <div className="mb-3">
-        {/* Trạng thái còn hàng/hết hàng hoặc yêu cầu chọn size/màu */}
         <p className="mb-1">
           Trạng thái:
           {selectedVariantStock !== null &&

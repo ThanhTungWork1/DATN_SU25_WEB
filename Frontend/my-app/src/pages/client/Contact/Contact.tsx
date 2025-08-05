@@ -17,7 +17,8 @@ export const ContactClient = () => {
         <div className="contact-grid">
           <div className="contact-info">
             <p>
-              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện đại
+              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện
+              đại
             </p>
             <p>
               <strong>📍 Địa chỉ:</strong> 123 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội

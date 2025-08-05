@@ -18,12 +18,18 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
     useWishlistContext();
   const liked = isInWishlist(product.id);
 
+  // ✅ Sửa lại logic: ưu tiên image_url từ backend
   const mainImage =
-    product.image ||
-    product.image_url ||
+    product.image_url || // ✅ Ưu tiên full URL từ backend
+    product.image || // Fallback cho path trong DB
     (product.images && product.images[0]) ||
     "";
-  const hoverImage = product.hover_image;
+
+  // ✅ Sửa lại logic: ưu tiên hover_image_url từ backend
+  const hoverImage =
+    product.hover_image_url || // ✅ Ưu tiên full URL từ backend
+    product.hover_image || // Fallback cho path trong DB
+    "";
   const hasHoverImage = !!hoverImage;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -32,7 +38,7 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
     addToCart({
       product_id: product.id,
       quantity: 1,
-      price: product.price,
+      price: product.price * 1000, // ✅ Nhân với 1000 để đồng nhất với cách hiển thị
     });
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };

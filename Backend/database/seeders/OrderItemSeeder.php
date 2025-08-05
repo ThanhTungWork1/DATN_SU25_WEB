@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Order; // THÊM MỚI: Import Order model
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
-use Illuminate\Support\Facades\DB; // SỬA LỖI: Thêm dòng này để import lớp DB
+use Illuminate\Support\Facades\DB; // Import DB facade
 
 class OrderItemSeeder extends Seeder
 {
@@ -22,13 +22,22 @@ class OrderItemSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Lấy các biến thể sản phẩm có sẵn
-        $variant1 = ProductVariant::with(['product', 'color', 'size'])->find(1);
-        $variant2 = ProductVariant::with(['product', 'color', 'size'])->find(2);
-        $variant3 = ProductVariant::with(['product', 'color', 'size'])->find(3);
+        // Lấy 3 biến thể đầu tiên để đảm bảo chúng tồn tại
+        $variants = ProductVariant::with(['product', 'color', 'size'])->take(3)->get();
+
+        // Nếu không có đủ 3 biến thể, không chạy seeder
+        if ($variants->count() < 3) {
+            $this->command->info('Không có đủ biến thể sản phẩm để tạo dữ liệu mẫu cho đơn hàng.');
+            return;
+        }
+
+        $variant1 = $variants[0];
+        $variant2 = $variants[1];
+        $variant3 = $variants[2];
 
         // --- BẮT ĐẦU XỬ LÝ ĐƠN HÀNG #1 ---
         $order1 = Order::find(1);
-        if ($order1 && $variant1 && $variant2) {
+        if ($order1) {
             // Thêm sản phẩm vào đơn hàng
             OrderItem::create([
                 'order_id' => 1, 'variant_id' => $variant1->id, 'quantity' => 2, 'price' => $variant1->price,
@@ -54,7 +63,7 @@ class OrderItemSeeder extends Seeder
 
         // --- BẮT ĐẦU XỬ LÝ ĐƠN HÀNG #2 ---
         $order2 = Order::find(2);
-        if ($order2 && $variant3) {
+        if ($order2) {
             // Thêm sản phẩm vào đơn hàng
             OrderItem::create([
                 'order_id' => 2, 'variant_id' => $variant3->id, 'quantity' => 5, 'price' => $variant3->price,

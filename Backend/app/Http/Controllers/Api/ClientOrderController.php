@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -154,28 +155,39 @@ class ClientOrderController extends Controller
                             // Tạo đơn hàng
             $order = Order::create([
                 'user_id' => $data['user_id'],
-                'status' => 'pending',
+                'status' => 'pending_confirmation',
                 'is_paid' => false,
                 'total_amount' => $total_amount,
                 'shipping_fee' => $shipping_fee,
                 'shipping_address' => $data['shipping_address'],
                 'shipping_phone' => $data['shipping_phone'],
                 'shipping_name' => $data['shipping_name'],
-                'note' => $data['note'] ?? null
+                'note' => $data['note'] ?? null,
+                'customer_name' => $data['shipping_name'],
+                'customer_phone' => $data['shipping_phone'],
+                'customer_email' => $user->email ?? '',
+                'discount_amount' => 0,
+                'final_amount' => $total_amount + $shipping_fee
             ]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
                 $orderItems = [];
                 foreach ($data['items'] as $item) {
-                    $variant = ProductVariant::find($item['variant_id']);
+                    $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
                     // Trừ tồn kho
                     $variant->stock -= $item['quantity'];
                     $variant->save();
-                    // Thêm vào mảng orderItems
+                    // Thêm vào mảng orderItems với snapshot đầy đủ
                     $orderItems[] = [
                         'variant_id' => $item['variant_id'],
                         'quantity' => $item['quantity'],
-                        'price' => $item['price']
+                        'price' => $item['price'],
+                        // Lưu snapshot thông tin sản phẩm
+                        'product_name' => $variant->product->name ?? 'Không có tên',
+                        'variant_color_name' => $variant->color->name ?? 'Không có',
+                        'variant_size_name' => $variant->size->name ?? 'Không có',
+                        'variant_sku' => $variant->sku ?? 'Không có',
+                        'variant_image' => $variant->image ?? null,
                     ];
                 }
                 // Tạo nhiều order item cùng lúc

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import MegaMenu from "./MegaMenu";
@@ -248,7 +248,14 @@ const Navbar = () => {
             className="icon-btn"
             title="Hồ sơ cá nhân"
             onClick={() => {
-              navigate("/profile");
+              const role = localStorage.getItem("role");
+              if (role === "0") {
+                // User - navigate to profile
+                navigate("/profile");
+              } else if (role === "1" || role === "2") {
+                // Admin/Moderator - navigate to admin dashboard
+                navigate("/admin/dashboard");
+              }
               setMenuOpen(false);
             }}
           >
