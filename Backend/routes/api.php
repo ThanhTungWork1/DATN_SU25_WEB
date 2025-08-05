@@ -32,6 +32,237 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 
+// CART API
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/cart', [\App\Http\Controllers\Api\CartController::class, 'index']);
+    Route::post('/cart', [\App\Http\Controllers\Api\CartController::class, 'store']);
+    Route::put('/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'update']);
+    Route::delete('/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'destroy']);
+    Route::delete('/cart', [\App\Http\Controllers\Api\CartController::class, 'clear']);
+});
+
+// DEBUG API WITH AUTH
+Route::middleware(['auth:sanctum'])->get('debug-cart', function(Request $request) {
+    try {
+        $user = auth()->user();
+        $cart = \App\Models\Cart::where('user_id', $user->id)->first();
+        
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'cart_exists' => $cart ? true : false,
+            'cart_id' => $cart ? $cart->id : null,
+            'items_count' => $cart ? $cart->cartItems->count() : 0
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// TOKEN TEST API
+Route::get('test-token', function() {
+    try {
+        // Tìm user test hoặc tạo mới
+        $user = \App\Models\User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+                'email_verified_at' => now()
+            ]
+        );
+        
+        // Xóa token cũ
+        $user->tokens()->delete();
+        
+        // Tạo token mới
+        $token = $user->createToken('test-token')->plainTextToken;
+        
+        return response()->json([
+            'success' => true,
+            'user' => $user->email,
+            'token' => $token
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// SIMPLE TOKEN API
+Route::get('simple-token', function() {
+    try {
+        // Tạo user đơn giản
+        $user = \App\Models\User::where('email', 'test@example.com')->first();
+        
+        if (!$user) {
+            $user = new \App\Models\User();
+            $user->name = 'Test User';
+            $user->email = 'test@example.com';
+            $user->password = bcrypt('password');
+            $user->role = 'customer'; // Thêm role mặc định
+            $user->email_verified_at = now();
+            $user->save();
+        }
+        
+        // Xóa token cũ và tạo mới
+        $user->tokens()->delete();
+        $token = $user->createToken('simple-token')->plainTextToken;
+        
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => $user->email,
+            'user_id' => $user->id
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// GET ALL PRODUCTS FOR TESTING
+Route::get('all-products', function() {
+    try {
+        $products = \App\Models\Product::with(['category', 'variants.size', 'variants.color'])
+            ->where('status', 'active')
+            ->take(20)
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'products' => $products
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// VOUCHER API
+Route::post('test-voucher', function(Request $request) {
+    try {
+        $code = $request->input('code');
+        $totalAmount = $request->input('total_amount', 0);
+        
+        // Tìm voucher trong database
+        $voucher = \App\Models\Voucher::where('code', $code)
+            ->where('status', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+            
+        if (!$voucher) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Mã voucher không tồn tại hoặc đã hết hạn'
+            ]);
+        }
+        
+        // Kiểm tra điều kiện tối thiểu
+        if ($totalAmount < $voucher->min_order_amount) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Đơn hàng tối thiểu ' . number_format($voucher->min_order_amount) . ' VND để sử dụng voucher này'
+            ]);
+        }
+        
+        // Kiểm tra số lượng sử dụng
+        if ($voucher->used_count >= $voucher->max_usage) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Voucher đã hết lượt sử dụng'
+            ]);
+        }
+        
+        // Tính giảm giá đơn giản
+        $discountAmount = 0;
+        if ($voucher->code === 'SAVE10') {
+            // Giảm 10% tối đa 50k
+            $discountAmount = ($totalAmount * 10) / 100;
+            if ($discountAmount > 50000) {
+                $discountAmount = 50000;
+            }
+        } else {
+            // Giảm cố định
+            $discountAmount = $voucher->value;
+        }
+        
+        $finalAmount = $totalAmount - $discountAmount;
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Voucher hợp lệ',
+            'data' => [
+                'voucher' => $voucher,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $finalAmount
+            ]
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Lỗi kiểm tra voucher: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// CREATE VARIANT FOR PRODUCT
+Route::get('create-variant/{productId}', function($productId) {
+    try {
+        $product = \App\Models\Product::find($productId);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+        
+        // Kiểm tra xem đã có variant chưa
+        $existingVariant = \App\Models\ProductVariant::where('product_id', $productId)->first();
+        if ($existingVariant) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant already exists',
+                'variant_id' => $existingVariant->id
+            ]);
+        }
+        
+        // Tạo variant mới
+        $variant = \App\Models\ProductVariant::create([
+            'product_id' => $productId,
+            'size_id' => 1,
+            'color_id' => 1,
+            'price' => $product->price,
+            'stock' => 100,
+            'sku' => 'PROD' . $productId . '-DEFAULT'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Variant created successfully',
+            'variant_id' => $variant->id,
+            'product_id' => $productId
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Debug Cart API
 Route::get('debug-cart', function() {
     try {
@@ -73,6 +304,80 @@ Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'send
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
+
+// Tạo voucher test
+Route::get('create-test-vouchers', function() {
+    try {
+        // Xóa voucher cũ (nếu có)
+        \App\Models\Voucher::whereIn('code', ['SAVE10', 'SAVE50K', 'FREESHIP'])->delete();
+        
+        // Tạo voucher đơn giản - chỉ các trường cần thiết
+        $vouchers = [
+            [
+                'title' => 'Giảm 10%',
+                'code' => 'SAVE10',
+                'value' => 10,
+                'max_value' => 50000,
+                'min_order_amount' => 200000,
+                'max_usage' => 100,
+                'used_count' => 0,
+                'quantity' => 100,
+                'description' => 'Giảm 10% tối đa 50k',
+                'start_date' => now(),
+                'end_date' => now()->addDays(30),
+                'status' => 1
+            ],
+            [
+                'title' => 'Giảm 50k',
+                'code' => 'SAVE50K', 
+                'value' => 50000,
+                'max_value' => 0,
+                'min_order_amount' => 300000,
+                'max_usage' => 50,
+                'used_count' => 0,
+                'quantity' => 50,
+                'description' => 'Giảm 50k cho đơn từ 300k',
+                'start_date' => now(),
+                'end_date' => now()->addDays(15),
+                'status' => 1
+            ],
+            [
+                'title' => 'Miễn phí ship',
+                'code' => 'FREESHIP',
+                'value' => 30000,
+                'max_value' => 0,
+                'min_order_amount' => 100000,
+                'max_usage' => 200,
+                'used_count' => 0,
+                'quantity' => 200,
+                'description' => 'Miễn phí ship',
+                'start_date' => now(),
+                'end_date' => now()->addDays(60),
+                'status' => 1
+            ]
+        ];
+        
+        foreach ($vouchers as $voucherData) {
+            \App\Models\Voucher::create($voucherData);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Tạo thành công 3 voucher test',
+            'vouchers' => [
+                'SAVE10 - Giảm 10% tối đa 50k (từ 200k)',
+                'SAVE50K - Giảm 50k (đơn từ 300k)',
+                'FREESHIP - Miễn phí ship (đơn từ 100k)'
+            ]
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
 
 // Email Verification
 Route::post('/email/verification-notification', function (Request $request) {
@@ -428,26 +733,6 @@ Route::post('/test-voucher', function(Request $request) {
 });
 
 // PUBLIC ORDER ROUTES (không cần authentication)
-// Removed duplicate test-order route - using ClientOrderController above
-Route::post('/test-order', function(Request $request) {
-    try {
-        $orderData = $request->all();
-        
-        // Mock order creation
-        $orderId = 'ORD' . date('YmdHis') . rand(100, 999);
-        
-        return response()->json([
-            'success' => true,
-            'id' => $orderId,
-            'message' => 'Đặt hàng thành công',
-            'order' => $orderData
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-        ], 500);
-    }
-});
+// Using ClientOrderController above for test-order
 
 

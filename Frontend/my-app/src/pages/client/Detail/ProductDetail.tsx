@@ -392,10 +392,20 @@ const ProductDetail = () => {
               <hr />
 
               <ProductActions
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                maxQuantity={10}
+                productId={product.id}
+                variantId={selectedVariant?.id}
+                maxQuantity={selectedVariantStock || 10}
                 disabled={!selectedSize || !selectedColor}
+                productName={product.name}
+                productPrice={(() => {
+                  const price = selectedVariant?.price || product.price || 0;
+                  console.log('=== PRODUCT DETAIL PRICE DEBUG ===');
+                  console.log('selectedVariant?.price:', selectedVariant?.price);
+                  console.log('product.price:', product.price);
+                  console.log('final price passed to ProductActions:', price);
+                  return price;
+                })()}
+                productImage={selectedImage || product.image_url || product.image || ""}
               />
               <hr />
             </div>

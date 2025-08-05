@@ -19,27 +19,30 @@ const RequireAuth = ({ allowedRoles }: Props) => {
   const adminToken = localStorage.getItem("admin_token");
   const userToken = localStorage.getItem("user_token");
   const authToken = localStorage.getItem("authToken");
+  const token = localStorage.getItem("token"); // Thêm token chính
   const role = mapRole(storedRole);
 
-  // Kiểm tra role
-  if (!role) {
+  // Nếu không có role nhưng có token, coi như user
+  const effectiveRole = role || (token ? "user" : null);
+  
+  if (!effectiveRole) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Kiểm tra token dựa trên role
-  if (role === "admin") {
+  if (effectiveRole === "admin") {
     if (!adminToken) {
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
-  } else if (role === "user") {
-    // User có thể có userToken hoặc authToken
-    if (!userToken && !authToken) {
+  } else if (effectiveRole === "user") {
+    // User có thể có nhiều loại token
+    if (!userToken && !authToken && !token) {
       return <Navigate to="/login" state={{ from: location }} replace />;
     }
   }
 
-  if (!allowedRoles.includes(role)) {
-    return role === "admin" ? (
+  if (!allowedRoles.includes(effectiveRole)) {
+    return effectiveRole === "admin" ? (
       <Navigate to="/admin/dashboard" replace />
     ) : (
       <Navigate to="/" replace />

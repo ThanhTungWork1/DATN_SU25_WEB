@@ -1,31 +1,81 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 import useNavigate
+import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
+import { useCart } from "../provider/CartProvider";
+import { toast } from "sonner";
 import "../assets/styles/action.css";
 
 type ProductActionsProps = {
-  onAddToCart: (quantity: number) => void;
-  onBuyNow?: () => void;
+  productId: number;
+  variantId?: number;
   maxQuantity: number;
   disabled?: boolean;
+  productName?: string;
+  productPrice?: number;
+  productImage?: string;
 };
 
 const ProductActions = ({
-  onAddToCart,
-  onBuyNow,
+  productId,
+  variantId,
   maxQuantity,
   disabled = false,
+  productName = "Sản phẩm",
+  productPrice = 0,
+  productImage = "",
 }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
-  const navigate = useNavigate(); // 👈 Khởi tạo navigate
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const increase = () =>
     setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-  const handleBuyNow = () => {
-    onAddToCart(quantity); // 👈 Thêm sản phẩm vào giỏ (nếu cần)
-    navigate("/checkout", { state: { fromBuyNow: true } }); // 👈 Điều hướng sang trang thanh toán
+  const handleAddToCart = async () => {
+    try {
+      await addToCart({
+        product_id: productId,
+        variant_id: variantId || productId, // Fallback to productId if no variantId
+        quantity: quantity,
+      });
+      toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+      console.error("Error adding to cart:", error);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    // Debug giá trước khi tạo object
+    console.log('=== BUY NOW DEBUG ===');
+    console.log('productPrice from props:', productPrice);
+    console.log('productName from props:', productName);
+    console.log('quantity:', quantity);
+    
+    // Tạo object sản phẩm để truyền đến checkout
+    const selectedProduct = {
+      id: productId,
+      name: productName,
+      price: productPrice, // Giữ nguyên giá gốc
+      quantity: quantity,
+      image: productImage,
+      variant_id: variantId || productId
+    };
+    
+    const totalAmount = (productPrice * quantity);
+    
+    console.log('selectedProduct:', selectedProduct);
+    console.log('totalAmount:', totalAmount);
+    
+    // Chuyển thẳng đến checkout KHÔNG thêm vào giỏ hàng
+    navigate("/checkout", { 
+      state: { 
+        selectedProducts: [selectedProduct],
+        totalAmount: totalAmount,
+        fromBuyNow: true 
+      } 
+    });
   };
 
   return (
@@ -54,7 +104,7 @@ const ProductActions = ({
 
       <button
         className={`btn-add-cart d-flex align-items-center${disabled ? " disabled" : ""}`}
-        onClick={() => onAddToCart(quantity)}
+        onClick={handleAddToCart}
         disabled={disabled}
       >
         <FaShoppingCart className="me-1" /> Thêm

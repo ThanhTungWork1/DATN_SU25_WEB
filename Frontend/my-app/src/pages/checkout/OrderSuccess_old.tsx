@@ -1,23 +1,52 @@
-import { useLocation } from 'react-router-dom';
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OrderSuccess = () => {
-  const location = useLocation();
-  const orderData = location.state;
+  const { state } = useLocation();
+  const navigate = useNavigate();
+
+  const {
+    orderId,
+    orderData,
+    address,
+    totalAmount,
+    paymentMethod,
+    createdAt,
+    items,
+    customerName,
+    customerPhone,
+    voucherCode,
+    discountAmount,
+    shippingFee,
+    finalOrderAmount
+  } = state || {};
   
-  console.log('Order Success - Received data:', orderData);
-  
+  console.log('Order Success Data:', { orderId, orderData, totalAmount, finalOrderAmount });
+
+  if (!orderId) {
+    return (
+      <div className="text-center mt-5">
+        <h2>Không có thông tin đơn hàng.</h2>
+        <button onClick={() => navigate("/")} className="btn btn-primary mt-3">
+          Quay về Trang chủ
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-lg-8">
-            {/* Success Header */}
-            <div className="text-center mb-5">
-              <div className="mb-4">
-                <div className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success" 
-                     style={{ width: '120px', height: '120px' }}>
-                  <i className="fas fa-check text-white" style={{ fontSize: '3rem' }}></i>
-                </div>
+    <div className="container my-5 text-center">
+      <h2 className="text-success fw-bold">🎉 Đơn hàng của bạn đã được đặt thành công!</h2>
+      <p className="mt-4">Cảm ơn bạn đã mua hàng tại <b>StrideX</b>.</p>
+      
+      <div className="alert alert-info mx-auto" style={{ maxWidth: 600 }}>
+        <i className="fas fa-info-circle me-2"></i>
+        Sản phẩm đã được xóa khỏi giỏ hàng của bạn
+      </div>
+
+      <div className="border p-4 mt-4 text-start mx-auto" style={{ maxWidth: 600 }}>
+        <h4 className="fw-bold">Thông tin đơn hàng</h4>
+        <p><b>Mã đơn hàng:</b> #{orderId}</p>
               </div>
               <h1 className="display-5 fw-bold text-success mb-3">Đặt hàng thành công!</h1>
               <p className="fs-5 text-muted mb-4">
