@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance';
 import { UseOrder } from '../types/UseOrder';
+import { transformOrders, transformOrder } from '../utils/orderTransform';
+
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: any;
+}
 
 export const useOrders = () => {
   const queryClient = useQueryClient();
@@ -9,8 +16,19 @@ export const useOrders = () => {
     useQuery<UseOrder[]>({
       queryKey: ['orders'],
       queryFn: async () => {
-        const { data } = await axios.get<UseOrder[]>('/api/client/orders');
-        return data;
+
+        try {
+          const response = await axiosInstance.get<ApiResponse<any[]>>('/client/orders');
+          
+          if (!response.data.data) {
+            return [];
+          }
+          
+          return transformOrders(response.data.data);
+        } catch (error: any) {
+          console.error('❌ Error fetching orders:', error);
+          throw error;
+        }
       },
     });
 
@@ -18,8 +36,19 @@ export const useOrders = () => {
     useQuery<UseOrder[]>({
       queryKey: ['orders', status],
       queryFn: async () => {
-        const { data } = await axios.get<UseOrder[]>(`/api/client/orders/status/${status}`);
-        return data;
+
+        try {
+          const response = await axiosInstance.get<ApiResponse<any[]>>(`/client/orders/status/${status}`);
+          
+          if (!response.data.data) {
+            return [];
+          }
+          
+          return transformOrders(response.data.data);
+        } catch (error: any) {
+          console.error(`❌ Error fetching orders with status ${status}:`, error);
+          throw error;
+        }
       },
       enabled: !!status,
     });
@@ -37,16 +66,46 @@ export const useOrders = () => {
     useQuery<UseOrder>({
       queryKey: ['order', id],
       queryFn: async () => {
-        const { data } = await axios.get<UseOrder>(`/api/client/orders/${id}`);
-        return data;
+        try {
+          const response = await axiosInstance.get<ApiResponse<any>>(`/client/orders/${id}`);
+          
+          if (!response.data.data) {
+            throw new Error('Order not found');
+          }
+          
+          return transformOrder(response.data.data);
+        } catch (error) {
+          console.error(`❌ Error fetching order ${id}:`, error);
+          throw error;
+        }
       },
       enabled: !!id,
     });
+
+  // Thêm chức năng mua lại
+  const reorder = useMutation({
+    mutationFn: async (order: UseOrder) => {
+      // Thêm tất cả sản phẩm từ đơn hàng vào giỏ hàng
+      const addToCartPromises = order.items.map(item => 
+        axiosInstance.post('/cart', {
+          product_id: item.product_id,
+          quantity: item.quantity
+        })
+      );
+      
+      await Promise.all(addToCartPromises);
+    },
+    onSuccess: () => {
+      // Invalidate cart queries để cập nhật giỏ hàng
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
 
   return {
     getOrders,
     getOrdersByStatus,
     cancelOrder,
     getOrderDetail,
+    reorder,
   };
 };

@@ -1,18 +1,14 @@
-// // import { useQuery } from "react-query";
-// import axios from "axios";
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { VoucherResponse } from '../types/Voucher';
 
-// export const useVouchers = () => {
-//   const fetchVouchers = async () => {
-//     const response = await axios.get("http://localhost:5173/api/vouchers");
-//     return response.data; // Đảm bảo rằng backend trả về mảng
-//   };
-
-//   const {
-//     data: vouchers = [],
-//     isLoading,
-//     isError,
-//     refetch,
-//   } = useQuery("vouchers", fetchVouchers);
-
-//   return { vouchers, isLoading, isError, refetch };
-// };
+export const useVouchers = (page: number) => {
+  return useQuery<VoucherResponse, Error>({
+    queryKey: ['vouchers', page],
+    queryFn: async () => {
+      const res = await axios.get<VoucherResponse>(`/api/vouchers?page=${page}`);
+      return res.data;
+    },
+    staleTime: 1000 * 60, // 1 phút
+  });
+};

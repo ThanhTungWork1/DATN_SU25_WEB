@@ -4,7 +4,10 @@ import dayjs from "dayjs";
 import useCurrentUser from "../../../hook/useCurrentUser";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
-import { LogoutOutlined } from "@ant-design/icons";
+
+import { LogoutOutlined, ShoppingOutlined, HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import OrderList from "../Orders/OrderList";
+
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -57,6 +60,43 @@ const UserProfile = () => {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
       <h1>Thông tin cá nhân</h1>
+      
+      {/* Quick Actions */}
+      <div style={{ 
+        marginBottom: 24, 
+        padding: 16, 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: 8,
+        border: '1px solid #e9ecef'
+      }}>
+        <h3 style={{ marginBottom: 12, color: '#495057' }}>Thao tác nhanh</h3>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Button
+            type="primary"
+            icon={<ShoppingOutlined />}
+            onClick={() => navigate('/orders')}
+            style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+          >
+            Lịch sử đơn hàng
+          </Button>
+          <Button
+            type="default"
+            icon={<ShoppingCartOutlined />}
+            onClick={() => navigate('/cart')}
+          >
+            Giỏ hàng
+          </Button>
+          <Button
+            type="default"
+            icon={<HeartOutlined />}
+            onClick={() => navigate('/wishlist')}
+          >
+            Sản phẩm yêu thích
+          </Button>
+
+        </div>
+      </div>
+
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Form.Item
           label="Họ tên"
@@ -93,7 +133,7 @@ const UserProfile = () => {
         <Form.Item>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start' }}>
             <Button type="primary" htmlType="submit" loading={isPending}>
-              Cập nhật
+              Cập nhật thông tin
             </Button>
             <Button
               type="primary"

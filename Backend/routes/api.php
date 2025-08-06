@@ -1,6 +1,8 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
@@ -19,13 +21,19 @@ use App\Http\Controllers\Api\SizeController;
 use App\Http\Controllers\Api\ColorController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ProductVariantController;
-use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Controllers\Api\ForgotPasswordController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Client\HomePageController;
+use App\Http\Controllers\HomeSectionController;
+use App\Http\Middleware\CheckAdminMiddleware;
+use App\Http\Middleware\CheckRole;
 
-// Test API
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+// ===========================================================
+// =============== Public Routes =============================
+// ===========================================================
+
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
 
 // Forgot Password
@@ -51,8 +59,7 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
-// -------------------- Public Routes --------------------
-
+// Public - Categories, Sizes, Colors, etc.
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
@@ -61,7 +68,7 @@ Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [CommentController::class, 'getByProduct']);
 
-// Cho phép truy cập sản phẩm không cần token (sửa tại đây)
+// Products (public)
 Route::prefix('product')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
@@ -70,6 +77,9 @@ Route::prefix('product')->group(function () {
     Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
 });
 
+// ✅ THÊM MỚI: Lấy dữ liệu cho trang chủ (hiển thị section và sản phẩm)
+Route::get('/home', [HomePageController::class, 'index']);
+
 // Authentication
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
@@ -77,70 +87,79 @@ Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
 // ====================================================================
-// ADMIN ROUTES
+// ===================== ADMIN ROUTES (KHÔNG YÊU CẦU TOKEN) ==========
 // ====================================================================
-
 Route::prefix('admin')->group(function () {
-    // --- SỬA LỖI 405 TẠI ĐÂY ---
-    // 1. Dùng apiResource cho các route đơn giản: index, show, destroy
     Route::apiResource('products', ProductController::class)->except(['store', 'update']);
-
-    // 2. Định nghĩa riêng route POST cho việc TẠO MỚI (store)
     Route::post('products', [ProductController::class, 'store']);
-
-    // 3. ĐỊNH NGHĨA RIÊNG ROUTE POST CHO VIỆC CẬP NHẬT (update)
-    // Đây là dòng quan trọng nhất để sửa lỗi 405.
     Route::post('products/{id}', [ProductController::class, 'update']);
-    // --- KẾT THÚC SỬA LỖI ---
 
-    // Các route admin khác của bạn giữ nguyên
-    Route::apiResource('orders', OrderController::class);
 
-       // THÊM MỚI: Categories
     Route::apiResource('categories', CategoryController::class);
 });
 
-// Các route Admin khác VẪN CẦN XÁC THỰC
-// -------------------- Admin Routes --------------------
+// ====================================================================
+// ===================== ADMIN ROUTES (CẦN XÁC THỰC) =================
+// ====================================================================
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
+
+    // Order thống kê và export
+    Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);
+    Route::get('orders/export', [OrderController::class, 'export']);
+    Route::apiResource('orders', OrderController::class);
+
+    // Dashboard
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::get('/revenue-by-time', [DashboardController::class, 'revenueByTime']);
+        Route::get('/orders-by-status', [DashboardController::class, 'ordersByStatus']);
+        Route::get('/top-selling-products', [DashboardController::class, 'topSellingProducts']);
+        Route::get('/recent-orders', [DashboardController::class, 'recentOrders']);
+        Route::get('/recent-users', [DashboardController::class, 'recentUsers']);
+        Route::get('/users-by-month', [DashboardController::class, 'usersByMonth']);
+        Route::get('/user-growth', [DashboardController::class, 'userGrowth']);
+        Route::get('/rating-stats', [DashboardController::class, 'ratingStats']);
+        Route::get('/recent-reviews', [DashboardController::class, 'recentReviews']);
+        Route::get('/low-stock-products', [DashboardController::class, 'lowStockProducts']);
+        Route::get('/all-stats', [DashboardController::class, 'allStats']);
+    });
+
     Route::get('dashboard', [DashboardController::class, 'index']);
-    // Route::get('vouchers', [VoucherController::class, 'index']);
-    // Route::get('vouchers/{code}', [VoucherController::class, 'show']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
-    // routes/api.php
-Route::prefix('vouchers')->group(function () {
-    Route::get('/', [VoucherController::class, 'index']);
-    Route::post('/', [VoucherController::class, 'store']);
-    Route::put('/{id}', [VoucherController::class, 'update']);
-    Route::patch('/{id}/toggle', [VoucherController::class, 'toggle']);
-});
 
-
-});
-
-Route::post('/contact', [ContactController::class, 'store']);
-
-// Authenticated User Routes
-// -------------------- Authenticated User Routes --------------------
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', function (Request $request) {
-        return response()->json($request->user());
+    // Inventory
+    Route::prefix('inventory')->group(function () {
+        Route::get('/stats', [InventoryController::class, 'stats']);
+        Route::get('/list', [InventoryController::class, 'list']);
+        Route::get('/low-stock-alerts', [InventoryController::class, 'lowStockAlerts']);
+        Route::post('/update-stock-for-order', [InventoryController::class, 'updateStockForOrder']);
     });
+});
 
+// ✅ THÊM MỚI: Quản lý Home Sections (Admin) - TẠM THỜI KHÔNG CẦN AUTH
+Route::prefix('admin')->group(function () {
+    Route::apiResource('home-sections', \App\Http\Controllers\HomeSectionController::class)->except(['index']);
+    Route::get('home-sections/{id}/products', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'index']);
+    Route::post('home-sections/{id}/products', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'store']);
+    Route::delete('home-sections/{id}/products/{productId}', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'destroy']);
+});
+
+// ====================================================================
+// ===================== AUTHENTICATED USER ROUTES ====================
+// ====================================================================
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);
-
-    // ✅ KHÔNG cần giữ lại product ở đây vì đã move ra ngoài
 
     Route::prefix('favorites')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
         Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
     });
 
-    // Orders - cho user (ClientOrderControlthler)
     Route::prefix('client/orders')->group(function () {
         Route::get('/', [ClientOrderController::class, 'index']);
         Route::get('/statistics', [ClientOrderController::class, 'statistics']);
@@ -151,7 +170,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
     });
 
-    // Orders - cho admin (OrderController gốc)
     Route::prefix('order')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::get('/{id}', [OrderController::class, 'show']);
@@ -184,4 +202,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
+});
+
+// Liên hệ
+Route::post('/contact', [ContactController::class, 'store']);
+
+// Home Sections - Public API
+Route::get('/home-sections', [\App\Http\Controllers\HomeSectionController::class, 'index']);
+
+// Vouchers Public
+Route::prefix('vouchers')->group(function () {
+    Route::get('/', [VoucherController::class, 'index']);
+    Route::post('/', [VoucherController::class, 'store']);
+    Route::put('/{id}', [VoucherController::class, 'update']);
+    Route::patch('/{id}/toggle', [VoucherController::class, 'toggle']);
 });

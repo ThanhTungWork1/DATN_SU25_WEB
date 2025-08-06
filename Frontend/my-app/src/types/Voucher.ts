@@ -10,10 +10,15 @@ export interface Voucher {
   end_date: string;
   status: number;
   discount_amount: number;
+
+  expires_at: string;
+  is_active: boolean;
 }
 
 export interface VoucherResponse {
   data: Voucher[];
   current_page: number;
   last_page: number;
+
+  total: number;
 }

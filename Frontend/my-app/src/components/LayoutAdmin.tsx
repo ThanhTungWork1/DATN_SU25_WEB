@@ -5,6 +5,9 @@ import {
   UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
+
+  InboxOutlined, // Icon cho tồn kho
+  HomeOutlined, // Icon cho home sections
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme, Button } from "antd";
@@ -35,6 +38,7 @@ const items: MenuItem[] = [
   getItem("Danh mục", "/admin/categories", <AppstoreOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
+  getItem("Home Sections", "/admin/home-sections", <HomeOutlined />),
   // getItem("Voucher", "/admin/voucher", <VoucherPage />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),

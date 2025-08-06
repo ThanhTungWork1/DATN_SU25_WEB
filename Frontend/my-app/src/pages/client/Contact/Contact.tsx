@@ -72,7 +72,6 @@ export const ContactClient = () => {
           </form>
         </div>
       </section>
-      {/* <position="top-right" newestOnTop /> */}
     </main>
   );
 };

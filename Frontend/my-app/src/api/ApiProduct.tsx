@@ -75,4 +75,3 @@ export const getProductDetail = async (id: string | number) => {
   const response = await config.get(`/product/${id}`);
   return response.data;
 };
-2;

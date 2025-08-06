@@ -14,6 +14,11 @@ import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
 import VoucherPage from "../pages/admin/voucher/Voucher";
 
+import HomeSectionList from "../pages/admin/home-sections/HomeSectionList";
+import HomeSectionProducts from "../pages/admin/home-sections/HomeSectionProducts";
+
+import AdminLogin from "../pages/auth/adminLogin";
+
 const AdminRoute = () => {
   return (
     <Routes>
@@ -35,6 +40,8 @@ const AdminRoute = () => {
           <Route path="contacts" element={<ContactAdmin />} />
           <Route path="categories" element={<CategoryList />} />
           <Route path="voucher" element={<VoucherPage />} />
+          <Route path="home-sections" element={<HomeSectionList />} />
+          <Route path="home-sections/:id/products" element={<HomeSectionProducts />} />
         </Route>
       </Route>
     </Routes>
