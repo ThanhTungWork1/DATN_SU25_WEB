@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class, // Thêm Sanctum middleware
         ]);
+        
+        // Thêm CORS middleware cho tất cả routes
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

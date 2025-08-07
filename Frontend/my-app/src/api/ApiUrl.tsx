@@ -55,12 +55,19 @@ export const getCart = async () => {
 };
 
 export const addToCart = async (item: {
-  productId: number;
+  variant_id: number;
   quantity: number;
+  price: number;
   color?: string;
   size?: string;
 }) => {
-  return await axios.post("http://localhost:8000/api/cart", item);
+  return await axios.post("http://localhost:8000/api/cart", {
+    cartItems: [{
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      price: item.price
+    }]
+  });
 };
 
 export const updateCartItem = async (id: number, quantity: number) => {

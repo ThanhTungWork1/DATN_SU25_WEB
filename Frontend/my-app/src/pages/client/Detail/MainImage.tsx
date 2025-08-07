@@ -1,16 +1,32 @@
+import "../../../assets/styles/mainImage.css";
+import { getImageUrl } from "../../../utils/imageUtils";
+
 type MainImageProps = {
-  imageUrl: string;
+  imageUrl: string | null; // Cho phép imageUrl có thể là null
 };
 
-const MainImage = ({ imageUrl }: MainImageProps) => {
+/**
+ * Component hiển thị ảnh chính của sản phẩm
+ */
+const MainImage: React.FC<MainImageProps> = ({ imageUrl }) => {
+
+  // Nếu không có imageUrl, hiển thị placeholder
+  if (!imageUrl) {
+    return (
+      <div className="main-image-container">
+        <div className="main-image placeholder-image">
+          <span>Ảnh không có sẵn</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Sử dụng utility function để tạo URL
+  const fullImageUrl = getImageUrl(imageUrl);
+
   return (
-    // hiển thị ảnh chi tiết sp
-    <div className="text-center">
-      <img
-        src={imageUrl}
-        alt="Main Product"
-        style={{ width: "100%", maxHeight: 500, objectFit: "contain" }}
-      />
+    <div className="main-image-container">
+      <img src={fullImageUrl} alt="Main Product" className="main-image" />
     </div>
   );
 };

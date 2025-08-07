@@ -68,7 +68,7 @@ export default function ProductDetail() {
     { title: "ID", dataIndex: "id", key: "id", width: 60 },
     { title: "Màu sắc", dataIndex: ['color', 'name'], key: "color" },
     { title: "Kích thước", dataIndex: ['size', 'name'], key: "size" },
-    { title: "Tồn kho", dataIndex: "stock", key: "stock", render: (stock) => <Tag color={stock > 0 ? 'blue' : 'red'}>{stock}</Tag> },
+    { title: "Còn lại", dataIndex: "stock", key: "stock", render: (stock) => <Tag color={stock > 0 ? 'blue' : 'red'}>{stock}</Tag> },
     { title: "Giá", dataIndex: "price", key: "price", render: (price) => `${Number(price).toLocaleString()} VND` },
     { title: "SKU", dataIndex: "sku", key: "sku", render: (sku) => sku || 'N/A' },
     { 

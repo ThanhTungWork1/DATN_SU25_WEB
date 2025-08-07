@@ -14,6 +14,9 @@ class ProductController extends Controller
 {
      public function index(Request $request)
     {
+        \Log::info('🔍 [BACKEND DEBUG] Admin products index called');
+        \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
+
         $query = Product::query();
 
         // THÊM MỚI: Logic xử lý tìm kiếm
@@ -24,7 +27,19 @@ class ProductController extends Controller
         }
 
         // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
-        return $query->orderBy('id', 'asc')->paginate(5);
+        $products = $query->orderBy('id', 'asc')->paginate(5);
+
+        // Đảm bảo accessors được load
+        $products->getCollection()->transform(function ($product) {
+            \Log::info('🔍 [BACKEND DEBUG] Processing product ID: ' . $product->id);
+            \Log::info('🔍 [BACKEND DEBUG] Raw image field: ' . $product->image);
+            \Log::info('🔍 [BACKEND DEBUG] Image URL accessor: ' . $product->image_url);
+            return $product;
+        });
+
+        \Log::info('🔍 [BACKEND DEBUG] Products found:', $products->toArray());
+
+        return $products;
     }
     public function store(Request $request)
     {
@@ -180,5 +195,125 @@ class ProductController extends Controller
         $product->delete();
 
         return response()->json(['message' => 'Xóa sản phẩm thành công!']);
+    }
+
+    /**
+     * Tìm kiếm sản phẩm với các filter
+     */
+    public function search(Request $request)
+    {
+        $query = Product::with(['category', 'variants.color', 'variants.size']);
+
+        // Tìm kiếm theo tên hoặc mô tả
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Filter theo danh mục
+        if ($request->has('category_id') && !empty($request->category_id)) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter theo giá
+        if ($request->has('min_price') && !empty($request->min_price)) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price') && !empty($request->max_price)) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Filter theo trạng thái
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter theo màu sắc
+        if ($request->has('color_id') && !empty($request->color_id)) {
+            $query->whereHas('variants', function ($q) use ($request) {
+                $q->where('color_id', $request->color_id);
+            });
+        }
+
+        // Filter theo kích thước
+        if ($request->has('size_id') && !empty($request->size_id)) {
+            $query->whereHas('variants', function ($q) use ($request) {
+                $q->where('size_id', $request->size_id);
+            });
+        }
+
+        // Filter theo chất liệu
+        if ($request->has('materials') && !empty($request->materials)) {
+            $materials = explode(',', $request->materials);
+            $query->whereIn('material', $materials);
+        }
+
+        // Filter theo giảm giá
+        if ($request->has('has_discount') && $request->has_discount !== '') {
+            if ($request->has_discount) {
+                $query->whereNotNull('old_price')
+                    ->where('old_price', '>', DB::raw('price'));
+            } else {
+                $query->where(function ($q) {
+                    $q->whereNull('old_price')
+                        ->orWhere('old_price', '<=', DB::raw('price'));
+                });
+            }
+        }
+
+        // Filter theo khoảng giảm giá
+        if ($request->has('min_discount') && !empty($request->min_discount)) {
+            $query->whereRaw('((old_price - price) / old_price * 100) >= ?', [$request->min_discount]);
+        }
+        if ($request->has('max_discount') && !empty($request->max_discount)) {
+            $query->whereRaw('((old_price - price) / old_price * 100) <= ?', [$request->max_discount]);
+        }
+
+        // Filter theo tồn kho
+        if ($request->has('in_stock') && $request->in_stock !== '') {
+            if ($request->in_stock) {
+                $query->whereHas('variants', function ($q) {
+                    $q->where('stock', '>', 0);
+                });
+            } else {
+                $query->whereDoesntHave('variants', function ($q) {
+                    $q->where('stock', '>', 0);
+                });
+            }
+        }
+
+        // Phân trang
+        $perPage = $request->get('per_page', 12);
+        $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $products->items(),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ],
+            'filters' => [
+                'search' => $request->search ?? null,
+                'category_id' => $request->category_id ?? null,
+                'min_price' => $request->min_price ?? null,
+                'max_price' => $request->max_price ?? null,
+                'status' => $request->status ?? null,
+                'color_id' => $request->color_id ?? null,
+                'size_id' => $request->size_id ?? null,
+                'materials' => $request->materials ?? null,
+                'has_discount' => $request->has_discount ?? null,
+                'min_discount' => $request->min_discount ?? null,
+                'max_discount' => $request->max_discount ?? null,
+                'in_stock' => $request->in_stock ?? null,
+            ]
+        ]);
     }
 }

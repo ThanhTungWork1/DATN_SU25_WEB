@@ -1,23 +1,25 @@
-// src/App.tsx
+import { Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+import { WishlistProvider } from "./provider/WishlistContext";
+import ClientRoute from "./routes/ClientRoute";
+import AdminRoute from "./routes/AdminRoute";
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-// Import adminRoutes (đã được cấu hình để sử dụng AdminLayout)
-import { adminRoutes } from "./routes/adminRoutes";
-// import AdminLogin from "./pages/admin/AdminLogin"; 
-
-
-
-
-export default function App() {
-    return (
-  
-        <Routes>
-            {adminRoutes} 
-             {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
-            <Route path="/" element={<h1>Trang chủ Frontend</h1>} />
-            <Route path="*" element={<h1>404 - Không tìm thấy trang</h1>} />
-        </Routes>
-    );
+function App() {
+  useEffect(() => {
+    AOS.init({ once: true });
+  }, []);
+  return (
+    <WishlistProvider>
+      <Routes>
+        <Route path="/*" element={<ClientRoute />} />
+        <Route path="/admin/*" element={<AdminRoute />} />
+      </Routes>
+      <Toaster position="top-right" richColors />
+    </WishlistProvider>
+  );
 }
 
+export default App;

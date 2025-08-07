@@ -2,38 +2,46 @@ import { Input, Table, Tag, Switch, message, Modal, Button } from "antd";
 import useList from "../../../hook/users/UseList";
 import type { IUser } from "../../../types/users";
 import { useState } from "react";
-import { config } from "../../../api/axios"; // Giả sử bạn có axios cấu hình sẵn ở đây
+import { config } from "../../../api/axios";
 import { Link } from "react-router-dom";
 
 const UserList = () => {
-  const { data, isLoading, refetch } = useList({ resource: "users" }); // có thể thêm refetch để reload dữ liệu
+  const { data, isLoading, refetch } = useList({ resource: "users" });
   const [searchText, setSearchText] = useState("");
 
   if (isLoading) return <div>Loading...</div>;
 
   // Sắp xếp theo vai trò
   const rolePriority: Record<string, number> = {
-    admin: 1,
-    moderator: 2,
-    user: 3,
+    "1": 1, // admin
+    "2": 2, // moderator
+    "0": 3, // user
   };
 
-  const dataSource = data?.data
-    ?.map((user: IUser) => ({
+  const userArray =
+    data && typeof data === "object" && data.data && Array.isArray(data.data)
+      ? data.data
+      : [];
+
+  const dataSource = userArray
+    .map((user: IUser) => ({
       key: user.id,
       ...user,
     }))
     .sort(
-      (a, b) => (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
+      (a: IUser, b: IUser) =>
+        (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
     );
 
-  const handleStatusChange = async (userId: string, newStatus: boolean) => {
+  const handleStatusChange = async (userId: number, newStatus: boolean) => {
     try {
-      await config.patch(`/users/${userId}`, { status: newStatus });
+      const response = await config.put(`/admin/users/${userId}`, {
+        status: newStatus,
+      });
       message.success("Cập nhật trạng thái thành công");
       refetch?.(); // Làm mới danh sách
     } catch (err) {
-      console.error(err);
+      console.error("Status update error:", err);
       message.error("Có lỗi xảy ra khi cập nhật");
     }
   };
@@ -47,7 +55,17 @@ const UserList = () => {
       title: "Chức vụ",
       dataIndex: "role",
       key: "role",
-      render: (role: string) => <Tag color="blue">{role}</Tag>,
+      render: (role: string) => {
+        const roleConfig: Record<string, { color: string; label: string }> = {
+          "1": { color: "volcano", label: "Admin" },
+          "2": { color: "orange", label: "Moderator" },
+          "0": { color: "blue", label: "User" },
+        };
+
+        const config = roleConfig[role] || { color: "default", label: role };
+
+        return <Tag color={config.color}>{config.label}</Tag>;
+      },
     },
     {
       title: "Trạng thái",
@@ -78,29 +96,21 @@ const UserList = () => {
         </div>
       ),
     },
-
-    {
-      title: "Xác minh",
-      dataIndex: "is_verified",
-      key: "is_verified",
-      render: (v: boolean) =>
-        v ? (
-          <Tag color="green">Đã xác minh</Tag>
-        ) : (
-          <Tag color="orange">Chưa xác minh</Tag>
-        ),
-    },
   ];
 
-  const filteredData = dataSource?.filter((user) =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.address.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.phone.toLowerCase().includes(searchText.toLowerCase())
+  const filteredData = dataSource?.filter(
+    (user: IUser) =>
+      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      (user.address || "").toLowerCase().includes(searchText.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+      (user.phone || "").toLowerCase().includes(searchText.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
     <div>
+      <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
+
       <Button type="primary">
         <Link to="/admin/users/create">Thêm người dùng</Link>
       </Button>
@@ -112,8 +122,11 @@ const UserList = () => {
         style={{ width: 300, marginBottom: 16 }}
       />
 
-      <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
-      <Table dataSource={filteredData} columns={columns} />
+      <Table
+        dataSource={filteredData || []}
+        columns={columns}
+        locale={{ emptyText: "Không có người dùng nào" }}
+      />
     </div>
   );
 };

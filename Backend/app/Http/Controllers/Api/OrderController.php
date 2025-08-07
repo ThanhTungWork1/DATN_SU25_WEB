@@ -65,10 +65,15 @@ class OrderController extends Controller
         ]);
 
         foreach ($data['items'] as $item) {
-            // Trừ tồn kho
-            $variant = \App\Models\ProductVariant::find($item['variant_id']);
+            // Trừ tồn kho variant
+            $variant = \App\Models\ProductVariant::with('product')->find($item['variant_id']);
             $variant->stock -= $item['quantity'];
             $variant->save();
+
+            // **FIX: Cập nhật số lượng đã bán của sản phẩm**
+            $product = $variant->product;
+            $product->sold += $item['quantity'];
+            $product->save();
 
             OrderItem::create([
                 'order_id' => $order->id,

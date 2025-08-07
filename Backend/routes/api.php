@@ -1,6 +1,8 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // --- API Controllers (Public & User) ---
 use App\Http\Controllers\Api\AuthenticationController;
@@ -9,26 +11,24 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ColorController;
 use App\Http\Controllers\Api\CommentController as ApiCommentController;
 use App\Http\Controllers\Api\ComplaintController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductVariantController;
 use App\Http\Controllers\Api\SizeController;
-use App\Http\Controllers\Api\VoucherController;
+use App\Http\Controllers\Api\ClientOrderController;
 
 // --- ADMIN Controllers ---
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 
 // --- Middleware ---
 use App\Http\Middleware\CheckAdminMiddleware;
-use App\Http\Middleware\CheckRole;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,98 +36,100 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 |--------------------------------------------------------------------------
 */
 
-// Test API
-Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+// ====================================================================
+// PUBLIC ROUTES (No Authentication Required)
+// ====================================================================
 
-// Forgot Password & Email Verification Routes
+// --- Authentication ---
+Route::post('/register', [AuthenticationController::class, 'register']);
+Route::post('/login', [AuthenticationController::class, 'login']);
+Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
+
+// --- Password Reset ---
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return response()->json(['message' => 'Đã gửi lại email xác minh']);
-})->middleware(['auth:sanctum', 'throttle:6,1']);
-Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
-    $user = \App\Models\User::findOrFail($id);
-    if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
-        return response()->json(['message' => 'Link xác minh không hợp lệ'], 400);
-    }
-    if (!$user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-    }
-    return response()->json(['message' => 'Xác minh email thành công']);
-})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
-// Public Routes (Không cần xác thực)
-Route::get('/categories', [CategoryController::class, 'index']); // Public API để lấy danh sách danh mục
+// --- Public Data ---
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
 Route::get('/comments/product/{product_id}', [ApiCommentController::class, 'getByProduct']);
+Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
 
-// Authentication Routes
-Route::post('/register', [AuthenticationController::class, 'register']);
-Route::post('/login', [AuthenticationController::class, 'login']);
-Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
-Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
+// --- Products (Public Access) ---
+Route::prefix('product')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
+    Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
+    Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
+    Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
+    Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
+});
+
+// --- Contact Form ---
+Route::post('/contact', [ContactController::class, 'store']);
+
 
 // ====================================================================
-// ADMIN ROUTES (Gộp tất cả vào một nhóm được bảo vệ)
+// AUTHENTICATED USER ROUTES (Require Login)
 // ====================================================================
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
-    // Products
-    Route::apiResource('products', ProductController::class)->except(['store', 'update']);
-    Route::post('products', [ProductController::class, 'store']);
-    Route::post('products/{id}', [ProductController::class, 'update']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    
+    // --- General Authenticated User Info ---
+    Route::post('/logout', [AuthenticationController::class, 'logout']);
+    Route::get('/me', fn(Request $request) => response()->json($request->user()));
+    Route::put('/me', [AuthenticationController::class, 'updateProfile']);
 
-    // Orders
-    Route::apiResource('orders', OrderController::class);
+    // --- Email Verification ---
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return response()->json(['message' => 'Đã gửi lại email xác minh']);
+    })->middleware('throttle:6,1');
 
-    // Categories
+    // --- Cart Management ---
+    Route::apiResource('/cart', CartController::class)->except(['update']); // `apiResource` handles index, store, show, destroy
+    Route::put('/cart-item/{id}', [CartController::class, 'updateCartItem']); // Specific route for updating quantity
+    Route::delete('/cart-item/{id}', [CartController::class, 'removeCartItem']); // Specific route for removing an item
+    Route::delete('/cart', [CartController::class, 'clearCart']); // Overwrite the destroy from apiResource to have a clear name
+    
+    // --- Favorites, Comments, Complaints, Notifications ---
+    Route::apiResource('favorites', FavoriteController::class)->only(['index', 'store', 'destroy']);
+    Route::post('/comments', [ApiCommentController::class, 'store']);
+    Route::post('/complaints', [ComplaintController::class, 'store']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    
+    // --- User Orders ---
+    Route::apiResource('client/orders', ClientOrderController::class);
+    Route::get('client/orders/statistics', [ClientOrderController::class, 'statistics']);
+    Route::get('client/orders/status/{status}', [ClientOrderController::class, 'getByStatus']);
+});
+
+
+// ====================================================================
+// ADMIN ROUTES (Require Login + Admin Role)
+// ====================================================================
+Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
+    
+    Route::get('dashboard', [DashboardController::class, 'index']);
+    
+    // --- Resource Management ---
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('orders', AdminOrderController::class);
     Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('users', UserController::class);
 
-    // Comments / Reviews
+    // --- Comments ---
     Route::get('comments', [AdminCommentController::class, 'index']);
     Route::put('comments/{id}/status', [AdminCommentController::class, 'updateStatus']);
     Route::delete('comments/{id}', [AdminCommentController::class, 'destroy']);
 
-    // Users
-    Route::apiResource('users', UserController::class);
-
-    // Dashboard & Vouchers
-    Route::get('dashboard', [DashboardController::class, 'index']);
-    Route::get('vouchers', [VoucherController::class, 'index']);
-    Route::get('vouchers/{code}', [VoucherController::class, 'show']);
-});
-
-
-
-// Authenticated User Routes (Yêu cầu xác thực)
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::prefix('product')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::get('/search', [ProductController::class, 'search']);
-        Route::get('/featured', [ProductController::class, 'featured']);
-        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
-        Route::get('/{id}', [ProductController::class, 'show']);
-    });
-
-    Route::prefix('favorites')->group(function () {
-        Route::get('/', [FavoriteController::class, 'index']);
-        Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
-    });
-
-    Route::prefix('order')->group(function () {
-        Route::get('/', [OrderController::class, 'index']);
-        Route::get('/{id}', [OrderController::class, 'show']);
-        Route::post('add', [OrderController::class, 'store']);
-        Route::put('update/{id}', [OrderController::class, 'update']);
-        Route::delete('delete/{id}', [OrderController::class, 'destroy']);
-    });
-
-    Route::apiResource('/cart', CartController::class);
-    Route::post('/comments', [ApiCommentController::class, 'store']);
-    Route::post('/complaints', [ComplaintController::class, 'store']);
-    Route::get('/notifications', [NotificationController::class, 'index']);
+    // --- Vouchers & Contacts ---
+    // Route::get('vouchers', [VoucherController::class, 'index']);
+    // Route::get('vouchers/{code}', [VoucherController::class, 'show']);
+    Route::get('contacts', [ContactController::class, 'index']);
+    Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
+    Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
 });

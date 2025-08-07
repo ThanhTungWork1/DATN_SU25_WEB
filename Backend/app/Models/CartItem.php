@@ -29,6 +29,12 @@ class CartItem extends Model
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
+    // Alias for productVariant to match controller usage
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
     public function product()
     {
         return $this->hasOneThrough(Product::class, ProductVariant::class, 'id', 'id', 'variant_id', 'product_id');

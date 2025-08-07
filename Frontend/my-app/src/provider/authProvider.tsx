@@ -1,25 +1,46 @@
-import axios from "axios"
+import axiosInstance from "../utils/axios";
+// dùng đúng axiosInstance từ utils/axios.ts
+import type { IUser } from "../types/users";
 
+type AuthParams = {
+  resource: string;
+  variables: {
+    login: string;
+    password: string;
+  };
+};
 
-const API_URL = `http://localhost:8000/api`
+type LoginResponse = {
+  token: string;
+  user: IUser;
+};
 
-type registerParams = {
-    resource: string,
-    variables: any,
-}
-type loginParams = {
-    resource: string,
-    variables: any,
-}
-const dataProvider = {
-    register: async ({ resource, variables }: registerParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return response.data;
-    },
-    login: async ({ resource, variables }: loginParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return response.data;
-    }
-}
+export const login = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
+  const { data } = await axiosInstance.post<LoginResponse>(
+    `/${resource}`,
+    variables
+  );
+  return data;
+};
 
-export const { register, login } = dataProvider;
+export const register = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
+  try {
+    const { data } = await axiosInstance.post<LoginResponse>(
+      `/${resource}`,
+      variables
+    );
+    return data;
+  } catch (error: any) {
+    console.error(
+      "❌ Register API error:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

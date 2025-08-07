@@ -21,6 +21,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'status',
         'is_verified',
+        'gender',
+        'birthdate',
     ];
 
     protected $hidden = [
@@ -30,6 +32,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'status' => 'boolean',
+        'is_verified' => 'boolean',
+        'role' => 'integer',
     ];
 
     public function comments()

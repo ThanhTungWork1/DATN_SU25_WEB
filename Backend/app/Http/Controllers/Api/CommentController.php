@@ -39,7 +39,8 @@ class CommentController extends Controller
         $comment = Comment::create([
             'user_id' => Auth::id(),
             'product_id' => $request->product_id,
-            'content' => $request->content,
+            'co
+            ntent' => $request->content,
             'rating' => $request->rating,
             'status' => false, // Mặc định là chờ duyệt
         ]);

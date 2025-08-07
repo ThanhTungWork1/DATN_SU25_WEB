@@ -17,6 +17,9 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        \Log::info('🔍 [BACKEND DEBUG] Admin orders index called');
+        \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
+        
         $query = Order::query();
 
         if ($request->has('search') && $request->input('search') != '') {
@@ -28,7 +31,11 @@ class OrderController extends Controller
             });
         }
 
-        return $query->with('items')->latest()->paginate(15);
+        $orders = $query->with('items')->latest()->paginate(15);
+        
+        \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
+        
+        return $orders;
     }
 
     /**

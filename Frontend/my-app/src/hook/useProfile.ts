@@ -1,23 +1,34 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { getUpdateProfile } from "../provider/dataProvider";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { TokenManager } from "../utils/tokenUtils";
 
-type useProfileParam = {
-    resource: string;
-    id: number;
-}
+// Không cần props nữa vì sẽ luôn cập nhật thông tin user hiện tại
+const useProfile = () => {
+  return useMutation({
+    mutationFn: async (updatedData: any) => {
+      const token = TokenManager.getToken();
+      
+      if (!token) {
+        throw new Error("Bạn cần đăng nhập để cập nhật thông tin");
+      }
 
-const useProfile = ({resource, id}: useProfileParam) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (variable: any) => {
-            return getUpdateProfile({resource, variable, id})
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: [resource, id]
-            })
+      console.log("Đang cập nhật thông tin profile:", updatedData);
+      
+      // Gọi API /me để cập nhật thông tin của chính user đang đăng nhập
+      const response = await axios.put(
+        `http://localhost:8000/api/me`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    })
-}
+      );
+      
+      console.log("Kết quả cập nhật profile:", response.data);
+      return response.data;
+    },
+  });
+};
 
-export default useProfile
+export default useProfile;

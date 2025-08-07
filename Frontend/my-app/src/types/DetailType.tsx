@@ -1,3 +1,5 @@
+import type { ColorType } from "./ColorType";
+
 export interface Variant {
   size?: { id: number; name: string; created_at?: string; updated_at?: string };
   stock: number;
@@ -5,13 +7,6 @@ export interface Variant {
   image?: string;
   sku?: string;
 }
-
-export type ColorType = {
-  id: number;
-  name: string;
-  code: string;
-  image?: string;
-};
 
 export interface Product {
   id: number;
