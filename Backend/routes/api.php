@@ -22,15 +22,17 @@ use App\Http\Controllers\Api\CommentController as ApiCommentController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\ProductVariantController;
-// --- ADMIN Controllers ---
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
-// --- Middleware ---
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\ContactController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Api\ChatbotController;
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+
+// Chat
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
 
 // Forgot Password
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);

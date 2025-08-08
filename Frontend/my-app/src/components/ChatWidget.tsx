@@ -3,7 +3,6 @@ import axios from "axios";
 import "../assets/styles/chatWidget.css";
 
 const ChatWidget = () => {
-  // Khi khởi tạo, nạp lại lịch sử chat nếu có
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem("chatbot_messages");
     return saved
@@ -15,10 +14,24 @@ const ChatWidget = () => {
           },
         ];
   });
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Lắng nghe sự kiện toggle từ nơi khác (ví dụ ContactFloating)
+  useEffect(() => {
+    const toggleHandler = () => {
+      setIsOpen((prev) => !prev);
+    };
+
+    window.addEventListener("toggleChatWidget", toggleHandler);
+
+    return () => {
+      window.removeEventListener("toggleChatWidget", toggleHandler);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,9 +39,15 @@ const ChatWidget = () => {
 
   useEffect(() => {
     scrollToBottom();
-    // Lưu vào localStorage mỗi khi messages thay đổi
     localStorage.setItem("chatbot_messages", JSON.stringify(messages));
   }, [messages]);
+
+  // Scroll xuống khi mở chat
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => scrollToBottom(), 100); // Delay nhỏ để đảm bảo DOM đã render
+    }
+  }, [isOpen]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -43,32 +62,22 @@ const ChatWidget = () => {
     try {
       const response = await axios.post(
         "http://localhost:8000/api/chatbot",
-        {
-          message: userMessage,
-        },
+        { message: userMessage },
         {
           timeout: 30000,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       if (response.data.success) {
         setMessages((prev) => [
           ...prev,
-          {
-            sender: "bot",
-            text: response.data.reply,
-          },
+          { sender: "bot", text: response.data.reply },
         ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          {
-            sender: "bot",
-            text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.",
-          },
+          { sender: "bot", text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại." },
         ]);
       }
     } catch (error) {
@@ -94,7 +103,7 @@ const ChatWidget = () => {
 
   return (
     <div className="chat-widget-container">
-      {/* Chat Toggle Button */}
+      {/* Nút bật/tắt thủ công */}
       <button
         className="chat-toggle-btn"
         onClick={() => setIsOpen(!isOpen)}
@@ -103,7 +112,7 @@ const ChatWidget = () => {
         {isOpen ? "✕" : "🤖"}
       </button>
 
-      {/* Chat Window */}
+      {/* Cửa sổ chat */}
       {isOpen && (
         <div className="chat-window">
           <div className="chat-header">
@@ -114,11 +123,14 @@ const ChatWidget = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}
+                className={`message ${
+                  msg.sender === "user" ? "user-message" : "bot-message"
+                }`}
               >
                 <div className="message-content">{msg.text}</div>
               </div>
             ))}
+
             {loading && (
               <div className="message bot-message">
                 <div className="message-content">
@@ -130,6 +142,7 @@ const ChatWidget = () => {
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
