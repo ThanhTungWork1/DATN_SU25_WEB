@@ -98,6 +98,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --- Favorites, Comments, Complaints, Notifications ---
     Route::apiResource('favorites', FavoriteController::class)->only(['index', 'store', 'destroy']);
     Route::post('/comments', [ApiCommentController::class, 'store']);
+    Route::get('/review-eligibility/{product_id}', [ApiCommentController::class, 'checkEligibility']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     

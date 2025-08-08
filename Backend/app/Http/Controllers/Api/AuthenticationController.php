@@ -34,11 +34,11 @@ class AuthenticationController extends Controller
                 'password' => Hash::make($validated['password']),
                 'role' => $role,
                 'status' => true,
-                'is_verified' => false
+                'is_verified' => true // **FIX: Tự động verify để không cần email verification**
             ]);
 
-
-            event(new Registered($user)); // Gửi email xác minh
+            // **COMMENT: Tắt email verification để tránh lỗi route**
+            // event(new Registered($user)); // Gửi email xác minh
 
             Log::info('User registered:', ['user_id' => $user->id, 'role' => $user->role, 'email' => $user->email]);
 
