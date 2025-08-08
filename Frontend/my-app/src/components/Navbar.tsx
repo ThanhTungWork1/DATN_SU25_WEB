@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import MegaMenu from "./MegaMenu";
-import useCurrentUser from "../hook/useCurrentUser";
+import { useAuth } from "../provider/AuthContext";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
 import "../assets/styles/navbar.css";
 import "../assets/styles/menu.css";
@@ -15,7 +15,7 @@ const Navbar = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
-  const { data: user, isLoading } = useCurrentUser();
+  const { user } = useAuth();
   const isProductsPage =
     location.pathname === "/products" &&
     ![
@@ -239,11 +239,7 @@ const Navbar = () => {
           🛒
         </div>
 
-        {isLoading ? (
-          <div className="icon-btn" style={{ cursor: "wait" }}>
-            Đang tải...
-          </div>
-        ) : user ? (
+        {user ? (
           <div
             className="icon-btn"
             title="Hồ sơ cá nhân"

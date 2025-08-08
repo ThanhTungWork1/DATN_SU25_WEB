@@ -29,13 +29,13 @@ class Order extends Model
         'estimated_delivery_date',
         'tracking_number',
         'shipping_company',
+        'voucher_id', // giữ lại từ code cũ
         'created_at',
         'updated_at',
     ];
-   /**
-     * THÊM MỚI: Thêm 'total_quantity' vào mảng appends.
-     * Điều này sẽ tự động thêm trường 'total_quantity' vào mỗi khi
-     * một đối tượng Order được chuyển thành JSON để gửi về frontend.
+
+    /**
+     * Thêm 'total_quantity' và 'calculated_final_amount' vào mảng appends
      */
     protected $appends = ['total_quantity', 'calculated_final_amount'];
 
@@ -45,7 +45,7 @@ class Order extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($order) {
             if (empty($order->order_code)) {
                 // Sử dụng ngày đặt hàng thực tế để tạo mã
@@ -58,64 +58,54 @@ class Order extends Model
     /**
      * Tạo mã đơn hàng tự động
      * Format: ORD-YYYYMMDD-XXXX (VD: ORD-20250731-0001)
-     * Sử dụng ngày đặt hàng thực tế, không phải ngày hiện tại
      */
     public static function generateOrderCode($orderDate = null)
     {
-        // Sử dụng ngày đặt hàng nếu có, không thì dùng ngày hiện tại
         $date = $orderDate ? $orderDate->format('Ymd') : now()->format('Ymd');
         $prefix = "ORD-{$date}-";
-        
-        // Tìm số thứ tự cuối cùng của ngày đó
+
         $lastOrder = self::where('order_code', 'like', $prefix . '%')
-                         ->orderBy('order_code', 'desc')
-                         ->first();
-        
+            ->orderBy('order_code', 'desc')
+            ->first();
+
         if ($lastOrder) {
             $lastNumber = (int) substr($lastOrder->order_code, -4);
             $nextNumber = $lastNumber + 1;
         } else {
             $nextNumber = 1;
         }
-        
+
         return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * THÊM MỚI: Accessor để tính toán tổng số lượng sản phẩm.
-     * Tên hàm phải là get...Attribute và theo dạng camelCase.
+     * Accessor tính tổng số lượng sản phẩm trong đơn
      */
     public function getTotalQuantityAttribute()
     {
-        // Hàm này sẽ tính tổng của cột 'quantity' từ tất cả các 'items'
-        // liên quan đến đơn hàng này.
         return $this->items->sum('quantity');
     }
 
     /**
-     * THÊM MỚI: Accessor để tính toán lại final_amount từ items.
-     * Sử dụng khi final_amount trong database không chính xác.
+     * Accessor tính toán lại final_amount từ items
      */
     public function getCalculatedFinalAmountAttribute()
     {
-        // Nếu không có items, trả về 0
         if ($this->items->isEmpty()) {
             return 0;
         }
-        
-        // Tính tổng tiền từ items
-        $totalFromItems = $this->items->sum(function($item) {
+
+        $totalFromItems = $this->items->sum(function ($item) {
             return $item->price * $item->quantity;
         });
-        
-        // Thêm phí vận chuyển và trừ giảm giá
+
         $calculatedAmount = $totalFromItems + $this->shipping_fee - $this->discount_amount;
-        
-        return max(0, $calculatedAmount); // Đảm bảo không âm
+
+        return max(0, $calculatedAmount);
     }
 
     /**
-     * Một đơn hàng có nhiều sản phẩm (items).
+     * Quan hệ: Một đơn hàng có nhiều sản phẩm
      */
     public function items(): HasMany
     {
@@ -123,10 +113,18 @@ class Order extends Model
     }
 
     /**
-     * Một đơn hàng có nhiều thanh toán (payments).
+     * Quan hệ: Một đơn hàng có nhiều thanh toán
      */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Quan hệ: Một đơn hàng có thể có một voucher
+     */
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 }

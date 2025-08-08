@@ -32,3 +32,4 @@
           Schema::dropIfExists('products');
       }
   };
+  

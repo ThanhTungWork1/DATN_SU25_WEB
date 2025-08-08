@@ -11,8 +11,8 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Lấy token từ localStorage (hoặc context Auth nếu có)
-  const token = localStorage.getItem("token") || "";
+  // Lấy token từ localStorage với đúng key
+  const token = localStorage.getItem("user_token") || "";
   const cart = useCartHook(token);
 
   return (

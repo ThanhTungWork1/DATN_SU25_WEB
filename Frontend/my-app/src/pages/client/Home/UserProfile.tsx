@@ -1,22 +1,19 @@
 import { useEffect } from "react";
 import { Button, Form, Input, Radio, DatePicker, message, Spin } from "antd";
 import dayjs from "dayjs";
-import useCurrentUser from "../../../hook/useCurrentUser";
+import { useAuth } from "../../../provider/AuthContext";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined } from "@ant-design/icons";
-import OrderList from "../Orders/OrderList";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
-  const { data: user, isLoading, refetch } = useCurrentUser();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("user_token");
-    localStorage.removeItem("role");
+    logout();
     message.success("Đăng xuất thành công!");
     navigate("/");
-    window.location.reload();
   };
   const userId = user?.id?.toString() || "";
 
@@ -45,7 +42,6 @@ const UserProfile = () => {
     mutate(formattedValues, {
       onSuccess: () => {
         message.success("Cập nhật hồ sơ thành công");
-        refetch();
       },
       onError: () => {
         message.error("Cập nhật thất bại");
@@ -53,7 +49,7 @@ const UserProfile = () => {
     });
   };
 
-  if (isLoading || !user?.id) return <Spin tip="Đang tải hồ sơ..." />;
+  if (!user?.id) return <Spin tip="Đang tải hồ sơ..." />;
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>

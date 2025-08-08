@@ -378,7 +378,38 @@ Route::get('create-test-vouchers', function() {
             'error' => $e->getMessage()
         ], 500);
     }
-});
+// Middleware
+use App\Http\Middleware\CheckAdminMiddleware;
+use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\Api\VNPayController;
+use App\Http\Controllers\Api\ZaloPayController;
+// Controllers
+use App\Http\Controllers\Api\{
+    HomeSectionController,
+    HomeSectionProductController,
+    AuthenticationController,
+    BannerController,
+    CartController,
+    CategoryController,
+    ClientOrderController,
+    ColorController,
+    CommentController,
+    ComplaintController,
+    ContactController,
+    DashboardController,
+    FavoriteController,
+    ForgotPasswordController,
+    InventoryController,
+    InventoryLogController,
+    NotificationController,
+    OrderController,
+    PaymentController,
+    ProductController,
+    ProductVariantController,
+    SizeController,
+    UserController,
+    VoucherController
+};
 
 // ========== Public ==========
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
@@ -600,14 +631,14 @@ Route::middleware('auth:sanctum')->group(function () {
 // Authenticated User Routes (Yêu cầu xác thực)
 // ========== Authenticated Users ==========
 Route::middleware(['auth:sanctum'])->group(function () {
-    // User profile endpoints
-    Route::get('/me', function(Request $request) {
-        return response()->json([
-            'status' => 'success',
-            'data' => $request->user()
-        ]);
+    Route::prefix('product')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
+        Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
+        Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
+        Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
     });
-    Route::get('/me/{id}', [UserController::class, 'show']);
+
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::post('/logout', [AuthenticationController::class, 'logout']);

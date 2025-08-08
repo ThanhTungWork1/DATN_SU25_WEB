@@ -1,5 +1,6 @@
 import { Button, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../provider/AuthContext";
 
 const formItemLayout = {
   labelCol: { xs: { span: 24 }, sm: { span: 6 } },
@@ -9,6 +10,7 @@ const formItemLayout = {
 export const Login = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const onFinish = async (formData: { email: string; password: string }) => {
     console.log("Form submitted with:", formData);
@@ -35,20 +37,22 @@ export const Login = () => {
         localStorage.setItem("user_token", data.token);
         localStorage.setItem("role", role);
         
+        // Cập nhật AuthContext với thông tin user
+        login(data.user);
+        
         messageApi.success("Đăng nhập thành công");
         
         console.log("Role:", role);
         console.log("Navigating to:", role === "1" ? "/admin/dashboard" : "/");
         
-        // Thử chuyển hướng
+        // Sử dụng navigate thay vì window.location.href
         setTimeout(() => {
-          const baseUrl = window.location.origin;
           if (role === "1") {
             console.log("Redirecting to admin dashboard...");
-            window.location.href = `${baseUrl}/admin/dashboard`;
+            navigate("/admin/dashboard");
           } else {
             console.log("Redirecting to home page...");
-            window.location.href = `${baseUrl}/`;
+            navigate("/");
           }
         }, 100);
       } else {
