@@ -8,17 +8,24 @@ export interface Voucher {
   description: string;
   start_date: string;
   end_date: string;
-  status: number;
-  discount_amount: number;
 
-  expires_at: string;
-  is_active: boolean;
+  expiry_date: string;
+  status: boolean;
+  min_order_amount: number;
+  max_usage: number;
+  used_count: number;
+  discount_type: "fixed" | "percent";
+  created_at: string;
+  updated_at: string;
+
+  // Computed properties from backend
+  status_label?: string;
+  status_color?: string;
 }
 
 export interface VoucherResponse {
   data: Voucher[];
   current_page: number;
   last_page: number;
-
   total: number;
 }

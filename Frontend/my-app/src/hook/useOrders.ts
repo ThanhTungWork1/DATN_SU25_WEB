@@ -1,13 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import axiosInstance from '../utils/axiosInstance';
 import { UseOrder } from '../types/UseOrder';
 import { transformOrders, transformOrder } from '../utils/orderTransform';
-
-interface ApiResponse<T> {
-  data: T;
-  [key: string]: any;
-}
+import axiosInstance from '../utils/axiosInstance';
 
 export const useOrders = () => {
   const queryClient = useQueryClient();

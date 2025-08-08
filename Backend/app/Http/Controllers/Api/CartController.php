@@ -36,9 +36,14 @@ class CartController extends Controller
 
             $record = $this->model->create($cart);
 
-            $cartItem = collect($data['cartItems'])->map(function ($item) {
+            $cartItem = collect($data['cartItems'])->map(function ($item) use ($record) {
+                // Tìm variant_id từ product_id và size/color nếu có
+                $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                $variant_id = $variant ? $variant->id : null;
+                
                 return [
-                    'product_id' => $item['product_id'],
+                    'cart_id' => $record->id,
+                    'variant_id' => $variant_id,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ];
@@ -46,7 +51,7 @@ class CartController extends Controller
 
             $record->cartItems()->createMany($cartItem);
 
-            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
+            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
         });
     }
 

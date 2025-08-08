@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         // Thêm CORS middleware cho tất cả routes
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -8,7 +8,6 @@ type Props = {
   onReorder: (order: UseOrder) => void;
 };
 
-
 const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
   const [showDetail, setShowDetail] = useState(false);
 

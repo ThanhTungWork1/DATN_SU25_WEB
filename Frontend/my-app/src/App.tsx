@@ -4,9 +4,14 @@ import { WishlistProvider } from "./provider/WishlistContext";
 import ClientRoute from "./routes/ClientRoute";
 import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
-
+import AOS from "aos";
+import "aos/dist/aos.css";
+import "./utils/testAuth"; // Import để có thể sử dụng testAuth() trong console
 
 function App() {
+  useEffect(() => {
+    AOS.init({ once: true });
+  }, []);
   return (
     <WishlistProvider>
       <Routes>

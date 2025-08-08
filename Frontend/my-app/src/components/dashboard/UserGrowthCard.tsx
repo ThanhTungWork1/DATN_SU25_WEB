@@ -5,6 +5,9 @@ import { useUserGrowth } from "../../hook/analytics/useUserGrowth";
 const UserGrowthCard = () => {
   const { data, isLoading } = useUserGrowth();
 
+  // Debug: Log dữ liệu để kiểm tra
+  console.log("UserGrowthCard Data:", data);
+
   if (isLoading || !data) return <Card loading />;
 
   const isPositive = data.growthPercent >= 0;
@@ -13,7 +16,7 @@ const UserGrowthCard = () => {
       ? data.thisCount > 0
         ? "(+100%)"
         : "(0%)"
-      : `(${data.growthPercent.toFixed(1)}%)`;
+      : `(${isPositive ? "+" : ""}${data.growthPercent.toFixed(1)}%)`;
 
   return (
     <Card>
@@ -25,7 +28,10 @@ const UserGrowthCard = () => {
         prefix={isPositive ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
         suffix={suffix}
       />
-      <p style={{ marginTop: 8 }}>Tháng trước: {data.lastCount} người</p>
+      <p style={{ marginTop: 8, fontSize: "12px", color: "#666" }}>
+        Tháng trước: {data.lastCount} người | Tăng trưởng:{" "}
+        {data.growthPercent.toFixed(1)}%
+      </p>
     </Card>
   );
 };

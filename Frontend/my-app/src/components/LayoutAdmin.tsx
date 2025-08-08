@@ -8,11 +8,12 @@ import {
 
   InboxOutlined, // Icon cho tồn kho
   HomeOutlined, // Icon cho home sections
+  GiftOutlined, // Icon cho voucher
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme, Button } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
-import VoucherPage from "../pages/admin/voucher/Voucher";
+// import VoucherPage from "../pages/admin/voucher/Voucher";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -37,9 +38,11 @@ const items: MenuItem[] = [
   getItem("Thành viên", "/admin/users", <UserOutlined />),
   getItem("Danh mục", "/admin/categories", <AppstoreOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
+  getItem("Tồn kho", "/admin/inventory", <InboxOutlined />), // Thêm menu tồn kho
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Home Sections", "/admin/home-sections", <HomeOutlined />),
   // getItem("Voucher", "/admin/voucher", <VoucherPage />),
+  getItem("Voucher", "/admin/voucher", <GiftOutlined />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
 ];

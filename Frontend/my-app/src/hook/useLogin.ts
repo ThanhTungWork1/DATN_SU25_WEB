@@ -21,7 +21,7 @@ const useLogin = ({ resource = "/login", forAdmin = false }: useLoginParams) => 
       if (!token) throw new Error("❌ Token không tồn tại");
 
       if (forAdmin) {
-        if (user.role !== "1") {
+        if (user.role !== 1) {
           throw new Error("❌ Bạn không có quyền truy cập admin");
         }
         localStorage.setItem("admin_token", token);

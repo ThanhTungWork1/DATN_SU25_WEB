@@ -1,6 +1,6 @@
 import "../../../assets/styles/contact.css";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useContactForm } from "../../../hook/contact/useContactForm";
 
 export const ContactClient = () => {
@@ -17,7 +17,8 @@ export const ContactClient = () => {
         <div className="contact-grid">
           <div className="contact-info">
             <p>
-              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện đại
+              <strong>🏬 Cửa hàng:</strong> StrideX - Thời trang thể thao hiện
+              đại
             </p>
             <p>
               <strong>📍 Địa chỉ:</strong> 123 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội
@@ -72,6 +73,7 @@ export const ContactClient = () => {
           </form>
         </div>
       </section>
+      <ToastContainer position="top-right" newestOnTop />
     </main>
   );
 };

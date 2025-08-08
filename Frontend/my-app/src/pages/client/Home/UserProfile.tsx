@@ -4,9 +4,9 @@ import dayjs from "dayjs";
 import useCurrentUser from "../../../hook/useCurrentUser";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
-
 import { LogoutOutlined, ShoppingOutlined, HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import OrderList from "../Orders/OrderList";
+
 
 
 const UserProfile = () => {
@@ -79,21 +79,6 @@ const UserProfile = () => {
           >
             Lịch sử đơn hàng
           </Button>
-          <Button
-            type="default"
-            icon={<ShoppingCartOutlined />}
-            onClick={() => navigate('/cart')}
-          >
-            Giỏ hàng
-          </Button>
-          <Button
-            type="default"
-            icon={<HeartOutlined />}
-            onClick={() => navigate('/wishlist')}
-          >
-            Sản phẩm yêu thích
-          </Button>
-
         </div>
       </div>
 
@@ -131,7 +116,13 @@ const UserProfile = () => {
         </Form.Item>
 
         <Form.Item>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-start",
+            }}
+          >
             <Button type="primary" htmlType="submit" loading={isPending}>
               Cập nhật thông tin
             </Button>

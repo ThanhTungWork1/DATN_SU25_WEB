@@ -12,5 +12,14 @@ export type CartItem = {
 export interface CartResponse {
   id: number;
   user_id: number;
-  cartItems: CartItem[];
+  cart_items: CartItem[]; // SỬA LẠI: cart_items thay vì cartItems
 }
+
+export type CartContextType = {
+  cartItems: CartItem[];
+  fetchCart: () => void;
+  addToCart: (item: any) => void;
+  updateQuantity: (id: number, quantity: number) => void;
+  removeItem: (id: number) => void;
+  clearCart: () => void;
+};
