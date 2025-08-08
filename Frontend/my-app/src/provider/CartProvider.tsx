@@ -17,11 +17,11 @@ export const useCart = () => {
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [token, setToken] = useState<string | null>(TokenManager.getToken());
+    const [token, setToken] = useState<string | null>(TokenManager.getUserToken());
 
-    // Hàm xử lý khi token thay đổi
+    // Hàm xử lý khi token thay đổi - CHỈ THEO DÕI USER TOKEN
     const handleTokenChange = useCallback(() => {
-        const currentToken = TokenManager.getToken();
+        const currentToken = TokenManager.getUserToken();
         setToken(currentToken);
     }, []);
 
@@ -98,7 +98,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [fetchCart]);
 
     const addToCart = async (item: CartItem) => {
-        const currentToken = TokenManager.getToken();
+        const currentToken = TokenManager.getUserToken();
         if (!currentToken) {
             toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
             return; // Dừng lại ngay lập tức
@@ -124,7 +124,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const removeFromCart = async (id: number) => {
-        const currentToken = TokenManager.getToken();
+        const currentToken = TokenManager.getUserToken();
         if (!currentToken) return;
         try {
             await axios.delete(`http://localhost:8000/api/cart-item/${id}`, {
@@ -139,7 +139,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const clearCart = async () => {
-        const currentToken = TokenManager.getToken();
+        const currentToken = TokenManager.getUserToken();
         if (!currentToken) return;
         try {
             await axios.delete('http://localhost:8000/api/cart', {

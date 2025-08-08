@@ -102,11 +102,18 @@ const CheckoutPage = () => {
 
   // Lấy thông tin user từ localStorage
   useEffect(() => {
+    // **FIX: Sử dụng TokenManager để kiểm tra đúng user token**
+    const userToken = TokenManager.getUserToken();
     const userStr = localStorage.getItem("user");
-    const role = localStorage.getItem("role");
     
-    // Chỉ lấy thông tin nếu đây là user thường (role !== "1")
-    if (userStr && role !== "1") {
+    console.log('🛒 Checkout - Token check:', {
+      userToken: !!userToken,
+      userStr: !!userStr,
+      hasUserData: !!userStr
+    });
+    
+    // Kiểm tra user token thay vì role
+    if (userToken && userStr) {
       try {
         const user = JSON.parse(userStr);
         setUserInfo(user);
@@ -116,12 +123,14 @@ const CheckoutPage = () => {
           phone: user.phone || user.phone_number || '',
           email: user.email || ''
         });
+        console.log('✅ User info loaded for checkout:', user.name);
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
-    } else if (userStr && role === "1") {
-      // Nếu là admin, hiển thị thông báo
-      message.warning("Vui lòng đăng nhập bằng tài khoản user để thanh toán!");
+    } else {
+      // **FIX: Chỉ hiện thông báo khi thực sự không có user token**
+      console.log('❌ No user token found, redirecting to login');
+      message.warning("Vui lòng đăng nhập để thanh toán!");
       navigate("/login");
     }
   }, [form, navigate]);

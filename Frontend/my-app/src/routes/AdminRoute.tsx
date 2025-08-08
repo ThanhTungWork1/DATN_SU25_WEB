@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import LayoutAdmin from "../layouts/Admin/AdminLayout";
+import LayoutAdmin from "../components/LayoutAdmin";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 import UserAdd from "../pages/admin/users/AddUser";
 import ProductList from "../pages/admin/products/ProductsList";
@@ -8,7 +8,7 @@ import ProductDetail from "../pages/admin/products/ProductDetail";
 import OrderList from "../pages/admin/orders/OrderList";
 import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
-import RequireAuth from "./RequireAuth";
+import AdminGuard from "../components/AdminGuard";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
@@ -18,7 +18,7 @@ import CommentList from "../pages/admin/comments/CommentList";
 const AdminRoute = () => {
   return (
     <Routes>
-      <Route element={<RequireAuth allowedRoles={["admin"]} />}>
+      <Route element={<AdminGuard />}>
         <Route path="" element={<LayoutAdmin />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />

@@ -6,7 +6,7 @@ import { TokenManager } from "../utils/tokenUtils";
 const useProfile = () => {
   return useMutation({
     mutationFn: async (updatedData: any) => {
-      const token = TokenManager.getToken();
+                  const token = TokenManager.getUserToken();
       
       if (!token) {
         throw new Error("Bạn cần đăng nhập để cập nhật thông tin");

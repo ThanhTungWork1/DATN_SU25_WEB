@@ -122,7 +122,14 @@ export default function OrderList() {
         },
         { title: "Ngày đặt", dataIndex: "created_at", key: "created_at", render: (text) => new Date(text).toLocaleDateString() },
         { title: "Số lượng", dataIndex: "total_quantity", key: "total_quantity", render: (qty) => `${qty} Sản phẩm` },
-        { title: "Tổng tiền", dataIndex: "final_amount", key: "final_amount", render: (text) => `${Number(text).toLocaleString()} VND` },
+        { 
+            title: "Tổng tiền", 
+            key: "total_price", 
+            render: (_, record) => {
+                const finalAmount = record.final_amount || (record.total_amount + record.shipping_fee - (record.discount_amount || 0));
+                return `${Number(finalAmount || 0).toLocaleString()} VND`;
+            }
+        },
         {
             title: "Trạng thái ĐH",
             dataIndex: "status",

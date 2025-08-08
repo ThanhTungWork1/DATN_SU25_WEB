@@ -48,9 +48,14 @@ const LayoutAdmin: React.FC = () => {
   } = theme.useToken();
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("role");
-    navigate("/");
+    // Import TokenManager và sử dụng để clear tokens
+    import("../utils/tokenUtils").then(({ TokenManager }) => {
+      TokenManager.clearAllTokens();
+      localStorage.removeItem("role");
+      localStorage.removeItem("admin_user");
+      localStorage.removeItem("user");
+      navigate("/");
+    });
   };
 
   return (

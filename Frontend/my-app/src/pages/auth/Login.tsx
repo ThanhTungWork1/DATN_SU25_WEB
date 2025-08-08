@@ -1,5 +1,6 @@
 import { Button, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { TokenManager } from "../../utils/tokenUtils";
 
 const formItemLayout = {
     labelCol: { xs: { span: 24 }, sm: { span: 6 } },
@@ -28,21 +29,29 @@ export const Login = () => {
             
             if (response.ok) {
                 const role = data.user.role;
-                // Sửa ở đây để đảm bảo key là "token"
-                localStorage.setItem("token", data.token); 
-                localStorage.setItem("role", role);
-                localStorage.setItem("user", JSON.stringify(data.user));
                 
-                messageApi.success("Đăng nhập thành công");
-                
-                setTimeout(() => {
-                    const baseUrl = window.location.origin;
-                    if (role === "1") {
-                        window.location.href = `${baseUrl}/admin/dashboard`;
-                    } else {
-                        window.location.href = `${baseUrl}/`;
-                    }
-                }, 100);
+                // **FIX: Sử dụng TokenManager và phân biệt admin/user rõ ràng**
+                if (role === 1) {
+                    // Admin: sử dụng admin token
+                    TokenManager.setToken(data.token, 'admin');
+                    localStorage.setItem("role", role.toString());
+                    localStorage.setItem("admin_user", JSON.stringify(data.user));
+                    messageApi.success("Đăng nhập admin thành công!");
+                    
+                    setTimeout(() => {
+                        window.location.href = `${window.location.origin}/admin/dashboard`;
+                    }, 100);
+                } else {
+                    // User: sử dụng user token
+                    TokenManager.setToken(data.token, 'user');
+                    localStorage.setItem("role", role.toString());
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                    messageApi.success("Đăng nhập người dùng thành công!");
+                    
+                    setTimeout(() => {
+                        window.location.href = `${window.location.origin}/`;
+                    }, 100);
+                }
             } else {
                 messageApi.error(data.message || "Đăng nhập thất bại!");
             }

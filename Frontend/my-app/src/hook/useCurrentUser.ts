@@ -4,7 +4,8 @@ import type { IUser } from "../types/users"; // Đảm bảo đúng path
 import { TokenManager } from "../utils/tokenUtils";
 
 const useCurrentUser = () => {
-  const token = TokenManager.getToken();
+  // **FIX: Chỉ sử dụng user token ở client, không lấy admin token**
+  const token = TokenManager.getUserToken();
 
   return useQuery<IUser>({
     queryKey: ["currentUser", token], // Thêm token vào queryKey để refetch khi token thay đổi

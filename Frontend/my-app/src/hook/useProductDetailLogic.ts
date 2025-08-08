@@ -44,7 +44,7 @@ export function useProductDetailLogic(product: Product | undefined) {
       return;
     }
     const { TokenManager } = await import("../utils/tokenUtils");
-    const token = TokenManager.getToken();
+    const token = TokenManager.getUserToken();
     if (!token) {
       toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
       return;

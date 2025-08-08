@@ -43,6 +43,29 @@ export const getProductReviews = async (productId: number) => {
   return await axios.get(`http://localhost:8000/api/comments/product/${productId}`);
 };
 
+// ======================= SUBMIT REVIEW ========================
+export const submitReview = async (reviewData: {
+  product_id: number;
+  content: string;
+  rating: number;
+}, token: string) => {
+  return await axios.post(`http://localhost:8000/api/comments`, reviewData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+// ======================= CHECK REVIEW ELIGIBILITY ========================
+export const checkReviewEligibility = async (productId: number, token: string) => {
+  return await axios.get(`http://localhost:8000/api/review-eligibility/${productId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
 // ======================= GET USERS ========================
 export const getAllUsers = async () => {
   return await axios.get(`http://localhost:8000/api/users`);

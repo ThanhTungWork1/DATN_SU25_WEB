@@ -2,6 +2,7 @@ import { Button, Form, Input, message, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
 import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
+import { TokenManager } from "../../utils/tokenUtils";
 import { useState } from "react";
 
 const formItemLayout = {
@@ -37,24 +38,33 @@ export const Register = () => {
     };
 
     registerMutate(submitData, {
-      onSuccess: () => {
-        loginMutate(
-          { login: submitData.email, password: submitData.password }, // dùng "login" để backend xử lý email/phone
-          {
-            onSuccess: (data) => {
-              const res: any = data;
-              if (res && res.token) {
-                localStorage.setItem("token", res.token);
-              }
-              messageApi.success("Đăng ký & đăng nhập thành công!");
-              navigate("/");
-            },
-            onError: () => {
-              messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
-              navigate("/login");
-            },
-          }
-        );
+      onSuccess: (data: any) => {
+        // **FIX: Sử dụng token từ response đăng ký luôn, không cần đăng nhập lại**
+        if (data && data.token) {
+          TokenManager.setToken(data.token, 'user');
+          localStorage.setItem("role", data.user.role.toString());
+          localStorage.setItem("user", JSON.stringify(data.user));
+          messageApi.success("Đăng ký thành công! Chào mừng bạn đến với StrideX!");
+          navigate("/");
+        } else {
+          // Fallback: nếu không có token trong response, thử đăng nhập
+          loginMutate(
+            { login: submitData.email, password: submitData.password },
+            {
+              onSuccess: (loginData: any) => {
+                TokenManager.setToken(loginData.token, 'user');
+                localStorage.setItem("role", loginData.user.role.toString());
+                localStorage.setItem("user", JSON.stringify(loginData.user));
+                messageApi.success("Đăng ký & đăng nhập thành công!");
+                navigate("/");
+              },
+              onError: () => {
+                messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
+                navigate("/login");
+              },
+            }
+          );
+        }
       },
       onError: (error: any) => {
         const res = error?.response?.data;

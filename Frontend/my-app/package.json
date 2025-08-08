@@ -37,6 +37,7 @@
     "json2mq": "^0.2.0",
     "lucide-react": "^0.513.0",
     "react": "^18.3.1",
+    "react-bootstrap-icons": "^1.11.6",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.57.0",
     "react-icons": "^5.5.0",
