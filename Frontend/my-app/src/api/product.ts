@@ -1,13 +1,13 @@
 // src/api/product.ts
 
 import axiosInstance from "../utils/axiosInstance";
-import { Product, ProductVariant, Color, Size, Category } from "../types/ProductType"; 
+import { Product, ProductVariant, Color, Size } from "../types/ProductType"; 
 
 // ====================================================================
 // API cho Products (Admin Routes)
 // ====================================================================
 
-export const getProducts = (params: { page?: number, search?: string } = {}) => {
+export const getProducts = (params: { page?: number; search?: string; per_page?: number } = {}) => {
     // Gửi các tham số đến backend
     return axiosInstance.get('/admin/products', { params });
 };
@@ -47,3 +47,15 @@ export const getProductVariant = (id: string | number) => axiosInstance.get<Prod
 export const createProductVariant = (data: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => axiosInstance.post<ProductVariant>(`/product-variants`, data);
 export const updateProductVariant = (id: string | number, data: Partial<ProductVariant>) => axiosInstance.put<ProductVariant>(`/product-variants/${id}`, data);
 export const deleteProductVariant = (id: string | number) => axiosInstance.delete<void>(`/product-variants/${id}`);
+
+// Lấy thống kê chi tiết cho một sản phẩm (admin)
+export const getProductStatistics = (
+  id: number,
+  params?: {
+    start_date?: string;
+    end_date?: string;
+    period?: 'week' | 'month' | 'quarter' | 'custom';
+  }
+) => {
+  return axiosInstance.get(`/admin/products/${id}/statistics`, { params });
+};

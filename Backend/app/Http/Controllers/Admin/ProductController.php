@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str; // THÊM: Import Str để tạo slug
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -26,8 +29,10 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-        // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
-        $products = $query->orderBy('id', 'asc')->paginate(5);
+        // Sắp xếp theo ID tăng dần và phân trang theo tham số per_page (mặc định 20)
+        $perPage = (int) $request->get('per_page', 20);
+        if ($perPage <= 0) { $perPage = 20; }
+        $products = $query->orderBy('id', 'asc')->paginate($perPage);
         
         // Đảm bảo accessors được load
         $products->getCollection()->transform(function ($product) {
@@ -353,5 +358,179 @@ class ProductController extends Controller
                 'in_stock' => $request->in_stock ?? null,
             ]
         ]);
+    }
+
+    /**
+     * Thống kê cho một sản phẩm cụ thể (dựa trên order_items của các biến thể).
+     * Endpoint: GET /admin/products/{id}/statistics
+     * Params: period (week|month|quarter|custom), start_date, end_date (YYYY-MM-DD)
+     */
+    public function statistics(Request $request, $id)
+    {
+        try {
+            \Log::info('🔄 BẮT ĐẦU Product Statistics API');
+            \Log::info('📦 Product ID: ' . $id);
+            \Log::info('📥 Request params: ' . json_encode($request->all()));
+
+            $product = Product::findOrFail($id);
+            \Log::info('✅ Product found: ' . $product->name);
+
+            // Thời gian
+            $startDate = $request->get('start_date');
+            $endDate = $request->get('end_date');
+            $period = $request->get('period', 'month');
+
+            if (!$startDate || !$endDate) {
+                $endDate = Carbon::now();
+                $startDate = Carbon::parse('2020-01-01');
+            } else {
+                $startDate = Carbon::parse($startDate);
+                $endDate = Carbon::parse($endDate);
+            }
+
+            // Lấy variants của sản phẩm
+            $variantIds = ProductVariant::where('product_id', $product->id)->pluck('id');
+            \Log::info('🎯 Variant IDs: ' . $variantIds->toJson());
+
+            if ($variantIds->isEmpty()) {
+                return response()->json([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'total_orders' => 0,
+                    'total_revenue' => 0,
+                    'total_items' => 0,
+                    'average_per_item' => 0,
+                    'top_variants' => [],
+                    'time_data' => [],
+                    'period' => $period,
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                ]);
+            }
+
+            $orderItemsQuery = OrderItem::whereIn('variant_id', $variantIds)
+                ->with(['order', 'variant.color', 'variant.size']);
+
+            // BẬT lọc theo thời gian theo orders.created_at
+            $orderItemsQuery->whereHas('order', function($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate]);
+            });
+
+            $orderItems = $orderItemsQuery->get();
+            \Log::info('🧮 Order items count: ' . $orderItems->count());
+
+            // Tổng quan
+            $totalOrders = $orderItems->groupBy('order_id')->count();
+            $totalItems = $orderItems->sum('quantity');
+            $totalRevenue = $orderItems->sum(function($item) {
+                // Giá trong DB là đơn vị nghìn
+                return $item->quantity * $item->price * 1000;
+            });
+            $averagePerItem = $totalItems > 0 ? $totalRevenue / $totalItems : 0;
+
+            // Top biến thể bán chạy
+            $topVariants = [];
+            if ($orderItems->count() > 0) {
+                $topVariants = $orderItems
+                    ->groupBy('variant_id')
+                    ->map(function($items, $variantId) {
+                        $variant = optional($items->first()->variant);
+                        $soldQty = $items->sum('quantity');
+                        $revenue = $items->sum(function($i){ return $i->quantity * $i->price * 1000; });
+                        return [
+                            'id' => (int) $variantId,
+                            'color' => optional($variant->color)->name,
+                            'size' => optional($variant->size)->name,
+                            'sold_quantity' => (int) $soldQty,
+                            'revenue' => (int) $revenue,
+                        ];
+                    })
+                    ->values()
+                    ->sortByDesc('revenue')
+                    ->take(5)
+                    ->values();
+            }
+
+            // Time series
+            $timeData = $this->generateTimeDataForProduct($orderItems, $startDate, $endDate, $period);
+
+            return response()->json([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'total_orders' => $totalOrders,
+                'total_revenue' => $totalRevenue,
+                'total_items' => $totalItems,
+                'average_per_item' => $averagePerItem,
+                'top_variants' => $topVariants,
+                'time_data' => $timeData,
+                'period' => $period,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('❌ Error in Product Statistics API: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get statistics'], 500);
+        }
+    }
+
+    /**
+     * Sinh dữ liệu time series tương tự Category nhưng cho sản phẩm.
+     * Lưu ý: với 'week'|'month'|'quarter' hiện trả 1 bucket để giữ đồng nhất với Category hiện tại.
+     */
+    protected function generateTimeDataForProduct($orderItems, Carbon $startDate, Carbon $endDate, $period)
+    {
+        $timeData = [];
+
+        if ($period === 'custom') {
+            $current = $startDate->copy();
+            while ($current->lte($endDate)) {
+                $dayStart = $current->copy()->startOfDay();
+                $dayEnd = $current->copy()->endOfDay();
+                $itemsForDay = $orderItems->filter(function($item) use ($dayStart, $dayEnd) {
+                    $created = Carbon::parse(optional($item->order)->created_at);
+                    return $created && $created->between($dayStart, $dayEnd);
+                });
+                $timeData[] = [
+                    'period' => $current->format('d/m'),
+                    'orders' => $itemsForDay->groupBy('order_id')->count(),
+                    'revenue' => $itemsForDay->sum(function($i){ return $i->quantity * $i->price * 1000; }),
+                ];
+                $current->addDay();
+            }
+            return $timeData;
+        }
+
+        // week/month/quarter: tạo 1 bucket theo logic hiện tại của CategoryController
+        switch ($period) {
+            case 'week':
+                $label = 'Tuần ' . $startDate->weekOfYear;
+                $rangeStart = $startDate->copy()->startOfWeek();
+                $rangeEnd = min($endDate, $startDate->copy()->endOfWeek());
+                break;
+            case 'quarter':
+                $label = 'Quý ' . $startDate->quarter;
+                $rangeStart = $startDate->copy()->firstOfQuarter();
+                $rangeEnd = min($endDate, $startDate->copy()->lastOfQuarter());
+                break;
+            case 'month':
+            default:
+                $label = 'Tháng ' . $startDate->month;
+                $rangeStart = $startDate->copy()->startOfMonth();
+                $rangeEnd = min($endDate, $startDate->copy()->endOfMonth());
+                break;
+        }
+
+        $itemsForRange = $orderItems->filter(function($item) use ($rangeStart, $rangeEnd) {
+            $created = Carbon::parse(optional($item->order)->created_at);
+            return $created && $created->between($rangeStart, $rangeEnd);
+        });
+
+        $timeData[] = [
+            'period' => $label,
+            'orders' => $itemsForRange->groupBy('order_id')->count(),
+            'revenue' => $itemsForRange->sum(function($i){ return $i->quantity * $i->price * 1000; }),
+        ];
+
+        return $timeData;
     }
 }

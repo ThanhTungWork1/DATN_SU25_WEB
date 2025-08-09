@@ -36,16 +36,21 @@ class ProductVariant extends Model
     //     });
     // }
 
-     // protected $appends = ['image_url'];
+     protected $appends = ['image_url'];
 
-    // public function getImageUrlAttribute()
-    // {
-    //     if ($this->image && Storage::disk('public')->exists($this->image)) {
-    //         // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
-    //         return asset('storage/' . $this->image);
-    //     }
-    //     return null;
-    // }
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            // Nếu là URL tuyệt đối, trả nguyên vẹn
+            if (filter_var($this->image, FILTER_VALIDATE_URL)) {
+                return $this->image;
+            }
+            if (Storage::disk('public')->exists($this->image)) {
+                return asset('storage/' . $this->image);
+            }
+        }
+        return null;
+    }
 
 
     public function product()

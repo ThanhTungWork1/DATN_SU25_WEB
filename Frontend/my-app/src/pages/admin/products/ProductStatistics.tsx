@@ -1,0 +1,274 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Card, Col, DatePicker, Empty, Row, Select, Spin, Statistic, Tag, Typography, Button, Progress, Table, message } from "antd";
+import { BarChartOutlined, ReloadOutlined, ShoppingCartOutlined, DollarOutlined, ShoppingOutlined, RiseOutlined } from "@ant-design/icons";
+import dayjs, { Dayjs } from "dayjs";
+import { getProducts, getProductStatistics } from "../../../api/product";
+
+const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
+
+type TimePeriod = 'week' | 'month' | 'quarter' | 'custom';
+
+type ProductLite = { id: number; name: string };
+
+type TimeDataPoint = { period: string; orders: number; revenue: number };
+
+type ProductStatisticsResponse = {
+  product_id: number;
+  product_name: string;
+  total_orders: number;
+  total_revenue: number;
+  total_items: number;
+  average_per_item: number;
+  top_variants: Array<{ id: number; color?: string; size?: string; sold_quantity: number; revenue: number }>;
+  time_data: TimeDataPoint[];
+  period: TimePeriod;
+  start_date: string;
+  end_date: string;
+};
+
+const ProductStatistics: React.FC = () => {
+  const [products, setProducts] = useState<ProductLite[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<number | undefined>();
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [averagePerItem, setAveragePerItem] = useState<number>(0);
+  const [timeData, setTimeData] = useState<TimeDataPoint[]>([]);
+  const [topVariants, setTopVariants] = useState<ProductStatisticsResponse["top_variants"]>([]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await getProducts({ page: 1, per_page: 1000 });
+      // Admin products index trả về paginator Laravel thô
+      const data: any = (res as any).data;
+      const items: any[] = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+      const mapped: ProductLite[] = items.map((p: any) => ({ id: p.id, name: p.name }));
+      setProducts(mapped);
+      if (mapped.length > 0) {
+        setSelectedProduct((prev) => prev ?? mapped[0].id);
+      }
+    } catch (e) {
+      message.error("Không tải được danh sách sản phẩm");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProductStatistics = async (productId: number) => {
+    try {
+      setLoading(true);
+      let params: any = {};
+      if (timePeriod !== "custom") {
+        params.period = timePeriod;
+      } else if (dateRange) {
+        params.period = "custom";
+        params.start_date = dateRange[0].format("YYYY-MM-DD");
+        params.end_date = dateRange[1].format("YYYY-MM-DD");
+      }
+      const res = await getProductStatistics(productId, params);
+      const d = (res as any).data as ProductStatisticsResponse;
+
+      setTotalOrders(d.total_orders || 0);
+      setTotalRevenue(d.total_revenue || 0);
+      setTotalItems(d.total_items || 0);
+      setAveragePerItem(d.average_per_item || 0);
+      setTimeData(Array.isArray(d.time_data) ? d.time_data : []);
+      setTopVariants(Array.isArray(d.top_variants) ? d.top_variants : []);
+    } catch (e) {
+      message.error("Không tải được thống kê sản phẩm");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProduct) {
+      fetchProductStatistics(selectedProduct);
+    }
+  }, [selectedProduct, timePeriod, dateRange]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+    })
+      .format(value)
+      .replace("₫", " VND");
+  };
+
+  const safePercent = (value: number, arr: number[]) => {
+    const max = Math.max(...arr, 0);
+    return max > 0 ? Math.round((value / max) * 100) : 0;
+  };
+
+  const ordersArray = useMemo(() => timeData.map((t) => t.orders), [timeData]);
+  const revenueArray = useMemo(() => timeData.map((t) => t.revenue), [timeData]);
+
+  const topVariantsColumns = [
+    { title: "STT", key: "index", width: 60, render: (_: any, __: any, index: number) => index + 1 },
+    { title: "Màu", dataIndex: "color", key: "color" },
+    { title: "Size", dataIndex: "size", key: "size" },
+    { title: "Số lượng bán", dataIndex: "sold_quantity", key: "sold_quantity", align: "center" as const, render: (q: number) => <Tag color="blue">{q} SP</Tag> },
+    { title: "Doanh thu", dataIndex: "revenue", key: "revenue", align: "right" as const, render: (r: number) => <Text strong style={{ color: "#52c41a" }}>{formatCurrency(r)}</Text> },
+  ];
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  const selectedProductName = products.find((p) => p.id === selectedProduct)?.name || "";
+
+  return (
+    <div style={{ padding: "24px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
+            <BarChartOutlined /> Thống Kê Sản Phẩm
+          </Title>
+          <Text type="secondary">Phân tích chi tiết hiệu suất theo từng sản phẩm</Text>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Select
+            style={{ width: 280 }}
+            placeholder="Chọn sản phẩm"
+            showSearch
+            optionFilterProp="label"
+            value={selectedProduct}
+            onChange={setSelectedProduct}
+            options={products.map((p) => ({ value: p.id, label: p.name }))}
+          />
+
+          <Select
+            style={{ width: 160 }}
+            value={timePeriod}
+            onChange={(val: TimePeriod) => {
+              setTimePeriod(val);
+              if (val !== "custom") setDateRange(null);
+            }}
+            options={[
+              { value: "week", label: "Tuần này" },
+              { value: "month", label: "Tháng này" },
+              { value: "quarter", label: "Quý này" },
+              { value: "custom", label: "Tùy chọn" },
+            ]}
+          />
+
+          {timePeriod === "custom" && (
+            <RangePicker
+              value={dateRange as any}
+              onChange={(val) => setDateRange(val as any)}
+              disabledDate={(current) => current && current > dayjs().endOf("day")}
+              format="YYYY-MM-DD"
+            />
+          )}
+
+          <Button icon={<ReloadOutlined />} onClick={() => selectedProduct && fetchProductStatistics(selectedProduct)}>
+            Làm mới
+          </Button>
+        </div>
+      </div>
+
+      {!selectedProduct ? (
+        <Card>
+          <Empty description="Vui lòng chọn sản phẩm" />
+        </Card>
+      ) : (
+        <>
+          {/* KPI Cards */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic title="Tổng đơn hàng" value={totalOrders} prefix={<ShoppingCartOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic title="Tổng doanh thu" valueRender={() => <span>{formatCurrency(totalRevenue)}</span>} prefix={<DollarOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic title="Tổng số lượng" value={totalItems} prefix={<ShoppingOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic title="Giá TB / SP" valueRender={() => <span>{formatCurrency(averagePerItem)}</span>} prefix={<RiseOutlined />} />
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Charts-like Progress */}
+          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+            <Col xs={24} md={12}>
+              <Card title={`Đơn hàng theo thời gian - ${selectedProductName}`}>
+                {timeData.length === 0 ? (
+                  <Empty description="Không có dữ liệu" />
+                ) : (
+                  <div>
+                    {timeData.map((t, idx) => (
+                      <div key={idx} style={{ marginBottom: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <Text strong>{t.period}</Text>
+                          <Text>{t.orders} đơn</Text>
+                        </div>
+                        <Progress percent={safePercent(t.orders, ordersArray)} showInfo={false} status="active" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </Col>
+            <Col xs={24} md={12}>
+              <Card title={`Doanh thu theo thời gian - ${selectedProductName}`}>
+                {timeData.length === 0 ? (
+                  <Empty description="Không có dữ liệu" />
+                ) : (
+                  <div>
+                    {timeData.map((t, idx) => (
+                      <div key={idx} style={{ marginBottom: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <Text strong>{t.period}</Text>
+                          <Text>{formatCurrency(t.revenue)}</Text>
+                        </div>
+                        <Progress percent={safePercent(t.revenue, revenueArray)} showInfo={false} status="active" strokeColor="#52c41a" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Top variants */}
+          <Card style={{ marginTop: 16 }} title="Top 5 Biến Thể Bán Chạy">
+            <Table
+              dataSource={topVariants}
+              columns={topVariantsColumns as any}
+              rowKey={(r) => String(r.id)}
+              pagination={false}
+            />
+          </Card>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ProductStatistics;

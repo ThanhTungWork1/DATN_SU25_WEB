@@ -5,9 +5,9 @@ import {
   UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
-  InboxOutlined, // Icon cho tồn kho
-  GiftOutlined, // Icon cho voucher
-  BarChartOutlined, // Icon cho thống kê danh mục
+  InboxOutlined,
+  GiftOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
@@ -38,6 +38,7 @@ const items: MenuItem[] = [
   getItem("Danh mục", "/admin/categories", <AppstoreOutlined />),
   getItem("Thống kê DM", "/admin/category-statistics", <BarChartOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
+  getItem("Thống kê SP", "/admin/product-statistics", <BarChartOutlined />),
   getItem("Tồn kho", "/admin/inventory", <InboxOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Voucher", "/admin/voucher", <GiftOutlined />),
@@ -89,9 +90,7 @@ const LayoutAdmin: React.FC = () => {
             justifyContent: "flex-end",
             alignItems: "center",
           }}
-        >
-          {/* Removed the red logout button from the header */}
-        </Header>
+        ></Header>
         <Content style={{ margin: "0 16px" }}>
           <div
             style={{

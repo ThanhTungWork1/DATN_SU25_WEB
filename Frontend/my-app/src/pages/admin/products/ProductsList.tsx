@@ -40,7 +40,7 @@ export default function ProductList() {
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    pageSize: 5,
+    pageSize: 20,
     total: 0,
   });
 
@@ -59,28 +59,24 @@ export default function ProductList() {
   const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      const productsRes = await getProducts({ page, search });
+      const productsRes = await getProducts({ page, search, per_page: pagination.pageSize });
       console.log("🔍 [DEBUG] API response:", productsRes);
-      const paginatedData: PaginatedResponse<Product> = productsRes.data;
+      const paginatedData = (productsRes as any).data as PaginatedResponse<Product>;
       console.log("🔍 [DEBUG] Paginated data:", paginatedData);
       console.log("🔍 [DEBUG] Products:", paginatedData.data);
 
       if (categories.length === 0) {
         const categoriesRes = await getCategories();
-        const categoriesData: Category[] = Array.isArray(
-          categoriesRes.data.data
-        )
-          ? categoriesRes.data.data
-          : categoriesRes.data;
-        setCategories(categoriesData);
+        const categoriesData = (categoriesRes as any).data as Category[]; // API trả mảng thuần
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       }
 
       setProducts(paginatedData.data);
-      setPagination({
+      setPagination((prev) => ({
         currentPage: paginatedData.current_page,
-        pageSize: paginatedData.per_page,
+        pageSize: paginatedData.per_page || prev.pageSize,
         total: paginatedData.total,
-      });
+      }));
     } catch (error) {
       message.error("Không thể tải danh sách sản phẩm.");
       console.error("Fetch products error:", error);

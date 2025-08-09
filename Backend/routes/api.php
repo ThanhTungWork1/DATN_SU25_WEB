@@ -147,6 +147,8 @@ Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware(
 Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
     // Products
     Route::apiResource('products', ProductController::class)->except(['store', 'update']);
+    // Product statistics
+    Route::get('products/{id}/statistics', [ProductController::class, 'statistics']);
     Route::post('products', [ProductController::class, 'store']);
     Route::post('products/{id}', [ProductController::class, 'update']);
 
