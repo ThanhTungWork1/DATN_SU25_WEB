@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 // Bỏ phần 'headers' mặc định ở đây để interceptor toàn quyền xử lý
 const axiosInstance = axios.create({

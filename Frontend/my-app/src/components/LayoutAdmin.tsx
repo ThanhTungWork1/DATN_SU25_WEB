@@ -7,9 +7,10 @@ import {
   AppstoreOutlined,
   InboxOutlined, // Icon cho tồn kho
   GiftOutlined, // Icon cho voucher
+  BarChartOutlined, // Icon cho thống kê danh mục
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Layout, Menu, theme, Button } from "antd";
+import { Layout, Menu, theme } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 // import VoucherPage from "../pages/admin/voucher/Voucher";
 
@@ -35,8 +36,9 @@ const items: MenuItem[] = [
   getItem("Dashboard", "/admin/dashboard", <DesktopOutlined />),
   getItem("Thành viên", "/admin/users", <UserOutlined />),
   getItem("Danh mục", "/admin/categories", <AppstoreOutlined />),
+  getItem("Thống kê DM", "/admin/category-statistics", <BarChartOutlined />),
   getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
-  getItem("Tồn kho", "/admin/inventory", <InboxOutlined />), // Thêm menu tồn kho
+  getItem("Tồn kho", "/admin/inventory", <InboxOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Voucher", "/admin/voucher", <GiftOutlined />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
@@ -102,9 +104,7 @@ const LayoutAdmin: React.FC = () => {
             <Outlet />
           </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
+        <Footer style={{ textAlign: "center" }}></Footer>
       </Layout>
     </Layout>
   );

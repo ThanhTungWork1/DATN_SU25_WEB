@@ -154,6 +154,7 @@ Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::clas
     Route::apiResource('orders', OrderController::class);
 
     // Categories
+    Route::get('categories/{id}/statistics', [CategoryController::class, 'statistics']);
     Route::apiResource('categories', CategoryController::class);
 });
 // Các route Admin khác VẪN CẦN XÁC THỰC

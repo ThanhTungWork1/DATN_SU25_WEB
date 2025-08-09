@@ -16,6 +16,7 @@ import CategoryList from "../pages/admin/categories/CategoryList";
 import InventoryPage from "../pages/admin/inventory/InventoryPage";
 import VoucherPage from "../pages/admin/voucher/Voucher";
 import AdminLogin from "../pages/auth/adminLogin";
+import CategoryStatistics from "../pages/admin/categories/CategoryStatistics";
 
 const AdminRoute = () => {
   return (
@@ -44,6 +45,7 @@ const AdminRoute = () => {
           <Route path="categories" element={<CategoryList />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="voucher" element={<VoucherPage />} />
+          <Route path="category-statistics" element={<CategoryStatistics />} />
         </Route>
       </Route>
     </Routes>

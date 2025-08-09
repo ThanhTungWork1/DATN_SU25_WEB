@@ -5,9 +5,6 @@ import { useUserGrowth } from "../../hook/analytics/useUserGrowth";
 const UserGrowthCard = () => {
   const { data, isLoading } = useUserGrowth();
 
-  // Debug: Log dữ liệu để kiểm tra
-  console.log("UserGrowthCard Data:", data);
-
   if (isLoading || !data) return <Card loading />;
 
   const isPositive = data.growthPercent >= 0;

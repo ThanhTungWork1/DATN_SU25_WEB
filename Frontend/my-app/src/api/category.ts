@@ -28,3 +28,15 @@ export const updateCategory = (id: number, data: { name: string; status: boolean
 export const deleteCategory = (id: number) => {
     return axiosInstance.delete(`/admin/categories/${id}`);
 };
+
+// Lấy thống kê chi tiết cho một danh mục (admin)
+export const getCategoryDetailStatistics = (
+    id: number, 
+    params?: {
+        start_date?: string;
+        end_date?: string;
+        period?: 'week' | 'month' | 'quarter' | 'custom';
+    }
+) => {
+    return axiosInstance.get(`/admin/categories/${id}/statistics`, { params });
+};
