@@ -16,6 +16,7 @@ class CartController extends Controller
         protected Cart $model,
         protected CartItem $cartItemModel,
     ) {}
+    
     public function index()
     {
         $userId = Auth::id();
@@ -34,24 +35,14 @@ class CartController extends Controller
             $variant = $item->productVariant;
             $product = $variant ? $variant->product : null;
             
-            // Get current price from variant or product (prioritize current price over stored price)
-            $currentPrice = null;
-            if ($variant && $variant->price) {
-                $currentPrice = $variant->price;
-            } elseif ($product && $product->price) {
-                $currentPrice = $product->price;
-            } else {
-                $currentPrice = $item->price; // fallback to stored price
-            }
-            
             return [
                 'id' => $item->id,
                 'product_id' => $product ? $product->id : null,
                 'variant_id' => $item->variant_id,
                 'name' => $product ? $product->name : 'Unknown Product',
-                'price' => $currentPrice,
+                'price' => $item->price,
                 'quantity' => $item->quantity,
-                'image' => $this->getProductImage($item, $variant, $product),
+                'image' => $this->getProductImage($variant, $product),
                 'color' => $variant && $variant->color ? $variant->color->name : null,
                 'size' => $variant && $variant->size ? $variant->size->name : null,
                 'sku' => $variant ? $variant->sku : null,
@@ -68,7 +59,7 @@ class CartController extends Controller
         ]);
     }
 
-    private function getProductImage($cartItem, $variant, $product)
+    private function getProductImage($variant, $product)
     {
         // First try to get image from variant
         if ($variant && $variant->image_url) {
@@ -80,71 +71,44 @@ class CartController extends Controller
         }
         return null;
     }
+    
     public function store(CreateCartRequest $request)
     {
-        try {
-            return DB::transaction(function () use ($request) {
-                $data = $request->validated();
-                $userId = Auth::id();
+        return DB::transaction(function () use ($request) {
+            $data = $request->validated();
 
-                // Tìm hoặc tạo cart cho user
-                $cart = Cart::firstOrCreate(['user_id' => $userId]);
+            $cart = [
+                'user_id' => Auth::id(),
+            ];
 
-                foreach ($data['cartItems'] as $item) {
-                    // Tìm variant_id từ product_id
-                    $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
-                    
-                    if (!$variant) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy variant cho sản phẩm ID: ' . $item['product_id']
-                        ], 400);
-                    }
+            $record = $this->model->create($cart);
 
-                    // Kiểm tra xem item đã có trong cart chưa
-                    $existingItem = $cart->cartItems()->where('variant_id', $variant->id)->first();
-                    
-                    if ($existingItem) {
-                        // Cập nhật số lượng
-                        $existingItem->update([
-                            'quantity' => $existingItem->quantity + $item['quantity']
-                        ]);
-                    } else {
-                        // Tạo item mới
-                        $cart->cartItems()->create([
-                            'variant_id' => $variant->id,
-                            'quantity' => $item['quantity'],
-                            'price' => $item['price'],
-                        ]);
-                    }
-                }
+            $cartItem = collect($data['cartItems'])->map(function ($item) use ($record) {
+                // Tìm variant_id từ product_id và size/color nếu có
+                $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                $variant_id = $variant ? $variant->id : null;
+                
+                return [
+                    'cart_id' => $record->id,
+                    'variant_id' => $variant_id,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ];
+            })->toArray();
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Thêm giỏ hàng thành công!',
-                    'cart_id' => $cart->id
-                ], 200);
-            });
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi thêm vào giỏ hàng: ' . $e->getMessage(),
-                'line' => $e->getLine()
-            ], 500);
-        }
+            $record->cartItems()->createMany($cartItem);
+
+            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
+        });
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         $userId = Auth::id();
         $cart = Cart::with([
             'cartItems.productVariant.product',
             'cartItems.productVariant.color',
-            'cartItems.productVariant.size',
-            'cartItems.product'
+            'cartItems.productVariant.size'
         ])->where('user_id', $userId)->where('id', $id)->first();
         
         if (!$cart) {
@@ -153,8 +117,8 @@ class CartController extends Controller
 
         // Format cart items with complete product information
         $formattedCartItems = $cart->cartItems->map(function ($item) {
-            $product = $item->productVariant ? $item->productVariant->product : $item->product;
             $variant = $item->productVariant;
+            $product = $variant ? $variant->product : null;
             
             return [
                 'id' => $item->id,
@@ -163,7 +127,7 @@ class CartController extends Controller
                 'name' => $product ? $product->name : 'Unknown Product',
                 'price' => $item->price,
                 'quantity' => $item->quantity,
-                'image' => $this->getProductImage($item, $variant, $product),
+                'image' => $this->getProductImage($variant, $product),
                 'color' => $variant && $variant->color ? $variant->color->name : null,
                 'size' => $variant && $variant->size ? $variant->size->name : null,
                 'sku' => $variant ? $variant->sku : null,
@@ -179,7 +143,6 @@ class CartController extends Controller
             'updated_at' => $cart->updated_at,
         ]);
     }
-
 
     public function update(Request $request, $id)
     {

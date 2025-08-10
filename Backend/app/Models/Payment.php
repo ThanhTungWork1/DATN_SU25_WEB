@@ -16,6 +16,7 @@ class Payment extends Model
         'bank_code',
         'payment_method',
         'gateway_response'
+
     ];
 
     protected $casts = [

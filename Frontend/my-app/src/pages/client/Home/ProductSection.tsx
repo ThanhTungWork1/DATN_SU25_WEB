@@ -79,6 +79,7 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
                 <span className="fashion-oldprice">{product.old_price.toLocaleString()}đ</span>
               )}
             </div>
+
             <div className="fashion-rate">
               {product.sold || 0} sản phẩm đã bán
             </div>

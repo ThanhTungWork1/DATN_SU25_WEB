@@ -53,12 +53,12 @@ Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
+
 // Forgot Password
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
-
 
 // Email Verification
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', function (Request $request) {
@@ -90,34 +90,8 @@ Route::get('/comments/product/{product_id}', [ApiCommentController::class, 'getB
 Route::post('/orders', [\App\Http\Controllers\Api\ClientOrderController::class, 'store']);
 
 // Simple test order endpoint
-Route::post('/test-order', function(Request $request) {
-    try {
-        $data = $request->validate([
-            'user_id' => 'required|integer',
-            'total_amount' => 'required|numeric',
-            'items' => 'required|array'
-        ]);
-        
-        // Tạo order giả để test (không cần database)
-        $orderId = time(); // Sử dụng timestamp làm ID
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order created successfully',
-            'data' => [
-                'id' => $orderId,
-                'user_id' => $data['user_id'],
-                'total_amount' => $data['total_amount'],
-                'status' => 'pending'
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
+// Use ClientOrderController for real order creation
+Route::post('/test-order', [ClientOrderController::class, 'store']);
 
 // Create test user endpoint
 Route::post('/create-test-user', function() {
@@ -287,107 +261,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/available/list', [VoucherController::class, 'getAvailableVouchers']);
 });
 
-// Simple voucher test endpoint
-Route::post('/test-voucher', function(Request $request) {
-    try {
-        $code = $request->input('code');
-        $totalAmount = $request->input('total_amount');
-        
-        // Vouchers test cố định
-        $vouchers = [
-            'SAVE10' => [
-                'title' => 'Giảm giá 10%',
-                'code' => 'SAVE10',
-                'value' => 10.00,
-                'max_value' => 50000.00,
-                'quantity' => 100,
-                'description' => 'Giảm giá 10% cho đơn hàng từ 100,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ],
-            'SAVE20' => [
-                'title' => 'Giảm giá 20%',
-                'code' => 'SAVE20',
-                'value' => 20.00,
-                'max_value' => 100000.00,
-                'quantity' => 50,
-                'description' => 'Giảm giá 20% cho đơn hàng từ 200,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ],
-            'FIXED30K' => [
-                'title' => 'Giảm giá cố định 30,000 VND',
-                'code' => 'FIXED30K',
-                'value' => 30000.00,
-                'max_value' => 30000.00,
-                'quantity' => 200,
-                'description' => 'Giảm giá cố định 30,000 VND cho đơn hàng từ 150,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ]
-        ];
-        
-        if (!isset($vouchers[$code])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Mã voucher không tồn tại'
-            ], 404);
-        }
-        
-        $voucher = $vouchers[$code];
-        
-        // Kiểm tra thời gian hiệu lực
-        $now = date('Y-m-d');
-        if ($now < $voucher['start_date'] || $now > $voucher['end_date']) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Voucher đã hết hạn hoặc chưa có hiệu lực'
-            ], 400);
-        }
-        
-        // Kiểm tra số lượng còn lại
-        if ($voucher['quantity'] <= 0) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Voucher đã hết số lượng'
-            ], 400);
-        }
-        
-        // Tính toán giảm giá
-        if ($voucher['code'] === 'FIXED30K') {
-            // Giảm cố định
-            $discount = min($voucher['value'], $voucher['max_value']);
-        } else {
-            // Giảm theo %
-            $discount = min($totalAmount * ($voucher['value'] / 100), $voucher['max_value']);
-        }
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Voucher hợp lệ',
-            'data' => [
-                'voucher' => $voucher,
-                'discount_amount' => $discount,
-                'final_amount' => $totalAmount - $discount
-            ]
-        ], 200);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-        ], 500);
-    }
-});
+// Use VoucherController for voucher validation
+Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
 
     // Payments (ZaloPay + VNPay)
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
-
         Route::prefix('zalopay')->group(function () {
             Route::post('/create', [ZaloPayController::class, 'createOrder']);
             Route::post('/callback', [ZaloPayController::class, 'callback']);
@@ -399,10 +279,17 @@ Route::post('/test-voucher', function(Request $request) {
             Route::post('/ipn', [VNPayController::class, 'ipn']);
             Route::post('/check-status', [VNPayController::class, 'checkStatus']);
         });
+
     });
 
+    // Webhook routes (không cần authentication)
+    Route::post('/payment-webhook', [PaymentController::class, 'webhook']);
+    Route::post('/momo-webhook', [PaymentController::class, 'webhook']);
+    Route::post('/banking-webhook', [PaymentController::class, 'webhook']);
+
     Route::apiResource('/cart', CartController::class);
-    Route::post('/comments', [ApiCommentController::class, 'store']);
+    Route::post('/cart-clear', [CartController::class, 'clearCart']);
+    Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -550,3 +437,4 @@ Route::post('/test-order', function(Request $request) {
         Route::delete('/{id}', [CommentController::class, 'destroy']);
         Route::get('/filter/spam', [CommentController::class, 'filterSpam']);
     });
+

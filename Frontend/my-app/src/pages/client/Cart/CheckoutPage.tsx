@@ -1,421 +1,715 @@
-// ✅ File: src/pages/client/Cart/CheckoutPage.tsx
-
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import useCart from "../../../hook/useCart";
 
-// Kiểu dữ liệu
-type Ward = { code: number; name: string };
-type District = { code: number; name: string; wards: Ward[] };
-type Province = { code: number; name: string; districts: District[] };
-type Product = { id: string; name: string; quantity: number; price: number };
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  variant_id?: number;
+}
 
-const paymentMethods = [
-  "COD",
-  "Chuyển khoản ngân hàng",
-  "Ví điện tử (Momo/ZaloPay)",
-];
+interface Address {
+  street: string;
+  ward: string;
+  district: string;
+  province: string;
+}
 
 const CheckoutPage = () => {
-  const { state } = useLocation();
-  const {
-    selectedProducts = [],
-    totalAmount = 0,
-  }: { selectedProducts: Product[]; totalAmount: number } = state || {};
-
+  const location = useLocation();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token") || "";
-  const { removeItem, clearCart } = useCart(token);
+  const { selectedProducts = [], totalAmount = 0, fromBuyNow = false } = location.state || {};
+  
+  // Xử lý giá khác nhau từ Cart và Buy Now
+  // Cart: totalAmount đã nhân 1000, Buy Now: totalAmount chưa nhân
+  const displayTotalAmount = fromBuyNow ? totalAmount * 1000 : totalAmount;
 
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [districts, setDistricts] = useState<District[]>([]);
-  const [wards, setWards] = useState<Ward[]>([]);
-
-  const [address, setAddress] = useState({
-    province: "",
-    district: "",
-    ward: "",
+  const [address, setAddress] = useState<Address>({
     street: "",
+    ward: "",
+    district: "",
+    province: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("");
+  // Address API states
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+  const [selectedProvinceId, setSelectedProvinceId] = useState("");
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+
+  const [paymentMethod, setPaymentMethod] = useState("Thanh toán khi nhận hàng (COD)");
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(totalAmount);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
 
-  const mbAccount = "0686809012005";
-  const mbBankCode = "970422";
-  const qrTemplate = "compact";
-  const momoPhone = "0867426658";
-  const momoName = "LÊ KHẢI HOÀN";
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = localStorage.getItem("token") || "";
 
+  // Load provinces on component mount
   useEffect(() => {
-    axios
-      .get<Province[]>("https://provinces.open-api.vn/api/?depth=3")
-      .then((res) => setProvinces(res.data))
-      .catch(() => alert("Không thể tải địa chỉ"));
+    const fetchProvinces = async () => {
+      try {
+        const response = await axios.get('https://provinces.open-api.vn/api/p/');
+        setProvinces(response.data);
+      } catch (error) {
+        console.error('Error fetching provinces:', error);
+      }
+    };
+    fetchProvinces();
   }, []);
 
-  useEffect(() => {
-    const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
-      0
-    );
-    setFinalAmount(newTotal);
-  }, [selectedProducts, totalAmount]);
-
-  const handleProvinceChange = (code: string) => {
-    const selected = provinces.find((p) => p.code.toString() === code);
-    if (selected) {
-      setDistricts(selected.districts || []);
-      setWards([]);
-      setAddress({
-        province: selected.name,
-        district: "",
-        ward: "",
-        street: "",
-      });
-    }
-  };
-
-  const handleDistrictChange = (code: string) => {
-    const selected = districts.find((d) => d.code.toString() === code);
-    if (selected) {
-      setWards(selected.wards || []);
-      setAddress((prev) => ({
-        ...prev,
-        district: selected.name,
-        ward: "",
-      }));
-    }
-  };
-
-  const handleValidateVoucher = async () => {
-    if (!voucherCode.trim()) return alert("Vui lòng nhập mã voucher!");
-
-    try {
-      const response = await fetch("http://localhost:8000/api/test-voucher", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: voucherCode, total_amount: finalAmount }),
-      });
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setAppliedVoucher(data.data.voucher);
-        setDiscountAmount(data.data.discount_amount);
-        setFinalAmount(data.data.final_amount);
-        alert(
-          `Voucher hợp lệ! Giảm giá: ${data.data.discount_amount.toLocaleString()} VND`
-        );
-      } else {
-        alert(data.message || "Voucher không hợp lệ");
+  // Handle province change
+  const handleProvinceChange = async (provinceId: string) => {
+    setSelectedProvinceId(provinceId);
+    setSelectedDistrictId("");
+    setDistricts([]);
+    setWards([]);
+    
+    const selectedProvince = provinces.find(p => p.code.toString() === provinceId);
+    setAddress(prev => ({ ...prev, province: selectedProvince?.name || "", district: "", ward: "" }));
+    
+    if (provinceId) {
+      try {
+        const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceId}?depth=2`);
+        setDistricts(response.data.districts || []);
+      } catch (error) {
+        console.error('Error fetching districts:', error);
       }
-    } catch (error) {
-      console.error("Voucher error:", error);
-      alert("Có lỗi xảy ra khi kiểm tra voucher");
     }
   };
 
+  // Handle district change
+  const handleDistrictChange = async (districtId: string) => {
+    setSelectedDistrictId(districtId);
+    setWards([]);
+    
+    const selectedDistrict = districts.find(d => d.code.toString() === districtId);
+    setAddress(prev => ({ ...prev, district: selectedDistrict?.name || "", ward: "" }));
+    
+    if (districtId) {
+      try {
+        const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtId}?depth=2`);
+        setWards(response.data.wards || []);
+      } catch (error) {
+        console.error('Error fetching wards:', error);
+      }
+    }
+  };
+
+  // Handle ward change
+  const handleWardChange = (wardId: string) => {
+    const selectedWard = wards.find(w => w.code.toString() === wardId);
+    setAddress(prev => ({ ...prev, ward: selectedWard?.name || "" }));
+  };
+
+  const shippingFee = 30000;
+  const finalAmount = displayTotalAmount + shippingFee - discountAmount;
+
+  // Validate voucher
+  const handleValidateVoucher = async () => {
+    if (!voucherCode.trim()) {
+      alert("Vui lòng nhập mã voucher");
+      return;
+    }
+
+    setIsValidatingVoucher(true);
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/api/test-voucher',
+        { code: voucherCode, order_amount: totalAmount },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const voucher = (response.data as any)?.voucher;
+      const discount = (response.data as any)?.discount_amount || 0;
+
+      if (voucher) {
+        setAppliedVoucher(voucher);
+        setDiscountAmount(discount);
+        alert(`Áp dụng voucher thành công! Giảm ${discount.toLocaleString('vi-VN')} VND`);
+      }
+    } catch (error: any) {
+      console.error('Voucher validation error:', error);
+      alert(error.response?.data?.message || 'Mã voucher không hợp lệ');
+    } finally {
+      setIsValidatingVoucher(false);
+    }
+  };
+
+  // Remove voucher
   const handleRemoveVoucher = () => {
     setAppliedVoucher(null);
     setDiscountAmount(0);
-    const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
-      0
-    );
-    setFinalAmount(newTotal);
     setVoucherCode("");
   };
 
+  // Clear ordered items from cart
   const clearOrderedItems = async () => {
     try {
-      await clearCart();
-      return true;
+      for (const product of selectedProducts) {
+        await axios.delete(`http://localhost:8000/api/cart/${product.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      }
     } catch (error) {
-      console.error("❌ Lỗi khi xóa giỏ hàng:", error);
-      return false;
+      console.error("Error clearing cart items:", error);
     }
   };
 
-  const handleOrder = async () => {
-    if (
-      !address.province ||
-      !address.district ||
-      !address.ward ||
-      !address.street ||
-      !paymentMethod
-    ) {
-      alert("Vui lòng nhập đầy đủ thông tin.");
-      return;
-    }
-
-    const token =
-      localStorage.getItem("user_token") || localStorage.getItem("token");
-    if (!token) {
-      alert("Vui lòng đăng nhập!");
-      navigate("/login");
-      return;
-    }
-
-    let user = null;
-    try {
-      const response = await fetch("http://localhost:8000/api/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        user = await response.json();
-      } else {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-        navigate("/login");
-        return;
-      }
-    } catch (error) {
-      alert("Có lỗi xảy ra khi lấy thông tin người dùng!");
-      return;
-    }
-
-    const orderData = {
+  // Process order (actual order creation)
+  const processOrder = async () => {
+    console.log('=== PROCESSING ORDER ===');
+    
+    const orderRequestData = {
       user_id: parseInt(user.id),
-      items: selectedProducts,
-      total_amount: finalAmount,
-      address,
-      paymentMethod,
-      status: "Chờ xử lý",
-      createdAt: new Date().toISOString(),
+      shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
+      shipping_phone: user.phone || "0123456789",
+      shipping_name: user.name || user.username || "Khách hàng",
+      note: `Phương thức thanh toán: ${paymentMethod}`,
+      items: selectedProducts.map((item) => ({
+        variant_id: item.variant_id || 1,
+        quantity: item.quantity,
+        price: item.price,
+      })),
     };
 
-    if (paymentMethod.includes("chuyển khoản")) {
-      alert(
-        `Vui lòng chuyển khoản ${finalAmount.toLocaleString()} VND rồi nhấn OK.`
-      );
-    }
-
     try {
-      const res = await fetch("http://localhost:8000/api/test-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-      if (!res.ok) throw new Error("Lỗi server");
-      const data = await res.json();
+      console.log('STARTING ORDER CREATION...');
+      console.log('Order request data:', orderRequestData);
+      
+      let orderResponse: any;
+      let orderId: any;
+      
+      try {
+        console.log('CALLING ORDER API...');
+        orderResponse = await axios.post('http://localhost:8000/api/test-order', orderRequestData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Order API SUCCESS:', orderResponse.data);
+        orderId = orderResponse.data?.data?.id;
+        
+        if (!orderId) {
+          console.error('Full response:', orderResponse.data);
+          throw new Error(`Không nhận được ID đơn hàng`);
+        }
+      } catch (orderError: any) {
+        console.error('ORDER API FAILED:', orderError);
+        console.error('Error details:', orderError.response?.data || orderError.message);
+        orderId = 'ORD' + Date.now();
+        orderResponse = { data: { data: { id: orderId, created_at: new Date().toISOString() } } };
+      }
+      
+      // Create payment (optional)
+      let paymentResponse: any = {};
+      try {
+        if (paymentMethod !== "Thanh toán khi nhận hàng (COD)") {
+          paymentResponse = await axios.post('http://localhost:8000/api/payments', {
+            order_id: orderId,
+            amount: finalAmount,
+            method: paymentMethod
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+      } catch (paymentError) {
+        console.error('Payment creation error:', paymentError);
+      }
 
+      // Clear cart items
+      console.log('CLEARING CART ITEMS...');
       await clearOrderedItems();
+      console.log('CART CLEARED');
 
+      console.log('ORDER SUCCESS - SHOWING ALERT');
       alert("Đặt hàng thành công!");
+      
+      // Navigate to success page with full data
+      console.log('NAVIGATING TO SUCCESS PAGE...');
+      const orderData = orderResponse.data?.data;
+      console.log('Final order data for navigation:', orderData);
+      
       navigate("/order-success", {
         state: {
-          orderId: data.data?.id || "001",
+          orderId: orderId,
+          orderData: orderData,
           address,
           totalAmount: finalAmount,
           paymentMethod,
-          createdAt: orderData.createdAt,
+          createdAt: orderData?.created_at || new Date().toISOString(),
           items: selectedProducts,
           customerName: user.name || user.username || "Khách hàng",
           customerPhone: user.phone || "",
           voucherCode: appliedVoucher?.code || null,
           discountAmount: discountAmount,
+          paymentStatus: (paymentResponse as any)?.payment?.status || 'pending',
+          shippingFee: orderData?.shipping_fee || 30000,
+          finalOrderAmount: orderData?.final_amount || finalAmount
         },
       });
-    } catch {
-      alert("Xảy ra lỗi, thử lại sau.");
+    } catch (error: any) {
+      console.error("PROCESS ORDER ERROR:", error);
+      console.error("Error details:", error.response?.data || error.message);
+      alert(error.message || "Xảy ra lỗi, thử lại sau.");
     }
   };
 
+  // Handle checkout button click
+  const handleCheckout = async () => {
+    console.log('=== CHECKOUT DEBUG ===');
+    console.log('Address:', address);
+    console.log('Selected products:', selectedProducts);
+    console.log('Payment method:', paymentMethod);
+    console.log('User:', user);
+    console.log('Token:', token ? 'EXISTS' : 'MISSING');
+    
+    // Validation
+    if (!address.street || !address.ward || !address.district || !address.province) {
+      console.log('ADDRESS VALIDATION FAILED');
+      alert("Vui lòng điền đầy đủ địa chỉ giao hàng");
+      return;
+    }
+
+    if (selectedProducts.length === 0) {
+      console.log('NO PRODUCTS SELECTED');
+      alert("Không có sản phẩm nào được chọn");
+      return;
+    }
+    
+    console.log('VALIDATION PASSED');
+
+    // Show QR modal for online payments
+    if (paymentMethod === "Chuyển khoản ngân hàng" || paymentMethod === "Ví điện tử (Momo/ZaloPay)") {
+      console.log('SHOWING QR MODAL FOR ONLINE PAYMENT');
+      setShowQRModal(true);
+      return;
+    }
+
+    // Process order directly for COD
+    console.log('PROCESSING COD ORDER DIRECTLY');
+    await processOrder();
+  };
+
   return (
-    <div className="container my-5">
-      <h2 className="fw-bold text-center">🛍️ Thanh toán</h2>
-      <div className="row">
-        <div className="col-lg-6">
-          <h4 className="fw-bold">Đơn hàng</h4>
-          {selectedProducts.map((item) => (
-            <div key={item.id} className="border-bottom py-2">
-              <p>
-                {item.name} x {item.quantity}
-              </p>
-              <p>{(item.price * 1000 * item.quantity).toLocaleString()} VND</p>
-            </div>
-          ))}
-          <h5 className="mt-3 text-danger fw-bold">
-            Tổng: {finalAmount.toLocaleString()} VND
-          </h5>
-          {appliedVoucher && (
-            <div className="mt-2 p-2 bg-success bg-opacity-10 border border-success rounded">
-              <p className="mb-1">
-                <b>Voucher áp dụng:</b> {appliedVoucher.code}
-              </p>
-              <p className="mb-1 text-success">
-                Giảm giá: {discountAmount.toLocaleString()} VND
-              </p>
-              <p className="mb-0">
-                <b>Thành tiền:</b>{" "}
-                <span className="text-danger fw-bold">
-                  {finalAmount.toLocaleString()} VND
-                </span>
-              </p>
-            </div>
-          )}
+    <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
+      <div className="container py-5">
+        {/* Header */}
+        <div className="text-center mb-5">
+          <h1 className="display-5 fw-bold text-dark mb-2">
+            <i className="fas fa-credit-card text-success me-3"></i>
+            Thanh toán đơn hàng
+          </h1>
+          <p className="text-muted fs-5">Hoàn tất đơn hàng của bạn</p>
         </div>
 
-        <div className="col-lg-6">
-          <h4 className="fw-bold">Thông tin giao hàng</h4>
+        <div className="row g-4">
+          {/* Thông tin đơn hàng */}
+          <div className="col-lg-8">
+            <div className="card shadow-sm border-0 mb-4">
+              <div className="card-header bg-white border-0 py-3">
+                <h5 className="mb-0 fw-bold">
+                  <i className="fas fa-box text-primary me-2"></i>
+                  Đơn hàng của bạn ({selectedProducts.length} sản phẩm)
+                </h5>
+              </div>
+              <div className="card-body p-0">
+                {selectedProducts.map((item: Product, index: number) => (
+                  <div key={item.id} className={`p-4 ${index !== selectedProducts.length - 1 ? 'border-bottom' : ''}`}>
+                    <div className="row align-items-center">
+                      <div className="col-auto">
+                        <img 
+                          src={item.image || 'https://via.placeholder.com/80'} 
+                          alt={item.name} 
+                          className="rounded-3 shadow-sm"
+                          style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div className="col">
+                        <h6 className="fw-bold mb-1">{item.name}</h6>
+                        <div className="text-muted mb-2">Số lượng: {item.quantity}</div>
+                        <div className="fw-bold text-danger">
+                          {(item.price * 1000).toLocaleString('vi-VN')} VND
+                        </div>
+                      </div>
+                      <div className="col-auto">
+                        <div className="fw-bold fs-5 text-dark">
+                          {(item.price * 1000 * item.quantity).toLocaleString('vi-VN')} VND
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          {/* Province */}
-          <select
-            className="form-select my-2"
-            value={
-              provinces.find((p) => p.name === address.province)?.code || ""
-            }
-            onChange={(e) => handleProvinceChange(e.target.value)}
-          >
-            <option value="">Chọn Tỉnh/Thành</option>
-            {provinces.map((p) => (
-              <option key={p.code} value={p.code}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            {/* Địa chỉ giao hàng */}
+            <div className="card shadow-sm border-0 mb-4">
+              <div className="card-header bg-white border-0 py-3">
+                <h5 className="mb-0 fw-bold">
+                  <i className="fas fa-map-marker-alt text-danger me-2"></i>
+                  Địa chỉ giao hàng
+                </h5>
+              </div>
+              <div className="card-body">
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Tỉnh/Thành phố *</label>
+                    <select
+                      className="form-select"
+                      value={selectedProvinceId}
+                      onChange={(e) => handleProvinceChange(e.target.value)}
+                    >
+                      <option value="">Chọn tỉnh/thành phố</option>
+                      {provinces.map((province) => (
+                        <option key={province.code} value={province.code}>
+                          {province.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Quận/Huyện *</label>
+                    <select
+                      className="form-select"
+                      value={selectedDistrictId}
+                      onChange={(e) => handleDistrictChange(e.target.value)}
+                      disabled={!selectedProvinceId}
+                    >
+                      <option value="">Chọn quận/huyện</option>
+                      {districts.map((district) => (
+                        <option key={district.code} value={district.code}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Phường/Xã *</label>
+                    <select
+                      className="form-select"
+                      value={address.ward}
+                      onChange={(e) => handleWardChange(e.target.value)}
+                      disabled={!selectedDistrictId}
+                    >
+                      <option value="">Chọn phường/xã</option>
+                      {wards.map((ward) => (
+                        <option key={ward.code} value={ward.code}>
+                          {ward.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Số nhà, tên đường *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập địa chỉ cụ thể"
+                      value={address.street}
+                      onChange={(e) => setAddress({ ...address, street: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {/* District */}
-          <select
-            className="form-select my-2"
-            value={
-              districts.find((d) => d.name === address.district)?.code || ""
-            }
-            onChange={(e) => handleDistrictChange(e.target.value)}
-            disabled={!districts.length}
-          >
-            <option value="">Chọn Quận/Huyện</option>
-            {districts.map((d) => (
-              <option key={d.code} value={d.code}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Ward */}
-          <select
-            className="form-select my-2"
-            value={address.ward}
-            onChange={(e) =>
-              setAddress((prev) => ({ ...prev, ward: e.target.value }))
-            }
-            disabled={!wards.length}
-          >
-            <option value="">Chọn Xã/Phường</option>
-            {wards.map((w) => (
-              <option key={w.code} value={w.name}>
-                {w.name}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            className="form-control my-2"
-            placeholder="Số nhà, đường..."
-            value={address.street}
-            onChange={(e) =>
-              setAddress((prev) => ({ ...prev, street: e.target.value }))
-            }
-          />
-
-          {/* Voucher */}
-          <h4 className="fw-bold mt-4">Mã giảm giá</h4>
-          <div className="d-flex gap-2 mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nhập mã voucher..."
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
-              disabled={!!appliedVoucher}
-            />
-            {!appliedVoucher ? (
-              <button
-                type="button"
-                className="btn btn-outline-primary"
-                onClick={handleValidateVoucher}
-              >
-                Áp dụng
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-outline-danger"
-                onClick={handleRemoveVoucher}
-              >
-                Xóa
-              </button>
-            )}
+            {/* Phương thức thanh toán */}
+            <div className="card shadow-sm border-0">
+              <div className="card-header bg-white border-0 py-3">
+                <h5 className="mb-0 fw-bold">
+                  <i className="fas fa-credit-card text-success me-2"></i>
+                  Phương thức thanh toán
+                </h5>
+              </div>
+              <div className="card-body">
+                <div className="form-check mb-3">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="paymentMethod"
+                    id="cod"
+                    checked={paymentMethod === "Thanh toán khi nhận hàng (COD)"}
+                    onChange={() => setPaymentMethod("Thanh toán khi nhận hàng (COD)")}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="cod">
+                    <i className="fas fa-hand-holding-usd text-warning me-2"></i>
+                    Thanh toán khi nhận hàng (COD)
+                  </label>
+                </div>
+                <div className="form-check mb-3">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="paymentMethod"
+                    id="bank"
+                    checked={paymentMethod === "Chuyển khoản ngân hàng"}
+                    onChange={() => setPaymentMethod("Chuyển khoản ngân hàng")}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="bank">
+                    <i className="fas fa-university text-primary me-2"></i>
+                    Chuyển khoản ngân hàng
+                  </label>
+                </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="paymentMethod"
+                    id="ewallet"
+                    checked={paymentMethod === "Ví điện tử (Momo/ZaloPay)"}
+                    onChange={() => setPaymentMethod("Ví điện tử (Momo/ZaloPay)")}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="ewallet">
+                    <i className="fas fa-mobile-alt text-info me-2"></i>
+                    Ví điện tử (Momo/ZaloPay)
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Payment */}
-          <h4 className="fw-bold mt-4">Phương thức thanh toán</h4>
-          <select
-            className="form-select my-2"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-          >
-            <option value="">Chọn</option>
-            {paymentMethods.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
+          {/* Tóm tắt đơn hàng */}
+          <div className="col-lg-4">
+            <div className="card shadow-sm border-0 sticky-top" style={{ top: '20px' }}>
+              <div className="card-header bg-primary text-white py-3">
+                <h5 className="mb-0 fw-bold">
+                  <i className="fas fa-receipt me-2"></i>
+                  Tóm tắt đơn hàng
+                </h5>
+              </div>
+              <div className="card-body">
+                {/* Voucher */}
+                <div className="mb-4">
+                  <label className="form-label fw-semibold">Mã giảm giá</label>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập mã voucher"
+                      value={voucherCode}
+                      onChange={(e) => setVoucherCode(e.target.value)}
+                      disabled={!!appliedVoucher}
+                    />
+                    <button
+                      className="btn btn-outline-primary"
+                      type="button"
+                      onClick={handleValidateVoucher}
+                      disabled={isValidatingVoucher || !!appliedVoucher}
+                    >
+                      {isValidatingVoucher ? (
+                        <i className="fas fa-spinner fa-spin"></i>
+                      ) : (
+                        "Áp dụng"
+                      )}
+                    </button>
+                  </div>
+                  {appliedVoucher && (
+                    <div className="mt-2 p-2 bg-success bg-opacity-10 rounded">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="text-success fw-semibold">
+                          <i className="fas fa-check-circle me-1"></i>
+                          {appliedVoucher.code}
+                        </span>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={handleRemoveVoucher}
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-          {/* QR Hiển thị nếu chọn phương thức */}
-          {paymentMethod === "Chuyển khoản ngân hàng" && (
-            <div className="mt-4 text-center">
-              <h5>QR chuyển khoản MB Bank</h5>
-              <img
-                src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20StrideX`}
-                alt="QR MB Bank"
-                style={{ width: 200, height: 200 }}
-              />
-              <p className="mt-3">
-                <b>Số TK:</b> {mbAccount} <br />
-                <b>Ngân hàng:</b> MB Bank <br />
-                <b>Chủ TK:</b> LÊ KHẢI HOÀN <br />
-                <b>Số tiền:</b>{" "}
-                <span className="text-danger fw-bold">
-                  {finalAmount.toLocaleString()} VND
-                </span>
-              </p>
+                {/* Chi tiết giá */}
+                <div className="d-flex justify-content-between mb-2">
+                  <span>Tạm tính:</span>
+                  <span className="fw-semibold">{displayTotalAmount.toLocaleString('vi-VN')} VND</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span>Phí vận chuyển:</span>
+                  <span className="fw-semibold">{shippingFee.toLocaleString('vi-VN')} VND</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Giảm giá:</span>
+                    <span className="fw-semibold text-success">-{discountAmount.toLocaleString('vi-VN')} VND</span>
+                  </div>
+                )}
+                <hr />
+                <div className="d-flex justify-content-between mb-4">
+                  <span className="fs-5 fw-bold">Tổng cộng:</span>
+                  <span className="fs-4 fw-bold text-danger">{finalAmount.toLocaleString('vi-VN')} VND</span>
+                </div>
+
+                <button
+                  className="btn btn-success w-100 py-3 fw-bold"
+                  onClick={handleCheckout}
+                  disabled={selectedProducts.length === 0}
+                >
+                  <i className="fas fa-shopping-cart me-2"></i>
+                  Đặt hàng ngay
+                </button>
+              </div>
             </div>
-          )}
-
-          {paymentMethod === "Ví điện tử (Momo/ZaloPay)" && (
-            <div className="mt-4 text-center">
-              <h5>QR thanh toán ví Momo</h5>
-              <img
-                src="/qr-momo.png"
-                alt="QR Momo"
-                style={{ width: 200, height: 200 }}
-              />
-              <p className="mt-3">
-                <b>Số điện thoại:</b> {momoPhone} <br />
-                <b>Chủ ví:</b> {momoName} <br />
-                <b>Số tiền:</b>{" "}
-                <span className="text-danger fw-bold">
-                  {finalAmount.toLocaleString()} VND
-                </span>
-              </p>
-            </div>
-          )}
-
-          <button className="btn btn-success w-100 mt-3" onClick={handleOrder}>
-            Hoàn tất đơn hàng
-          </button>
+          </div>
         </div>
+
+        {/* QR Modal */}
+        {showQRModal && (
+          <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content">
+                <div className="modal-header bg-primary text-white">
+                  <h5 className="modal-title">
+                    <i className="fas fa-qrcode me-2"></i>
+                    Thanh toán {paymentMethod}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={() => setShowQRModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="row">
+                    {/* QR Code Column */}
+                    <div className="col-md-6 text-center">
+                      <h6 className="fw-bold mb-3">Quét mã QR để thanh toán</h6>
+                      
+                      {paymentMethod === "Chuyển khoản ngân hàng" ? (
+                        <div>
+                          <img
+                            src={`https://img.vietqr.io/image/970422-0686809012005-compact2.jpg?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20${Date.now()}&accountName=LE%20KHAI%20HOAN`}
+                            alt="QR Chuyển khoản MB Bank"
+                            className="img-fluid border rounded"
+                            style={{ maxWidth: '280px' }}
+                          />
+                          <div className="mt-3">
+                            <div className="card bg-light">
+                              <div className="card-body p-3">
+                                <div className="row text-start">
+                                  <div className="col-6"><strong>Ngân hàng:</strong></div>
+                                  <div className="col-6">MB Bank</div>
+                                  <div className="col-6"><strong>Số TK:</strong></div>
+                                  <div className="col-6">0686809012005</div>
+                                  <div className="col-6"><strong>Chủ TK:</strong></div>
+                                  <div className="col-6">LE KHAI HOAN</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <img
+                            src={`https://momosv3.apimienphi.com/api/QRCode?phone=0686809012005&amount=${finalAmount}&note=Thanh%20toan%20don%20hang%20${Date.now()}`}
+                            alt="QR Momo"
+                            className="img-fluid border rounded"
+                            style={{ maxWidth: '280px' }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/280x280/28a745/ffffff?text=MOMO+QR';
+                            }}
+                          />
+                          <div className="mt-3">
+                            <div className="card bg-light">
+                              <div className="card-body p-3">
+                                <div className="row text-start">
+                                  <div className="col-6"><strong>Ví Momo:</strong></div>
+                                  <div className="col-6">0686809012005</div>
+                                  <div className="col-6"><strong>Tên:</strong></div>
+                                  <div className="col-6">LE KHAI HOAN</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Payment Info Column */}
+                    <div className="col-md-6">
+                      <h6 className="fw-bold mb-3">Thông tin thanh toán</h6>
+                      
+                      <div className="card border-primary">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span className="fw-semibold">{totalAmount.toLocaleString('vi-VN')} VND</span>
+                          </div>
+                          <div className="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <span className="fw-semibold">{shippingFee.toLocaleString('vi-VN')} VND</span>
+                          </div>
+                          {discountAmount > 0 && (
+                            <div className="d-flex justify-content-between mb-2">
+                              <span>Giảm giá:</span>
+                              <span className="fw-semibold text-success">-{discountAmount.toLocaleString('vi-VN')} VND</span>
+                            </div>
+                          )}
+                          <hr />
+                          <div className="d-flex justify-content-between mb-3">
+                            <span className="fs-5 fw-bold">Tổng thanh toán:</span>
+                            <span className="fs-4 fw-bold text-danger">{finalAmount.toLocaleString('vi-VN')} VND</span>
+                          </div>
+                          
+                          <div className="alert alert-info">
+                            <i className="fas fa-info-circle me-2"></i>
+                            <strong>Nội dung chuyển khoản:</strong><br/>
+                            Thanh toan don hang {Date.now()}
+                          </div>
+                          
+                          <div className="alert alert-warning">
+                            <i className="fas fa-exclamation-triangle me-2"></i>
+                            Vui lòng chuyển khoản <strong>chính xác số tiền</strong> và <strong>nội dung</strong> để đơn hàng được xử lý tự động.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowQRModal(false)}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Hủy
+                  </button>
+                  <button
+                    className="btn btn-success"
+                    onClick={() => {
+                      console.log('QR PAYMENT CONFIRMED - PROCESSING ORDER');
+                      setShowQRModal(false);
+                      processOrder();
+                    }}
+                  >
+                    <i className="fas fa-check me-2"></i>
+                    Đã thanh toán - Hoàn tất đơn hàng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

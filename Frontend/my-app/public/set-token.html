@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Token</title>
+</head>
+<body>
+    <h1>🔑 Auto Set Token</h1>
+    <button onclick="setToken()">Set Token & Redirect to Cart</button>
+    <div id="result"></div>
+
+    <script>
+        async function setToken() {
+            try {
+                // Fetch token from API
+                const response = await fetch('http://localhost:8000/api/test-token');
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    // Set token to localStorage
+                    localStorage.setItem('token', data.token);
+                    
+                    document.getElementById('result').innerHTML = `
+                        <p>✅ Token set successfully!</p>
+                        <p>User: ${data.user}</p>
+                        <p>Token: ${data.token.substring(0, 20)}...</p>
+                        <p>Redirecting to cart...</p>
+                    `;
+                    
+                    // Redirect to cart after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/cart';
+                    }, 2000);
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <p>❌ Failed to get token: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <p>❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

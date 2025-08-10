@@ -14,13 +14,14 @@ const ProductInfo = ({
   // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
   const originalPrice = product.original_price || (product as any).old_price;
 
-  // ✅ Ưu tiên giá từ variant được chọn, fallback về giá chính
+  // ✅ Ưu tiên giá từ biến thể sản phẩm (variant), fallback về giá chính
   const displayPrice = selectedVariant?.price || product.price;
 
-  // Format giá tiền chuẩn VN - nhân với 1000 để đồng nhất với BoxProduct
+  // Format giá tiền VN - nhân 1000 để đồng bộ với hệ thống (nếu lưu giá theo nghìn)
   const formattedPrice = displayPrice
     ? Number(displayPrice * 1000).toLocaleString("vi-VN") + "đ"
     : "N/A";
+
   const formattedOldPrice = originalPrice
     ? Number(originalPrice * 1000).toLocaleString("vi-VN") + "đ"
     : "";
@@ -33,15 +34,13 @@ const ProductInfo = ({
       {/* Giá sản phẩm và giá gốc nếu có */}
       <div className="d-flex align-items-end gap-2 my-3">
         <h2 className="text-danger fw-bolder mb-0">{formattedPrice}</h2>
-        {/* Hiển thị giá gốc nếu có và lớn hơn giá bán */}
-        {originalPrice && Number(originalPrice) > Number(product.price) && (
+        {originalPrice && Number(originalPrice) > Number(displayPrice) && (
           <span className="price-original">{formattedOldPrice}</span>
         )}
       </div>
 
       {/* Trạng thái kho, số lượng, đã bán, mã SP */}
       <div className="mb-3">
-        {/* Trạng thái còn hàng/hết hàng hoặc yêu cầu chọn size/màu */}
         <p className="mb-1">
           Trạng thái:
           {selectedVariantStock !== null &&

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Token Setter</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🔑 Auto Token Setter</h1>
+    <div id="status"></div>
+    <button onclick="setTokenAndRedirect()">Set Token & Go to Products</button>
+    <button onclick="checkCurrentToken()">Check Current Token</button>
+    <button onclick="clearToken()">Clear Token</button>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const p = document.createElement('p');
+            p.className = type;
+            p.innerHTML = message;
+            statusDiv.appendChild(p);
+        }
+
+        async function setTokenAndRedirect() {
+            try {
+                log('🔄 Fetching fresh token...', 'info');
+                
+                const response = await fetch('http://localhost:8000/api/test-token');
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    localStorage.setItem('token', data.token);
+                    log(`✅ Token set successfully!`, 'success');
+                    log(`User: ${data.user}`, 'info');
+                    log(`Token: ${data.token.substring(0, 30)}...`, 'info');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/products/1';
+                    }, 2000);
+                } else {
+                    log(`❌ Failed to get token: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function checkCurrentToken() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                log(`✅ Current token: ${token.substring(0, 30)}...`, 'success');
+            } else {
+                log('❌ No token found in localStorage', 'error');
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            log('🗑️ Token cleared', 'info');
+        }
+
+        // Auto check on load
+        window.onload = function() {
+            checkCurrentToken();
+        }
+    </script>
+</body>
+</html>
