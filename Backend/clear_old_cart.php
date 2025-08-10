@@ -49,3 +49,7 @@ $remainingItems = CartItem::where('cart_id', $cart->id)->count();
 echo "Remaining cart items: {$remainingItems}\n";
 
 echo "=== CLEAR COMPLETED ===\n";
+
+
+
+

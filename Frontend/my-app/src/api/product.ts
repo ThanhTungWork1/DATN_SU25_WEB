@@ -25,9 +25,11 @@ export const createProduct = (data: FormData) => {
 
 /**
  * CẬP NHẬT sản phẩm.
- * Phải nhận vào kiểu 'FormData' và dùng phương thức 'post'.
+ * Phải nhận vào kiểu 'FormData' và dùng phương thức 'put' hoặc method spoofing.
  */
 export const updateProduct = (id: string | number, data: FormData) => {
+    // Method spoofing for multipart/form-data with Laravel
+    data.append('_method', 'PUT');
     return axiosInstance.post<Product>(`/admin/products/${id}`, data);
 };
 

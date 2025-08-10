@@ -9,7 +9,6 @@ type MainImageProps = {
  * Component hiển thị ảnh chính của sản phẩm
  */
 const MainImage: React.FC<MainImageProps> = ({ imageUrl }) => {
-
   // Nếu không có imageUrl, hiển thị placeholder
   if (!imageUrl) {
     return (

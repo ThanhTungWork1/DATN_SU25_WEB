@@ -2,18 +2,42 @@
 
 // Thay đổi từ import axios sang import axiosInstance
 import axiosInstance from "../utils/axiosInstance"; 
-import { Order, OrderItem } from "../types/ProductType"; 
+import { Order, OrderItem } from "../types/Order"; 
 
 // Xóa BASE_URL ở đây, vì chúng ta đã cấu hình nó trong axiosInstance
 // const BASE_URL = "http://localhost:3000"; 
 
 // API cho Orders (Admin Routes)
-export const getOrders = (params: { page?: number, search?: string } = {}) => {
+export const getOrders = (params: { 
+    page?: number, 
+    search?: string, 
+    status?: string, 
+    is_paid?: boolean,
+    date_from?: string,
+    date_to?: string 
+} = {}) => {
     // Gửi các tham số đến backend
     return axiosInstance.get('/admin/orders', { params });
 };
-export const getOrder = (id: string | number) => axiosInstance.get<Order>(`/admin/orders/${id}`);
-export const createOrder = (data: Omit<Order, 'id' | 'created_at' | 'updated_at'>) => axiosInstance.post<Order>(`/admin/orders`, data);
+
+export const getOrderStatistics = () => {
+    return axiosInstance.get('/admin/orders/statistics');
+};
+
+export const exportOrders = (params: {
+    search?: string,
+    status?: string,
+    is_paid?: boolean
+} = {}) => {
+    return axiosInstance.get('/admin/orders/export', { 
+        params,
+        responseType: 'blob'
+    });
+};
+export const getOrder = (id: string | number) => axiosInstance.get<{status: string, message: string, data: Order}>(`/admin/orders/${id}`);
+export const createOrder = (data: Omit<Order, 'id' | 'created_at' | 'updated_at'>) => {
+    return axiosInstance.post<Order>(`/admin/orders`, data);
+};
 export const updateOrder = (id: number, data: Partial<Order>) => {
     return axiosInstance.put(`/admin/orders/${id}`, data);
 };

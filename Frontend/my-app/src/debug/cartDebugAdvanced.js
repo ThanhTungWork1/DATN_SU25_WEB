@@ -70,3 +70,7 @@ setTimeout(() => {
   // This will log after API call completes
   console.log("=== DEBUG COMPLETE - Check the logs above ===");
 }, 2000);
+
+
+
+

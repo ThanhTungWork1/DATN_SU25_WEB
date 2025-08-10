@@ -1,263 +1,300 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { TokenManager } from "../../../utils/tokenUtils";
-import {
-  Card,
-  Form,
-  Input,
-  Select,
-  Button,
-  Row,
-  Col,
-  Typography,
+import React, { useState, useEffect } from 'react';
+import { 
+  Card, 
+  Form, 
+  Input, 
+  Button, 
+  Radio, 
+  Row, 
+  Col, 
+  Typography, 
+  Select, 
+  message, 
   Divider,
-  Space,
-  Alert,
-  Image,
-  Checkbox,
-  message,
-  Steps,
-  Tag
-} from "antd";
-import {
-  ShoppingOutlined,
-  UserOutlined,
-  EnvironmentOutlined,
-  CreditCardOutlined,
-  CheckCircleOutlined,
-  GiftOutlined
-} from "@ant-design/icons";
+  Spin 
+} from 'antd';
+import { ShoppingOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { TokenManager } from '../../../utils/tokenUtils';
+import axios from 'axios';
+import { 
+  getProvinces, 
+  getDistrictsByProvince, 
+  getWardsByDistrict,
+  getProvinceNameByCode,
+  getDistrictNameByCode,
+  getWardNameByCode,
+  Province,
+  District,
+  Ward 
+} from '../../../utils/vietnamAddressData';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { TextArea } = Input;
 
-type Ward = { code: number; name: string };
-type District = { code: number; name: string; wards: Ward[] };
-type Province = { code: number; name: string; districts: District[] };
-type Product = { id: string; name: string; quantity: number; price: number; color?: string; size?: string; variant_id?: number; };
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  variant_id?: string;
+  product_id?: string;
+}
 
-const paymentMethods = [
-  { value: "COD", label: "Trả tiền mặt khi nhận hàng (COD)" },
-  { value: "BANK_TRANSFER", label: "Chuyển khoản ngân hàng" },
-  { value: "EWALLET", label: "Ví điện tử (Momo/ZaloPay)" },
-];
+interface Address {
+  province: string;
+  district: string;
+  ward: string;
+  street: string;
+}
 
-const CheckoutPage = () => {
-  const { state } = useLocation();
-  const { selectedProducts = [], totalAmount = 0 }: {
-    selectedProducts: Product[];
-    totalAmount: number;
-  } = state || {};
+interface UserInfo {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  username: string;
+}
 
+const CheckoutPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
-  // Nếu không có dữ liệu từ state, lấy từ localStorage
-  const [cartItems, setCartItems] = useState<Product[]>(() => {
-    if (selectedProducts.length > 0) return selectedProducts;
-    
-    const stored = localStorage.getItem("cartItems");
-    if (stored) {
-      try {
-        const items = JSON.parse(stored);
-        return items
-          .filter((item: any) => item && item.id !== undefined && item.id !== null)
-          .map((item: any) => ({
-            id: String(item.id || ''),
-            name: item.name || '',
-            quantity: Number(item.quantity) || 0,
-            price: Number(item.price) || 0,
-            color: item.color || '',
-            size: item.size || '',
-            variant_id: item.variant_id || null // Thêm variant_id
-          }));
-      } catch (error) {
-        console.error('Error parsing cart items:', error);
-        return [];
-      }
-    }
-    return [];
-  });
-
-  const [calculatedTotal, setCalculatedTotal] = useState(() => {
-    if (totalAmount > 0) return totalAmount;
-    if (!cartItems || cartItems.length === 0) return 0;
-    return cartItems.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0);
-  });
-
+  const [loading, setLoading] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  
+  // Address dropdowns
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showCouponInput, setShowCouponInput] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
+  const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
+  const [addressLoading, setAddressLoading] = useState({
+    provinces: false,
+    districts: false,
+    wards: false,
+  });
 
-  const mbAccount = "0686809012005";
-  const mbBankCode = "970422";
-  const qrTemplate = "compact";
-  const momoPhone = "0867426658";
-  const momoName = "LÊ KHẢI HOÀN";
-
-  // Lấy thông tin user từ localStorage
   useEffect(() => {
-    // **FIX: Sử dụng TokenManager để kiểm tra đúng user token**
-    const userToken = TokenManager.getUserToken();
-    const userStr = localStorage.getItem("user");
+    // Load cart items from localStorage
+    const savedCart = localStorage.getItem('cartItems');
+    const savedSelected = localStorage.getItem('selectedItems');
     
-    console.log('🛒 Checkout - Token check:', {
-      userToken: !!userToken,
-      userStr: !!userStr,
-      hasUserData: !!userStr
-    });
-    
-    // Kiểm tra user token thay vì role
-    if (userToken && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserInfo(user);
-        // Cập nhật form với thông tin user
-        form.setFieldsValue({
-          fullName: user.name || user.username || user.full_name || '',
-          phone: user.phone || user.phone_number || '',
-          email: user.email || ''
-        });
-        console.log('✅ User info loaded for checkout:', user.name);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    } else {
-      // **FIX: Chỉ hiện thông báo khi thực sự không có user token**
-      console.log('❌ No user token found, redirecting to login');
-      message.warning("Vui lòng đăng nhập để thanh toán!");
-      navigate("/login");
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
     }
-  }, [form, navigate]);
+    
+    if (savedSelected) {
+      setSelectedItems(JSON.parse(savedSelected));
+    }
 
-  useEffect(() => {
-    axios.get<Province[]>("https://provinces.open-api.vn/api/?depth=3")
-      .then(res => setProvinces(res.data))
-      .catch(() => message.error("Không thể tải địa chỉ"));
+    // Load user info and provinces
+    loadUserInfo();
+    loadProvinces();
   }, []);
 
-  // Cập nhật calculatedTotal khi cartItems thay đổi
-  useEffect(() => {
-    if (totalAmount > 0) {
-      setCalculatedTotal(totalAmount);
-    } else if (cartItems && cartItems.length > 0) {
-      const total = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
-      setCalculatedTotal(total);
-    } else {
-      setCalculatedTotal(0);
+  const loadProvinces = async () => {
+    setAddressLoading(prev => ({ ...prev, provinces: true }));
+    try {
+      const provincesData = await getProvinces();
+      setProvinces(provincesData);
+    } catch (error) {
+      console.error('Error loading provinces:', error);
+      message.error('Không thể tải danh sách tỉnh thành');
+    } finally {
+      setAddressLoading(prev => ({ ...prev, provinces: false }));
     }
-  }, [cartItems, totalAmount]);
+  };
 
-  const handleProvinceChange = (provinceName: string) => {
-    const selected = provinces.find(p => p.name === provinceName);
-    if (selected) {
-      setDistricts(selected.districts || []);
+  const loadUserInfo = async () => {
+    try {
+      const token = TokenManager.getUserToken();
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:8000/api/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      const user = response.data;
+      setUserInfo(user);
+      
+      // Pre-fill form with user info
+      form.setFieldsValue({
+        name: user.name || user.username || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+
+    } catch (error) {
+      console.error('Error loading user info:', error);
+      message.error('Không thể tải thông tin user');
+      navigate('/login');
+    }
+  };
+
+  const handleProvinceChange = async (provinceCode: number) => {
+    console.log('Province selected:', provinceCode);
+    setSelectedProvince(provinceCode);
+    setSelectedDistrict(undefined);
+    setDistricts([]);
     setWards([]);
-      form.setFieldsValue({
-        district: undefined,
-        ward: undefined
-      });
+    
+    // Clear dependent form fields
+    form.setFieldsValue({
+      district: undefined,
+      ward: undefined,
+    });
+
+    // Load districts
+    setAddressLoading(prev => ({ ...prev, districts: true }));
+    try {
+      console.log('Loading districts for province:', provinceCode);
+      const districtsData = await getDistrictsByProvince(provinceCode);
+      console.log('Districts loaded:', districtsData);
+      setDistricts(districtsData);
+      
+      if (districtsData.length === 0) {
+        message.warning('Không tìm thấy quận/huyện cho tỉnh này');
+      }
+    } catch (error) {
+      console.error('Error loading districts:', error);
+      message.error('Không thể tải danh sách quận/huyện');
+    } finally {
+      setAddressLoading(prev => ({ ...prev, districts: false }));
     }
   };
 
-  const handleDistrictChange = (districtName: string) => {
-    const selected = districts.find(d => d.name === districtName);
-    if (selected) {
-      setWards(selected.wards || []);
-      form.setFieldsValue({
-        ward: undefined
-      });
+  const handleDistrictChange = async (districtCode: number) => {
+    console.log('District selected:', districtCode);
+    setSelectedDistrict(districtCode);
+    setWards([]);
+    
+    // Clear dependent form field
+    form.setFieldsValue({
+      ward: undefined,
+    });
+
+    // Load wards
+    setAddressLoading(prev => ({ ...prev, wards: true }));
+    try {
+      console.log('Loading wards for district:', districtCode);
+      const wardsData = await getWardsByDistrict(districtCode);
+      console.log('Wards loaded:', wardsData);
+      setWards(wardsData);
+      
+      if (wardsData.length === 0) {
+        message.warning('Không tìm thấy phường/xã cho quận này');
+      }
+    } catch (error) {
+      console.error('Error loading wards:', error);
+      message.error('Không thể tải danh sách phường/xã');
+    } finally {
+      setAddressLoading(prev => ({ ...prev, wards: false }));
     }
   };
+
+  const selectedProducts = cartItems.filter(item => selectedItems[item.id]);
+  const calculatedTotal = selectedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shippingFee = calculatedTotal >= 500000 ? 0 : 30000;
+  const finalTotal = calculatedTotal + shippingFee;
 
   const handleOrder = async (values: any) => {
     setLoading(true);
     
     try {
-    const userStr = localStorage.getItem("user");
-    if (!userStr) {
-        message.error("Vui lòng đăng nhập!");
-      navigate("/login");
-      return;
-    }
-    
-      const user = JSON.parse(userStr);
-      if (!user || !user.id) {
-        message.error("Vui lòng đăng nhập!");
-      navigate("/login");
-      return;
-    }
+      const token = TokenManager.getUserToken();
+      if (!token || !userInfo) {
+        message.error("Vui lòng đăng nhập để đặt hàng!");
+        navigate("/login");
+        return;
+      }
 
-    // Debug: Log cartItems để kiểm tra structure
-    console.log('=== CHECKOUT DEBUG ===');
-    console.log('cartItems:', cartItems);
-    console.log('user:', user);
-    
-    const orderData = {
-        shipping_address: `${values.street}, ${values.ward}, ${values.district}, ${values.province}`,
-        shipping_phone: values.phone,
-        shipping_name: values.fullName,
-        customer_email: values.email || user.email || 'customer@example.com', // Thêm trường customer_email
-        note: values.orderNotes,
-        items: cartItems.map(item => {
-          // Debug: Log từng item để xem có variant_id không
-          console.log('Processing cart item:', item);
-          const variantId = item.variant_id || parseInt(item.id) || 1;
-          const price = Number(item.price);
-          const quantity = Number(item.quantity);
-          console.log(`Item ${item.name}:`);
-          console.log(`  - variant_id: ${variantId} (from ${item.variant_id} || ${item.id})`);
-          console.log(`  - price: ${price} (original: ${item.price}, type: ${typeof item.price})`);
-          console.log(`  - quantity: ${quantity} (original: ${item.quantity})`);
-          console.log(`  - subtotal: ${price * quantity}`);
-          
-          return {
-            variant_id: variantId,
-            quantity: quantity,
-            price: price
-          };
-        })
+      if (selectedProducts.length === 0) {
+        message.error("Vui lòng chọn ít nhất một sản phẩm.");
+        return;
+      }
+
+      // Get selected address text
+      const selectedProvinceText = provinces.find(p => p.code === values.province)?.name || await getProvinceNameByCode(values.province);
+      const selectedDistrictText = districts.find(d => d.code === values.district)?.name || await getDistrictNameByCode(values.district);
+      const selectedWardText = wards.find(w => w.code === values.ward)?.name || await getWardNameByCode(values.ward);
+
+      const orderData = {
+        user_id: userInfo.id,
+        customer_name: values.name || userInfo.name || userInfo.username || "Khách hàng",
+        customer_email: values.email || userInfo.email || "",
+        customer_phone: values.phone || userInfo.phone || "",
+        shipping_address: `${values.street}, ${selectedWardText}, ${selectedDistrictText}, ${selectedProvinceText}`,
+        total_amount: finalTotal,
+        payment_method: paymentMethod,
+        payment_status: "pending",
+        order_status: "pending",
+        notes: values.notes || "",
+        items: selectedProducts.map(item => ({
+          product_id: item.product_id || item.id,
+          variant_id: item.variant_id || null,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.price * item.quantity,
+        })),
       };
-      
-      console.log('Final orderData:', orderData);
 
-      if (values.paymentMethod === "EWALLET") {
+      console.log('Order data:', orderData);
+
+      if (paymentMethod === "EWALLET") {
         message.info("Vui lòng quét mã QR và chuyển khoản xong hãy nhấn OK.");
       }
 
-      const res = await fetch("http://localhost:8000/api/client/orders", {
+      // Create order
+      const response = await fetch("http://localhost:8000/api/client/orders", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${TokenManager.getToken()}`
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(orderData),
       });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
+
+      if (!response.ok) {
+        const errorData = await response.json();
         throw new Error(errorData.message || "Lỗi server");
       }
-      
+
+      const result = await response.json();
+
+      // Clear ordered items from cart
+      const remainingItems = cartItems.filter(item => !selectedItems[item.id]);
+      localStorage.setItem('cartItems', JSON.stringify(remainingItems));
+      localStorage.removeItem('selectedItems');
+
       message.success("Đặt hàng thành công!");
-      navigate("/orders");
+      navigate("/", {
+        state: {
+          order_id: result.id,
+          totalAmount: finalTotal,
+          paymentMethod,
+          items: selectedProducts,
+          customerName: userInfo.name || userInfo.username,
+        },
+      });
+
     } catch (error: any) {
       console.error("Lỗi đặt hàng:", error);
-      message.error(`Xảy ra lỗi: ${error.message}`);
+      message.error(error.message || "Có lỗi xảy ra khi đặt hàng!");
     } finally {
       setLoading(false);
     }
   };
 
-  const shippingFee = calculatedTotal >= 500000 ? 0 : 30000;
-  const finalTotal = calculatedTotal + shippingFee;
-
-  // Hiển thị thông tin phí giao hàng
   const getShippingInfo = () => {
     if (calculatedTotal >= 500000) {
       return {
@@ -276,6 +313,14 @@ const CheckoutPage = () => {
 
   const shippingInfo = getShippingInfo();
 
+  if (!userInfo) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
@@ -293,273 +338,207 @@ const CheckoutPage = () => {
                 layout="vertical"
                 onFinish={handleOrder}
               >
+                {/* User Information */}
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col span={8}>
                     <Form.Item
-                      name="fullName"
-                      label="Họ và tên *"
-                      rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
+                      label="Họ và tên"
+                      name="name"
+                      rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
                     >
-                      <Input prefix={<UserOutlined />} />
+                      <Input placeholder="Nhập họ và tên" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col span={8}>
                     <Form.Item
+                      label="Email"
+                      name="email"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập email!' },
+                        { type: 'email', message: 'Email không hợp lệ!' }
+                      ]}
+                    >
+                      <Input placeholder="Nhập email" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item
+                      label="Số điện thoại"
                       name="phone"
-                      label="Số điện thoại *"
                       rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
                     >
-                      <Input />
+                      <Input placeholder="Nhập số điện thoại" />
                     </Form.Item>
                   </Col>
                 </Row>
 
-                <Form.Item
-                  name="email"
-                  label="Địa chỉ email (tuỳ chọn)"
-                >
-                  <Input />
-                </Form.Item>
+                <Divider>Địa chỉ giao hàng</Divider>
 
+                {/* Address Selection */}
                 <Row gutter={16}>
                   <Col span={8}>
                     <Form.Item
+                      label="Tỉnh/Thành phố"
                       name="province"
-                      label="Tỉnh/Thành phố *"
                       rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố!' }]}
                     >
                       <Select
-                        placeholder="Chọn Tỉnh/Thành"
+                        placeholder="Chọn tỉnh/thành phố"
                         onChange={handleProvinceChange}
                         showSearch
+                        optionFilterProp="children"
+                        loading={addressLoading.provinces}
                         filterOption={(input, option) =>
-                          option?.children?.toLowerCase().includes(input.toLowerCase())
+                          (option?.children as string)?.toLowerCase()?.includes(input.toLowerCase())
                         }
                       >
-                        {provinces.map(p => (
-                          <Option key={p.code} value={p.name}>{p.name}</Option>
+                        {provinces.map((province) => (
+                          <Option key={province.code} value={province.code}>
+                            {province.name}
+                          </Option>
                         ))}
                       </Select>
                     </Form.Item>
                   </Col>
                   <Col span={8}>
                     <Form.Item
+                      label="Quận/Huyện"
                       name="district"
-                      label="Quận/Huyện *"
                       rules={[{ required: true, message: 'Vui lòng chọn quận/huyện!' }]}
                     >
                       <Select
-                        placeholder="Chọn Quận/Huyện"
+                        placeholder="Chọn quận/huyện"
                         onChange={handleDistrictChange}
-                        disabled={!districts.length}
+                        disabled={!selectedProvince}
                         showSearch
+                        optionFilterProp="children"
+                        loading={addressLoading.districts}
                         filterOption={(input, option) =>
-                          option?.children?.toLowerCase().includes(input.toLowerCase())
+                          (option?.children as string)?.toLowerCase()?.includes(input.toLowerCase())
                         }
                       >
-                        {districts.map(d => (
-                          <Option key={d.code} value={d.name}>{d.name}</Option>
+                        {districts.map((district) => (
+                          <Option key={district.code} value={district.code}>
+                            {district.name}
+                          </Option>
                         ))}
                       </Select>
                     </Form.Item>
                   </Col>
                   <Col span={8}>
                     <Form.Item
+                      label="Phường/Xã"
                       name="ward"
-                      label="Xã/Phường *"
-                      rules={[{ required: true, message: 'Vui lòng chọn xã/phường!' }]}
+                      rules={[{ required: true, message: 'Vui lòng chọn phường/xã!' }]}
                     >
                       <Select
-                        placeholder="Chọn Xã/Phường"
-                        disabled={!wards.length}
+                        placeholder="Chọn phường/xã"
+                        disabled={!selectedDistrict}
                         showSearch
+                        optionFilterProp="children"
+                        loading={addressLoading.wards}
                         filterOption={(input, option) =>
-                          option?.children?.toLowerCase().includes(input.toLowerCase())
+                          (option?.children as string)?.toLowerCase()?.includes(input.toLowerCase())
                         }
                       >
-                        {wards.map(w => (
-                          <Option key={w.code} value={w.name}>{w.name}</Option>
+                        {wards.map((ward) => (
+                          <Option key={ward.code} value={ward.code}>
+                            {ward.name}
+                          </Option>
                         ))}
                       </Select>
                     </Form.Item>
                   </Col>
                 </Row>
 
-                <Form.Item
-                  name="street"
-                  label="Địa chỉ *"
-                  rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
-                >
-                  <Input placeholder="Ví dụ: Số 20, ngõ 90" />
-                </Form.Item>
+                <Row gutter={16}>
+                  <Col span={24}>
+                    <Form.Item
+                      label="Địa chỉ cụ thể"
+                      name="street"
+                      rules={[{ required: true, message: 'Vui lòng nhập địa chỉ cụ thể!' }]}
+                    >
+                      <Input placeholder="Số nhà, tên đường, hẻm..." />
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-                <Form.Item
-                  name="orderNotes"
-                  label="Ghi chú đơn hàng (tuỳ chọn)"
-                >
-                  <TextArea
-                    rows={3}
-                    placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn."
+                <Form.Item label="Ghi chú" name="notes">
+                  <Input.TextArea 
+                    rows={3} 
+                    placeholder="Ghi chú cho đơn hàng (không bắt buộc)"
                   />
                 </Form.Item>
 
-                <Divider />
-
-                <Form.Item
-                  name="paymentMethod"
-                  label="Phương thức thanh toán *"
-                  rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán!' }]}
-                >
-                  <Select placeholder="Chọn phương thức thanh toán">
-                    {paymentMethods.map(method => (
-                      <Option key={method.value} value={method.value}>
-                        {method.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {/* QR Code hiển thị dựa trên phương thức thanh toán */}
-                {form.getFieldValue('paymentMethod') === 'BANK_TRANSFER' && (
-                  <Card size="small" title="QR chuyển khoản MB Bank" style={{ marginTop: 16 }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <Image
-                  src={`https://img.vietqr.io/image/${mbBankCode}-${mbAccount}-${qrTemplate}.png`}
-                  alt="QR MB Bank"
-                        width={200}
-                        height={200}
-                      />
-                      <div style={{ marginTop: 16 }}>
-                        <Text strong>Số TK: {mbAccount}</Text><br />
-                        <Text strong>Ngân hàng: MB Bank</Text><br />
-                        <Text strong>Chủ TK: LÊ KHẢI HOÀN</Text>
-                      </div>
-              </div>
-                  </Card>
-                )}
-
-                {form.getFieldValue('paymentMethod') === 'EWALLET' && (
-                  <Card size="small" title="QR thanh toán ví Momo" style={{ marginTop: 16 }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <Image
-                  src="/qr-momo.png"
-                  alt="QR Momo"
-                        width={200}
-                        height={200}
-                        fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
-                      />
-                      <div style={{ marginTop: 16 }}>
-                        <Text strong>Số điện thoại: {momoPhone}</Text><br />
-                        <Text strong>Chủ ví: {momoName}</Text>
-                      </div>
-                    </div>
-                  </Card>
-                )}
-
-                <Form.Item>
-                  <Checkbox required>
-                    Tôi đã đọc và đồng ý với điều khoản và điều kiện của website *
-                  </Checkbox>
-                </Form.Item>
-
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    size="large"
-                    danger
-                    htmlType="submit"
-                    loading={loading}
-                    style={{ width: '100%', height: 48 }}
+                <Form.Item label="Phương thức thanh toán">
+                  <Radio.Group 
+                    value={paymentMethod} 
+                    onChange={(e) => setPaymentMethod(e.target.value)}
                   >
-                    ĐẶT HÀNG
+                    <Radio value="CASH">Thanh toán khi nhận hàng (COD)</Radio>
+                    <Radio value="EWALLET">Chuyển khoản ngân hàng</Radio>
+                  </Radio.Group>
+                </Form.Item>
+
+                <Form.Item>
+                  <Button 
+                    type="primary" 
+                    htmlType="submit" 
+                    size="large" 
+                    loading={loading}
+                    style={{ width: '100%' }}
+                  >
+                    Đặt hàng
                   </Button>
                 </Form.Item>
               </Form>
             </Card>
           </Col>
 
-          {/* Đơn hàng của bạn */}
+          {/* Tóm tắt đơn hàng */}
           <Col xs={24} lg={8}>
-            <Card title="ĐƠN HÀNG CỦA BẠN">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                {/* Sản phẩm */}
-                <div>
-                  <Text strong>SẢN PHẨM</Text>
-                  {cartItems && cartItems.length > 0 ? (
-                    cartItems.map(item => (
-                      <div key={item.id} style={{ marginTop: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Text>{item.name} × {item.quantity}</Text>
-                          <Text strong>{(item.price * item.quantity).toLocaleString('vi-VN')} VND</Text>
-                        </div>
-                        {(item.color || item.size) && (
-                          <div style={{ marginTop: 4 }}>
-                            <Space>
-                              {item.color && <Tag color="blue">{item.color.toUpperCase()}</Tag>}
-                              {item.size && <Tag color="green">{item.size.toUpperCase()}</Tag>}
-                            </Space>
+            <Card title="TÓM TẮT ĐÔN HÀNG">
+              {selectedProducts.map((item) => (
+                <div key={item.id} style={{ display: 'flex', marginBottom: 16, alignItems: 'center' }}>
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    style={{ width: 60, height: 60, objectFit: 'cover', marginRight: 12 }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <Text strong>{item.name}</Text>
+                    <div>
+                      <Text type="secondary">SL: {item.quantity}</Text>
+                      <Text style={{ float: 'right' }}>
+                        {(item.price * item.quantity).toLocaleString('vi-VN')} VND
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <Divider />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text>Tạm tính:</Text>
+                <Text>{calculatedTotal.toLocaleString('vi-VN')} VND</Text>
               </div>
-            )}
-                      </div>
-                    ))
-                  ) : (
-                    <Text type="secondary">Không có sản phẩm nào trong giỏ hàng</Text>
-                  )}
-                </div>
 
-                <Divider />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text>Phí giao hàng:</Text>
+                <Text style={{ color: shippingInfo.color === 'green' ? '#52c41a' : undefined }}>
+                  {shippingInfo.text}
+                </Text>
+              </div>
 
-                {/* Tổng tiền */}
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text>Tạm tính:</Text>
-                  <Text strong>{calculatedTotal.toLocaleString('vi-VN')} VNĐ</Text>
-                </div>
+              <Divider />
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text>Giao hàng:</Text>
-                  <Text strong>
-                    {shippingInfo.text}
-                  </Text>
-                </div>
-
-                {/* Thông tin phí giao hàng */}
-                <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                  <Text type="secondary">
-                    {calculatedTotal >= 500000 
-                      ? "✓ Miễn phí giao hàng cho đơn hàng từ 500.000 VNĐ"
-                      : `Phí giao hàng: 30.000 VNĐ (Miễn phí từ 500.000 VNĐ)`
-                    }
-                  </Text>
-                </div>
-
-                <Divider />
-
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text strong style={{ fontSize: 16 }}>Tổng:</Text>
-                  <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
-                    {finalTotal.toLocaleString('vi-VN')} VNĐ
-                  </Text>
-          </div>
-
-                {/* Phiếu ưu đãi */}
-                <div style={{ marginTop: 16 }}>
-                  {!showCouponInput ? (
-                    <Button
-                      type="link"
-                      icon={<GiftOutlined />}
-                      onClick={() => setShowCouponInput(true)}
-                      style={{ padding: 0 }}
-                    >
-                      Bạn có mã ưu đãi? Ấn vào đây để nhập mã
-                    </Button>
-                  ) : (
-                    <Space.Compact style={{ width: '100%' }}>
-                      <Input placeholder="Mã ưu đãi" />
-                      <Button>Áp dụng</Button>
-                    </Space.Compact>
-                  )}
-        </div>
-              </Space>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Text strong size={16}>Tổng cộng:</Text>
+                <Text strong size={16} style={{ color: '#ff4d4f' }}>
+                  {finalTotal.toLocaleString('vi-VN')} VND
+                </Text>
+              </div>
             </Card>
           </Col>
         </Row>

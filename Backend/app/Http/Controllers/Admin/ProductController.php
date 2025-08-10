@@ -43,7 +43,11 @@ class ProductController extends Controller
     }
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        \Log::info('🔍 [BACKEND DEBUG] Product store method called');
+        \Log::info('🔍 [BACKEND DEBUG] Request data:', $request->all());
+        
+        try {
+            $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
@@ -54,13 +58,13 @@ class ProductController extends Controller
             // 'discount' => 'nullable|numeric|min:0',
             'slug' => 'nullable|string|max:255|unique:products,slug',
             'sold' => 'nullable|integer|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                    'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
 
              // Validation cho dữ liệu biến thể
             'variants' => 'required|string', // Vẫn nhận chuỗi JSON
             'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
-            'variant_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate từng file trong mảng
+            'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048' // Validate từng file trong mảng
         ]);
 
         $variantsData = json_decode($validatedData['variants'], true);
@@ -69,6 +73,9 @@ class ProductController extends Controller
         }
 
         $product = DB::transaction(function () use ($validatedData, $variantsData, $request) {
+            \Log::info('🔍 [BACKEND DEBUG] Starting DB transaction');
+            \Log::info('🔍 [BACKEND DEBUG] Validated data:', $validatedData);
+            \Log::info('🔍 [BACKEND DEBUG] Variants data:', $variantsData);
             // --- SỬA LỖI: Xây dựng đối tượng Product một cách tường minh ---
             $product = new Product();
             $product->name = $validatedData['name'];
@@ -92,32 +99,61 @@ class ProductController extends Controller
             }
 
             // 1. Lưu sản phẩm cha vào DB
+            \Log::info('🔍 [BACKEND DEBUG] About to save product:', $product->toArray());
             $product->save();
+            \Log::info('🔍 [BACKEND DEBUG] Product saved successfully with ID: ' . $product->id);
 
            // Logic tạo biến thể để xử lý ảnh
             foreach ($variantsData as $index => $variant) {
+                \Log::info("🔍 [BACKEND DEBUG] Processing variant {$index}:", $variant);
+                
                 // Kiểm tra xem có file ảnh nào được gửi lên cho biến thể ở vị trí $index không
                 if ($request->hasFile("variant_images.{$index}")) {
                     // Lưu file và lấy đường dẫn
                     $imagePath = $request->file("variant_images.{$index}")->store('variants', 'public');
+                    \Log::info("🔍 [BACKEND DEBUG] Variant {$index} image saved to: {$imagePath}");
                     // Gán đường dẫn vào dữ liệu của biến thể
                     $variant['image'] = $imagePath;
                 } else {
                     // Nếu không có file mới, giữ lại ảnh cũ (nếu có) hoặc đặt là null
                     $variant['image'] = $variant['image'] ?? null;
+                    \Log::info("🔍 [BACKEND DEBUG] Variant {$index} no new image, using: " . ($variant['image'] ?? 'null'));
                 }
 
+                \Log::info("🔍 [BACKEND DEBUG] About to create variant with data:", $variant);
                 $product->variants()->create($variant);
+                \Log::info("🔍 [BACKEND DEBUG] Variant {$index} created successfully");
             }
             return $product;
         });
 
         return response()->json($product->load('variants'), 201);
+        } catch (\Exception $e) {
+            \Log::error('🔍 [BACKEND DEBUG] Product store error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
     public function show($id)
     {
-     return Product::with(['variants.color', 'variants.size'])->findOrFail($id);
+        \Log::info('🔍 [BACKEND DEBUG] Product show method called with ID: ' . $id);
+        try {
+            $product = Product::with(['variants.color', 'variants.size'])->findOrFail($id);
+            \Log::info('🔍 [BACKEND DEBUG] Product found:', $product->toArray());
+            return $product;
+        } catch (\Exception $e) {
+            \Log::error('🔍 [BACKEND DEBUG] Product show error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
@@ -137,8 +173,10 @@ class ProductController extends Controller
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
             'sold' => 'nullable|integer|min:0',
             'variants' => 'sometimes|required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
+            'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048', // Validate từng file trong mảng
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         DB::transaction(function () use ($request, $product, $validatedData) {

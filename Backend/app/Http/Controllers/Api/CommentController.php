@@ -47,7 +47,7 @@ class CommentController extends Controller
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.variant_id', '=', 'product_variants.id')
             ->where('orders.user_id', $userId)
-            ->where('orders.status', 'completed') // ✅ CHỈ ĐÁNH GIÁ KHI ĐÃ GIAO HÀNG
+            ->whereIn('orders.status', ['completed', 'delivered']) // ✅ CHỈ ĐÁNH GIÁ KHI ĐÃ GIAO HÀNG
             ->where('product_variants.product_id', $productId)
             ->exists();
 
@@ -150,7 +150,7 @@ class CommentController extends Controller
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.variant_id', '=', 'product_variants.id')
             ->where('orders.user_id', $userId)
-            ->where('orders.status', 'completed')
+            ->whereIn('orders.status', ['completed', 'delivered']) // Support both status values
             ->where('product_variants.product_id', $productId)
             ->exists();
 

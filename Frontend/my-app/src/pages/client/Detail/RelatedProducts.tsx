@@ -4,7 +4,6 @@ import { useRelatedProductsPagination } from "../../../hook/useRelatedProductsPa
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useCart } from "../../../provider/CartProvider";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { toast } from "sonner";
 import type {
   RouteParams,
   RelatedProductsProps,
@@ -20,7 +19,6 @@ const RelatedProducts = ({ categoryId, limit = 8 }: RelatedProductsProps) => {
     isLoading,
     isError,
   } = useRelatedProducts(id!, categoryId, limit);
-
   const { paginatedProducts, canPrev, canNext, goPrev, goNext } =
     useRelatedProductsPagination(relatedProducts || [], 4);
 

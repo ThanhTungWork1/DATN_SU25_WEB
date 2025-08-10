@@ -77,3 +77,7 @@ echo "\n✅ Database config đã được cập nhật!\n";
 echo "🎯 Bước tiếp theo: test kết nối Laravel\n";
 
 ?>
+
+
+
+

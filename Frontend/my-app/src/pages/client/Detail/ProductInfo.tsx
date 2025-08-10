@@ -7,9 +7,9 @@ import "../../../assets/styles/info.css";
 
 const ProductInfo = ({
   product,
+  selectedVariant,
   selectedVariantStock,
   sku,
-  selectedVariant,
 }: ProductInfoProps) => {
   // **FIX: Ưu tiên giá biến thể, fallback sang giá sản phẩm**
   const currentPrice = selectedVariant?.price || product.price;

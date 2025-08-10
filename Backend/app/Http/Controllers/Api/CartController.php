@@ -30,7 +30,18 @@ class CartController extends Controller
                 'cart' => null
             ], 200);
         }
-        return response()->json($cart);
+
+        // Đảm bảo image_url được include trong response
+        if ($cart && $cart->cartItems) {
+            foreach ($cart->cartItems as $cartItem) {
+                if ($cartItem->variant && $cartItem->variant->product) {
+                    // Force load image_url accessors
+                    $cartItem->variant->product->makeVisible(['image_url', 'hover_image_url']);
+                }
+            }
+        }
+
+        return response()->json(['cart' => $cart]);
     }
 
     /**

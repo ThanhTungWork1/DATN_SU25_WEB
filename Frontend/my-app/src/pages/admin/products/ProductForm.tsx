@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // SỬA LẠI: Tách import ra cho rõ ràng và chính xác
 import {
@@ -88,13 +88,13 @@ export default function ProductForm() {
           getSizes(),
         ]);
         setCategories(
-          Array.isArray(catRes.data.data) ? catRes.data.data : catRes.data
+          Array.isArray((catRes as any).data?.data) ? (catRes as any).data.data : (catRes as any).data || []
         );
         setColors(
-          Array.isArray(colorRes.data.data) ? colorRes.data.data : colorRes.data
+          (colorRes as any).data?.data || (colorRes as any).data || []
         );
         setSizes(
-          Array.isArray(sizeRes.data.data) ? sizeRes.data.data : sizeRes.data
+          (sizeRes as any).data?.data || (sizeRes as any).data || []
         );
 
         if (isEditing) {
@@ -104,7 +104,7 @@ export default function ProductForm() {
             getProductVariants(productId),
           ]);
 
-          const productData: Product = productRes.data.data || productRes.data;
+          const productData: Product = (productRes as any).data?.data || (productRes as any).data;
 
           if (
             productData &&
@@ -112,10 +112,10 @@ export default function ProductForm() {
             productData.id
           ) {
             const variantsData: ProductVariant[] = Array.isArray(
-              variantsRes.data.data
+              (variantsRes as any).data?.data
             )
-              ? variantsRes.data.data
-              : variantsRes.data || [];
+              ? (variantsRes as any).data.data
+              : (variantsRes as any).data || [];
 
             formRef.setFieldsValue({
               ...productData,
@@ -155,9 +155,17 @@ export default function ProductForm() {
             variants: [{ stock: 0, price: 0 }],
           });
         }
-      } catch (error) {
-        message.error("Lỗi khi tải dữ liệu ban đầu.");
-        console.error(error);
+      } catch (error: any) {
+        console.error("Lỗi tải dữ liệu ban đầu:", error);
+        if (error.response?.status === 404) {
+          message.error("Không tìm thấy sản phẩm.");
+          navigate("/admin/products");
+        } else if (error.response?.status === 401) {
+          message.error("Phiên đăng nhập đã hết hạn.");
+          navigate("/admin/login");
+        } else {
+          message.error("Lỗi khi tải dữ liệu ban đầu. Vui lòng thử lại.");
+        }
       } finally {
         setLoading(false);
       }
@@ -165,8 +173,41 @@ export default function ProductForm() {
     fetchInitialData();
   }, [id, isEditing, formRef, navigate]);
 
+  // Helper function to generate slug from name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, 'a')
+      .replace(/[éèẻẽẹêếềểễệ]/g, 'e')
+      .replace(/[íìỉĩị]/g, 'i')
+      .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, 'o')
+      .replace(/[úùủũụưứừửữự]/g, 'u')
+      .replace(/[ýỳỷỹỵ]/g, 'y')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
   const onFinish = async (values: any) => {
     const formData = new FormData();
+
+    // Generate slug if not provided or empty
+    if (!values.slug || values.slug.trim() === '') {
+      if (!values.name || values.name.trim() === '') {
+        message.error("Tên sản phẩm không được để trống!");
+        return;
+      }
+      values.slug = generateSlug(values.name);
+    }
+
+    // Validate slug
+    if (!values.slug) {
+      message.error("Không thể tạo slug từ tên sản phẩm!");
+      return;
+    }
 
     Object.keys(values).forEach((key) => {
       if (
@@ -209,18 +250,56 @@ export default function ProductForm() {
       );
       navigate("/admin/products");
     } catch (error: any) {
-      console.error("Lỗi gửi form sản phẩm:", error.response?.data || error);
+      console.error("Lỗi gửi form sản phẩm:", error);
+      console.error("Error response:", error.response);
+      console.error("Error data:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      
       if (error.response?.data?.errors) {
+        // Laravel validation errors
         Object.entries(error.response.data.errors).forEach(([key, value]) => {
           const messages = value as string[];
           messages.forEach((msg) => message.error(`${key}: ${msg}`));
         });
+      } else if (error.response?.data?.message) {
+        // API error message
+        message.error(error.response.data.message);
+      } else if (error.response?.status === 500) {
+        message.error("Lỗi server nội bộ. Vui lòng thử lại sau hoặc liên hệ admin.");
+      } else if (error.response?.status === 422) {
+        message.error("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.");
+      } else if (error.response?.status === 401) {
+        message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        navigate("/admin/login");
       } else {
         message.error(
-          `Lỗi khi ${isEditing ? "cập nhật" : "tạo mới"} sản phẩm.`
+          `Lỗi khi ${isEditing ? "cập nhật" : "tạo mới"} sản phẩm: ${error.message || "Không xác định"}`
         );
       }
     }
+  };
+
+  // Helper function để validate file ảnh
+  const validateImageFile = (file: File): boolean => {
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "image/gif",
+      "image/webp",
+    ];
+    const isValidType = allowedTypes.includes(file.type);
+    const isValidSize = file.size / 1024 / 1024 < 2; // 2MB limit
+
+    if (!isValidType) {
+      message.error("Chỉ chấp nhận file ảnh: JPEG, PNG, JPG, GIF, WEBP!");
+      return false;
+    }
+    if (!isValidSize) {
+      message.error("File ảnh phải nhỏ hơn 2MB!");
+      return false;
+    }
+    return true;
   };
 
   const mainImageUploadProps: UploadProps = {
@@ -230,10 +309,13 @@ export default function ProductForm() {
     onChange: ({ fileList }) => {
       setMainImageFileList(fileList);
     },
-    beforeUpload: () => false,
+    beforeUpload: (file) => {
+      return validateImageFile(file) ? false : Upload.LIST_IGNORE;
+    },
     fileList: mainImageFileList,
     listType: "picture",
     maxCount: 1,
+    accept: "image/jpeg,image/png,image/jpg,image/gif,image/webp",
   };
 
   const hoverImageUploadProps: UploadProps = {
@@ -243,10 +325,13 @@ export default function ProductForm() {
     onChange: ({ fileList }) => {
       setHoverImageFileList(fileList);
     },
-    beforeUpload: () => false,
+    beforeUpload: (file) => {
+      return validateImageFile(file) ? false : Upload.LIST_IGNORE;
+    },
     fileList: hoverImageFileList,
     listType: "picture",
     maxCount: 1,
+    accept: "image/jpeg,image/png,image/jpg,image/gif,image/webp",
   };
 
   const getVariantImageUploadProps = (index: number): UploadProps => ({
@@ -263,10 +348,13 @@ export default function ProductForm() {
         [index]: fileList,
       }));
     },
-    beforeUpload: () => false,
+    beforeUpload: (file) => {
+      return validateImageFile(file) ? false : Upload.LIST_IGNORE;
+    },
     fileList: variantImageFiles[index] || [],
     listType: "picture",
     maxCount: 1,
+    accept: "image/jpeg,image/png,image/jpg,image/gif,image/webp",
   });
 
   if (loading) return <Title level={4}>Đang tải dữ liệu...</Title>;
@@ -283,10 +371,25 @@ export default function ProductForm() {
           name="name"
           rules={[{ required: true }]}
         >
-          <Input autoComplete="off" />
+          <Input 
+            autoComplete="off" 
+            onChange={(e) => {
+              const name = e.target.value;
+              const currentSlug = formRef.getFieldValue('slug');
+              // Only auto-generate slug if current slug is empty or was auto-generated
+              if (!currentSlug || currentSlug.trim() === '') {
+                const newSlug = generateSlug(name);
+                formRef.setFieldValue('slug', newSlug);
+              }
+            }}
+          />
         </Form.Item>
         <Form.Item label="Slug" name="slug">
-          <Input placeholder="Tự động tạo nếu để trống" autoComplete="off" />
+          <Input 
+            placeholder="Tự động tạo từ tên sản phẩm" 
+            autoComplete="off"
+            addonBefore="/"
+          />
         </Form.Item>
         <Row gutter={16}>
           <Col span={12}>

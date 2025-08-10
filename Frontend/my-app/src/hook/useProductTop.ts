@@ -9,10 +9,12 @@ const useProductTop = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get<IProduct[]>("/product");
+        const res = await axios.get("/product");
 
-        if (Array.isArray(res.data)) {
-          const top5 = res.data.slice(0, 5);
+        // Backend trả về {success: true, data: [...]}
+        const productsData = res.data.data || res.data;
+        if (Array.isArray(productsData)) {
+          const top5 = productsData.slice(0, 5);
           setProducts(top5);
         } else {
           console.warn("❌ Dữ liệu không hợp lệ:", res.data);

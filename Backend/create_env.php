@@ -141,3 +141,7 @@ echo "- Dùng log mode để test (MAIL_MAILER=log)\n\n";
 echo "🎯 Hoàn tất! File .env đã sẵn sàng.\n";
 
 ?>
+
+
+
+

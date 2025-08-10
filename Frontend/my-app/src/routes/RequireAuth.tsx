@@ -6,9 +6,11 @@ type Props = {
 };
 
 const mapRole = (roleValue: string | null): "admin" | "user" | null => {
+  // Mapping theo hệ thống: 0=user, 1=admin, 2=moderator
   if (roleValue === "1") return "admin";
-  if (roleValue === "0") return "user";
   if (roleValue === "2") return "admin"; // Moderator có quyền admin
+  if (roleValue === "0") return "user";
+
   return null;
 };
 

@@ -1,18 +1,34 @@
 // src/pages/admin/comments/CommentList.tsx
 
-import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, message, Typography, Popconfirm, Tag, Switch, Rate } from 'antd';
-import type { TableProps } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-import { Comment } from '../../../types/ProductType';
-import { getComments, updateCommentStatus, deleteComment } from '../../../api/comment';
+import { useEffect, useState } from "react";
+import {
+  Table,
+  Button,
+  message,
+  Typography,
+  Popconfirm,
+  Switch,
+  Rate,
+} from "antd";
+import type { TableProps } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Comment } from "../../../types/ProductType";
+import {
+  getComments,
+  updateCommentStatus,
+  deleteComment,
+} from "../../../api/comment";
 
 const { Title, Text } = Typography;
 
 export default function CommentList() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 15,
+    total: 0,
+  });
 
   const fetchData = async (page = 1) => {
     setLoading(true);
@@ -25,7 +41,7 @@ export default function CommentList() {
         total: res.data.total,
       });
     } catch (error) {
-      message.error('Không thể tải danh sách đánh giá.');
+      message.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);
     }
@@ -38,55 +54,55 @@ export default function CommentList() {
   const handleStatusChange = async (commentId: number, newStatus: boolean) => {
     try {
       await updateCommentStatus(commentId, newStatus);
-      message.success(`Đã ${newStatus ? 'duyệt' : 'ẩn'} đánh giá.`);
+      message.success(`Đã ${newStatus ? "duyệt" : "ẩn"} đánh giá.`);
       // Cập nhật lại trạng thái trong danh sách mà không cần gọi lại API
-      setComments(prev => 
-        prev.map(c => c.id === commentId ? { ...c, status: newStatus } : c)
+      setComments((prev) =>
+        prev.map((c) => (c.id === commentId ? { ...c, status: newStatus } : c))
       );
     } catch (error) {
-      message.error('Không thể cập nhật trạng thái.');
+      message.error("Không thể cập nhật trạng thái.");
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
       await deleteComment(id);
-      message.success('Đã xóa đánh giá.');
+      message.success("Đã xóa đánh giá.");
       fetchData(pagination.current);
     } catch (error) {
-      message.error('Không thể xóa đánh giá.');
+      message.error("Không thể xóa đánh giá.");
     }
   };
 
-  const columns: TableProps<Comment>['columns'] = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
-    { 
-      title: 'Người dùng', 
-      dataIndex: ['user', 'name'], 
-      key: 'user',
+  const columns: TableProps<Comment>["columns"] = [
+    { title: "ID", dataIndex: "id", key: "id", width: 60 },
+    {
+      title: "Người dùng",
+      dataIndex: ["user", "name"],
+      key: "user",
     },
-    { 
-      title: 'Sản phẩm', 
-      dataIndex: ['product', 'name'], 
-      key: 'product',
+    {
+      title: "Sản phẩm",
+      dataIndex: ["product", "name"],
+      key: "product",
       ellipsis: true,
     },
-    { 
-      title: 'Nội dung', 
-      dataIndex: 'content', 
-      key: 'content',
+    {
+      title: "Nội dung",
+      dataIndex: "content",
+      key: "content",
       ellipsis: true,
     },
-    { 
-      title: 'Đánh giá', 
-      dataIndex: 'rating', 
-      key: 'rating',
+    {
+      title: "Đánh giá",
+      dataIndex: "rating",
+      key: "rating",
       render: (rating: number) => <Rate disabled defaultValue={rating} />,
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
       render: (status: boolean, record) => (
         <Switch
           checked={status}
@@ -97,9 +113,9 @@ export default function CommentList() {
       ),
     },
     {
-      title: 'Hành động',
-      key: 'action',
-      align: 'center',
+      title: "Hành động",
+      key: "action",
+      align: "center",
       render: (_, record) => (
         <Popconfirm
           title="Bạn có chắc muốn xóa đánh giá này?"
@@ -116,13 +132,15 @@ export default function CommentList() {
   return (
     <div>
       <Title level={3}>Quản lý Đánh giá</Title>
-      <Table 
-        columns={columns} 
-        dataSource={comments} 
-        rowKey="id" 
+      <Table
+        columns={columns}
+        dataSource={comments}
+        rowKey="id"
         loading={loading}
         pagination={pagination}
-        onChange={(p) => setPagination(prev => ({...prev, current: p.current ?? 1}))}
+        onChange={(p) =>
+          setPagination((prev) => ({ ...prev, current: p.current ?? 1 }))
+        }
       />
     </div>
   );

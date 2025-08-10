@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import type { ColorType, Product } from "../types/DetailType";
+import type { Product } from "../types/DetailType";
+import type { ColorType } from "../types/ColorType";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
 import { validateProductDetail } from "../validation/productDetailValidation";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export function useProductDetailLogic(product: Product | undefined) {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ColorType | null>(null);
@@ -14,8 +17,12 @@ export function useProductDetailLogic(product: Product | undefined) {
   useEffect(() => {
     if (!product) return;
     
+    // ✅ Sửa lại logic: ưu tiên sử dụng image_url từ backend
     const initialImage =
-      product?.image || (product?.images && product.images[0]) || "";
+      product?.image_url || // ✅ Ưu tiên image_url
+      product?.image || // Fallback cho image path
+      (product?.images && product.images[0]) ||
+      "";
     setSelectedImage(initialImage);
     
     // Reset selections when product changes
@@ -28,7 +35,7 @@ export function useProductDetailLogic(product: Product | undefined) {
     // Validate chọn size và màu
     const { valid, message } = validateProductDetail(
       selectedSize,
-      selectedColor,
+      selectedColor
     );
     if (!valid) {
       toast.error(message);
@@ -86,6 +93,8 @@ export function useProductDetailLogic(product: Product | undefined) {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
         }
       );
@@ -104,56 +113,49 @@ export function useProductDetailLogic(product: Product | undefined) {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = (quantity: number) => {
     if (!product) return;
     // Validate chọn size và màu
     const { valid, message } = validateProductDetail(
       selectedSize,
-      selectedColor,
+      selectedColor
     );
     if (!valid) {
       toast.error(message);
       return;
     }
-    // Tìm đúng variant
-    const variant = product.variants?.find(
-      (v) =>
-        v.size?.name === selectedSize && v.color?.id === selectedColor?.id
-    );
-    if (!variant) {
-      toast.error("Không tìm thấy biến thể sản phẩm phù hợp!");
-      return;
-    }
-    const fallbackImage =
-      product.image || (product.images && product.images[0]) || "";
-    // **FIX: Sử dụng variant.price thay vì product.price**
-    const variantPrice = variant.price || product.price;
-    const finalPrice = product.discount && product.discount > 0 && product.discount < 100
-      ? Math.max(0, Math.round(variantPrice * (1 - product.discount / 100)))
-      : variantPrice;
-
-    addToCart({
-      id: product.id,
+    const item = {
       product_id: product.id,
-      variant_id: variant.id,
-      name: product.name,
-      price: finalPrice,
-      image: selectedImage || fallbackImage,
-      quantity: 1,
-      color: selectedColor!.name,
-      size: selectedSize!,
+      quantity,
+      price:
+        product.discount && product.discount > 0 && product.discount < 100
+          ? Math.max(
+              0,
+              Math.round(product.price * (1 - product.discount / 100) * 1000) // ✅ Nhân với 1000
+            )
+          : product.price * 1000, // ✅ Nhân với 1000
+    };
+    addToCart(item);
+    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    // Chuyển sang trang thanh toán, truyền sản phẩm vừa chọn
+    navigate("/checkout", {
+      state: {
+        selectedProducts: [item],
+        totalAmount: item.price * item.quantity,
+      },
     });
-    window.location.href = '/checkout';
   };
 
-  // Hàm xử lý chọn size (không cho phép bỏ chọn)
+  // Hàm xử lý chọn size (cho phép bỏ chọn)
   const handleSizeSelect = (size: string) => {
-    setSelectedSize(size);
+    setSelectedSize((prevSize) => (prevSize === size ? null : size));
   };
 
-  // Hàm xử lý chọn màu (không cho phép bỏ chọn)
+  // Hàm xử lý chọn màu (cho phép bỏ chọn)
   const handleColorSelect = (color: ColorType) => {
-    setSelectedColor(color);
+    setSelectedColor((prevColor) =>
+      prevColor?.id === color.id ? null : color
+    );
   };
 
   return {

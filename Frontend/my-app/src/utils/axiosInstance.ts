@@ -7,6 +7,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 // Bỏ phần 'headers' mặc định ở đây để interceptor toàn quyền xử lý
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: false,
 });
 
 // Thêm Interceptor cho Request - Phiên bản hoàn chỉnh và mạnh mẽ hơn
@@ -15,8 +16,10 @@ axiosInstance.interceptors.request.use(
         // Luôn chấp nhận phản hồi JSON từ server
         config.headers['Accept'] = 'application/json';
 
-        // Lấy token từ localStorage - ưu tiên admin_token, sau đó user_token
-        const token = localStorage.getItem('admin_token') || localStorage.getItem('user_token');
+        // Lấy token từ localStorage - ưu tiên admin_token, sau đó user_token và authToken
+        const adminToken = localStorage.getItem('admin_token');
+        const userToken = localStorage.getItem('user_token') || localStorage.getItem('authToken');
+        const token = adminToken || userToken;
         
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -43,8 +46,12 @@ axiosInstance.interceptors.response.use(
     error => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.error("Authentication error. Redirecting to login.");
+            // Xóa tất cả tokens và thông tin user
             localStorage.removeItem('admin_token');
             localStorage.removeItem('user_token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('role');
+            localStorage.removeItem('user');
             window.location.href = '/admin/login';
         }
         return Promise.reject(error);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { config as axios } from "../api/axios";
 import type { CartItem, CartResponse } from "../types/CartType";
 
 export default function useCart(token: string) {
@@ -17,7 +17,16 @@ export default function useCart(token: string) {
       const res = await axios.get<CartResponse>("http://localhost:8000/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const rawCartItems = res.data.cartItems || res.data.cart_items || [];
+      
+      // Handle new backend structure: response.data.cart.cartItems
+      let rawCartItems = [];
+      if (res.data.cart && res.data.cart.cartItems) {
+        rawCartItems = res.data.cart.cartItems;
+      } else if (res.data.cartItems) {
+        rawCartItems = res.data.cartItems;
+      } else if (res.data.cart_items) {
+        rawCartItems = res.data.cart_items;
+      }
       
       // Transform data từ nested structure thành flat structure (giống CartProvider)
       const transformedCartItems = rawCartItems.map((item: any) => ({
@@ -27,7 +36,7 @@ export default function useCart(token: string) {
           name: item.variant?.product?.name || item.name || 'Sản phẩm không tên',
           price: item.price,
           quantity: item.quantity,
-          image: item.variant?.product?.image || item.variant?.image_url || item.image,
+          image: item.variant?.image_url || item.variant?.image || item.variant?.product?.image_url || item.variant?.product?.image || item.image,
           color: item.variant?.color?.name || item.color,
           size: item.variant?.size?.name || item.size,
           product: item.variant?.product,
@@ -35,8 +44,11 @@ export default function useCart(token: string) {
       }));
       
       setCartItems(transformedCartItems);
-    } catch (error) {
-      console.error("Lỗi khi lấy giỏ hàng:", error);
+    } catch (error: any) {
+      console.error("Lỗi lấy giỏ hàng:", error);
+      if (error.response?.status === 404) {
+        setCartItems([]);
+      }
     }
   };
 

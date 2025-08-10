@@ -42,4 +42,4 @@ export function useContactForm() {
   };
 
   return { form, loading, handleChange, handleSubmit };
-} 
+}

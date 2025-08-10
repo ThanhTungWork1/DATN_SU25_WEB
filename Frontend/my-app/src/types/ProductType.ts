@@ -11,6 +11,8 @@ export interface Product {
   hover_image: string | null;
   material: string | string[] | null;
   sold: number;
+  discount?: number; // ✅ Thêm discount
+  images?: string[]; // ✅ Thêm images array
   image_url?: string;
   hover_image_url?: string;
   created_at?: string;
@@ -56,7 +58,6 @@ export interface Category {
   created_at?: string;
   updated_at?: string;
 }
-
 
 export interface Comment {
   id: number;

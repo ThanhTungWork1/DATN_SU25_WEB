@@ -86,3 +86,7 @@ echo "Trong .env, đổi MAIL_MAILER=smtp thành MAIL_MAILER=log\n\n";
 echo "✅ Setup cơ bản hoàn tất!\n";
 
 ?>
+
+
+
+

@@ -5,8 +5,13 @@ import type { Product } from "../types/DetailType";
 export const useProductDetail = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
-    queryFn: () => getProductDetail(id),
+    queryFn: async () => {
+      const result = await getProductDetail(id);
+      return result;
+    },
     enabled: !!id,
+    staleTime: 0, // Force refetch every time
+    cacheTime: 0, // Don't cache
   });
 };
 
@@ -18,25 +23,42 @@ export const useRelatedProducts = (
   return useQuery({
     queryKey: ["related-products", currentProductId, categoryId],
     queryFn: async () => {
-      const allProducts = (await getAllProducts()) as Product[];
-      const currentId = parseInt(currentProductId);
+      try {
+        const allProducts = (await getAllProducts()) as Product[];
 
-      // 1. Loại trừ sản phẩm hiện tại
-      let filteredProducts = allProducts.filter(
-        (product: Product) => product.id !== currentId
-      );
+        if (!Array.isArray(allProducts)) {
+          console.error(
+            "🔍 [useRelatedProducts DEBUG] allProducts is not an array:",
+            allProducts
+          );
+          throw new Error("allProducts is not an array");
+        }
 
-      // 2. Lọc theo category
-      let relatedProducts = categoryId
-        ? filteredProducts.filter(
-            (product: Product) =>
-              Number(product.category_id) === Number(categoryId)
-          )
-        : filteredProducts;
+        const currentId = parseInt(currentProductId);
 
-      // 3. Trả về giới hạn sản phẩm
-      return relatedProducts.slice(0, limit);
+        // 1. Loại trừ sản phẩm hiện tại
+
+        let filteredProducts = allProducts.filter((product: Product) => {
+          const shouldExclude = product.id !== currentId;
+          return shouldExclude;
+        });
+
+        // ✅ Lọc theo category để hiển thị sản phẩm cùng danh mục
+        let relatedProducts = categoryId
+          ? filteredProducts.filter((product: Product) => {
+              const matches =
+                Number(product.category_id) === Number(categoryId);
+              return matches;
+            })
+          : filteredProducts;
+
+        // 3. Trả về giới hạn sản phẩm
+        const result = relatedProducts.slice(0, limit);
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
-    enabled: !!currentProductId && !!categoryId,
+    enabled: !!currentProductId, // Tạm thời bỏ điều kiện categoryId để test
   });
 };

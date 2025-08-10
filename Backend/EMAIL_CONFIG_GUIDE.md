@@ -195,3 +195,7 @@ MAILGUN_SECRET=your-mailgun-secret
 - Khách hàng nhận email với template đẹp
 - Trạng thái "Đã phản hồi" được cập nhật
 - Log email trong Laravel log files
+
+
+
+

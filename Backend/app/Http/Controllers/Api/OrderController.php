@@ -67,6 +67,10 @@ class OrderController extends Controller
         foreach ($data['items'] as $item) {
             // Trừ tồn kho variant
             $variant = \App\Models\ProductVariant::with('product')->find($item['variant_id']);
+
+            // Trừ tồn kho
+            $variant = \App\Models\ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+
             $variant->stock -= $item['quantity'];
             $variant->save();
 
@@ -79,7 +83,13 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'variant_id' => $item['variant_id'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'price' => $item['price'],
+                // Lưu snapshot thông tin sản phẩm
+                'product_name' => $variant->product->name ?? 'Không có tên',
+                'variant_color_name' => $variant->color->name ?? 'Không có',
+                'variant_size_name' => $variant->size->name ?? 'Không có',
+                'variant_sku' => $variant->sku ?? 'Không có',
+                'variant_image' => $variant->image ?? null,
             ]);
         }
 

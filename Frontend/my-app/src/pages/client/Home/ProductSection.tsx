@@ -24,10 +24,13 @@ const ProductSection = ({ title, apiUrl, showViewAll = true }: ProductSectionPro
   useEffect(() => {
   const fetchProducts = async () => {
     try {
-      const res = await axios.get<{ data: Product[] }>(apiUrl);
-      setProducts(res.data.data || res.data || []);
+      const res = await axios.get(apiUrl);
+      // Backend trả về {success: true, data: [...]}
+      const productsData = res.data.data || res.data;
+      setProducts(Array.isArray(productsData) ? productsData : []);
     } catch (err) {
       console.error("Lỗi khi gọi API:", err);
+      setProducts([]);
     }
   };
 

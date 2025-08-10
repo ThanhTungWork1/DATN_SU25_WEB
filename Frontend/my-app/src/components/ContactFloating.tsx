@@ -1,17 +1,24 @@
-import { contactChannels } from './contactChannels';
+import { contactChannels } from "./contactChannels";
 import "../assets/styles/mess-fb-phone.css";
 
 export const ContactFloating = () => {
+  const toggleChatWidget = () => {
+    const event = new CustomEvent("toggleChatWidget");
+    window.dispatchEvent(event);
+  };
+
   const getIcon = (label: string) => {
     switch (label.toLowerCase()) {
       case "zalo":
-        return <span style={{fontWeight: 'bold', fontSize: '12px'}}>zalo</span>;
+        return (
+          <span style={{ fontWeight: "bold", fontSize: "12px" }}>zalo</span>
+        );
       case "messenger":
         return <i className="fa-brands fa-facebook-messenger"></i>;
       case "facebook":
         return <i className="fa-brands fa-facebook-f"></i>;
-      case "phone":
-        return <i className="fa-solid fa-phone"></i>;
+      case "ai":
+        return <span style={{ fontSize: "16px" }}>🤖</span>;
       default:
         return label.charAt(0).toUpperCase();
     }
@@ -20,18 +27,22 @@ export const ContactFloating = () => {
   return (
     <div className="contact-floating">
       {contactChannels.map((channel) => (
-        <a 
+        <button
           key={channel.label}
-          href={channel.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="contact-btn"
           title={channel.label}
+          className="contact-btn"
           style={{ backgroundColor: channel.color }}
+          onClick={() => {
+            if (channel.label.toLowerCase() === "ai") {
+              toggleChatWidget();
+            } else {
+              window.open(channel.href, "_blank");
+            }
+          }}
         >
           {getIcon(channel.label)}
-        </a>
+        </button>
       ))}
     </div>
   );
-}; 
+};

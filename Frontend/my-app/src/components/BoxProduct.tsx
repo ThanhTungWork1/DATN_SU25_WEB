@@ -19,8 +19,18 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
     useWishlistContext();
   const liked = isInWishlist(product.id);
 
-  const mainImage = getProductMainImage(product);
-  const hoverImage = getProductHoverImage(product);
+  // ✅ Sửa lại logic: ưu tiên image_url từ backend
+  const mainImage =
+    product.image_url || // ✅ Ưu tiên full URL từ backend
+    product.image || // Fallback cho path trong DB
+    (product.images && product.images[0]) ||
+    "";
+
+  // ✅ Sửa lại logic: ưu tiên hover_image_url từ backend
+  const hoverImage =
+    product.hover_image_url || // ✅ Ưu tiên full URL từ backend
+    product.hover_image || // Fallback cho path trong DB
+    "";
   const hasHoverImage = !!hoverImage;
 
   const handleAddToCart = (e: React.MouseEvent) => {

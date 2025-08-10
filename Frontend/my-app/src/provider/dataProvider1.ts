@@ -2,6 +2,7 @@ import axios from "axios";
 
 type getListType = {
   resource: string;
+  params?: any;
 };
 type getOneType = {
   resource: string;
@@ -16,10 +17,6 @@ type updateType = {
   variables: any;
   id: number;
 };
-// type deleteType = {
-//     resource: string;
-//     id: number
-// }
 
 // Tạo axios instance với baseURL đúng
 const axiosInstance = axios.create({
@@ -41,7 +38,7 @@ axiosInstance.interceptors.request.use(
 );
 
 const dataProvider = {
-  getList: async ({ resource }: getListType) => {
+  getList: async ({ resource, params }: getListType) => {
     // Sử dụng route admin cho tất cả resources
     const endpoint = `/admin/${resource}`;
 
@@ -49,7 +46,7 @@ const dataProvider = {
     const token =
       localStorage.getItem("admin_token") || localStorage.getItem("user_token");
 
-    const response = await axiosInstance.get(endpoint);
+    const response = await axiosInstance.get(endpoint, { params });
 
     // Handle different response formats
     let data;
@@ -107,12 +104,7 @@ const dataProvider = {
       data: response.data,
     };
   },
-  // deleteOne: async ({ resource, id }: deleteType) => {
-  //     const response = await config.delete(`/${resource}/${id}`);
-  //     return {
-  //         success: true
-  //     }
-  // },
 };
+
 export const { getList, createOne, updateOne, getOne, getUpdateProfile } =
   dataProvider;

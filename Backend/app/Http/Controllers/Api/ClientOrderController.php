@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -98,11 +99,16 @@ class ClientOrderController extends Controller
 
             // Validate
             $validator = Validator::make($request->all(), [
+                'user_id' => 'required|exists:users,id',
                 'shipping_address' => 'required|string|max:500',
-                'shipping_phone' => 'required|string|max:20',
-                'shipping_name' => 'required|string|max:255',
+                'customer_phone' => 'required|string|max:20',
+                'customer_name' => 'required|string|max:255',
                 'customer_email' => 'nullable|email|max:255',
-                'note' => 'nullable|string|max:1000',
+                'notes' => 'nullable|string|max:1000',
+                'payment_method' => 'nullable|string',
+                'payment_status' => 'nullable|string',
+                'order_status' => 'nullable|string',
+                'total_amount' => 'required|numeric|min:0',
                 'items' => 'required|array|min:1',
                 'items.*.variant_id' => 'required|exists:product_variants,id',
                 'items.*.quantity' => 'required|integer|min:1',
@@ -162,15 +168,18 @@ class ClientOrderController extends Controller
                 // Tạo đơn hàng
                 $order = Order::create([
                     'user_id' => $user->id,
-                    'status' => 'pending',
+                    'status' => $data['order_status'] ?? 'pending',
                     'is_paid' => false,
                     'total_amount' => $total_amount,
                     'shipping_fee' => $shipping_fee,
                     'shipping_address' => $data['shipping_address'],
-                    'customer_phone' => $data['shipping_phone'],
-                    'customer_name' => $data['shipping_name'],
+                    'customer_phone' => $data['customer_phone'],
+                    'customer_name' => $data['customer_name'],
                     'customer_email' => $data['customer_email'] ?? $user->email ?? null,
-                    'note' => $data['note'] ?? null
+                    'notes' => $data['notes'] ?? null,
+                    'payment_method' => $data['payment_method'] ?? 'COD',
+                    'discount_amount' => 0,
+                    'final_amount' => $total_amount + $shipping_fee
                 ]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
@@ -186,7 +195,7 @@ class ClientOrderController extends Controller
                     $variant->stock -= $item['quantity'];
                     $variant->save();
                     
-                    // **FIX: Cập nhật số lượng đã bán của sản phẩm**
+                    // Cập nhật số lượng đã bán của sản phẩm
                     $product = $variant->product;
                     $product->sold += $item['quantity'];
                     $product->save();

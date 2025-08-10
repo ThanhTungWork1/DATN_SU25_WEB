@@ -3,8 +3,32 @@ import "../../../assets/styles/home.css";
 import Slideshow from "../../../components/SlideShow";
 import TopProductsSection from "./TopProductsSection";
 import ProductSection from "./ProductSection";
+import { useState, useEffect } from "react";
+import { Banner } from "../../../types/BannerType";
 
 const HomePage = () => {
+  const [banners, setBanners] = useState<Banner[]>([]);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/banners');
+        const result = await response.json();
+        const activeBanners = (result.data || []).filter((banner: Banner) => banner.status);
+        setBanners(activeBanners);
+      } catch (error) {
+        console.error('Error loading banners:', error);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  // Helper function to get banner by index or fallback
+  const getBannerImage = (index: number, fallbackUrl: string) => {
+    return banners[index]?.image_url || fallbackUrl;
+  };
+
   return (
     <main>
       <Slideshow />
@@ -29,7 +53,7 @@ const HomePage = () => {
       {/* Banner to 1 */}
       <section className="single-banner" data-aos="fade-up">
         <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/swimwear.png"
+          src={getBannerImage(0, "https://deltasport.vn/wp-content/uploads/2025/05/swimwear.png")}
           alt="Banner lớn 1"
         />
       </section>
@@ -40,7 +64,7 @@ const HomePage = () => {
       {/* Banner to 2 */}
       <section className="single-banner" data-aos="fade-up">
         <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/racquet.png"
+          src={getBannerImage(1, "https://deltasport.vn/wp-content/uploads/2025/05/racquet.png")}
           alt="Banner lớn 2"
         />
       </section>
@@ -51,7 +75,7 @@ const HomePage = () => {
       {/* Banner to 3 */}
       <section className="single-banner" data-aos="fade-up">
         <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/running.png"
+          src={getBannerImage(2, "https://deltasport.vn/wp-content/uploads/2025/05/running.png")}
           alt="Banner lớn 3"
         />
       </section>

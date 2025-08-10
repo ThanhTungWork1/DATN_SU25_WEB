@@ -13,17 +13,107 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::all();
+        try {
+            $products = Product::with(['variants.color', 'variants.size'])->get();
+            
+            // ✅ Thêm image_url và hover_image_url cho từng sản phẩm
+            $products->each(function ($product) {
+                $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+                $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+                
+                // ✅ Thêm image_url cho variants
+                if ($product->variants) {
+                    $product->variants->each(function ($variant) {
+                        if ($variant->image) {
+                            $variant->image_url = asset('storage/' . $variant->image);
+                        }
+                    });
+                }
+            });
+            
+            return response()->json([
+                'success' => true,
+                'data' => $products
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function show($id)
+    public function debug($id)
     {
-        $product = Product::with(['variants.size', 'variants.color'])->findOrFail($id);
+        try {
+            // Test 1: Lấy product cơ bản (không có relationship)
+            $product = Product::find($id);
+            if (!$product) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
+            
+            // Test 2: Lấy product với variants (không có accessor)
+            $productWithVariants = Product::with(['variants'])->find($id);
+            
+            // Test 3: Lấy product với variants và color/size
+            $productFull = Product::with(['variants.color', 'variants.size'])->find($id);
+            
+            // ✅ Thêm image_url và hover_image_url cho product chính
+            if ($productFull) {
+                $productFull->image_url = $productFull->image ? asset('storage/' . $productFull->image) : null;
+                $productFull->hover_image_url = $productFull->hover_image ? asset('storage/' . $productFull->hover_image) : null;
+                
+                // ✅ Thêm image_url cho variants
+                if ($productFull->variants) {
+                    $productFull->variants->each(function ($variant) {
+                        if ($variant->image) {
+                            $variant->image_url = asset('storage/' . $variant->image);
+                        }
+                    });
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'product_basic' => $product,
+                'product_with_variants' => $productWithVariants,
+                'product_full' => $productFull,
+                'image_url' => $productFull->image_url ?? null,
+                'hover_image_url' => $productFull->hover_image_url ?? null
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
+    }
+
+    public function test()
+    {
         return response()->json([
-            'data' => $product,
-            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
-            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
+            'message' => 'Product API is working',
+            'timestamp' => now()
         ]);
+    }
+
+    public function showProduct($id)
+    {
+        try {
+            $product = Product::with(['variants.color', 'variants.size'])->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $product,
+                'image_url' => $product->image ? asset('storage/' . $product->image) : null,
+                'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -35,8 +125,8 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048',
+            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048'
         ]);
 
         if ($request->hasFile('image')) {
@@ -74,8 +164,8 @@ class ProductController extends Controller
             'price' => 'numeric|nullable',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048',
+            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048'
         ]);
 
         if ($request->hasFile('image')) {
@@ -268,6 +358,16 @@ class ProductController extends Controller
             
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+            
+            // ✅ Thêm image_url cho từng variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+            
             return $product;
         });
         Log::info('---[SEARCH PRODUCT] Trước khi return response', ['count' => count($products->items())]);
@@ -328,6 +428,16 @@ class ProductController extends Controller
             
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+            
+            // ✅ Thêm image_url cho từng variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+            
             return $product;
         });
 
@@ -385,6 +495,16 @@ class ProductController extends Controller
             
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+            
+            // ✅ Thêm image_url cho từng variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+            
             return $product;
         });
 
@@ -433,6 +553,16 @@ class ProductController extends Controller
             
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+            
+            // ✅ Thêm image_url cho từng variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+            
             return $product;
         });
 
@@ -478,6 +608,15 @@ class ProductController extends Controller
         // Cập nhật giá hiển thị
         $product->price = $displayPrice;
 
+        // ✅ Thêm image_url cho từng variant
+        if ($product->variants) {
+            $product->variants->each(function ($variant) {
+                if ($variant->image) {
+                    $variant->image_url = asset('storage/' . $variant->image);
+                }
+            });
+        }
+
         // Tính rating trung bình
         $product->average_rating = $product->comments->avg('rating');
         $product->total_reviews = $product->comments->count();
@@ -491,39 +630,46 @@ class ProductController extends Controller
         ]);
     }
     public function topSellingProducts(Request $request)
-{
-    $limit = $request->get('limit', 8);
+    {
+        $limit = $request->get('limit', 8);
 
-    $products = Product::with(['category', 'variants.color', 'variants.size'])
-        ->where('status', true)
-        ->orderByDesc('sold') // Hoặc là cột khác tuỳ vào DB bạn có
-        ->limit($limit)
-        ->get();
+        $products = Product::with(['category', 'variants.color', 'variants.size'])
+            ->where('status', true)
+            ->orderByDesc('sold') // Hoặc là cột khác tuỳ vào DB bạn có
+            ->limit($limit)
+            ->get();
 
-    $products->transform(function ($product) {
-        // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
-        $minVariantPrice = $product->variants->min('price');
-        $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
-        
-        $product->final_price = $product->discount > 0
-            ? $displayPrice - ($displayPrice * $product->discount / 100)
-            : $displayPrice;
-        
-        // Cập nhật giá hiển thị
-        $product->price = $displayPrice;
+        $products->transform(function ($product) {
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
+            $product->final_price = $product->discount > 0
+                ? $displayPrice - ($displayPrice * $product->discount / 100)
+                : $displayPrice;
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
 
-        $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-        $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-        return $product;
-    });
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+            
+            // ✅ Thêm image_url cho từng variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+            
+            return $product;
+        });
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Lấy sản phẩm bán chạy thành công',
-        'data' => $products
-    ]);
-}
-
-
-
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy sản phẩm bán chạy thành công',
+            'data' => $products
+        ]);
+    }
 }

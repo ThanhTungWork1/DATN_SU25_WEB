@@ -6,6 +6,7 @@ import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined } from "@ant-design/icons";
 import { TokenManager } from "../../../utils/tokenUtils";
+import OrderList from "../Orders/OrderList";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -88,7 +89,13 @@ const UserProfile = () => {
         </Form.Item>
 
         <Form.Item>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-start",
+            }}
+          >
             <Button type="primary" htmlType="submit" loading={isPending}>
               Cập nhật
             </Button>

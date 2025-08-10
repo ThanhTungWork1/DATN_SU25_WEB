@@ -74,3 +74,7 @@ console.log("6. Admin tab should stay logged in");
 // Export functions for manual testing
 window.clearAllAuth = clearAllAuth;
 window.checkCurrentState = checkCurrentState;
+
+
+
+

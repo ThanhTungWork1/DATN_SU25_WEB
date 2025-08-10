@@ -26,3 +26,7 @@ SELECT id, total_amount, shipping_fee, discount_amount, final_amount
 FROM orders 
 ORDER BY id DESC 
 LIMIT 10;
+
+
+
+
