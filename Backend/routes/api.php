@@ -182,6 +182,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/create', [VNPayController::class, 'createPayment']);
             Route::get('/callback', [VNPayController::class, 'callback']);
             Route::post('/ipn', [VNPayController::class, 'ipn']);
+            Route::post('/check-status', [VNPayController::class, 'checkStatus']);
         });
     });
 
