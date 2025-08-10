@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../provider/authProvider";
+import { TokenManager } from "../utils/tokenUtils"; // <-- BƯỚC 1: Import TokenManager
 
 type useLoginParams = {
   resource?: string;     // API endpoint (mặc định là /api/login cho user)
@@ -20,16 +21,15 @@ const useLogin = ({ resource = "/login", forAdmin = false }: useLoginParams) => 
 
       if (!token) throw new Error("❌ Token không tồn tại");
 
+      // BƯỚC 2: Sử dụng TokenManager để lưu token
       if (forAdmin) {
         if (user.role !== 1) {
           throw new Error("❌ Bạn không có quyền truy cập admin");
         }
-        localStorage.setItem("admin_token", token);
-        localStorage.setItem("role", "1");
+        TokenManager.setToken(token, 'admin'); // <-- SỬA Ở ĐÂY
         console.log("✅ Đăng nhập admin thành công:", user);
       } else {
-        localStorage.setItem("user_token", token);
-        localStorage.setItem("role", user.role.toString());
+        TokenManager.setToken(token, 'user'); // <-- VÀ SỬA Ở ĐÂY
         console.log("✅ Đăng nhập user thành công:", user);
       }
 

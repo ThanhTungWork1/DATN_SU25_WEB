@@ -40,6 +40,7 @@ class ProductVariant extends Model
 
     public function getImageUrlAttribute()
     {
+<<<<<<< HEAD
         if ($this->image) {
             // Nếu là URL tuyệt đối, trả nguyên vẹn
             if (filter_var($this->image, FILTER_VALIDATE_URL)) {
@@ -48,6 +49,11 @@ class ProductVariant extends Model
             if (Storage::disk('public')->exists($this->image)) {
                 return asset('storage/' . $this->image);
             }
+=======
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            // asset() sẽ tự động lấy APP_URL từ .env và tạo ra đường dẫn hoàn chỉnh.
+            return asset('storage/' . $this->image);
+>>>>>>> origin/ThanhTung_profile_home_auth
         }
         return null;
     }

@@ -18,6 +18,7 @@ import type { Product } from "../../../types/DetailType";
 import { getAllColors } from "../../../api/ApiProduct";
 import type { ColorType } from "../../../types/ColorType";
 import "../../../assets/styles/color.css";
+import "../../../assets/styles/productDetail.css";
 
 // =============================
 // Trang chi tiết sản phẩm
@@ -88,7 +89,7 @@ const ProductDetail = () => {
 
   const selectedVariant = product.variants?.find(
     (v) =>
-      v.size?.name === selectedSize && v.color?.name === selectedColor?.name
+      v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -322,7 +323,19 @@ const ProductDetail = () => {
     product.name = "Sản phẩm mặc định";
   }
 
-  const mappedColors = allColors.map((c) => ({
+  // Lọc màu chỉ từ variants của sản phẩm này
+  const productColors = Array.from(
+    new Map(
+      (product.variants || [])
+        .map((v) => v.color)
+        .filter(
+          (color): color is ColorType => color !== undefined && color !== null
+        )
+        .map((color) => [color.id, color])
+    ).values()
+  );
+
+  const mappedColors = productColors.map((c) => ({
     ...c,
     code: c.code || (c as any).hex_code || "",
   }));
@@ -342,8 +355,8 @@ const ProductDetail = () => {
 
       <div className="container py-5 product-detail-container">
         <div className="product-detail-wrapper">
-          <div className="row g-0">
-            <div className="col-lg-6 d-flex">
+          <div className="row g-4">
+            <div className="col-12 col-md-6 col-lg-6 d-flex">
               <Aside
                 images={thumbnailImages}
                 onSelect={setSelectedImage}
@@ -352,7 +365,7 @@ const ProductDetail = () => {
               <MainImage imageUrl={selectedImage} />
             </div>
 
-            <div className="col-lg-6 product-info-col">
+            <div className="col-12 col-md-6 col-lg-6 product-info-col">
               <ProductInfo
                 product={product}
                 selectedVariant={selectedVariant}
@@ -369,7 +382,7 @@ const ProductDetail = () => {
               <hr />
 
               <Color
-                colors={uniqueColors}
+                colors={mappedColors}
                 selectedColor={selectedColor}
                 onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
@@ -392,11 +405,22 @@ const ProductDetail = () => {
               <hr />
 
               <ProductActions
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                maxQuantity={10}
+                productId={product.id}
+                variantId={selectedVariant?.id}
+                maxQuantity={selectedVariantStock || 10}
                 disabled={!selectedSize || !selectedColor}
+                productName={product.name}
+                productPrice={(() => {
+                  const price = selectedVariant?.price || product.price || 0;
+                  console.log('=== PRODUCT DETAIL PRICE DEBUG ===');
+                  console.log('selectedVariant?.price:', selectedVariant?.price);
+                  console.log('product.price:', product.price);
+                  console.log('final price passed to ProductActions:', price);
+                  return price;
+                })()}
+                productImage={selectedImage || product.image_url || product.image || ""}
               />
+
               <hr />
             </div>
           </div>
@@ -417,3 +441,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

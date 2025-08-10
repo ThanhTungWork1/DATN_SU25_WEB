@@ -1,270 +1,130 @@
-// import { useEffect } from "react";
-// <<<<<<< HEAD
-// import AOS from "aos";
-// import "aos/dist/aos.css";
-// import "../../../assets/styles/mess-fb-phone.css";
-// import "../../../assets/styles/home.css";
-// import Slideshow from "../../../components/SlideShow";
-
-// const HomePage = () => {
-//   useEffect(() => {
-//     AOS.init({
-//       duration: 800,
-//       once: true,
-//     });
-//   }, []);
-// =======
-// import "../../../assets/styles/mess-fb-phone.css";
-// import "../../../assets/styles/home.css";
-// import Slideshow from "../../../components/SlideShow";
-// import TopProductsSection from './TopProductsSection';
-// import ProductSection from "./ProductSection";
-// const HomePage = () => {
-// >>>>>>> origin/ThanhTung_profile_home_auth
-
-//   return (
-//     <main>
-//       <Slideshow />
-// <<<<<<< HEAD
-
-//       {/* Topic Block */}
-//       <div className="topic-block" data-aos="fade-up">
-//         {[
-//           "Áo Polo",
-//           "Quần Short",
-//           "Áo Thun",
-//           "Quần Jeans",
-//           "Giày Thể Thao",
-//           "Phụ Kiện",
-//           "Áo Khoác",
-//         ].map((topic, index) => (
-//           <button
-//             key={index}
-//             className={`topic ${index === 0 ? "active" : ""}`}
-//           >
-//             {topic}
-//           </button>
-//         ))}
-//       </div>
-
-//       {/* Gợi ý hôm nay */}
-//       <section className="fashion-section" data-aos="fade-up">
-//         <div className="fashion-head">
-//           <h2>Gợi ý hôm nay</h2>
-//           <a href="#" className="view-all">
-//             Xem tất cả
-//           </a>
-//         </div>
-//         <div className="fashion-row">
-//           {[...Array(4)].map((_, index) => (
-//             <div className="fashion-card" key={index} data-aos="zoom-in">
-//               <span className="fashion-badge">-15%</span>
-//               <img
-//                 className="fashion-img"
-//                 src="https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/aXFBXT8hi3N81ah7VoMZwV2OJYa3dfZs_cover.jpg"
-//                 alt="Áo Polo Nam 5S"
-//               />
-//               <div className="fashion-name">
-//                 Áo Polo Nam 5S Fashion Can Phối Phom Slimfit
-//               </div>
-//               <div>
-//                 <span className="fashion-price">339.150đ</span>
-//                 <span className="fashion-oldprice">399.000đ</span>
-//               </div>
-//               <div className="fashion-rate">25 sản phẩm đã bán</div>
-//               <button className="fashion-buy">Xem Ngay</button>
-//             </div>
-//           ))}
-//         </div>
-//       </section>
-// =======
-//         <TopProductsSection />
-//       {/* Gợi ý hôm nay */}
-//       <ProductSection
-//         title="Gợi ý hôm nay"
-//         apiUrl="/top-selling-products"
-//       />
-
-// >>>>>>> origin/ThanhTung_profile_home_auth
-
-//       {/* 2 banner vuông */}
-//       <section className="double-banner" data-aos="fade-up">
-//         <img
-//           src="https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
-//           alt="Banner 1"
-//           className="banner-small"
-//         />
-//         <img
-//           src="https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
-//           alt="Banner 2"
-//           className="banner-small"
-//         />
-//       </section>
-
-//       {/* Banner to 1 */}
-//       <section className="single-banner" data-aos="fade-up">
-//         <img
-//           src="https://deltasport.vn/wp-content/uploads/2025/05/swimwear.png"
-//           alt="Banner lớn 1"
-//         />
-//       </section>
-
-//       {/* BST Xuân Hè */}
-// <<<<<<< HEAD
-//       <section className="fashion-section" data-aos="fade-up">
-//         <div className="fashion-head">
-//           <h2>BST xuân hè 2025</h2>
-//           <a href="#" className="view-all">
-//             Xem tất cả
-//           </a>
-//         </div>
-//         <div className="fashion-row">
-//           {[...Array(4)].map((_, index) => (
-//             <div className="fashion-card" key={index} data-aos="zoom-in">
-//               <span className="fashion-badge">-15%</span>
-//               <img
-//                 className="fashion-img"
-//                 src="https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/aXFBXT8hi3N81ah7VoMZwV2OJYa3dfZs_cover.jpg"
-//                 alt="Áo Polo Nam 5S"
-//               />
-//               <div className="fashion-name">
-//                 Áo Polo Nam 5S Fashion Can Phối Phom Slimfit
-//               </div>
-//               <div>
-//                 <span className="fashion-price">339.150đ</span>
-//                 <span className="fashion-oldprice">399.000đ</span>
-//               </div>
-//               <div className="fashion-rate">25 sản phẩm đã bán</div>
-//               <button className="fashion-buy">Xem Ngay</button>
-//             </div>
-//           ))}
-//         </div>
-//       </section>
-// =======
-//       <ProductSection
-//         title="BST xuân hè 2025"
-//         apiUrl="/top-selling-products"
-//       />
-// >>>>>>> origin/ThanhTung_profile_home_auth
-
-//       {/* Banner to 2 */}
-//       <section className="single-banner" data-aos="fade-up">
-//         <img
-//           src="https://deltasport.vn/wp-content/uploads/2025/05/racquet.png"
-//           alt="Banner lớn 2"
-//         />
-//       </section>
-
-//       {/* Bán chạy tuần này */}
-// <<<<<<< HEAD
-//       <section className="fashion-section" data-aos="fade-up">
-//         <div className="fashion-head">
-//           <h2>Bán chạy tuần này</h2>
-//           <a href="#" className="view-all">
-//             Xem tất cả
-//           </a>
-//         </div>
-//         <div className="fashion-row">
-//           {[...Array(4)].map((_, index) => (
-//             <div className="fashion-card" key={index} data-aos="zoom-in">
-//               <span className="fashion-badge">-15%</span>
-//               <img
-//                 className="fashion-img"
-//                 src="https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/aXFBXT8hi3N81ah7VoMZwV2OJYa3dfZs_cover.jpg"
-//                 alt="Áo Polo Nam 5S"
-//               />
-//               <div className="fashion-name">
-//                 Áo Polo Nam 5S Fashion Can Phối Phom Slimfit
-//               </div>
-//               <div>
-//                 <span className="fashion-price">339.150đ</span>
-//                 <span className="fashion-oldprice">399.000đ</span>
-//               </div>
-//               <div className="fashion-rate">25 sản phẩm đã bán</div>
-//               <button className="fashion-buy">Xem Ngay</button>
-//             </div>
-//           ))}
-//         </div>
-//       </section>
-// =======
-//       <ProductSection title="Top bán chạy" apiUrl="/top-selling-products" />
-// >>>>>>> origin/ThanhTung_profile_home_auth
-
-//       {/* Banner to 3 */}
-//       <section className="single-banner" data-aos="fade-up">
-//         <img
-//           src="https://deltasport.vn/wp-content/uploads/2025/05/running.png"
-//           alt="Banner lớn 3"
-//         />
-//       </section>
-//     </main>
-//   );
-// };
-
-// <<<<<<< HEAD
-// export default HomePage;
-// =======
-// export default HomePage;
-// >>>>>>> origin/ThanhTung_profile_home_auth
-
 import "../../../assets/styles/mess-fb-phone.css";
 import "../../../assets/styles/home.css";
 import Slideshow from "../../../components/SlideShow";
 import TopProductsSection from "./TopProductsSection";
 import ProductSection from "./ProductSection";
+import { useHomeSection } from "../../../hook/useHomeSection";
+
 const HomePage = () => {
+  const { sections, loading, error } = useHomeSection();
+
+  if (loading) {
+    return (
+      <main>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <div>Đang tải...</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main>
+        <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
+          <div>Lỗi: {error}</div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main>
       <Slideshow />
       <TopProductsSection />
-      {/* Gợi ý hôm nay */}
-      <ProductSection title="Gợi ý hôm nay" apiUrl="/top-selling-products" />
+      
+      {/* Render các sections từ database */}
+      {sections.map((section, index) => (
+        <div key={section.id}>
+          {/* Product Section */}
+          {section.products && section.products.length > 0 && (
+            <ProductSection 
+              title={section.title} 
+              products={section.products}
+            />
+          )}
+          
+          {/* Banner sections - hiển thị banner xen kẽ */}
+          {index === 0 && (
+            <section className="double-banner" data-aos="fade-up">
+              <img
+                src="https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
+                alt="Banner 1"
+                className="banner-small"
+              />
+              <img
+                src="https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
+                alt="Banner 2"
+                className="banner-small"
+              />
+            </section>
+          )}
+          
+          {index === 1 && (
+            <section className="single-banner" data-aos="fade-up">
+              <img
+                src="https://deltasport.vn/wp-content/uploads/2025/05/swimwear.png"
+                alt="Banner lớn 1"
+              />
+            </section>
+          )}
+          
+          {index === 2 && (
+            <section className="single-banner" data-aos="fade-up">
+              <img
+                src="https://deltasport.vn/wp-content/uploads/2025/05/racquet.png"
+                alt="Banner lớn 2"
+              />
+            </section>
+          )}
+          
+          {index === 3 && (
+            <section className="single-banner" data-aos="fade-up">
+              <img
+                src="https://deltasport.vn/wp-content/uploads/2025/05/running.png"
+                alt="Banner lớn 3"
+              />
+            </section>
+          )}
+        </div>
+      ))}
+<div>
+  <section className="features">
+    <div className="feature-item">
+      <div className="icon">
+        <i className="fas fa-shipping-fast" />
+      </div>
+      <h3>Free Shipping</h3>
+      <p>Miễn phí vận chuyển cho đơn hàng trên 500k</p>
+    </div>
+    <div className="feature-item">
+      <div className="icon">
+        <i className="fas fa-lock" />
+      </div>
+      <h3>Secure Payment</h3>
+      <p>Thanh toán an toàn, bảo mật 100%</p>
+    </div>
+    <div className="feature-item">
+      <div className="icon">
+        <i className="fas fa-headset" />
+      </div>
+      <h3>24/7 Support</h3>
+      <p>Hỗ trợ khách hàng mọi lúc mọi nơi</p>
+    </div>
+    <div className="feature-item">
+      <div className="icon">
+        <i className="fas fa-undo" />
+      </div>
+      <h3>Easy Returns</h3>
+      <p>Đổi trả dễ dàng trong 30 ngày</p>
+    </div>
+  </section>
+  {/* Font Awesome */}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</div>
 
-      {/* 2 banner vuông */}
-      <section className="double-banner" data-aos="fade-up">
-        <img
-          src="https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
-          alt="Banner 1"
-          className="banner-small"
-        />
-        <img
-          src="https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
-          alt="Banner 2"
-          className="banner-small"
-        />
-      </section>
-
-      {/* Banner to 1 */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/swimwear.png"
-          alt="Banner lớn 1"
-        />
-      </section>
-
-      {/* BST Xuân Hè */}
-      <ProductSection title="BST xuân hè 2025" apiUrl="/top-selling-products" />
-
-      {/* Banner to 2 */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/racquet.png"
-          alt="Banner lớn 2"
-        />
-      </section>
-
-      {/* Bán chạy tuần này */}
-      <ProductSection title="Top bán chạy" apiUrl="/top-selling-products" />
-
-      {/* Banner to 3 */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src="https://deltasport.vn/wp-content/uploads/2025/05/running.png"
-          alt="Banner lớn 3"
-        />
-      </section>
     </main>
   );
 };
 
-export default HomePage;
+export default HomePage; 

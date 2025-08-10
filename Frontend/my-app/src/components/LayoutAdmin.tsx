@@ -8,11 +8,11 @@ import {
   InboxOutlined,
   GiftOutlined,
   BarChartOutlined,
+  HomeOutlined, 
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
-// import VoucherPage from "../pages/admin/voucher/Voucher";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -41,6 +41,7 @@ const items: MenuItem[] = [
   getItem("Thống kê SP", "/admin/product-statistics", <BarChartOutlined />),
   getItem("Tồn kho", "/admin/inventory", <InboxOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
+  getItem("Home Sections", "/admin/home-sections", <HomeOutlined />),
   getItem("Voucher", "/admin/voucher", <GiftOutlined />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),

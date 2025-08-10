@@ -4,12 +4,13 @@ export const config = axios.create({
   baseURL: "http://localhost:8000/api",
 });
 
+import { TokenManager } from "../utils/tokenUtils";
+
 // Thêm interceptor để tự động gửi token cho mọi request
 config.interceptors.request.use(
   (request) => {
-    // Ưu tiên lấy admin_token, nếu không có thì lấy user_token
-    const token =
-      localStorage.getItem("admin_token") || localStorage.getItem("user_token");
+    // SỬA: Sử dụng TokenManager để lấy token đồng bộ
+    const token = TokenManager.getToken();
     if (token) {
       request.headers = request.headers || {};
       request.headers["Authorization"] = `Bearer ${token}`;

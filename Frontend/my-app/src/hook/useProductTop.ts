@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../utils/axios";
+import axios from "../utils/axios"; // Cập nhật đúng đường dẫn nếu khác
 import type { IProduct } from "../types/Product";
 
 const useProductTop = () => {
@@ -9,10 +9,11 @@ const useProductTop = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get<IProduct[]>("/product");
+        const res = await axios.get<{ success: boolean; data: IProduct[] }>("/product");
 
-        if (Array.isArray(res.data)) {
-          const top5 = res.data.slice(0, 5);
+        if (res.data.success && Array.isArray(res.data.data)) {
+          const top5 = res.data.data.slice(0, 5);
+
           setProducts(top5);
         } else {
           console.warn("❌ Dữ liệu không hợp lệ:", res.data);

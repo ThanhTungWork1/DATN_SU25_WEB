@@ -32,17 +32,18 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  // State này sẽ lưu trữ từ khóa tìm kiếm cuối cùng, sau khi đã được "debounced"
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-
-  // --- SỬA LỖI: Logic tìm kiếm với Debounce ---
-  const [searchTerm, setSearchTerm] = useState(""); // State cho từ khóa người dùng nhập
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // State cho từ khóa sẽ được gửi đi
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
     pageSize: 20,
     total: 0,
   });
+
+  // State này sẽ lưu trữ từ khóa tìm kiếm đã được "debounced"
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   // Sử dụng Debounce để tránh gọi API liên tục khi người dùng đang gõ
   useEffect(() => {
@@ -55,7 +56,6 @@ export default function ProductList() {
       clearTimeout(handler);
     };
   }, [searchTerm]);
-
   const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
@@ -85,16 +85,34 @@ export default function ProductList() {
     }
   };
 
-  // Gọi lại API mỗi khi từ khóa tìm kiếm (đã được debounce) hoặc trang thay đổi
+  // useEffect này sẽ tự động gọi API mỗi khi searchTerm (đã debounced) hoặc trang thay đổi
   useEffect(() => {
-    fetchData(pagination.currentPage, debouncedSearchTerm);
-  }, [debouncedSearchTerm, pagination.currentPage]);
+    fetchData(pagination.currentPage, searchTerm);
+  }, [searchTerm, pagination.currentPage]);
+
+  // --- SỬA ĐỔI: Thêm logic "debouncing" cho việc tìm kiếm ---
+  const [inputValue, setInputValue] = useState(''); // State để lưu giá trị gõ vào ngay lập tức
+  
+  useEffect(() => {
+      // Thiết lập một bộ đếm thời gian
+      const timer = setTimeout(() => {
+          // Sau 500ms không gõ nữa, cập nhật searchTerm thật
+          setSearchTerm(inputValue);
+          // và quay về trang 1
+          setPagination(prev => ({ ...prev, currentPage: 1 }));
+      }, 500); // Chờ 500 mili giây
+
+      // Hủy bộ đếm thời gian nếu người dùng lại gõ chữ mới
+      return () => {
+          clearTimeout(timer);
+      };
+  }, [inputValue]); // useEffect này sẽ chạy lại mỗi khi người dùng gõ một ký tự mới
 
   const handleDelete = async (id: number) => {
     try {
       await deleteProduct(id);
       message.success("Đã xoá sản phẩm thành công");
-      fetchData(pagination.currentPage, debouncedSearchTerm);
+      fetchData(pagination.currentPage, searchTerm);
     } catch (error) {
       message.error("Không thể xoá sản phẩm.");
     }
@@ -152,7 +170,7 @@ export default function ProductList() {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
-      render: (text) => `${(Number(text) * 1000).toLocaleString("vi-VN")}₫`,
+      render: (text) => `${Number(text).toLocaleString("vi-VN")}₫`,
     },
     {
       title: "Danh mục",
@@ -216,9 +234,10 @@ export default function ProductList() {
         </Button>
         <Search
           placeholder="Tìm kiếm theo tên sản phẩm..."
-          // SỬA LẠI: Dùng onChange để tìm kiếm khi người dùng gõ
-          onChange={(e) => setSearchTerm(e.target.value)}
+          // SỬA ĐỔI: Dùng onChange để tìm kiếm ngay khi gõ
+          onChange={(e) => setInputValue(e.target.value)}
           enterButton
+          allowClear
         />
       </Space>
       <Table

@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
-import Dashboard from "../pages/admin/dashboard/Dashboard";
 import UserAdd from "../pages/admin/users/AddUser";
 import ProductList from "../pages/admin/products/ProductsList";
 import ProductForm from "../pages/admin/products/ProductForm";
@@ -15,17 +14,17 @@ import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
 import InventoryPage from "../pages/admin/inventory/InventoryPage";
 import VoucherPage from "../pages/admin/voucher/Voucher";
-import AdminLogin from "../pages/auth/adminLogin";
 import CategoryStatistics from "../pages/admin/categories/CategoryStatistics";
 import ProductStatistics from "../pages/admin/products/ProductStatistics";
+import HomeSectionList from "../pages/admin/home-sections/HomeSectionList";
+import HomeSectionProducts from "../pages/admin/home-sections/HomeSectionProducts";
+import BannerList from "../pages/admin/banners/BannerList";
+import CommentList from "../pages/admin/comments/CommentList";
+import Dashboard from "../pages/admin/dashboard/Dashboard";
 
 const AdminRoute = () => {
   return (
     <Routes>
-      {/* Login route không cần authentication */}
-      <Route path="login" element={<AdminLogin />} />
-
-      {/* Các route khác cần authentication */}
       <Route element={<RequireAuth allowedRoles={["admin"]} />}>
         <Route path="" element={<LayoutAdmin />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -48,6 +47,10 @@ const AdminRoute = () => {
           <Route path="voucher" element={<VoucherPage />} />
           <Route path="category-statistics" element={<CategoryStatistics />} />
           <Route path="product-statistics" element={<ProductStatistics />} />
+          <Route path="home-sections" element={<HomeSectionList />} />
+          <Route path="home-sections/:id/products" element={<HomeSectionProducts />}/>
+          <Route path="banners" element={<BannerList />} />
+          <Route path="comments" element={<CommentList />} />
         </Route>
       </Route>
     </Routes>

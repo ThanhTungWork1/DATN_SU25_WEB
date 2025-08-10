@@ -24,7 +24,7 @@ const { Title } = Typography;
 // Helper function để format giá - giống hệt như trong ProductsList
 const formatPrice = (price: string | number): string => {
   const numericPrice = Number(price);
-  return `${(numericPrice * 1000).toLocaleString("vi-VN")}₫`;
+  return `${numericPrice.toLocaleString("vi-VN")}₫`;
 };
 
 // Mở rộng interface ProductVariant để bao gồm cả đối tượng color và size từ API
@@ -46,8 +46,6 @@ export default function ProductDetail() {
       setLoading(true);
       try {
         const res = await getProduct(Number(id));
-
-        // API đã trả về cả product và variants lồng nhau
         setProduct(res.data);
         setVariants(res.data.variants || []);
       } catch (error) {
@@ -102,7 +100,6 @@ export default function ProductDetail() {
     },
     {
       title: "Ảnh riêng",
-      // SỬA LỖI TẠI ĐÂY: Dùng 'image_url' thay vì 'image'
       dataIndex: "image_url",
       key: "image",
       render: (url) => (url ? <Image src={url} width={40} /> : "N/A"),
@@ -135,6 +132,7 @@ export default function ProductDetail() {
             </Space>
           </Image.PreviewGroup>
         </Col>
+
         <Col xs={24} md={16}>
           <Descriptions title="Thông tin chung" bordered column={1}>
             <Descriptions.Item label="Tên sản phẩm">
@@ -164,6 +162,7 @@ export default function ProductDetail() {
       <Title level={4}>
         Các biến thể của sản phẩm ({variants.length} variants)
       </Title>
+
       {variants.length === 0 ? (
         <div style={{ textAlign: "center", padding: "20px", color: "#999" }}>
           <p>Sản phẩm này chưa có biến thể nào.</p>

@@ -123,4 +123,22 @@ class Product extends Model
         // Log::info('---[PRODUCT MODEL] Gọi quan hệ category');
         return $this->belongsTo(Category::class);
     }
+
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
+    public function homeSections()
+    {
+        return $this->belongsToMany(HomeSection::class, 'home_section_products')
+            ->withPivot('sort_order')
+            ->withTimestamps();
+    }
+
+
 }

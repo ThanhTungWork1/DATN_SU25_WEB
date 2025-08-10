@@ -4,26 +4,25 @@ import dayjs from "dayjs";
 import useCurrentUser from "../../../hook/useCurrentUser";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
-import { LogoutOutlined } from "@ant-design/icons";
+import { LogoutOutlined, ShoppingOutlined, HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { TokenManager } from "../../../utils/tokenUtils";
 import OrderList from "../Orders/OrderList";
+
+
 
 const UserProfile = () => {
   const [form] = Form.useForm();
   const { data: user, isLoading, refetch } = useCurrentUser();
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("user_token");
-    localStorage.removeItem("role");
+    TokenManager.clearAllTokens();
     message.success("Đăng xuất thành công!");
     navigate("/");
     window.location.reload();
   };
   const userId = user?.id?.toString() || "";
 
-  const { mutate, isPending } = useProfile({
-    resource: "users",
-    id: userId,
-  });
+  const { mutate, isPending } = useProfile();
 
   useEffect(() => {
     if (user) {
@@ -58,6 +57,28 @@ const UserProfile = () => {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
       <h1>Thông tin cá nhân</h1>
+      
+      {/* Quick Actions */}
+      <div style={{ 
+        marginBottom: 24, 
+        padding: 16, 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: 8,
+        border: '1px solid #e9ecef'
+      }}>
+        <h3 style={{ marginBottom: 12, color: '#495057' }}>Thao tác nhanh</h3>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Button
+            type="primary"
+            icon={<ShoppingOutlined />}
+            onClick={() => navigate('/orders')}
+            style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+          >
+            Lịch sử đơn hàng
+          </Button>
+        </div>
+      </div>
+
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Form.Item
           label="Họ tên"
@@ -100,7 +121,7 @@ const UserProfile = () => {
             }}
           >
             <Button type="primary" htmlType="submit" loading={isPending}>
-              Cập nhật
+              Cập nhật thông tin
             </Button>
             <Button
               type="primary"

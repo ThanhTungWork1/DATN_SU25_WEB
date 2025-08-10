@@ -41,10 +41,30 @@ class ClientOrderController extends Controller
 
             $orders = $query->paginate(10);
 
+            $customer = $user;
+            $ordersData = collect($orders->items())->map(function ($order) use ($customer) {
+                return [
+                    'id' => $order->id,
+                    'customer_name' => $customer->name,
+                    'customer_email' => $customer->email,
+                    'customer_phone' => $customer->phone,
+                    'shipping_address' => $order->shipping_address,
+                    'payment_method' => $order->payment_method,
+                    'discount_amount' => $order->discount_amount,
+                    'total_amount' => $order->total_amount,
+                    'shipping_fee' => $order->shipping_fee,
+                    'status' => $order->status,
+                    'is_paid' => $order->is_paid,
+                    'note' => $order->note,
+                    'created_at' => $order->created_at,
+                    'items' => $order->items,
+                ];
+            });
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy danh sách đơn hàng thành công',
-                'data' => $orders->items(),
+                'data' => $ordersData,
                 'pagination' => [
                     'current_page' => $orders->currentPage(),
                     'last_page' => $orders->lastPage(),
@@ -78,10 +98,31 @@ class ClientOrderController extends Controller
                 ], 404);
             }
 
+            // Lấy thông tin user
+            $customer = $user;
+
+            // Trả về đúng format FE yêu cầu
+            $orderData = [
+                'id' => $order->id,
+                'customer_name' => $customer->name,
+                'customer_email' => $customer->email,
+                'customer_phone' => $customer->phone,
+                'shipping_address' => $order->shipping_address,
+                'payment_method' => $order->payment_method,
+                'discount_amount' => $order->discount_amount,
+                'total_amount' => $order->total_amount,
+                'shipping_fee' => $order->shipping_fee,
+                'status' => $order->status,
+                'is_paid' => $order->is_paid,
+                'note' => $order->note,
+                'created_at' => $order->created_at,
+                'items' => $order->items,
+            ];
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy chi tiết đơn hàng thành công',
-                'data' => $order
+                'data' => $orderData
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -101,9 +142,22 @@ class ClientOrderController extends Controller
             $validator = Validator::make($request->all(), [
                 'user_id' => 'required|exists:users,id',
                 'shipping_address' => 'required|string|max:500',
+<<<<<<< HEAD
                 'shipping_phone' => 'required|string|max:20',
                 'shipping_name' => 'required|string|max:255',
                 'note' => 'nullable|string|max:1000',
+                'payment_method' => 'required|string|max:100',
+                'discount_amount' => 'nullable|numeric|min:0',
+=======
+                'customer_phone' => 'required|string|max:20',
+                'customer_name' => 'required|string|max:255',
+                'customer_email' => 'nullable|email|max:255',
+                'notes' => 'nullable|string|max:1000',
+                'payment_method' => 'nullable|string',
+                'payment_status' => 'nullable|string',
+                'order_status' => 'nullable|string',
+                'total_amount' => 'required|numeric|min:0',
+>>>>>>> origin/hung-feature/product-and-order
                 'items' => 'required|array|min:1',
                 'items.*.variant_id' => 'required|exists:product_variants,id',
                 'items.*.quantity' => 'required|integer|min:1',
@@ -120,14 +174,22 @@ class ClientOrderController extends Controller
 
             $data = $validator->validated();
 
+            // DEBUG: Log dữ liệu nhận được từ frontend
+            \Log::info('=== ORDER DEBUG ===');
+            \Log::info('Request data:', $request->all());
+            \Log::info('Validated data:', $data);
 
             $total_amount = 0;
             foreach ($data['items'] as $item) {
-                $total_amount += $item['price'] * $item['quantity'];
+                $itemTotal = $item['price'] * $item['quantity'];
+                $total_amount += $itemTotal;
+                \Log::info("Item: variant_id={$item['variant_id']}, price={$item['price']}, quantity={$item['quantity']}, itemTotal={$itemTotal}");
             }
+            
+            \Log::info("Final total_amount: {$total_amount}");
 
-
-            $shipping_fee = 30000;
+            // Tính phí giao hàng: miễn phí khi >= 500.000 VNĐ
+            $shipping_fee = $total_amount >= 500000 ? 0 : 30000;
 
 
             foreach ($data['items'] as $item) {
@@ -152,41 +214,69 @@ class ClientOrderController extends Controller
             DB::beginTransaction();
 
             try {
-                            // Tạo đơn hàng
-            $order = Order::create([
-                'user_id' => $data['user_id'],
-                'status' => 'pending_confirmation',
-                'is_paid' => false,
-                'total_amount' => $total_amount,
-                'shipping_fee' => $shipping_fee,
-                'shipping_address' => $data['shipping_address'],
-                'shipping_phone' => $data['shipping_phone'],
-                'shipping_name' => $data['shipping_name'],
-                'note' => $data['note'] ?? null,
-                'customer_name' => $data['shipping_name'],
-                'customer_phone' => $data['shipping_phone'],
-                'customer_email' => $user->email ?? '',
-                'discount_amount' => 0,
-                'final_amount' => $total_amount + $shipping_fee
-            ]);
+                // Tạo đơn hàng
+                $order = Order::create([
+                    'user_id' => $user->id,
+<<<<<<< HEAD
+                    'status' => 'pending',
+=======
+                    'status' => $data['order_status'] ?? 'pending',
+>>>>>>> origin/hung-feature/product-and-order
+                    'is_paid' => false,
+                    'total_amount' => $total_amount,
+                    'shipping_fee' => $shipping_fee,
+                    'shipping_address' => $data['shipping_address'],
+<<<<<<< HEAD
+                    'shipping_phone' => $data['shipping_phone'],
+                    'shipping_name' => $data['shipping_name'],
+                    'note' => $data['note'] ?? null,
+                    'payment_method' => $data['payment_method'],
+                    'discount_amount' => $data['discount_amount'] ?? 0,
+=======
+                    'customer_phone' => $data['customer_phone'],
+                    'customer_name' => $data['customer_name'],
+                    'customer_email' => $data['customer_email'] ?? $user->email ?? null,
+                    'notes' => $data['notes'] ?? null,
+                    'payment_method' => $data['payment_method'] ?? 'COD',
+                    'discount_amount' => 0,
+                    'final_amount' => $total_amount + $shipping_fee
+>>>>>>> origin/hung-feature/product-and-order
+                ]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
                 $orderItems = [];
                 foreach ($data['items'] as $item) {
                     $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
-                    // Trừ tồn kho
+                    
+                    if (!$variant) {
+                        throw new \Exception("Không tìm thấy variant_id: " . $item['variant_id']);
+                    }
+                    
+                    // Trừ tồn kho variant
                     $variant->stock -= $item['quantity'];
                     $variant->save();
-                    // Thêm vào mảng orderItems với snapshot đầy đủ
+                    
+                    // Cập nhật số lượng đã bán của sản phẩm
+                    $product = $variant->product;
+                    $product->sold += $item['quantity'];
+                    $product->save();
+                    
+                    \Log::info('Updated product sold count', [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'quantity_ordered' => $item['quantity'],
+                        'new_sold_count' => $product->sold
+                    ]);
+                    
+                    // Thêm vào mảng orderItems với đầy đủ thông tin snapshot
                     $orderItems[] = [
                         'variant_id' => $item['variant_id'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
-                        // Lưu snapshot thông tin sản phẩm
-                        'product_name' => $variant->product->name ?? 'Không có tên',
-                        'variant_color_name' => $variant->color->name ?? 'Không có',
-                        'variant_size_name' => $variant->size->name ?? 'Không có',
-                        'variant_sku' => $variant->sku ?? 'Không có',
+                        'product_name' => $variant->product->name ?? 'Sản phẩm không tên',
+                        'variant_color_name' => $variant->color->name ?? 'Không có màu',
+                        'variant_size_name' => $variant->size->name ?? 'Không có size',
+                        'variant_sku' => $variant->sku ?? null,
                         'variant_image' => $variant->image ?? null,
                     ];
                 }

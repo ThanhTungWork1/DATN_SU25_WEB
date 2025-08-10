@@ -5,4 +5,5 @@ export type ProductInfoProps = {
   selectedVariant?: Variant | null; // ✅ Thêm selectedVariant
   selectedVariantStock: number | null | undefined;
   sku: string | undefined;
+  selectedVariant?: Variant;
 }; 
