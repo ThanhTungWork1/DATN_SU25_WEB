@@ -27,8 +27,11 @@ class SendReplyMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Phản hồi liên hệ từ StrideX')
+        $subject = 'StrideX | Phản hồi liên hệ #C' . ($this->contact->id ?? '');
+
+        return $this->subject($subject)
             ->from(config('mail.from.address'), config('mail.from.name'))
+            ->replyTo(config('mail.from.address'), config('mail.from.name'))
             ->view('emails.reply_contact')
             ->with([
                 'contact' => $this->contact,

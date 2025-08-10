@@ -4,12 +4,29 @@ import { BoxProduct } from "../../../components/BoxProduct";
 import { useProductPagination } from "../../../hook/useProductList";
 import "../../../assets/styles/resultSerch.css";
 
+// Helpers to normalize search query (embedded here)
+function removeDiacritics(input: string) {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
+function normalizeQuery(raw: string) {
+  const trimmed = raw.trim().replace(/\s+/g, " ");
+  const lower = trimmed.toLowerCase();
+  const unaccent = removeDiacritics(lower);
+  return unaccent.replace(/[^a-z0-9\s]/g, "");
+}
+
 // Trang kết quả tìm kiếm sản phẩm
 const ResultProduct = () => {
   // Lấy query từ URL (?query=...)
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const query = params.get("query")?.trim() || "";
+  const query = params.get("query")?.trim() || ""; // giữ để hiển thị UI
+  const queryForApi = normalizeQuery(query); // dùng cho API
 
   // State page
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,7 +36,7 @@ const ResultProduct = () => {
   const { products, pagination, loading, error } = useProductPagination({
     page: currentPage,
     per_page: PAGE_SIZE,
-    search: query,
+    search: queryForApi,
   });
 
   const navigate = useNavigate();

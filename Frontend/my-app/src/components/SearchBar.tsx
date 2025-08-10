@@ -6,6 +6,23 @@ interface SearchBarProps {
   autoFocus?: boolean;
 }
 
+// Helpers to normalize search query (no new file, embedded here)
+function removeDiacritics(input: string) {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
+function normalizeQuery(raw: string) {
+  const trimmed = raw.trim().replace(/\s+/g, " ");
+  const lower = trimmed.toLowerCase();
+  const unaccent = removeDiacritics(lower);
+  // keep letters, digits and spaces only
+  return unaccent.replace(/[^a-z0-9\s]/g, "");
+}
+
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch, autoFocus }) => {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +70,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, autoFocus }) => {
     e.preventDefault();
 
     if (onSearch && validateSearchQuery(query)) {
-      onSearch(query);
+      const q = normalizeQuery(query);
+      onSearch(q);
     }
   };
 
