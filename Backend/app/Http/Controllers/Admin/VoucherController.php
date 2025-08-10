@@ -28,17 +28,17 @@ class VoucherController extends Controller
                 switch ($request->status) {
                     case 'active':
                         $query->where('status', true)
-                              ->where('expiry_date', '>', now())
-                              ->where('used_count', '<', \DB::raw('max_usage'));
+                              ->where('end_date', '>', now())
+                              ->whereRaw('used_count < max_usage');
                         break;
                     case 'locked':
                         $query->where('status', false);
                         break;
                     case 'expired':
-                        $query->where('expiry_date', '<', now());
+                        $query->where('end_date', '<', now());
                         break;
                     case 'used_up':
-                        $query->where('used_count', '>=', \DB::raw('max_usage'));
+                        $query->whereRaw('used_count >= max_usage');
                         break;
                 }
             }
@@ -56,7 +56,7 @@ class VoucherController extends Controller
             $sortOrder = $request->get('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $vouchers = $query->with('usage.user')->paginate(10);
+            $vouchers = $query->paginate(10);
 
             return response()->json([
                 'status' => 'success',
@@ -377,11 +377,11 @@ class VoucherController extends Controller
             $totalVouchers = Voucher::count();
             $activeVouchers = Voucher::where('status', true)
                                    ->where('end_date', '>', now())
-                                   ->where('used_count', '<', \DB::raw('max_usage'))
+                                   ->whereRaw('used_count < max_usage')
                                    ->count();
             $expiredVouchers = Voucher::where('end_date', '<', now())->count();
             $lockedVouchers = Voucher::where('status', false)->count();
-            $usedUpVouchers = Voucher::where('used_count', '>=', \DB::raw('max_usage'))->count();
+            $usedUpVouchers = Voucher::whereRaw('used_count >= max_usage')->count();
 
             return response()->json([
                 'status' => 'success',

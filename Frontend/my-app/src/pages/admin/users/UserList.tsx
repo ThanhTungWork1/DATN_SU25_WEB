@@ -104,7 +104,7 @@ const UserList = () => {
       (user.address || "").toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase()) ||
       (user.phone || "").toLowerCase().includes(searchText.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchText.toLowerCase())
+      String(user.role).toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (

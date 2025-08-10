@@ -1,0 +1,154 @@
+/* chatWidget.css */
+
+.chat-widget-container {
+    position: fixed;
+    /* bottom: 263px; */
+    bottom: 40px;
+    right: 20px;
+    z-index: 9999;
+    font-family: Arial, sans-serif;
+}
+
+/* Nút mở/đóng chat */
+.chat-toggle-btn {
+    background-color: #35c7b6;
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10000;
+    /* Đảm bảo nút luôn hiển thị trên cùng */
+}
+
+/* Cửa sổ chat */
+.chat-window {
+    width: 320px;
+    height: 400px;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 65px;
+    /* Tăng khoảng cách để không che nút toggle */
+    position: absolute;
+    bottom: 55px;
+    /* Đẩy chat window lên trên để tránh che nút */
+    right: 0;
+}
+
+/* Header */
+.chat-header {
+    background-color: #45cfcd;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Tin nhắn */
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #f1f1f1;
+}
+
+.message {
+    margin-bottom: 8px;
+    max-width: 80%;
+}
+
+.user-message {
+    align-self: flex-end;
+    text-align: right;
+}
+
+.bot-message {
+    align-self: flex-start;
+    text-align: left;
+}
+
+.message-content {
+    background-color: #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.user-message .message-content {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Ô nhập */
+.chat-input {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background-color: #fff;
+}
+
+.chat-input textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 6px 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.send-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    margin-left: 8px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hiệu ứng đang gõ */
+.typing-indicator {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin: 0 1px;
+    background-color: #999;
+    border-radius: 50%;
+    animation: blink 1.4s infinite both;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+
+    0%,
+    80%,
+    100% {
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 1;
+    }
+}

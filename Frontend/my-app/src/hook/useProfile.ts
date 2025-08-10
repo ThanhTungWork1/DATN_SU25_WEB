@@ -1,18 +1,22 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { TokenManager } from "../utils/tokenUtils";
 
-type UseProfileProps = {
-  resource: string;
-  id: string;
-};
-
-const useProfile = ({ resource, id }: UseProfileProps) => {
-  const token = localStorage.getItem("user_token");
-
+// Không cần props nữa vì sẽ luôn cập nhật thông tin user hiện tại
+const useProfile = () => {
   return useMutation({
     mutationFn: async (updatedData: any) => {
+                  const token = TokenManager.getUserToken();
+      
+      if (!token) {
+        throw new Error("Bạn cần đăng nhập để cập nhật thông tin");
+      }
+
+      console.log("Đang cập nhật thông tin profile:", updatedData);
+      
+      // Gọi API /me để cập nhật thông tin của chính user đang đăng nhập
       const response = await axios.put(
-        `http://localhost:8000/api/${resource}/${id}`,
+        `http://localhost:8000/api/me`,
         updatedData,
         {
           headers: {
@@ -20,6 +24,8 @@ const useProfile = ({ resource, id }: UseProfileProps) => {
           },
         }
       );
+      
+      console.log("Kết quả cập nhật profile:", response.data);
       return response.data;
     },
   });

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Cart\CreateCartRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use Illuminate\Http\Request;
@@ -16,6 +15,10 @@ class CartController extends Controller
         protected Cart $model,
         protected CartItem $cartItemModel,
     ) {}
+
+    /**
+     * Lấy thông tin giỏ hàng của người dùng đang đăng nhập.
+     */
     public function index()
     {
         $userId = Auth::id();
@@ -25,8 +28,13 @@ class CartController extends Controller
             'cartItems.productVariant.size'
         ])->where('user_id', $userId)->latest()->first();
         
+
         if (!$cart) {
-            return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
+            // Trả về một giỏ hàng trống thay vì lỗi 404 để frontend xử lý dễ dàng hơn
+            return response()->json([
+                'message' => 'Giỏ hàng trống.',
+                'cart' => null
+            ], 200);
         }
 
         // Format cart items with complete product information
@@ -79,8 +87,14 @@ class CartController extends Controller
             return $product->image_url;
         }
         return null;
+
     }
-    public function store(CreateCartRequest $request)
+
+    /**
+     * Thêm một hoặc nhiều sản phẩm vào giỏ hàng.
+     * Xử lý một mảng 'cartItems' từ request.
+     */
+    public function store(Request $request)
     {
         try {
             return DB::transaction(function () use ($request) {
@@ -132,10 +146,19 @@ class CartController extends Controller
                 'line' => $e->getLine()
             ], 500);
         }
+
     }
 
     /**
-     * Display the specified resource.
+     * Route phụ để tương thích với các định nghĩa route cũ hơn.
+     */
+    public function addToCart(Request $request)
+    {
+        return $this->store($request);
+    }
+
+    /**
+     * Hiển thị một giỏ hàng cụ thể.
      */
     public function show($id)
     {
@@ -146,7 +169,7 @@ class CartController extends Controller
             'cartItems.productVariant.size',
             'cartItems.product'
         ])->where('user_id', $userId)->where('id', $id)->first();
-        
+
         if (!$cart) {
             return response()->json(['message' => 'Không tìm thấy giỏ hàng!'], 404);
         }
@@ -221,6 +244,7 @@ class CartController extends Controller
         return response()->json(['message' => 'Cập nhật giỏ hàng thành công!']);
     }
 
+
     public function destroy($id)
     {
         $userId = Auth::id();
@@ -261,3 +285,79 @@ class CartController extends Controller
         return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng!']);
     }
 }
+// =======
+//     /**
+//      * Xóa toàn bộ sản phẩm khỏi giỏ hàng của người dùng.
+//      */
+//     public function clearCart()
+//     {
+//         $userId = Auth::id();
+//         if (!$userId) {
+//             return response()->json(['message' => 'Người dùng chưa đăng nhập!'], 401);
+//         }
+
+//         $cart = Cart::where('user_id', $userId)->first();
+//         if ($cart) {
+//             $cart->cartItems()->delete();
+//             return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng!']);
+//         }
+        
+//         return response()->json(['message' => 'Giỏ hàng đã trống!']);
+//     }
+
+//     /**
+//      * Cập nhật số lượng của một sản phẩm trong giỏ hàng.
+//      */
+//     public function updateCartItem(Request $request, $id)
+//     {
+//         $userId = Auth::id();
+//         if (!$userId) {
+//             return response()->json(['message' => 'Người dùng chưa đăng nhập!'], 401);
+//         }
+
+//         $data = $request->validate([
+//             'quantity' => 'required|integer|min:1',
+//         ]);
+
+//         $cartItem = CartItem::whereHas('cart', function($query) use ($userId) {
+//             $query->where('user_id', $userId);
+//         })->where('id', $id)->first();
+
+//         if (!$cartItem) {
+//             return response()->json(['message' => 'Không tìm thấy sản phẩm trong giỏ hàng!'], 404);
+//         }
+
+//         $cartItem->quantity = $data['quantity'];
+//         $cartItem->save();
+
+//         return response()->json([
+//             'message' => 'Cập nhật số lượng thành công!',
+//             'cartItem' => $cartItem
+//         ]);
+//     }
+
+//     /**
+//      * Xóa một sản phẩm cụ thể khỏi giỏ hàng.
+//      */
+//     public function removeCartItem($id)
+//     {
+//         $userId = Auth::id();
+//         if (!$userId) {
+//             return response()->json(['message' => 'Người dùng chưa đăng nhập!'], 401);
+//         }
+
+//         $cartItem = CartItem::whereHas('cart', function($query) use ($userId) {
+//             $query->where('user_id', $userId);
+//         })->where('id', $id)->first();
+
+//         if (!$cartItem) {
+//             return response()->json(['message' => 'Không tìm thấy sản phẩm trong giỏ hàng!'], 404);
+//         }
+
+//         $cartItem->delete();
+//         return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng!']);
+//     }
+
+
+// }
+// >>>>>>> origin/hung-feature/product-and-order

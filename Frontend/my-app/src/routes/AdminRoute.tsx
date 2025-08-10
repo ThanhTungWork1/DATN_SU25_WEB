@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import LayoutAdmin from "../components/LayoutAdmin";
-import Dashboard from "../pages/admin/dashboard/Dashboard";
+// import Dashboard from "../pages/admin/dashboard/Dashboard";
 import UserAdd from "../pages/admin/users/AddUser";
 import ProductList from "../pages/admin/products/ProductsList";
 import ProductForm from "../pages/admin/products/ProductForm";
@@ -17,6 +17,9 @@ import InventoryPage from "../pages/admin/inventory/InventoryPage";
 import VoucherPage from "../pages/admin/voucher/Voucher";
 import HomeSectionList from "../pages/admin/home-sections/HomeSectionList";
 import HomeSectionProducts from "../pages/admin/home-sections/HomeSectionProducts";
+import BannerList from "../pages/admin/banners/BannerList";
+import CommentList from "../pages/admin/comments/CommentList";
+import Dashboard from "../pages/admin/dashboard/Dashboard";
 
 
 const AdminRoute = () => {
@@ -48,6 +51,10 @@ const AdminRoute = () => {
           <Route path="voucher" element={<VoucherPage />} />
           <Route path="home-sections" element={<HomeSectionList />} />
           <Route path="home-sections/:id/products" element={<HomeSectionProducts />} />
+          <Route path="banners" element={<BannerList />} />
+          {/* Đánh giá */}
+          <Route path="comments" element={<CommentList />} />
+          
         </Route>
       </Route>
     </Routes>

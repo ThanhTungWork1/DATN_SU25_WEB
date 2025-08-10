@@ -2,7 +2,7 @@ import React from "react";
 import useProductTop from "../../../hook/useProductTop";
 import "../../../assets/styles/TopProductsSection.css"; // Đảm bảo file này tồn tại
 
-const TopClothingSection = () => {
+const TopProductsSection = () => {
   const { products, loading } = useProductTop();
 
   if (loading) return <p>Đang tải sản phẩm...</p>;
@@ -47,4 +47,4 @@ const TopClothingSection = () => {
   );
 };
 
-export default TopClothingSection;
+export default TopProductsSection;

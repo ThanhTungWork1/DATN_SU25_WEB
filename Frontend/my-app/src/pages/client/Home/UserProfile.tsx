@@ -5,6 +5,7 @@ import useCurrentUser from "../../../hook/useCurrentUser";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined, ShoppingOutlined, HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { TokenManager } from "../../../utils/tokenUtils";
 import OrderList from "../Orders/OrderList";
 
 
@@ -14,18 +15,14 @@ const UserProfile = () => {
   const { data: user, isLoading, refetch } = useCurrentUser();
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("user_token");
-    localStorage.removeItem("role");
+    TokenManager.clearAllTokens();
     message.success("Đăng xuất thành công!");
     navigate("/");
     window.location.reload();
   };
   const userId = user?.id?.toString() || "";
 
-  const { mutate, isPending } = useProfile({
-    resource: "users",
-    id: userId,
-  });
+  const { mutate, isPending } = useProfile();
 
   useEffect(() => {
     if (user) {

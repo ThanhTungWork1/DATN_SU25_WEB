@@ -14,6 +14,7 @@
               $table->id();
               $table->unsignedBigInteger('category_id'); // Sửa từ integer thành unsignedBigInteger
               $table->string('name', 255);
+              $table->string('slug')->unique();
               $table->text('description');
               $table->decimal('price', 10, 2);
               $table->string('image')->nullable(); // Thêm dòng này

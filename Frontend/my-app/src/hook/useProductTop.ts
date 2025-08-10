@@ -13,6 +13,7 @@ const useProductTop = () => {
 
         if (res.data.success && Array.isArray(res.data.data)) {
           const top5 = res.data.data.slice(0, 5);
+
           setProducts(top5);
         } else {
           console.warn("❌ Dữ liệu không hợp lệ:", res.data);

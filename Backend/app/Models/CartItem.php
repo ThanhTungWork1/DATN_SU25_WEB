@@ -32,8 +32,14 @@ class CartItem extends Model
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
-    // Add accessor to get product name from variant's product
-    public function getNameAttribute()
+
+    // Alias for productVariant to match controller usage
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
+    public function product()
     {
         if ($this->productVariant && $this->productVariant->product) {
             return $this->productVariant->product->name;

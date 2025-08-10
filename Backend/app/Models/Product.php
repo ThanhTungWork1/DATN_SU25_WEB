@@ -45,7 +45,7 @@ class Product extends Model
      *
      * @var array
      */
-    // protected $appends = ['image_url', 'hover_image_url'];
+    protected $appends = ['image_url', 'hover_image_url'];
 
     /**
      * Định nghĩa mối quan hệ "một-nhiều" với ProductVariant.

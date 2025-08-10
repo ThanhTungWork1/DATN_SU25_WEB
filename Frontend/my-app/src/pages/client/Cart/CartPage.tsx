@@ -1,4 +1,3 @@
-import { useForm } from "react-hook-form";
 import useCart from "../../../hook/useCart";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +9,6 @@ const CartPage = () => {
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
-  const { register, handleSubmit, setValue } = useForm();
 
   // Tự động chọn tất cả sản phẩm khi cartItems thay đổi
   useEffect(() => {

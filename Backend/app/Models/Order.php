@@ -18,6 +18,7 @@ class Order extends Model
         'shipping_address',
         'shipping_phone',
         'shipping_name',
+        'notes',
         'note',
         'payment_method',
         'discount_amount',

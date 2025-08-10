@@ -17,6 +17,7 @@ import OrderList from "../pages/client/Orders/OrderList";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
 import LoginPage from "../pages/auth/Login";
 
+
 const ClientRoute = () => {
   return (
     <Routes>
@@ -51,6 +52,7 @@ const ClientRoute = () => {
         }
       />
     </Routes>
+
   );
 };
 

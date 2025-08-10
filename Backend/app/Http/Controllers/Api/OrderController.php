@@ -63,14 +63,19 @@ class OrderController extends Controller
         ]);
 
         foreach ($data['items'] as $item) {
+            // Trừ tồn kho variant
+            $variant = \App\Models\ProductVariant::with('product')->find($item['variant_id']);
+
             // Trừ tồn kho
             $variant = \App\Models\ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+
             $variant->stock -= $item['quantity'];
             $variant->save();
 
             if ($data['status'] === OrderStatus::CONFIRMED) {
                 $variant->decrement('stock', $item['quantity']);
             }
+
 
             OrderItem::create([
                 'order_id' => $order->id,
@@ -182,3 +187,4 @@ class OrderController extends Controller
         ]);
     }
 }
+

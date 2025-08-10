@@ -344,11 +344,19 @@ class ProductController extends Controller
         $products = $query->paginate($perPage);
         Log::info('---[SEARCH PRODUCT] Sau khi paginate', ['total' => $products->total()]);
         $products->getCollection()->transform(function ($product) {
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
             if ($product->discount && $product->discount > 0) {
-                $product->final_price = $product->price - ($product->price * $product->discount / 100);
+                $product->final_price = $displayPrice - ($displayPrice * $product->discount / 100);
             } else {
-                $product->final_price = $product->price;
+                $product->final_price = $displayPrice;
             }
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
+            
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             
@@ -406,11 +414,19 @@ class ProductController extends Controller
             ->get();
 
         $products->transform(function ($product) {
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
             if ($product->discount && $product->discount > 0) {
-                $product->final_price = $product->price - ($product->price * $product->discount / 100);
+                $product->final_price = $displayPrice - ($displayPrice * $product->discount / 100);
             } else {
-                $product->final_price = $product->price;
+                $product->final_price = $displayPrice;
             }
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
+            
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             
@@ -465,11 +481,19 @@ class ProductController extends Controller
         $products = $query->paginate($perPage);
 
         $products->getCollection()->transform(function ($product) {
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
             if ($product->discount && $product->discount > 0) {
-                $product->final_price = $product->price - ($product->price * $product->discount / 100);
+                $product->final_price = $displayPrice - ($displayPrice * $product->discount / 100);
             } else {
-                $product->final_price = $product->price;
+                $product->final_price = $displayPrice;
             }
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
+            
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             
@@ -519,7 +543,15 @@ class ProductController extends Controller
         $products = $query->paginate($perPage);
 
         $products->getCollection()->transform(function ($product) {
-            $product->final_price = $product->price - ($product->price * $product->discount / 100);
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
+            $product->final_price = $displayPrice - ($displayPrice * $product->discount / 100);
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
+            
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
             
@@ -564,11 +596,18 @@ class ProductController extends Controller
             }
         ])->findOrFail($id);
 
+        // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+        $minVariantPrice = $product->variants->min('price');
+        $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+        
         if ($product->discount && $product->discount > 0) {
-            $product->final_price = $product->price - ($product->price * $product->discount / 100);
+            $product->final_price = $displayPrice - ($displayPrice * $product->discount / 100);
         } else {
-            $product->final_price = $product->price;
+            $product->final_price = $displayPrice;
         }
+        
+        // Cập nhật giá hiển thị
+        $product->price = $displayPrice;
 
         // ✅ Thêm image_url cho từng variant
         if ($product->variants) {
@@ -602,9 +641,16 @@ class ProductController extends Controller
             ->get();
 
         $products->transform(function ($product) {
+            // Lấy giá thấp nhất từ variants nếu có, nếu không thì dùng giá từ products
+            $minVariantPrice = $product->variants->min('price');
+            $displayPrice = $minVariantPrice ? $minVariantPrice : $product->price;
+            
             $product->final_price = $product->discount > 0
-                ? $product->price - ($product->price * $product->discount / 100)
-                : $product->price;
+                ? $displayPrice - ($displayPrice * $product->discount / 100)
+                : $displayPrice;
+            
+            // Cập nhật giá hiển thị
+            $product->price = $displayPrice;
 
             $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
             $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;

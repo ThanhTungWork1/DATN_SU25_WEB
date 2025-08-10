@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
         \Log::info('🔍 [BACKEND DEBUG] Admin products index called');
         \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
-        
+
         $query = Product::query();
 
         // THÊM MỚI: Logic xử lý tìm kiếm
@@ -28,7 +28,7 @@ class ProductController extends Controller
 
         // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
         $products = $query->orderBy('id', 'asc')->paginate(5);
-        
+
         // Đảm bảo accessors được load
         $products->getCollection()->transform(function ($product) {
             \Log::info('🔍 [BACKEND DEBUG] Processing product ID: ' . $product->id);
@@ -36,9 +36,9 @@ class ProductController extends Controller
             \Log::info('🔍 [BACKEND DEBUG] Image URL accessor: ' . $product->image_url);
             return $product;
         });
-        
+
         \Log::info('🔍 [BACKEND DEBUG] Products found:', $products->toArray());
-        
+
         return $products;
     }
     public function store(Request $request)

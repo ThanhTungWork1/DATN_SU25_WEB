@@ -39,12 +39,12 @@ export const getAllProducts = async () => {
   // Gọi API trực tiếp không có tham số
   const { data } = await config.get("/product");
 
-  // Nếu trả về dữ liệu phân trang, lấy mảng data
+  // Backend trả về {success: true, data: [...]}
   if (data && data.data && Array.isArray(data.data)) {
     return data.data as Product[];
   }
 
-  // Nếu trả về mảng trực tiếp
+  // Fallback: nếu trả về mảng trực tiếp
   if (Array.isArray(data)) {
     return data as Product[];
   }

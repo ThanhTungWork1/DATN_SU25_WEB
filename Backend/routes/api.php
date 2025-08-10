@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\Auth;
+
+// --- API Controllers (Public & User) ---
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
@@ -27,6 +30,7 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Client\HomePageController;
 use App\Http\Controllers\HomeSectionController;
+
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 
@@ -43,6 +47,7 @@ use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
 
 // --- Middleware ---
+
 // Test API
 
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
@@ -55,9 +60,12 @@ Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
 
 // Forgot Password
+
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
+
+// --- Top Selling Products ---
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
 
 // Email Verification
@@ -77,6 +85,7 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
 })->name('verification.verify');
 
 // Public - Categories, Sizes, Colors, etc.
+
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
@@ -118,6 +127,7 @@ Route::post('/create-test-user', function() {
 });
 
 // Products (public)
+
 Route::prefix('product')->group(function () {
     Route::get('/test', [\App\Http\Controllers\Api\ProductController::class, 'test']);
     Route::get('/debug/{id}', [\App\Http\Controllers\Api\ProductController::class, 'debug']);
@@ -142,12 +152,14 @@ Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware(
 
 
 // ADMIN ROUTES (Gộp tất cả vào một nhóm được bảo vệ)
+
 // ====================================================================
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
-    // Products
-    Route::apiResource('products', ProductController::class)->except(['store', 'update']);
-    Route::post('products', [ProductController::class, 'store']);
-    Route::post('products/{id}', [ProductController::class, 'update']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    
+    // --- General Authenticated User Info ---
+    Route::post('/logout', [AuthenticationController::class, 'logout']);
+    Route::get('/me', fn(Request $request) => response()->json($request->user()));
+    Route::put('/me', [AuthenticationController::class, 'updateProfile']);
 
     Route::apiResource('categories', CategoryController::class);
 });
@@ -167,8 +179,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::apiResource('vouchers', VoucherController::class);
 
     // Dashboard
+
     Route::prefix('dashboard')->group(function () {
-        Route::get('/', [DashboardController::class, 'index']);
         Route::get('/revenue-by-time', [DashboardController::class, 'revenueByTime']);
         Route::get('/orders-by-status', [DashboardController::class, 'ordersByStatus']);
         Route::get('/top-selling-products', [DashboardController::class, 'topSellingProducts']);
@@ -183,13 +195,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
     });
 
-
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
 
-    // Inventory
     Route::prefix('inventory')->group(function () {
         Route::get('/stats', [InventoryController::class, 'stats']);
         Route::get('/list', [InventoryController::class, 'list']);
@@ -301,134 +311,7 @@ Route::post('/contact', [ContactController::class, 'store']);
 // Home Sections - Public API
 Route::get('/home-sections', [\App\Http\Controllers\HomeSectionController::class, 'index']);
 
-// PUBLIC VOUCHER ROUTES (không cần authentication)
-Route::post('/test-voucher', function(Request $request) {
-    try {
-        $code = $request->input('code');
-        $totalAmount = $request->input('total_amount');
-        
-        // Vouchers test cố định
-        $vouchers = [
-            'SAVE10' => [
-                'title' => 'Giảm giá 10%',
-                'code' => 'SAVE10',
-                'value' => 10.00,
-                'max_value' => 50000.00,
-                'quantity' => 100,
-                'description' => 'Giảm giá 10% cho đơn hàng từ 100,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ],
-            'SAVE20' => [
-                'title' => 'Giảm giá 20%',
-                'code' => 'SAVE20',
-                'value' => 20.00,
-                'max_value' => 100000.00,
-                'quantity' => 50,
-                'description' => 'Giảm giá 20% cho đơn hàng từ 200,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ],
-            'FIXED30K' => [
-                'title' => 'Giảm giá cố định 30,000 VND',
-                'code' => 'FIXED30K',
-                'value' => 30000.00,
-                'max_value' => 30000.00,
-                'quantity' => 200,
-                'description' => 'Giảm giá cố định 30,000 VND cho đơn hàng từ 150,000 VND',
-                'start_date' => '2025-01-01',
-                'end_date' => '2025-12-31',
-                'status' => true
-            ],
-            'MUA HE 2025' => [
-                'title' => 'MUA HE',
-                'code' => 'MUA HE 2025',
-                'value' => 10.00,
-                'max_value' => 50000.00,
-                'quantity' => 100,
-                'description' => 'Voucher giảm 10% cho đơn từ 100k, tối đa 50k',
-                'start_date' => '2025-08-01',
-                'end_date' => '2025-08-31',
-                'status' => true
-            ]
-        ];
-        
-        if (!isset($vouchers[$code])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Mã voucher không tồn tại'
-            ], 404);
-        }
-        
-        $voucher = $vouchers[$code];
-        
-        // Kiểm tra thời gian hiệu lực
-        $now = date('Y-m-d');
-        if ($now < $voucher['start_date'] || $now > $voucher['end_date']) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Voucher đã hết hạn hoặc chưa có hiệu lực'
-            ], 400);
-        }
-        
-        // Kiểm tra số lượng còn lại
-        if ($voucher['quantity'] <= 0) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Voucher đã hết số lượng'
-            ], 400);
-        }
-        
-        // Tính toán giảm giá
-        if ($voucher['code'] === 'FIXED30K') {
-            // Giảm cố định
-            $discount = min($voucher['value'], $voucher['max_value']);
-        } else {
-            // Giảm theo %
-            $discount = min($totalAmount * ($voucher['value'] / 100), $voucher['max_value']);
-        }
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Voucher hợp lệ',
-            'data' => [
-                'voucher' => $voucher,
-                'discount_amount' => $discount,
-                'final_amount' => $totalAmount - $discount
-            ]
-        ], 200);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-        ], 500);
-    }
-});
 
-// PUBLIC ORDER ROUTES (không cần authentication)
-Route::post('/test-order', function(Request $request) {
-    try {
-        $orderData = $request->all();
-        
-        // Mock order creation
-        $orderId = 'ORD' . date('YmdHis') . rand(100, 999);
-        
-        return response()->json([
-            'success' => true,
-            'id' => $orderId,
-            'message' => 'Đặt hàng thành công',
-            'order' => $orderData
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-        ], 500);
-    }
-});
     // Quản lý comment (role = 1)
     Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [CommentController::class, 'index']);
@@ -437,4 +320,5 @@ Route::post('/test-order', function(Request $request) {
         Route::delete('/{id}', [CommentController::class, 'destroy']);
         Route::get('/filter/spam', [CommentController::class, 'filterSpam']);
     });
+
 

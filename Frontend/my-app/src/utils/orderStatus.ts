@@ -56,6 +56,17 @@ export const PAYMENT_STATUS_OPTIONS = [
   { value: false, label: "Chưa thanh toán" },
 ];
 
+// Hàm hiển thị text cho payment status
+export const getPaymentStatusDisplayText = (isPaid: boolean | number): string => {
+  if (isPaid === true || isPaid === 1) {
+    return "Đã thanh toán";
+  }
+  if (isPaid === false || isPaid === 0) {
+    return "Chưa thanh toán";
+  }
+  return "Chưa thanh toán"; // Default
+};
+
 // Hàm lấy màu cho Tag trạng thái thanh toán
 export const getPaymentStatusColor = (isPaid: boolean | number): TagProps["color"] => {
   if (isPaid === true || isPaid === 1) {

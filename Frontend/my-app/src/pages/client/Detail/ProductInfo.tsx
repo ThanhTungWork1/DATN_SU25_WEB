@@ -11,6 +11,9 @@ const ProductInfo = ({
   selectedVariantStock,
   sku,
 }: ProductInfoProps) => {
+  // **FIX: Ưu tiên giá biến thể, fallback sang giá sản phẩm**
+  const currentPrice = selectedVariant?.price || product.price;
+  
   // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
   const originalPrice = product.original_price || (product as any).old_price;
 
@@ -20,10 +23,11 @@ const ProductInfo = ({
   // Format giá tiền VN - nhân 1000 để đồng bộ với hệ thống (nếu lưu giá theo nghìn)
   const formattedPrice = displayPrice
     ? Number(displayPrice * 1000).toLocaleString("vi-VN") + "đ"
+
     : "N/A";
 
   const formattedOldPrice = originalPrice
-    ? Number(originalPrice * 1000).toLocaleString("vi-VN") + "đ"
+    ? Number(originalPrice).toLocaleString("vi-VN") + " VNĐ"
     : "";
 
   return (
@@ -41,18 +45,27 @@ const ProductInfo = ({
 
       {/* Trạng thái kho, số lượng, đã bán, mã SP */}
       <div className="mb-3">
+
         <p className="mb-1">
           Trạng thái:
-          {selectedVariantStock !== null &&
-          selectedVariantStock !== undefined ? (
-            selectedVariantStock > 0 ? (
-              <span className="text-success fw-medium"> Còn hàng</span>
-            ) : (
-              <span className="text-danger fw-medium"> Hết hàng</span>
-            )
-          ) : (
-            <span className="text-muted"> Vui lòng chọn Size / Màu</span>
-          )}
+          {(() => {
+            // Kiểm tra xem sản phẩm có variants nào còn hàng không
+            const hasStock = product.variants?.some(variant => variant.stock > 0);
+            
+            if (hasStock) {
+              return <span className="text-success fw-medium"> Còn hàng</span>;
+            } else if (product.variants && product.variants.length > 0) {
+              return <span className="text-danger fw-medium"> Hết hàng</span>;
+            } else {
+              // Nếu không có variants, kiểm tra stock của sản phẩm chính
+              const productStock = (product as any).stock || 0;
+              return productStock > 0 ? (
+                <span className="text-success fw-medium"> Còn hàng</span>
+              ) : (
+                <span className="text-danger fw-medium"> Hết hàng</span>
+              );
+            }
+          })()}
         </p>
 
         {/* Số lượng tồn kho */}
@@ -60,7 +73,21 @@ const ProductInfo = ({
           Số lượng:
           <span className="text-dark fw-medium">
             {" "}
-            {selectedVariantStock ?? "N/A"}
+            {(() => {
+              if (selectedVariantStock !== null && selectedVariantStock !== undefined) {
+                return selectedVariantStock;
+              }
+              
+              // Nếu chưa chọn variant, hiển thị tổng số lượng có sẵn
+              if (product.variants && product.variants.length > 0) {
+                const totalStock = product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0);
+                return totalStock > 0 ? totalStock : "N/A";
+              }
+              
+              // Nếu không có variants, hiển thị stock của sản phẩm chính
+              const productStock = (product as any).stock || 0;
+              return productStock > 0 ? productStock : "N/A";
+            })()}
           </span>
         </p>
 

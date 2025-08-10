@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../provider/CartProvider";
 import { toast } from "sonner";
 import { useWishlistContext } from "../provider/WishlistContext";
+import { getProductMainImage, getProductHoverImage } from "../utils/imageUtils";
 import "../assets/styles/boxSP.css";
 
 interface BoxProductProps {
@@ -35,12 +36,8 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
-      product_id: product.id,
-      quantity: 1,
-      price: product.price * 1000, // ✅ Nhân với 1000 để đồng nhất với cách hiển thị
-    });
-    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    // Chuyển hướng đến trang chi tiết sản phẩm để chọn size và color
+    window.location.href = `/products/${product.id}`;
   };
 
   return (
@@ -105,6 +102,7 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
           {product.old_price && (
             <span className="fashion-oldprice">
               {Number(product.old_price * 1000).toLocaleString("vi-VN")} VND
+
             </span>
           )}
         </div>

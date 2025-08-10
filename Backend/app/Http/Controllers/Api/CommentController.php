@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/CommentController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -50,7 +48,7 @@ class CommentController extends Controller
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('product_variants', 'order_items.variant_id', '=', 'product_variants.id')
             ->where('orders.user_id', $userId)
-            ->where('orders.status', 'completed') // ✅ CHỈ ĐÁNH GIÁ KHI ĐÃ GIAO HÀNG
+            ->whereIn('orders.status', ['completed', 'delivered']) // ✅ CHỈ ĐÁNH GIÁ KHI ĐÃ GIAO HÀNG
             ->where('product_variants.product_id', $productId)
             ->exists();
 
@@ -120,6 +118,56 @@ class CommentController extends Controller
         $comment->delete();
 
         return response()->json(['message' => 'Comment đã bị xoá.']);
+    }
+
+    // ✅ Kiểm tra quyền đánh giá của user
+    public function checkEligibility($productId)
+    {
+        $userId = Auth::id();
+        
+        if (!$userId) {
+            return response()->json([
+                'can_review' => false,
+                'reason' => 'not_logged_in',
+                'message' => 'Bạn cần đăng nhập để đánh giá sản phẩm.'
+            ]);
+        }
+
+        // Kiểm tra đã đánh giá chưa
+        $hasCommented = Comment::where('user_id', $userId)
+            ->where('product_id', $productId)
+            ->exists();
+
+        if ($hasCommented) {
+            return response()->json([
+                'can_review' => false,
+                'reason' => 'already_reviewed',
+                'message' => 'Bạn đã đánh giá sản phẩm này rồi.'
+            ]);
+        }
+
+        // Kiểm tra đã mua hàng thành công chưa
+        $hasPurchased = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('product_variants', 'order_items.variant_id', '=', 'product_variants.id')
+            ->where('orders.user_id', $userId)
+            ->whereIn('orders.status', ['completed', 'delivered']) // Support both status values
+            ->where('product_variants.product_id', $productId)
+            ->exists();
+
+        if (!$hasPurchased) {
+            return response()->json([
+                'can_review' => false,
+                'reason' => 'not_purchased',
+                'message' => 'Bạn cần mua và nhận hàng thành công trước khi đánh giá.'
+            ]);
+        }
+
+        return response()->json([
+            'can_review' => true,
+            'reason' => 'eligible',
+            'message' => 'Bạn có thể đánh giá sản phẩm này.'
+        ]);
     }
 
     // ✅ ADMIN: Lọc bình luận chứa từ khóa xấu

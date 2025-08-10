@@ -19,6 +19,7 @@ axiosInstance.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+
     }
 
     if (!(config.data instanceof FormData)) {
@@ -54,6 +55,7 @@ axiosInstance.interceptors.response.use(
         // 👉 Không xác định vai trò → về trang login mặc định
         window.location.href = "/login";
       }
+
     }
 
     return Promise.reject(error);

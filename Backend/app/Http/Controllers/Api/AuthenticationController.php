@@ -34,11 +34,11 @@ class AuthenticationController extends Controller
                 'password' => Hash::make($validated['password']),
                 'role' => $role,
                 'status' => true,
-                'is_verified' => false
+                'is_verified' => true // **FIX: Tự động verify để không cần email verification**
             ]);
 
-
-            event(new Registered($user)); // Gửi email xác minh
+            // **COMMENT: Tắt email verification để tránh lỗi route**
+            // event(new Registered($user)); // Gửi email xác minh
 
             Log::info('User registered:', ['user_id' => $user->id, 'role' => $user->role, 'email' => $user->email]);
 
@@ -116,7 +116,7 @@ class AuthenticationController extends Controller
                 ], 404);
             }
 
-            if ($user->role !== 1) {
+            if ($user->role != 1) {
                 return response()->json([
                     'message' => 'Tài khoản không phải admin!',
                     'status_code' => 403,
@@ -152,6 +152,58 @@ class AuthenticationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Lỗi khi logout: ' . $e->getMessage(),
+                'status_code' => 500,
+            ], 500);
+        }
+    }
+
+    /**
+     * Cập nhật thông tin profile của user đang đăng nhập
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            // Validate input - chỉ cho phép cập nhật các field an toàn
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'phone' => 'nullable|string|max:20',
+                'gender' => 'nullable|in:male,female,other',
+                'birthdate' => 'nullable|date',
+                'address' => 'nullable|string|max:255',
+            ]);
+
+            \Log::info('User updating profile:', [
+                'user_id' => $user->id,
+                'current_data' => $user->toArray(),
+                'update_data' => $data
+            ]);
+
+            // Cập nhật thông tin user
+            $user->update($data);
+
+            return response()->json([
+                'message' => 'Cập nhật thông tin thành công',
+                'data' => $user->fresh(),
+                'status_code' => 200,
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors(),
+                'status_code' => 422,
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating profile:', [
+                'user_id' => $request->user()?->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'message' => 'Lỗi khi cập nhật thông tin: ' . $e->getMessage(),
                 'status_code' => 500,
             ], 500);
         }
