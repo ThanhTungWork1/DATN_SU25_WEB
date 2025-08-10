@@ -15,8 +15,6 @@ import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
 import InventoryPage from "../pages/admin/inventory/InventoryPage";
 import VoucherPage from "../pages/admin/voucher/Voucher";
-import AdminLogin from "../pages/auth/adminLogin";
-
 import HomeSectionList from "../pages/admin/home-sections/HomeSectionList";
 import HomeSectionProducts from "../pages/admin/home-sections/HomeSectionProducts";
 
@@ -25,7 +23,7 @@ const AdminRoute = () => {
   return (
     <Routes>
       {/* Login route không cần authentication */}
-      <Route path="login" element={<AdminLogin />} />
+      {/* <Route path="login" element={<AdminLogin />} /> */}
 
       {/* Các route khác cần authentication */}
       <Route element={<RequireAuth allowedRoles={["admin"]} />}>

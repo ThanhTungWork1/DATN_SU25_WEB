@@ -12,42 +12,45 @@ import CheckoutPage from "../pages/client/Cart/CheckoutPage";
 import { ContactClient } from "../pages/client/Contact/Contact";
 import { ContactFloating } from "../components/ContactFloating";
 import UserProfile from "../pages/client/Home/UserProfile";
-import UserLogin from "../pages/auth/userLogin";
 import RequireAuth from "./RequireAuth";
-import AdminLogin from "../pages/admin/AdminLogin";
-// import Login from "../pages/auth/Login";
 import OrderList from "../pages/client/Orders/OrderList";
-// import OrderItem from "../pages/client/Orders/OrderItem";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
+import LoginPage from "../pages/auth/Login";
 
 const ClientRoute = () => {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<UserLogin />} />
-        <Route path="/login/admin" element={<AdminLogin />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/products" element={<ListProduct />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/search" element={<ResultProduct />} />
+    <Routes>
+      {/* Các route KHÔNG có Navbar/Footer */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<Register />} />
 
-        <Route element={<RequireAuth allowedRoles={["user"]} />}>
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/orders" element={<OrderList />} />
-          {/* <Route path="/orders/:id" element={<OrderItem />} /> */}
-        </Route>
-
-        <Route path="/wishlist" element={<LikeProduct />} />
-        <Route path="/contact" element={<ContactClient />} />
-        <Route path="/order-success" element={<OrderSuccess />} />
-      </Routes>
-      <Footer />
-      <ContactFloating />
-    </>
+      {/* Các route CÓ Navbar/Footer */}
+      <Route
+        path="*"
+        element={
+          <>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products" element={<ListProduct />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/search" element={<ResultProduct />} />
+              <Route element={<RequireAuth allowedRoles={["user"]} />}>
+                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/orders" element={<OrderList />} />
+              </Route>
+              <Route path="/wishlist" element={<LikeProduct />} />
+              <Route path="/contact" element={<ContactClient />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
+            </Routes>
+            <Footer />
+            <ContactFloating />
+          </>
+        }
+      />
+    </Routes>
   );
 };
 
