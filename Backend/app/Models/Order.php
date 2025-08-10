@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     protected $fillable = [
+        'order_code',
         'user_id',
         'order_code',
         'status',
@@ -21,6 +22,7 @@ class Order extends Model
         'payment_method',
         'discount_amount',
         'final_amount',
+
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -43,6 +45,7 @@ class Order extends Model
      * Boot method để tự động tạo order_code khi tạo order mới
      */
     protected static function boot()
+
     {
         parent::boot();
         
@@ -122,3 +125,4 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 }
+

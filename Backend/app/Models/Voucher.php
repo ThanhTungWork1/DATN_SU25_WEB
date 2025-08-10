@@ -65,6 +65,7 @@ class Voucher extends Model
 
         // Kiểm tra user đã dùng chưa
         if ($this->isUsedByUser($userId)) {
+
             return false;
         }
 

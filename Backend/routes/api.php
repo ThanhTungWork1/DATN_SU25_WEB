@@ -39,9 +39,19 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 // --- ADMIN Controllers ---
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Api\VNPayController;
+use App\Http\Controllers\Api\ZaloPayController;
+
 // --- Middleware ---
 // Test API
+
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+
+Route::post('/register', [AuthenticationController::class, 'register']);
+Route::post('/login', [AuthenticationController::class, 'login']);
+Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
+Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
 // Forgot Password
 Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
@@ -49,8 +59,9 @@ Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 've
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
 
+
 // Email Verification
-Route::post('/email/verification-notification', function (Request $request) {
+Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return response()->json(['message' => 'Đã gửi lại email xác minh']);
 })->middleware(['auth:sanctum', 'throttle:6,1']);
@@ -63,9 +74,10 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
         $user->markEmailAsVerified();
     }
     return response()->json(['message' => 'Xác minh email thành công']);
-})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
+})->name('verification.verify');
 
 // Public - Categories, Sizes, Colors, etc.
+
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
@@ -154,6 +166,7 @@ Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware(
 
 // ====================================================================
 
+
 // ADMIN ROUTES (Gộp tất cả vào một nhóm được bảo vệ)
 // ====================================================================
 Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
@@ -193,6 +206,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
         Route::get('/recent-reviews', [DashboardController::class, 'recentReviews']);
         Route::get('/low-stock-products', [DashboardController::class, 'lowStockProducts']);
         Route::get('/all-stats', [DashboardController::class, 'allStats']);
+
     });
 
 
@@ -233,6 +247,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
     });
 
+
     Route::prefix('client/orders')->group(function () {
         Route::get('/', [ClientOrderController::class, 'index']);
         Route::get('/statistics', [ClientOrderController::class, 'statistics']);
@@ -243,23 +258,28 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
     });
 
+    // Orders cho admin
     Route::prefix('order')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::get('/{id}', [OrderController::class, 'show']);
-        Route::post('add', [OrderController::class, 'store']);
-        Route::put('update/{id}', [OrderController::class, 'update']);
-        Route::delete('delete/{id}', [OrderController::class, 'destroy']);
+        Route::post('/add', [OrderController::class, 'store']);
+        Route::put('/update/{id}', [OrderController::class, 'update']);
+        Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
+        Route::put('/{id}/mark-paid', [OrderController::class, 'markAsPaid']);
+        Route::post('/payment-webhook', [OrderController::class, 'paymentWebhook']);
     });
 
+    // User management (role = 1)
     Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/{id}', [UserController::class, 'show']);
-        Route::post('add', [UserController::class, 'store']);
-        Route::put('update/{id}', [UserController::class, 'update']);
-        Route::put('lock/{id}', [UserController::class, 'lock']);
-        Route::put('unlock/{id}', [UserController::class, 'unlock']);
+        Route::post('/add', [UserController::class, 'store']);
+        Route::put('/update/{id}', [UserController::class, 'update']);
+        Route::put('/lock/{id}', [UserController::class, 'lock']);
+        Route::put('/unlock/{id}', [UserController::class, 'unlock']);
     });
 
+    // Vouchers
     Route::prefix('vouchers')->group(function () {
     Route::get('/', [VoucherController::class, 'index']);
     Route::get('/{code}', [VoucherController::class, 'show']);
@@ -363,9 +383,22 @@ Route::post('/test-voucher', function(Request $request) {
     }
 });
 
+    // Payments (ZaloPay + VNPay)
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
+
+        Route::prefix('zalopay')->group(function () {
+            Route::post('/create', [ZaloPayController::class, 'createOrder']);
+            Route::post('/callback', [ZaloPayController::class, 'callback']);
+        });
+
+        Route::prefix('vnpay')->group(function () {
+            Route::post('/create', [VNPayController::class, 'createPayment']);
+            Route::get('/callback', [VNPayController::class, 'callback']);
+            Route::post('/ipn', [VNPayController::class, 'ipn']);
+            Route::post('/check-status', [VNPayController::class, 'checkStatus']);
+        });
     });
 
     Route::apiResource('/cart', CartController::class);
@@ -509,10 +542,11 @@ Route::post('/test-order', function(Request $request) {
         ], 500);
     }
 });
-
-
-
-
-
-
-
+    // Quản lý comment (role = 1)
+    Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {
+        Route::get('/', [CommentController::class, 'index']);
+        Route::put('/approve/{id}', [CommentController::class, 'approve']);
+        Route::put('/hide/{id}', [CommentController::class, 'hide']);
+        Route::delete('/{id}', [CommentController::class, 'destroy']);
+        Route::get('/filter/spam', [CommentController::class, 'filterSpam']);
+    });

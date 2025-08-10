@@ -8,6 +8,7 @@ class HomeSection extends Model
 {
     protected $fillable = ['name', 'title', 'description', 'status'];
 
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'home_section_products')
@@ -15,4 +16,5 @@ class HomeSection extends Model
             ->orderBy('sort_order');
     }
 }
+
 
