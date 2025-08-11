@@ -11,15 +11,19 @@ interface PaginatedResponse<T> {
 
 // Lấy danh sách tất cả đánh giá (admin)
 export const getComments = (page = 1) => {
-    return axiosInstance.get<PaginatedResponse<Comment>>(`/admin/comments?page=${page}`);
+    // Backend: routes/api.php -> Route::prefix('comments')->... Route::get('/'...)
+    return axiosInstance.get<PaginatedResponse<Comment>>(`/comments?page=${page}`);
 };
 
 // Cập nhật trạng thái của một đánh giá (admin)
 export const updateCommentStatus = (id: number, status: boolean) => {
-    return axiosInstance.put(`/admin/comments/${id}/status`, { status });
+    // Backend có 2 route riêng: approve và hide
+    return status
+        ? axiosInstance.put(`/comments/approve/${id}`)
+        : axiosInstance.put(`/comments/hide/${id}`);
 };
 
 // Xóa một đánh giá (admin)
 export const deleteComment = (id: number) => {
-    return axiosInstance.delete(`/admin/comments/${id}`);
+    return axiosInstance.delete(`/comments/${id}`);
 };

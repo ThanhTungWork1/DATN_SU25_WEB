@@ -1,11 +1,11 @@
-import useCart from "../../../hook/useCart";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../../../provider/CartProvider";
 
 const CartPage = () => {
-  const token = localStorage.getItem("token") || "";
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, removeItem, clearCart } = useCart(token);
+  // Lấy cart từ CartProvider để đồng bộ với addToCart ở ProductActions
+  const { cartItems, updateQuantity, removeItem, clearCart, fetchCart } = useCart();
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
@@ -25,6 +25,11 @@ const CartPage = () => {
     }, {} as { [key: number]: number });
     setQuantities(initialQuantities);
   }, [cartItems]);
+
+  // Đảm bảo đồng bộ lần đầu mở trang
+  useEffect(() => {
+    fetchCart?.();
+  }, []);
 
   const toggleSelectItem = (id: number) => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));

@@ -29,17 +29,11 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
-<<<<<<< HEAD
         // Sắp xếp theo ID tăng dần và phân trang theo tham số per_page (mặc định 20)
         $perPage = (int) $request->get('per_page', 20);
         if ($perPage <= 0) { $perPage = 20; }
         $products = $query->orderBy('id', 'asc')->paginate($perPage);
         
-=======
-        // Sắp xếp theo ID tăng dần và phân trang 5 sản phẩm
-        $products = $query->orderBy('id', 'asc')->paginate(5);
-
->>>>>>> origin/ThanhTung_profile_home_auth
         // Đảm bảo accessors được load
         $products->getCollection()->transform(function ($product) {
             \Log::info('🔍 [BACKEND DEBUG] Processing product ID: ' . $product->id);
@@ -365,7 +359,6 @@ class ProductController extends Controller
             ]
         ]);
     }
-<<<<<<< HEAD
 
     /**
      * Thống kê cho một sản phẩm cụ thể (dựa trên order_items của các biến thể).
@@ -541,6 +534,3 @@ class ProductController extends Controller
         return $timeData;
     }
 }
-=======
-}
->>>>>>> origin/ThanhTung_profile_home_auth

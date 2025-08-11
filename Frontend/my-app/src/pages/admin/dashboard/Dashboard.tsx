@@ -21,11 +21,9 @@ import UserGrowthCard from "../../../components/dashboard/UserGrowthCard";
 import RevenueChart from "../../../components/dashboard/RevenueChart";
 import OrdersStatusChart from "../../../components/dashboard/OrdersStatusChart";
 import TopProductsTable from "../../../components/dashboard/TopProductsTable";
-import RecentOrdersTable from "../../../components/dashboard/RecentOrdersTable";
-import RecentUsersTable from "../../../components/dashboard/RecentUsersTable";
+// Removed sections: RecentOrdersTable, RecentUsersTable
 import RatingStatsChart from "../../../components/dashboard/RatingStatsChart";
-import RecentReviewsTable from "../../../components/dashboard/RecentReviewsTable";
-import LowStockAlert from "../../../components/dashboard/LowStockAlert";
+// Removed section: RecentReviewsTable
 
 const Dashboard: React.FC = () => {
   const { data, isLoading, refetch } = useDashboardOverview();
@@ -221,47 +219,22 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={12}>
           <TopProductsTable />
         </Col>
-        {/* Báo hàng tồn kho */}
-        <Col xs={24} lg={12}>
-          <LowStockAlert />
-        </Col>
-      </Row>
-
-      {/* Thống kê đánh giá và biểu đồ người dùng */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-        {/* Thống kê đánh giá theo sao */}
+        {/* Biểu đồ đánh giá theo sao (đưa lên để lấp chỗ trống) */}
         <Col xs={24} lg={12}>
           <RatingStatsChart />
         </Col>
-        {/* Biểu đồ người dùng theo tháng */}
-        <Col xs={24} lg={12}>
+      </Row>
+
+      {/* Biểu đồ người dùng theo tháng (full width) */}
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+        <Col xs={24} lg={24}>
           <UserChart />
         </Col>
       </Row>
 
-      {/* Người dùng mới và đơn hàng gần đây */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-        {/* Người dùng mới nhất */}
-        <Col xs={24} lg={12}>
-          <RecentUsersTable />
-        </Col>
-        {/* Đơn hàng gần đây */}
-        <Col xs={24} lg={12}>
-          <RecentOrdersTable />
-        </Col>
-      </Row>
+      {/* (Đã gỡ) Người dùng mới và Đơn hàng gần đây */}
 
-      {/* Đánh giá gần đây - di chuyển xuống dưới cùng */}
-      <Row gutter={[16, 16]}>
-        {/* Đánh giá gần đây */}
-        <Col xs={24} lg={12}>
-          <RecentReviewsTable />
-        </Col>
-        {/* Để trống để cân đối */}
-        <Col xs={24} lg={12}>
-          <div style={{ height: "100%" }}></div>
-        </Col>
-      </Row>
+      {/* (Đã gỡ) Đánh giá gần đây */}
     </div>
   );
 };

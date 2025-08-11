@@ -12,8 +12,8 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Admin\InventoryController;
-use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\NotificationController;
@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Client\HomePageController;
 use App\Http\Controllers\HomeSectionController;
+use App\Http\Controllers\Api\ChatbotController;
 
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
@@ -57,6 +58,9 @@ Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
+
+// Chatbot endpoint
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
 
 
 // Forgot Password
@@ -188,8 +192,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('orders/export', [OrderController::class, 'export']);
     Route::apiResource('orders', OrderController::class);
 
-    // Vouchers management
-    Route::apiResource('vouchers', VoucherController::class);
+    // Vouchers management (Admin)
+    Route::apiResource('vouchers', AdminVoucherController::class);
+    // Usage details for a voucher
+    Route::get('vouchers/{id}/usage', [AdminVoucherController::class, 'usageDetails']);
+    // Toggle voucher status (lock/unlock)
+    Route::patch('vouchers/{id}/toggle', [AdminVoucherController::class, 'toggle']);
 
     // Dashboard
 
@@ -325,8 +333,8 @@ Route::post('/contact', [ContactController::class, 'store']);
 Route::get('/home-sections', [\App\Http\Controllers\HomeSectionController::class, 'index']);
 
 
-    // Quản lý comment (role = 1)
-    Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {
+    // Quản lý comment (role = 1) - cần xác thực Sanctum
+    Route::prefix('comments')->middleware(['auth:sanctum', CheckRole::class . ':1'])->group(function () {
         Route::get('/', [CommentController::class, 'index']);
         Route::put('/approve/{id}', [CommentController::class, 'approve']);
         Route::put('/hide/{id}', [CommentController::class, 'hide']);

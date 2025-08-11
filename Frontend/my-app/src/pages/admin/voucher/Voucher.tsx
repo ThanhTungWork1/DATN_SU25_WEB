@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import "../../../assets/styles/Voucher.css";
 import axiosInstance from "../../../utils/axiosInstance";
 import { Voucher } from "../../../types/Voucher";
-import { message } from "antd";
+import { message, DatePicker } from "antd";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import VoucherDetail from "./VoucherDetail";
 
 interface ApiResponsePaginated<T> {
@@ -115,6 +117,19 @@ const VoucherPage = () => {
     });
   };
 
+  // Chọn khoảng thời gian (bắt đầu - kết thúc) bằng RangePicker
+  const handleDateRangeChange = (
+    _dates: [Dayjs | null, Dayjs | null] | null,
+    dateStrings: [string, string]
+  ) => {
+    const [start, end] = dateStrings;
+    setForm({
+      ...form,
+      start_date: start || "",
+      expiry_date: end || "",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -144,14 +159,13 @@ const VoucherPage = () => {
     try {
       const payload = {
         code: form.code.trim(),
-        discount_amount: Number(form.value),
+        value: Number(form.value),
         start_date: form.start_date,
-        end_date: form.expiry_date,
+        expiry_date: form.expiry_date,
         min_order_amount: Number(form.min_order_amount) || 0,
         max_usage: Number(form.max_usage) || 1,
-        discount_type: form.discount_type === "percent" ? "percentage" : "amount",
+        discount_type: form.discount_type,
         description: form.description || "",
-
       };
       
       console.log("Payload gửi lên:", payload); 
@@ -389,7 +403,7 @@ const VoucherPage = () => {
                   type="text"
                   name="max_discount_amount"
                   value={formatCurrency(form.max_discount_amount)}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const raw = e.target.value.replace(/\D/g, "");
                     const numericValue = parseInt(raw || "0");
                     setForm({ ...form, max_discount_amount: numericValue });
@@ -404,26 +418,21 @@ const VoucherPage = () => {
         )}
 
         <div className="form-row">
-          <div className="form-group">
-            <label>Ngày bắt đầu *</label>
-            <input
-              type="date"
-              name="start_date"
-              value={form.start_date}
-              onChange={handleInputChange}
-              min={new Date().toISOString().split("T")[0]}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Ngày hết hạn *</label>
-            <input
-              type="date"
-              name="expiry_date"
-              value={form.expiry_date}
-              onChange={handleInputChange}
-              min={form.start_date || new Date().toISOString().split("T")[0]}
-              required
+          <div className="form-group" style={{ width: "100%" }}>
+            <label>Thời gian áp dụng *</label>
+            <DatePicker.RangePicker
+              allowClear
+              value={[
+                form.start_date ? dayjs(form.start_date) : null,
+                form.expiry_date ? dayjs(form.expiry_date) : null,
+              ]}
+              onChange={handleDateRangeChange}
+              format="YYYY-MM-DD"
+              disabledDate={(current) =>
+                !!current && current < dayjs().startOf("day")
+              }
+              placeholder={["Start date", "End date"]}
+              style={{ width: "100%" }}
             />
           </div>
         </div>
@@ -436,7 +445,7 @@ const VoucherPage = () => {
                 type="text"
                 name="min_order_amount"
                 value={formatCurrency(form.min_order_amount)}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const raw = e.target.value.replace(/\D/g, "");
                   const numericValue = parseInt(raw || "0");
                   setForm({ ...form, min_order_amount: numericValue });

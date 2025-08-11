@@ -147,7 +147,8 @@ export default function OrderList() {
             key: "total_price", 
             render: (_, record) => {
                 const finalAmount = record.final_amount || (record.total_amount + record.shipping_fee - (record.discount_amount || 0));
-                return `${Number(finalAmount || 0).toLocaleString()} VND`;
+                // Dùng formatter để tự động nhân 1000 và format VND
+                return formatCurrency(finalAmount);
             }
         },
         {
@@ -221,10 +222,18 @@ export default function OrderList() {
             dataIndex: "is_paid",
             key: "is_paid",
             render: (is_paid, record) => {
-                // Lấy danh sách payment status được phép dựa trên order status và payment method
+                // Nếu là đơn đã huỷ, hiển thị logic chuyên biệt
+                if (record.status === 'cancelled') {
+                    return (
+                        <CancelledOrderPaymentStatus 
+                            isPaid={is_paid} 
+                            paymentMethod={record.payment_method || 'COD'} 
+                        />
+                    );
+                }
+
+                // Các trạng thái khác: giữ nguyên logic cũ
                 const allowedPaymentStatuses = getAllowedPaymentStatuses(record.status, record.payment_method || 'COD');
-                
-                // Display current value as text
                 const displayValue = getPaymentStatusDisplayText(is_paid);
 
                 return (
@@ -250,19 +259,16 @@ export default function OrderList() {
                             style={{ width: 100 }}
                             size="small"
                             onChange={(newPaymentStatus) => {
-                                // Validate business logic trước khi update
                                 const validation = canChangePaymentStatus(
                                     record.status, 
                                     record.is_paid, 
                                     newPaymentStatus, 
                                     record.payment_method || 'COD'
                                 );
-                                
                                 if (!validation.allowed) {
                                     message.error(validation.reason);
                                     return;
                                 }
-                                
                                 handleUpdateStatus(record.id, "is_paid", newPaymentStatus);
                             }}
                             allowClear

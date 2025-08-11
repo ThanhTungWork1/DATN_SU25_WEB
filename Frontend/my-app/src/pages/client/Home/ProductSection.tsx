@@ -62,7 +62,18 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
         )}
       </div>
       <div className="fashion-row">
-        {displayedProducts.map((product) => (
+        {displayedProducts.map((product) => {
+          // Chuẩn hóa đơn vị
+          const normalize = (v: any) => {
+            const n = Number(v || 0);
+            return !isFinite(n) ? 0 : n < 1000 ? n * 1000 : n;
+          };
+          // Quy tắc: giá bán = price; giá gốc = old_price (nếu có)
+          const sale = normalize(product.price);
+          const original = normalize(product.old_price ?? 0);
+          const hasOriginalField = original > 0;
+
+          return (
           <div className="fashion-card" key={product.id} data-aos="zoom-in">
             {product.discount && (
               <span className="fashion-badge">-{product.discount}%</span>
@@ -74,9 +85,9 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
             />
             <div className="fashion-name">{product.name}</div>
             <div>
-              <span className="fashion-price">{product.price.toLocaleString()}đ</span>
-              {product.old_price && (
-                <span className="fashion-oldprice">{product.old_price.toLocaleString()}đ</span>
+              <span className="fashion-price">{sale.toLocaleString("vi-VN")}đ</span>
+              {hasOriginalField && original >= sale && (
+                <span className="fashion-oldprice">{original.toLocaleString("vi-VN")}đ</span>
               )}
             </div>
 
@@ -85,10 +96,10 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
             </div>
             <button className="fashion-buy">Xem Ngay</button>
           </div>
-        ))}
+        );})}
       </div>
     </section>
   );
-};
+}
 
 export default ProductSection;

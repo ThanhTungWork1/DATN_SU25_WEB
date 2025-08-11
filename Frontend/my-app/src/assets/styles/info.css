@@ -19,11 +19,17 @@
 }
 
 .product-info h2.text-danger {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: 48px !important; /* force override bootstrap */
+  font-weight: 900;
   color: #e53935 !important;
   margin: 0;
-  line-height: 1;
+  line-height: 1.05;
+}
+
+/* Tăng độ ưu tiên cho đúng H2 hiển thị giá */
+.product-info .text-danger.fw-bolder.mb-0 {
+  font-size: 48px !important;
+  line-height: 1.05;
 }
 
 /* Original Price with Strike-through */
@@ -54,7 +60,10 @@
   }
 
   .product-info h2.text-danger {
-    font-size: 30px;
+    font-size: 40px !important; /* tablet */
+  }
+  .product-info .text-danger.fw-bolder.mb-0 { 
+    font-size: 40px !important; 
   }
 
   .price-original {
@@ -68,7 +77,10 @@
   }
 
   .product-info h2.text-danger {
-    font-size: 28px;
+    font-size: 32px !important; /* mobile */
+  }
+  .product-info .text-danger.fw-bolder.mb-0 { 
+    font-size: 32px !important; 
   }
 
   .price-original {

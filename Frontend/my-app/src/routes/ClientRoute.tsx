@@ -16,6 +16,7 @@ import RequireAuth from "./RequireAuth";
 import OrderList from "../pages/client/Orders/OrderList";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
 import LoginPage from "../pages/auth/Login";
+import ChatWidget from "../components/ChatWidget";
 
 
 const ClientRoute = () => {
@@ -48,6 +49,7 @@ const ClientRoute = () => {
             </Routes>
             <Footer />
             <ContactFloating />
+            <ChatWidget />
           </>
         }
       />

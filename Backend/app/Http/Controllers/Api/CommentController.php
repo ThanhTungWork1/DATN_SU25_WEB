@@ -85,10 +85,15 @@ class CommentController extends Controller
         return response()->json(['comment' => $comment, 'message' => $message], 201);
     }
 
-    // ✅ ADMIN: Xem toàn bộ bình luận
-    public function index()
+    // ✅ ADMIN: Xem toàn bộ bình luận (có phân trang)
+    public function index(Request $request)
     {
-        return response()->json(Comment::with('user', 'product')->get());
+        $perPage = (int)($request->get('per_page', 15));
+        $comments = Comment::with(['user', 'product'])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        return response()->json($comments);
     }
 
     // ✅ ADMIN: Duyệt bình luận

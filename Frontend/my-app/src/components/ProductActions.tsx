@@ -34,14 +34,15 @@ const ProductActions = ({
 
   const handleAddToCart = async () => {
     try {
+      // Giao cho CartProvider hiển thị toast (success/error)
       await addToCart({
         product_id: productId,
-        variant_id: variantId || productId, // Fallback to productId if no variantId
+        variant_id: variantId || productId, // Fallback nếu không có variantId
         quantity: quantity,
-      });
-      toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+        price: productPrice ?? 0,
+      } as any);
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+      // Nếu provider ném lỗi, chỉ log — tránh toast trùng lặp
       console.error("Error adding to cart:", error);
     }
   };

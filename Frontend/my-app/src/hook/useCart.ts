@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import type { CartItem, CartResponse } from "../types/CartType";
+import { TokenManager } from "../utils/tokenUtils";
 
 export default function useCart(token: string) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const fetchCart = async () => {
     try {
-      const currentToken = localStorage.getItem('token');
-      console.log("🔄 Fetching cart with token:", currentToken ? 'Token exists' : 'No token');
-      
+      const currentToken = TokenManager.getUserToken();
+
       if (!currentToken) {
         console.warn("⚠️ No token found, setting empty cart");
         setCartItems([]);
         return;
       }
-      
+
       const res = await axios.get<CartResponse>("http://localhost:8000/api/cart", {
-        headers: { 
-          'Authorization': `Bearer ${currentToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
       });
-      console.log("✅ Cart fetched successfully:", res.data);
+
       setCartItems(res.data.cart_items || []);
     } catch (error: any) {
       console.error("❌ Lỗi fetch cart:", error);
@@ -39,7 +39,6 @@ export default function useCart(token: string) {
 
   const updateQuantity = async (id: number, quantity: number) => {
     try {
-      console.log("🧪 Updating quantity for cart item ID:", id, "to:", quantity);
       await axios.put(
         `http://localhost:8000/api/cart/${id}`,
         { quantity },
@@ -47,31 +46,23 @@ export default function useCart(token: string) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("✅ Update quantity successful");
+
       fetchCart();
-    } catch (error: any) {
-      console.error("❌ Lỗi cập nhật:", error);
-      console.error("Error response:", error.response?.data);
-    }
+    } catch (error: any) {}
   };
 
   const removeItem = async (id: number) => {
     try {
-      console.log("🧪 Removing cart item ID:", id);
       await axios.delete(`http://localhost:8000/api/cart/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("✅ Remove item successful");
+
       fetchCart();
-    } catch (error: any) {
-      console.error("❌ Lỗi xóa:", error);
-      console.error("Error response:", error.response?.data);
-    }
+    } catch (error: any) {}
   };
 
   const clearCart = async () => {
     try {
-      console.log("🧪 Clearing entire cart");
       await axios.post(
         "http://localhost:8000/api/cart-clear",
         {},
@@ -79,50 +70,45 @@ export default function useCart(token: string) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("✅ Clear cart successful");
+
       setCartItems([]);
-    } catch (error: any) {
-      console.error("❌ Lỗi xóa toàn bộ:", error);
-      console.error("Error response:", error.response?.data);
-    }
+    } catch (error: any) {}
   };
 
   const addToCart = async (item: any) => {
     try {
-      const currentToken = localStorage.getItem('token');
-      console.log("🛒 Adding to cart:", item);
-      console.log("🔑 Using token:", currentToken ? 'Token exists' : 'No token');
-      
+      const currentToken = TokenManager.getUserToken();
+
       if (!currentToken) {
-        throw new Error('No authentication token found');
+        throw new Error("No authentication token found");
       }
-      
-      // CartController yêu cầu product_id trong validation
+
+      // Gửi variant_id nếu có; fallback product_id
       const requestData = {
         cartItems: [
           {
+            variant_id: item.variant_id,
             product_id: item.product_id,
             quantity: item.quantity || 1,
-            price: item.price || 0
-          }
-        ]
-      };
-      
-      console.log("📝 Request data:", requestData);
-      
-      const response = await axios.post("http://localhost:8000/api/cart", requestData, {
-        headers: { 
-          'Authorization': `Bearer ${currentToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-      });
-      
-      console.log("✅ Added to cart successfully:", response.data);
+            price: item.price || 0,
+          },
+        ],
+      } as any;
+
+      const response = await axios.post(
+        "http://localhost:8000/api/cart",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
       fetchCart(); // Refresh cart
     } catch (error: any) {
-      console.error("❌ Lỗi thêm vào giỏ hàng:", error);
-      console.error("Error response:", error.response?.data);
       throw error; // Throw error để ProductActions có thể bắt
     }
   };

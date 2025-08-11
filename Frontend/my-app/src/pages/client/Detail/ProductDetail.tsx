@@ -88,8 +88,7 @@ const ProductDetail = () => {
   }
 
   const selectedVariant = product.variants?.find(
-    (v) =>
-      v.size?.name === selectedSize && v.color?.id === selectedColor?.id
+    (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -241,13 +240,23 @@ const ProductDetail = () => {
       product.hover_image || product.image_url || product.image;
   }
 
-  // Nếu không có final_price, tính toán từ price và discount
+  // Nếu không có final_price, xác định hợp lý để tránh giảm giá 2 lần
   if (!product.final_price) {
-    if (product.discount && product.discount > 0) {
-      product.final_price =
-        product.price - (product.price * product.discount) / 100;
+    const priceNum = Number(product.price || 0);
+    const origNum = Number(
+      (product as any).original_price || (product as any).old_price || 0
+    );
+    const discountNum = Number(product.discount || 0);
+
+    if (origNum > 0 && priceNum > 0 && priceNum < origNum) {
+      // Giá hiện tại đã là giá sau giảm (nhỏ hơn giá gốc) => dùng trực tiếp
+      product.final_price = priceNum;
+    } else if (discountNum > 0 && priceNum > 0) {
+      // Áp dụng giảm giá từ discount nếu có
+      product.final_price = priceNum - (priceNum * discountNum) / 100;
     } else {
-      product.final_price = product.price;
+      // Mặc định
+      product.final_price = priceNum;
     }
   }
 
@@ -412,13 +421,11 @@ const ProductDetail = () => {
                 productName={product.name}
                 productPrice={(() => {
                   const price = selectedVariant?.price || product.price || 0;
-                  console.log('=== PRODUCT DETAIL PRICE DEBUG ===');
-                  console.log('selectedVariant?.price:', selectedVariant?.price);
-                  console.log('product.price:', product.price);
-                  console.log('final price passed to ProductActions:', price);
                   return price;
                 })()}
-                productImage={selectedImage || product.image_url || product.image || ""}
+                productImage={
+                  selectedImage || product.image_url || product.image || ""
+                }
               />
 
               <hr />
@@ -441,4 +448,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-

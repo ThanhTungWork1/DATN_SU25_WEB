@@ -13,14 +13,13 @@ const useCurrentUser = () => {
       if (!token) {
         throw new Error("Không có token xác thực");
       }
-      
+
       const response = await axios.get<IUser>("http://localhost:8000/api/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
-      console.log("Current user data:", response.data);
+
       return response.data;
     },
     enabled: !!token,

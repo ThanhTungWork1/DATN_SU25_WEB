@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Cart\CreateCartRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ class CartController extends Controller
      * Thêm một hoặc nhiều sản phẩm vào giỏ hàng.
      * Xử lý một mảng 'cartItems' từ request.
      */
-    public function store(Request $request)
+    public function store(CreateCartRequest $request)
     {
         try {
             return DB::transaction(function () use ($request) {
@@ -105,18 +106,26 @@ class CartController extends Controller
                 $cart = Cart::firstOrCreate(['user_id' => $userId]);
 
                 foreach ($data['cartItems'] as $item) {
-                    // Tìm variant_id từ product_id
-                    $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
-                    
-                    if (!$variant) {
+                    // Ưu tiên nhận trực tiếp variant_id từ frontend; nếu không có thì tìm theo product_id
+                    $variantId = $item['variant_id'] ?? null;
+                    if (!$variantId) {
+                        if (!empty($item['product_id'])) {
+                            $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                            if ($variant) {
+                                $variantId = $variant->id;
+                            }
+                        }
+                    }
+
+                    if (!$variantId) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'Không tìm thấy variant cho sản phẩm ID: ' . $item['product_id']
+                            'message' => 'Không tìm thấy biến thể (variant_id hoặc product_id không hợp lệ)'
                         ], 400);
                     }
 
                     // Kiểm tra xem item đã có trong cart chưa
-                    $existingItem = $cart->cartItems()->where('variant_id', $variant->id)->first();
+                    $existingItem = $cart->cartItems()->where('variant_id', $variantId)->first();
                     
                     if ($existingItem) {
                         // Cập nhật số lượng
@@ -126,7 +135,7 @@ class CartController extends Controller
                     } else {
                         // Tạo item mới
                         $cart->cartItems()->create([
-                            'variant_id' => $variant->id,
+                            'variant_id' => $variantId,
                             'quantity' => $item['quantity'],
                             'price' => $item['price'],
                         ]);

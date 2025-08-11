@@ -97,7 +97,7 @@ const VoucherDetail: React.FC<VoucherDetailProps> = ({ voucherId, isVisible, onC
               <button className="close-btn" onClick={onClose}>×</button>
             </div>
 
-            <div className="modal-content">
+            <div className="voucher-modal-content">
               {/* Thông tin cơ bản */}
               <div className="info-section">
                 <h3>📋 Thông tin cơ bản</h3>

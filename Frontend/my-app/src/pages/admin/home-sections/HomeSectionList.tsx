@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { ApiHomeSection } from '../../../api/ApiHomeSection';
 import { HomeSection } from '../../../types/HomeSection';
 
@@ -100,8 +99,8 @@ const HomeSectionList = () => {
   return (
     <div className="p-4">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Quản lý Home Sections</h1>
-        <p className="text-gray-600">Tạo và quản lý các section hiển thị trên trang chủ</p>
+        <h1 className="text-2xl font-extrabold mb-2 text-gray-900">Quản lý Home Sections</h1>
+        <p className="text-gray-800">Tạo và quản lý các section hiển thị trên trang chủ</p>
       </div>
 
       {/* Nút thêm section mới */}
@@ -121,7 +120,7 @@ const HomeSectionList = () => {
           <form onSubmit={handleCreate}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Tên section</label>
+                <label className="block text-sm font-semibold mb-1 text-gray-900">Tên section</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: featured_products"
@@ -132,7 +131,7 @@ const HomeSectionList = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Tiêu đề hiển thị</label>
+                <label className="block text-sm font-semibold mb-1 text-gray-900">Tiêu đề hiển thị</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Sản phẩm nổi bật"
@@ -143,7 +142,7 @@ const HomeSectionList = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Mô tả (tùy chọn)</label>
+                <label className="block text-sm font-semibold mb-1 text-gray-900">Mô tả (tùy chọn)</label>
                 <input
                   type="text"
                   placeholder="Mô tả ngắn gọn"
@@ -225,15 +224,15 @@ const HomeSectionList = () => {
           <div key={section.id} className="border rounded p-4 bg-white">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-semibold">{section.name}</h3>
-                <p className="text-gray-600">{section.title}</p>
+                <h3 className="text-lg font-bold text-gray-900">{section.name}</h3>
+                <p className="text-gray-900">{section.title}</p>
                 {section.description && (
-                  <p className="text-sm text-gray-500">{section.description}</p>
+                  <p className="text-base text-gray-700">{section.description}</p>
                 )}
                 <p className="text-sm text-blue-600">
                   {section.products?.length || 0} sản phẩm
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-sm text-gray-700">
                   Trạng thái: {section.status ? 'Hoạt động' : 'Không hoạt động'}
                 </p>
               </div>

@@ -9,6 +9,8 @@ import {
   GiftOutlined,
   BarChartOutlined,
   HomeOutlined, 
+  PictureOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
@@ -43,6 +45,8 @@ const items: MenuItem[] = [
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Home Sections", "/admin/home-sections", <HomeOutlined />),
   getItem("Voucher", "/admin/voucher", <GiftOutlined />),
+  getItem("Banners", "/admin/banners", <PictureOutlined />),
+  getItem("Comments", "/admin/comments", <CommentOutlined />),
   getItem("Liên hệ", "/admin/contacts", <Contact />),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
 ];

@@ -11,24 +11,51 @@ const ProductInfo = ({
   selectedVariantStock,
   sku,
 }: ProductInfoProps) => {
-  // **FIX: Ưu tiên giá biến thể, fallback sang giá sản phẩm**
-  const currentPrice = selectedVariant?.price || product.price;
-  
-  // Lấy giá gốc: ưu tiên original_price, fallback sang old_price
-  const originalPrice = product.original_price || (product as any).old_price;
+  // Helper: tự động chuẩn hóa đơn vị VND. Nếu giá < 1000 coi là tính theo nghìn => nhân 1000
+  const normalize = (v: any) => {
+    const n = Number(v || 0);
+    if (!isFinite(n)) return 0;
+    return n < 1000 ? n * 1000 : n;
+  };
 
-  // ✅ Ưu tiên giá từ biến thể sản phẩm (variant), fallback về giá chính
-  const displayPrice = selectedVariant?.price || product.price;
+  // Lấy thô: chỉ dùng price làm giá bán chuẩn (KHÔNG dùng final_price/discount)
+  // Nếu variant.price không có hoặc = 0, fallback về product.price
+  const rawPrice = (() => {
+    const vp = Number((selectedVariant as any)?.price ?? 0);
+    if (isFinite(vp) && vp > 0) return vp;
+    return Number((product as any)?.price ?? 0);
+  })();
 
-  // Format giá tiền VN - nhân 1000 để đồng bộ với hệ thống (nếu lưu giá theo nghìn)
-  const formattedPrice = displayPrice
-    ? Number(displayPrice * 1000).toLocaleString("vi-VN") + "đ"
+  // Giá gốc: ưu tiên variant.original_price -> product.old_price (bỏ qua original_price để đúng chuẩn yêu cầu)
+  const rawOriginal =
+    (selectedVariant as any)?.original_price ??
+    (product as any)?.old_price ??
+    0;
 
+  const priceN = normalize(rawPrice);
+  const originalPrice = normalize(rawOriginal);
+
+  // Chỉ coi là có giá gốc khi giá gốc hợp lệ (>0)
+  const hasValidOriginal = originalPrice > 0;
+
+  // Quy tắc:
+  // - Luôn dùng price làm giá bán.
+  // - Nếu có old_price hợp lệ và >= price thì hiển thị làm giá gốc (gạch).
+  const salePrice = (() => {
+    return priceN;
+  })();
+  // Cờ: có field giá gốc thực sự được cung cấp từ API/DB
+  const hasOriginalField = hasValidOriginal;
+
+  const formattedPrice = salePrice
+    ? salePrice.toLocaleString("vi-VN") + "đ"
     : "N/A";
 
   const formattedOldPrice = originalPrice
-    ? Number(originalPrice).toLocaleString("vi-VN") + " VNĐ"
+    ? originalPrice.toLocaleString("vi-VN") + "đ"
     : "";
+
+  const hasSelection = !!selectedVariant;
 
   return (
     <div className="product-info">
@@ -37,75 +64,62 @@ const ProductInfo = ({
 
       {/* Giá sản phẩm và giá gốc nếu có */}
       <div className="d-flex align-items-end gap-2 my-3">
-        <h2 className="text-danger fw-bolder mb-0">{formattedPrice}</h2>
-        {originalPrice && Number(originalPrice) > Number(displayPrice) && (
-          <span className="price-original">{formattedOldPrice}</span>
-        )}
+        <h2 className="price-current text-danger fw-bolder mb-0">
+          {formattedPrice}
+        </h2>
+        {hasOriginalField &&
+          originalPrice > 0 &&
+          originalPrice >= salePrice && (
+            <span className="price-original">{formattedOldPrice}</span>
+          )}
       </div>
 
-      {/* Trạng thái kho, số lượng, đã bán, mã SP */}
+      {/* Trạng thái kho, số lượng, đã bán, mã SP - luôn hiển thị label; nội dung chỉ hiện khi đã chọn variant */}
       <div className="mb-3">
-
         <p className="mb-1">
           Trạng thái:
-          {(() => {
-            // Kiểm tra xem sản phẩm có variants nào còn hàng không
-            const hasStock = product.variants?.some(variant => variant.stock > 0);
-            
-            if (hasStock) {
-              return <span className="text-success fw-medium"> Còn hàng</span>;
-            } else if (product.variants && product.variants.length > 0) {
-              return <span className="text-danger fw-medium"> Hết hàng</span>;
-            } else {
-              // Nếu không có variants, kiểm tra stock của sản phẩm chính
-              const productStock = (product as any).stock || 0;
-              return productStock > 0 ? (
-                <span className="text-success fw-medium"> Còn hàng</span>
-              ) : (
-                <span className="text-danger fw-medium"> Hết hàng</span>
-              );
-            }
-          })()}
+          {hasSelection ? (
+            selectedVariantStock && selectedVariantStock > 0 ? (
+              <span className="text-success fw-medium"> Còn hàng</span>
+            ) : (
+              <span className="text-danger fw-medium"> Hết hàng</span>
+            )
+          ) : (
+            <span className="text-muted"> Chọn Size + Màu</span>
+          )}
         </p>
 
         {/* Số lượng tồn kho */}
         <p className="mb-0">
           Số lượng:
-          <span className="text-dark fw-medium">
-            {" "}
-            {(() => {
-              if (selectedVariantStock !== null && selectedVariantStock !== undefined) {
-                return selectedVariantStock;
-              }
-              
-              // Nếu chưa chọn variant, hiển thị tổng số lượng có sẵn
-              if (product.variants && product.variants.length > 0) {
-                const totalStock = product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0);
-                return totalStock > 0 ? totalStock : "N/A";
-              }
-              
-              // Nếu không có variants, hiển thị stock của sản phẩm chính
-              const productStock = (product as any).stock || 0;
-              return productStock > 0 ? productStock : "N/A";
-            })()}
-          </span>
+          {hasSelection ? (
+            <span className="text-dark fw-medium"> {selectedVariantStock ?? "N/A"}</span>
+          ) : (
+            <span className="text-muted"> Chọn Size + Màu</span>
+          )}
         </p>
 
-        {/* Đã bán */}
+        {/* Đã bán (theo sản phẩm) */}
         {product.sold !== undefined && (
           <p className="mb-0">
             Đã bán:
-            <span className="text-dark fw-medium"> {product.sold}</span>
+            {hasSelection ? (
+              <span className="text-dark fw-medium"> {product.sold}</span>
+            ) : (
+              <span className="text-muted"> Chọn Size + Màu</span>
+            )}
           </p>
         )}
 
         {/* Mã sản phẩm (SKU) */}
-        {sku && (
-          <p className="mb-0 mt-1">
-            Mã SP:
+        <p className="mb-0 mt-1">
+          Mã SP:
+          {hasSelection && sku ? (
             <span className="text-dark fw-medium"> {sku}</span>
-          </p>
-        )}
+          ) : (
+            <span className="text-muted"> Chọn Size + Màu</span>
+          )}
+        </p>
       </div>
     </div>
   );

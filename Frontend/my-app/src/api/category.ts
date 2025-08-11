@@ -5,28 +5,28 @@ import { Category } from "../types/ProductType";
 
 // SỬA LẠI: Trỏ đến đúng API endpoint của admin
 export const getCategories = () => {
-    return axiosInstance.get<Category[]>('/admin/categories');
+    return axiosInstance.get<Category[]>('/categories');
 };
 
 
 // Lấy chi tiết một danh mục (admin)
 export const getCategoryDetail = (id: number) => {
-    return axiosInstance.get<Category>(`/admin/categories/${id}`);
+    return axiosInstance.get<Category>(`/categories/${id}`);
 };
 
 // Tạo mới một danh mục (admin)
 export const createCategory = (data: { name: string; status: boolean }) => {
-    return axiosInstance.post<Category>('/admin/categories', data);
+    return axiosInstance.post<Category>('/categories', data);
 };
 
 // Cập nhật một danh mục (admin)
 export const updateCategory = (id: number, data: { name: string; status: boolean }) => {
-    return axiosInstance.put<Category>(`/admin/categories/${id}`, data);
+    return axiosInstance.put<Category>(`/categories/${id}`, data);
 };
 
 // Xóa một danh mục (admin)
 export const deleteCategory = (id: number) => {
-    return axiosInstance.delete(`/admin/categories/${id}`);
+    return axiosInstance.delete(`/categories/${id}`);
 };
 
 // Lấy thống kê chi tiết cho một danh mục (admin)
