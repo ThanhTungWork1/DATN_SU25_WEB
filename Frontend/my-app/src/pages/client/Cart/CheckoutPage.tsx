@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import publicAxios from "../../../utils/publicAxios";
 import { useAuth } from "../../../provider/AuthContext";
+import { getAddresses } from "../../../utils/addressLoader";
 
 interface Product {
   id: number;
@@ -50,6 +51,7 @@ const CheckoutPage = () => {
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [selectedWardId, setSelectedWardId] = useState("");
+  const [addressData, setAddressData] = useState<{ provinces: any[]; districts: any[]; wards: any[] }>({ provinces: [], districts: [], wards: [] });
 
   const [paymentMethod, setPaymentMethod] = useState("Thanh toán khi nhận hàng (COD)");
   const [voucherCode, setVoucherCode] = useState("");
@@ -57,18 +59,164 @@ const CheckoutPage = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
+  // VNPay modal + URL state
+  const [showVNPayModal, setShowVNPayModal] = useState(false);
+  const [vnpayUrl, setVnpayUrl] = useState<string>("");
+  
+  // Chuẩn hóa mã phương thức thanh toán theo BE
+  const toMethodCode = (label: string) => {
+    switch (label) {
+      case 'Thanh toán khi nhận hàng (COD)':
+        return 'cod';
+      case 'Chuyển khoản ngân hàng':
+        return 'bank';
+      case 'Ví điện tử Momo':
+        return 'momo';
+      case 'VNPay':
+        return 'vnpay';
+      default:
+        return 'cod';
+    }
+  };
 
-  // Load provinces on component mount
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const response = await axios.get('/api/addresses/provinces');
-        setProvinces(response.data || []);
-      } catch (error) {
-        console.error('Error fetching provinces:', error);
+  // Validate items + address before submit (cho phép thiếu variant_id nếu có product_id để auto-resolve)
+  const validateOrderPayloadFE = () => {
+    if (!address.name?.trim()) return { ok: false, msg: 'Vui lòng nhập họ và tên người nhận' } as const;
+    if (!address.phone?.trim()) return { ok: false, msg: 'Vui lòng nhập số điện thoại' } as const;
+    if (!address.street?.trim() || !address.ward || !address.district || !address.province) {
+      return { ok: false, msg: 'Vui lòng điền đầy đủ địa chỉ giao hàng' } as const;
+    }
+    if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
+      return { ok: false, msg: 'Giỏ hàng trống' } as const;
+    }
+    for (const it of selectedProducts) {
+      // Cho phép thiếu variant_id nếu có product_id, sẽ auto-resolve ở bước tạo đơn
+      if ((!it?.variant_id || Number.isNaN(Number(it.variant_id))) && !it?.product_id) {
+        return { ok: false, msg: 'Thiếu variant_id và product_id cho một số sản phẩm' } as const;
       }
-    };
-    fetchProvinces();
+      if (!it?.quantity || it.quantity <= 0) {
+        return { ok: false, msg: 'Số lượng sản phẩm không hợp lệ' } as const;
+      }
+      if (it?.price == null || Number(it.price) < 0) {
+        return { ok: false, msg: 'Giá sản phẩm không hợp lệ' } as const;
+      }
+    }
+    return { ok: true } as const;
+  };
+
+  // Lấy danh sách biến thể theo product_id và chọn 1 biến thể mặc định khi thiếu
+  const resolveItemsWithVariantIds = async () => {
+    // Bổ sung product_name, product_id, product_image để khớp schema BE (order_items yêu cầu product_name)
+    const items: Array<{
+      variant_id: number;
+      quantity: number;
+      price: number;
+      product_name?: string;
+      product_id?: number;
+      product_image?: string | null;
+    } | null> = [];
+    for (const it of selectedProducts) {
+      if (it?.variant_id) {
+        const pid = (it as any).product_id ?? (it as any).id;
+        // Validate tồn kho của biến thể hiện có
+        try {
+          if (pid) {
+            const resVar = await publicAxios.get(`/product-variants/${pid}`);
+            const payloadVar: any = resVar.data;
+            const listVar = Array.isArray(payloadVar)
+              ? payloadVar
+              : Array.isArray(payloadVar?.data)
+              ? payloadVar.data
+              : Array.isArray(payloadVar?.variants)
+              ? payloadVar.variants
+              : [];
+            if (Array.isArray(listVar) && listVar.length > 0) {
+              const found = listVar.find((v: any) => Number(v?.id) === Number(it.variant_id));
+              const stock = Number(found?.stock ?? Infinity);
+              if (Number(it.quantity) > stock) {
+                alert(`Sản phẩm "${it.name}" không đủ tồn kho cho biến thể đã chọn. Còn lại: ${isFinite(stock) ? stock : 0}`);
+                return null;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Không thể kiểm tra tồn kho biến thể hiện có:', e);
+        }
+
+        items.push({
+          variant_id: Number(it.variant_id),
+          quantity: Number(it.quantity),
+          price: Number(it.price),
+          product_name: it.name || 'Sản phẩm',
+          product_id: pid ? Number(pid) : undefined,
+          product_image: it.image || null,
+        });
+        continue;
+      }
+      if (!it?.product_id) {
+        alert('Sản phẩm thiếu product_id để gán biến thể mặc định');
+        return null;
+      }
+      try {
+        const res = await publicAxios.get(`/product-variants/${it.product_id}`);
+        const payload: any = res.data;
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload?.variants)
+          ? payload.variants
+          : [];
+        if (!Array.isArray(list) || list.length === 0) {
+          alert(`Sản phẩm ${it.product_id} không có biến thể. Vui lòng tạo biến thể mặc định hoặc chọn biến thể.`);
+          return null;
+        }
+        const candidate = list.find((v: any) => (v?.stock ?? 0) > 0) || list[0];
+        if (!candidate?.id) {
+          alert(`Không thể xác định biến thể mặc định cho sản phẩm ${it.product_id}`);
+          return null;
+        }
+        const pid = (it as any).product_id ?? (it as any).id ?? (candidate as any)?.product_id;
+        const candidateStock = Number((candidate as any)?.stock ?? Infinity);
+        if (Number(it.quantity) > candidateStock) {
+          alert(`Sản phẩm "${it.name || candidate?.product_name || it.product_id}" không đủ tồn kho. Còn lại: ${isFinite(candidateStock) ? candidateStock : 0}`);
+          return null;
+        }
+        items.push({
+          variant_id: Number(candidate.id),
+          quantity: Number(it.quantity),
+          price: Number(it.price),
+          product_name: it.name || (candidate as any)?.product_name || 'Sản phẩm',
+          product_id: pid ? Number(pid) : undefined,
+          product_image: it.image || null,
+        });
+      } catch (e: any) {
+        console.error('Resolve variant error:', e?.response?.data || e?.message || e);
+        alert(`Không thể lấy biến thể cho sản phẩm ${it.product_id}`);
+        return null;
+      }
+    }
+    return items as Array<{
+      variant_id: number;
+      quantity: number;
+      price: number;
+      product_name?: string;
+      product_id?: number;
+      product_image?: string | null;
+    }>;
+  };
+
+  // Load provinces on component mount (full dataset with fallback + cache)
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getAddresses();
+        setAddressData(data as any);
+        setProvinces(data.provinces || []);
+      } catch (error) {
+        console.error('Error loading addresses data:', error);
+      }
+    })();
   }, []);
 
   // Handle province change
@@ -83,20 +231,71 @@ const CheckoutPage = () => {
     setAddress(prev => ({ ...prev, province: selectedProvince?.name || "", district: "", ward: "" }));
     
     if (provinceId) {
-      // Use exact code from selected province to avoid mismatches (e.g., '01' vs '1')
+      // Load districts from loaded dataset matching province_code
       const pid = (selectedProvince?.code ?? provinceId).toString();
-      try {
-        const response = await axios.get(`/api/addresses/districts/${pid}`);
-        const data = response.data || [];
-        console.log('Districts fetched from backend:', Array.isArray(data) ? data.length : data);
-        setDistricts(Array.isArray(data) ? data : []);
-        if (Array.isArray(data) && data.length === 0) {
-          console.warn('No districts returned for province code:', pid, selectedProvince);
-        }
-      } catch (error) {
-        console.error('Error fetching districts (backend):', error);
-        setDistricts([]);
+      const allDistricts = (addressData as any).districts || [];
+      const filtered = allDistricts.filter((d: any) => d.province_code?.toString() === pid);
+      setDistricts(filtered);
+      if (filtered.length === 0) {
+        console.warn('No districts for province code:', pid, selectedProvince);
       }
+    }
+  };
+
+  // Handle VNPay payment
+  const handleVNPayPayment = async () => {
+    try {
+      if (!token) {
+        alert("Vui lòng đăng nhập để thanh toán");
+        navigate('/login');
+        return;
+      }
+
+      // FE validate địa chỉ + cấu trúc cơ bản
+      const vAddr = validateAddress();
+      if (!(vAddr as any).ok) {
+        alert((vAddr as any).msg || 'Thông tin giao hàng chưa hợp lệ');
+        return;
+      }
+      // Resolve items có variant_id
+      const items = await resolveItemsWithVariantIds();
+      if (!items) return;
+      // 1) Tạo đơn hàng (payload khớp BE: items + shipping + payment_method)
+      const orderRes = await publicAxios.post('/client/orders', {
+        shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
+        shipping_phone: address.phone,
+        shipping_name: address.name || (user?.name || user?.username) || 'Khách hàng',
+        note: 'Thanh toán VNPay',
+        payment_method: 'vnpay',
+        discount_amount: discountAmount || 0,
+        total_amount: Number(displayTotalAmount),
+        shipping_fee: Number(shippingFee),
+        final_amount: Number(finalAmount),
+        customer_name: address.name || (user?.name || user?.username) || 'Khách hàng',
+        customer_email: user?.email || null,
+        customer_phone: address.phone,
+        items,
+      });
+
+      const orderId = (orderRes.data as any)?.data?.id;
+      if (!orderId) throw new Error('Không thể tạo đơn hàng');
+
+      // 2) Gọi VNPay create để lấy payment_url (BE sẽ tự tạo payment record pending)
+      const createRes = await publicAxios.post('/payments/vnpay/create', { order_id: orderId });
+
+      const paymentUrl = (createRes.data as any)?.payment_url;
+      if (!paymentUrl) throw new Error('Không nhận được payment_url từ VNPay');
+
+      // 3) Xóa các item đã đặt khỏi giỏ hàng (optional trước khi hiển thị QR)
+      await clearOrderedItems();
+
+      // 4) Hiển thị QR VNPay tại chỗ thay vì redirect
+      setVnpayUrl(paymentUrl);
+      setShowVNPayModal(true);
+
+    } catch (e: any) {
+      console.error('VNPAY FLOW ERROR:', e?.response?.data || e?.message || e);
+      alert(e?.response?.data?.error || e?.message || 'Có lỗi xảy ra khi tạo thanh toán VNPay');
     }
   };
 
@@ -111,19 +310,25 @@ const CheckoutPage = () => {
     
     if (districtId) {
       const did = (selectedDistrict?.code ?? districtId).toString();
-      try {
-        const response = await axios.get(`/api/addresses/wards/${did}`);
-        const data = response.data || [];
-        console.log('Wards fetched from backend:', Array.isArray(data) ? data.length : data);
-        setWards(Array.isArray(data) ? data : []);
-        if (Array.isArray(data) && data.length === 0) {
-          console.warn('No wards returned for district code:', did, selectedDistrict);
-        }
-      } catch (error) {
-        console.error('Error fetching wards (backend):', error);
-        setWards([]);
+      const allWards = (addressData as any).wards || [];
+      const filtered = allWards.filter((w: any) => w.district_code?.toString() === did);
+      setWards(filtered);
+      if (filtered.length === 0) {
+        console.warn('No wards for district code:', did, selectedDistrict);
       }
     }
+  };
+
+  // Validate shipping address thoroughly
+  const isValidPhone = (phone: string) => /^\d{9,11}$/.test((phone || '').replace(/\D/g, ''));
+  const validateAddress = () => {
+    if (!address.name?.trim()) return { ok: false, msg: 'Vui lòng nhập họ và tên' };
+    if (!address.phone?.trim() || !isValidPhone(address.phone)) return { ok: false, msg: 'Số điện thoại không hợp lệ' };
+    if (!selectedProvinceId || !address.province) return { ok: false, msg: 'Vui lòng chọn Tỉnh/Thành phố' };
+    if (!selectedDistrictId || !address.district) return { ok: false, msg: 'Vui lòng chọn Quận/Huyện' };
+    if (!selectedWardId || !address.ward) return { ok: false, msg: 'Vui lòng chọn Phường/Xã' };
+    if (!address.street?.trim()) return { ok: false, msg: 'Vui lòng nhập Số nhà, tên đường' };
+    return { ok: true } as any;
   };
 
   // Handle ward change
@@ -145,15 +350,8 @@ const CheckoutPage = () => {
 
     setIsValidatingVoucher(true);
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/test-voucher',
-        { code: voucherCode, total_amount: totalAmount },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+      const response = await publicAxios.get(
+        '/vouchers/' + encodeURIComponent(voucherCode)
       );
 
       const voucher = (response.data as any)?.voucher;
@@ -183,9 +381,7 @@ const CheckoutPage = () => {
   const clearOrderedItems = async () => {
     try {
       for (const product of selectedProducts) {
-        await axios.delete(`http://localhost:8000/api/cart/${product.id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        await publicAxios.delete(`/cart/${product.id}`);
       }
     } catch (error) {
       console.error("Error clearing cart items:", error);
@@ -196,18 +392,21 @@ const CheckoutPage = () => {
   const processOrder = async () => {
     console.log('=== PROCESSING ORDER ===');
     
+    // Validate địa chỉ
+    const v0 = validateAddress();
+    if (!(v0 as any).ok) { alert((v0 as any).msg || 'Thông tin giao hàng chưa hợp lệ'); return; }
+    // Resolve items
+    const items0 = await resolveItemsWithVariantIds();
+    if (!items0) return;
     const orderRequestData = {
-      user_id: parseInt(user.id),
       shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
-      shipping_phone: user.phone || "0123456789",
-      shipping_name: user.name || user.username || "Khách hàng",
+      shipping_phone: address.phone || user.phone || "0123456789",
+      shipping_name: address.name || user.name || user.username || "Khách hàng",
       note: `Phương thức thanh toán: ${paymentMethod}`,
-      items: selectedProducts.map((item) => ({
-        variant_id: item.variant_id || 1,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    };
+      payment_method: toMethodCode(paymentMethod),
+      discount_amount: discountAmount || 0,
+      items: items0,
+    } as const;
 
     try {
       console.log('STARTING ORDER CREATION...');
@@ -218,12 +417,7 @@ const CheckoutPage = () => {
       
       try {
         console.log('CALLING ORDER API...');
-        orderResponse = await axios.post('http://localhost:8000/api/test-order', orderRequestData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        orderResponse = await publicAxios.post('/client/orders', orderRequestData);
         
         console.log('Order API SUCCESS:', orderResponse.data);
         orderId = orderResponse.data?.data?.id;
@@ -235,28 +429,12 @@ const CheckoutPage = () => {
       } catch (orderError: any) {
         console.error('ORDER API FAILED:', orderError);
         console.error('Error details:', orderError.response?.data || orderError.message);
-        orderId = 'ORD' + Date.now();
-        orderResponse = { data: { data: { id: orderId, created_at: new Date().toISOString() } } };
+        alert(orderError?.response?.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại hoặc chọn phương thức khác.');
+        return; // Dừng luồng nếu tạo đơn thất bại
       }
       
-      // Create payment (optional)
+      // Create payment (removed) - BE will handle payment record creation in dedicated gateways
       let paymentResponse: any = {};
-      try {
-        if (paymentMethod !== "Thanh toán khi nhận hàng (COD)") {
-          paymentResponse = await axios.post('http://localhost:8000/api/payments', {
-            order_id: orderId,
-            amount: finalAmount,
-            method: paymentMethod
-          }, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        }
-      } catch (paymentError) {
-        console.error('Payment creation error:', paymentError);
-      }
 
       // Clear cart items
       console.log('CLEARING CART ITEMS...');
@@ -320,12 +498,8 @@ const CheckoutPage = () => {
       // 0. Test authentication trước
       console.log('TESTING AUTHENTICATION...');
       try {
-        const authTest = await axios.get('/api/test-auth', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // Gọi một endpoint yêu cầu auth để xác thực token
+        const authTest = await publicAxios.get('/dashboard');
         console.log('AUTH TEST SUCCESS:', authTest.data);
       } catch (authError: any) {
         console.error('AUTH TEST FAILED:', authError);
@@ -339,34 +513,23 @@ const CheckoutPage = () => {
         }
       }
 
-      // 1. Tạo đơn hàng trước (sử dụng test-order để debug)
+      // 1. Tạo đơn hàng trước
       console.log('CREATING ORDER...');
-      console.log('Request URL:', '/api/test-order');
+      console.log('Request URL:', '/client/orders');
       
-      const orderResponse = await axios.post('/api/test-order', {
-        user_id: user?.id,
-        products: selectedProducts.map((item: any) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id || 1,
-          quantity: item.quantity,
-          price: item.price
-        })),
-        total_amount: totalAmount,
-        shipping_fee: shippingFee,
-        final_amount: finalAmount,
-        voucher_code: appliedVoucher?.code || null,
-        discount_amount: discountAmount,
-        customer_name: address.name,
-        customer_phone: address.phone,
-        customer_email: user?.email || '',
+      // Validate địa chỉ + resolve items
+      const v1 = validateAddress();
+      if (!(v1 as any).ok) { alert((v1 as any).msg || 'Thông tin giao hàng chưa hợp lệ'); return; }
+      const items1 = await resolveItemsWithVariantIds();
+      if (!items1) return;
+      const orderResponse = await publicAxios.post('/client/orders', {
         shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
-        payment_method: paymentMethod,
-        notes: ''
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        shipping_phone: address.phone || user?.phone || '0123456789',
+        shipping_name: address.name || user?.name || user?.username || 'Khách hàng',
+        note: `Thanh toán: ${paymentMethod}`,
+        payment_method: toMethodCode(paymentMethod),
+        discount_amount: discountAmount || 0,
+        items: items1,
       });
 
       console.log('ORDER RESPONSE:', orderResponse.data);
@@ -377,20 +540,9 @@ const CheckoutPage = () => {
 
       console.log('ORDER CREATED:', orderId);
 
-      // 2. Tạo payment record cho tất cả phương thức
-      console.log('CREATING PAYMENT RECORD...');
-      const paymentResponse = await axios.post('/api/payments/create', {
-        order_id: orderId,
-        method: paymentMethod,
-        amount: finalAmount
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('PAYMENT RECORD CREATED:', paymentResponse.data);
+      // 2. BỎ tạo payment record thủ công trên FE. Với VNPay, gọi create endpoint riêng.
+      const paymentResponse: any = {};
+      console.log('SKIP manual payment record creation on FE');
 
       // 3. Clear cart
       await clearOrderedItems();
@@ -431,41 +583,7 @@ const CheckoutPage = () => {
     }
   };
 
-  // Handle checkout button click
-  const handleCheckout = async () => {
-    console.log('=== CHECKOUT DEBUG ===');
-    console.log('Address:', address);
-    console.log('Selected products:', selectedProducts);
-    console.log('Payment method:', paymentMethod);
-    console.log('User:', user);
-    console.log('Token:', token ? 'EXISTS' : 'MISSING');
-    
-    // Validation
-    if (!address.street || !address.ward || !address.district || !address.province) {
-      console.log('ADDRESS VALIDATION FAILED');
-      alert("Vui lòng điền đầy đủ địa chỉ giao hàng");
-      return;
-    }
-
-    if (selectedProducts.length === 0) {
-      console.log('NO PRODUCTS SELECTED');
-      alert("Không có sản phẩm nào được chọn");
-      return;
-    }
-    
-    console.log('VALIDATION PASSED');
-
-    // Show QR modal for online payments
-    if (paymentMethod === "Chuyển khoản ngân hàng" || paymentMethod === "Ví điện tử (Momo/ZaloPay)") {
-      console.log('SHOWING QR MODAL FOR ONLINE PAYMENT');
-      setShowQRModal(true);
-      return;
-    }
-
-    // Process order directly for COD
-    console.log('PROCESSING COD ORDER DIRECTLY');
-    await processOrderWithPayment('cod');
-  };
+  
 
   // Handle Place Order - xử lý theo phương thức thanh toán được chọn
   const handlePlaceOrder = async () => {
@@ -474,9 +592,10 @@ const CheckoutPage = () => {
     console.log('Address:', address);
     console.log('Selected products:', selectedProducts);
     
-    // Validation chung
-    if (!address.name || !address.phone || !address.street || !address.ward || !address.district || !address.province) {
-      alert("Vui lòng điền đầy đủ thông tin giao hàng");
+    // Validation địa chỉ chi tiết
+    const v = validateAddress();
+    if (!(v as any).ok) {
+      alert((v as any).msg || 'Thông tin giao hàng chưa hợp lệ');
       return;
     }
 
@@ -491,8 +610,8 @@ const CheckoutPage = () => {
     }
 
     // Xử lý theo phương thức thanh toán - TẤT CẢ ĐỀU LƯU VÀO PAYMENTS
-    if (paymentMethod === "ZaloPay") {
-      await handleZaloPayPayment(); // ZaloPay vẫn giữ logic riêng vì cần redirect
+    if (paymentMethod === "VNPay") {
+      await handleVNPayPayment();
     } else if (paymentMethod === "Chuyển khoản ngân hàng") {
       await processOrderWithPayment('bank');
       setShowQRModal(true); // Hiển thị QR sau khi lưu payment
@@ -506,32 +625,7 @@ const CheckoutPage = () => {
   };
 
   // Handle ZaloPay payment
-interface ZaloPayResponse {
-  success: boolean;
-  pay_url: string;
-  order_token?: string;
-  app_trans_id?: string;
-  payment_id: number;
-  amount: number;
-  order_id: number;
-}
-
-const handleZaloPayPayment = async (orderId: number) => {
-  try {
-    const res = await axios.post<ZaloPayResponse>(
-      "http://localhost:8000/api/payments/zalopay/create",
-      { order_id: orderId }
-    );
-
-    if (res.data.success) {
-      window.location.href = res.data.pay_url;
-    }
-  } catch (error) {
-    console.error("ZALOPAY PAYMENT ERROR:", error);
-  }
-};
-
-
+  // Removed duplicate VNPay handler (keep single definition above)
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
@@ -711,6 +805,20 @@ const handleZaloPayPayment = async (orderId: number) => {
                   <label className="form-check-label fw-semibold" htmlFor="bank">
                     <i className="fas fa-university text-primary me-2"></i>
                     Chuyển khoản ngân hàng
+                  </label>
+                </div>
+                <div className="form-check mb-3">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="paymentMethod"
+                    id="vnpay"
+                    checked={paymentMethod === "VNPay"}
+                    onChange={() => setPaymentMethod("VNPay")}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="vnpay">
+                    <i className="fas fa-building-columns text-danger me-2"></i>
+                    VNPay
                   </label>
                 </div>
                 <div className="form-check">
@@ -964,6 +1072,81 @@ const handleZaloPayPayment = async (orderId: number) => {
                   >
                     <i className="fas fa-check me-2"></i>
                     Đã thanh toán - Hoàn tất đơn hàng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VNPay QR Modal */}
+        {showVNPayModal && vnpayUrl && (
+          <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content">
+                <div className="modal-header bg-danger text-white">
+                  <h5 className="modal-title">
+                    <i className="fas fa-qrcode me-2"></i>
+                    Thanh toán VNPay
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={() => setShowVNPayModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="row">
+                    <div className="col-md-6 text-center">
+                      <h6 className="fw-bold mb-3">Quét mã QR VNPay</h6>
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(vnpayUrl)}`}
+                        alt="VNPay QR"
+                        className="img-fluid border rounded"
+                        style={{ maxWidth: '280px' }}
+                      />
+                      <div className="mt-3">
+                        <a
+                          href={vnpayUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline-danger"
+                        >
+                          Mở trang VNPay
+                        </a>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="fw-bold mb-3">Thông tin thanh toán</h6>
+                      <div className="card border-danger">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between mb-2">
+                            <span>Tổng thanh toán:</span>
+                            <span className="fw-bold text-danger">{finalAmount.toLocaleString('vi-VN')} VND</span>
+                          </div>
+                          <div className="alert alert-info mb-0">
+                            Sau khi quét mã và thanh toán, hệ thống sẽ cập nhật trạng thái đơn hàng tự động qua VNPay callback. Bạn có thể mở trang VNPay nếu ứng dụng không hỗ trợ quét.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowVNPayModal(false)}
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      window.open(vnpayUrl, '_blank');
+                    }}
+                  >
+                    Thanh toán trên VNPay
                   </button>
                 </div>
               </div>

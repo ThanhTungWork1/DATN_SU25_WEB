@@ -1,0 +1,18 @@
+{
+  "provinces": [
+    { "code": "01", "name": "Thành phố Hà Nội" },
+    { "code": "79", "name": "Thành phố Hồ Chí Minh" }
+  ],
+  "districts": [
+    { "code": "001", "name": "Quận Ba Đình", "province_code": "01" },
+    { "code": "002", "name": "Quận Hoàn Kiếm", "province_code": "01" },
+    { "code": "760", "name": "Quận 1", "province_code": "79" },
+    { "code": "761", "name": "Quận 12", "province_code": "79" }
+  ],
+  "wards": [
+    { "code": "00001", "name": "Phường Phúc Xá", "district_code": "001" },
+    { "code": "00004", "name": "Phường Trúc Bạch", "district_code": "001" },
+    { "code": "26734", "name": "Phường Tân Định", "district_code": "760" },
+    { "code": "26737", "name": "Phường Đa Kao", "district_code": "760" }
+  ]
+}

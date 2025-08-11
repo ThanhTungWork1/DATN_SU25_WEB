@@ -19,7 +19,8 @@ import AdminLogin from "../pages/admin/AdminLogin";
 import OrderList from "../pages/client/Orders/OrderList";
 // import OrderItem from "../pages/client/Orders/OrderItem";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
-import ZaloPayCheckout from "../pages/payment/ZaloPayCheckout";
+import VNPaySuccess from "../pages/payment/VNPaySuccess";
+import VNPayFailed from "../pages/payment/VNPayFailed";
 
 const ClientRoute = () => {
   return (
@@ -38,7 +39,9 @@ const ClientRoute = () => {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/payment/zalopay" element={<ZaloPayCheckout />} />
+          {/** ZaloPay route removed - VNPay only **/}
+          <Route path="/payment/vnpay/success" element={<VNPaySuccess />} />
+          <Route path="/payment/vnpay/failure" element={<VNPayFailed />} />
           <Route path="/orders" element={<OrderList />} />
           {/* <Route path="/orders/:id" element={<OrderItem />} /> */}
         </Route>

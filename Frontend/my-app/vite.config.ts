@@ -12,7 +12,8 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // Point to Laragon-served Laravel app (adjust if you use a virtual host)
+        target: 'http://localhost/DATN_SU25_WEB/public',
         changeOrigin: true,
         secure: false,
       },

@@ -6,14 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class ClientOrderController extends Controller
 {
+    /**
+     * Sinh mã đơn hàng dạng ORD-YYYYMMDD-XXXX
+     */
+    private static function generateOrderCode(): string
+    {
+        $date = now()->format('Ymd');
+        $rand = str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+        return "ORD-{$date}-{$rand}";
+    }
     /**
      * Lấy danh sách đơn hàng của user hiện tại
      */
@@ -137,10 +147,13 @@ class ClientOrderController extends Controller
     {
         try {
             $user = Auth::user();
+            Log::info('ClientOrderController@store incoming', [
+                'user_id' => optional($user)->id,
+                'payload' => $request->all(),
+            ]);
 
             // Validate
             $validator = Validator::make($request->all(), [
-                'user_id' => 'required|exists:users,id',
                 'shipping_address' => 'required|string|max:500',
                 'shipping_phone' => 'required|string|max:20',
                 'shipping_name' => 'required|string|max:255',
@@ -154,6 +167,9 @@ class ClientOrderController extends Controller
             ]);
 
             if ($validator->fails()) {
+                Log::warning('ClientOrderController@store validation failed', [
+                    'errors' => $validator->errors()->toArray(),
+                ]);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Dữ liệu không hợp lệ',
@@ -162,6 +178,7 @@ class ClientOrderController extends Controller
             }
 
             $data = $validator->validated();
+            Log::info('ClientOrderController@store validated', $data);
 
 
             $total_amount = 0;
@@ -171,6 +188,8 @@ class ClientOrderController extends Controller
 
 
             $shipping_fee = 30000;
+            $discount = (float)($data['discount_amount'] ?? 0);
+            $final_amount = max(0, $total_amount + $shipping_fee - $discount);
 
 
             foreach ($data['items'] as $item) {
@@ -195,26 +214,8 @@ class ClientOrderController extends Controller
             DB::beginTransaction();
 
             try {
-                            // Tạo đơn hàng
-            $order = Order::create([
-                'user_id' => $data['user_id'],
-                'status' => 'pending_confirmation',
-                'is_paid' => false,
-                'total_amount' => $total_amount,
-                'shipping_fee' => $shipping_fee,
-                'shipping_address' => $data['shipping_address'],
-                'shipping_phone' => $data['shipping_phone'],
-                'shipping_name' => $data['shipping_name'],
-                'note' => $data['note'] ?? null,
-                'customer_name' => $data['shipping_name'],
-                'customer_phone' => $data['shipping_phone'],
-                'customer_email' => $user->email ?? '',
-                'discount_amount' => 0,
-                'final_amount' => $total_amount + $shipping_fee
-            ]);
-
-                // Tạo đơn hàng
-                $order = Order::create([
+                // Chuẩn bị payload tạo đơn hàng, chỉ set các cột nếu tồn tại trong schema để tránh lỗi Unknown column
+                $orderData = [
                     'user_id' => $user->id,
                     'status' => 'pending',
                     'is_paid' => false,
@@ -225,31 +226,98 @@ class ClientOrderController extends Controller
                     'shipping_name' => $data['shipping_name'],
                     'note' => $data['note'] ?? null,
                     'payment_method' => $data['payment_method'],
-                    'discount_amount' => $data['discount_amount'] ?? 0,
-                ]);
+                    'discount_amount' => $discount,
+                ];
+
+                // final_amount nếu có cột
+                if (Schema::hasColumn('orders', 'final_amount')) {
+                    $orderData['final_amount'] = $final_amount;
+                }
+                // order_code nếu có cột
+                if (Schema::hasColumn('orders', 'order_code')) {
+                    $orderData['order_code'] = self::generateOrderCode();
+                }
+                // customer fields nếu có cột
+                if (Schema::hasColumn('orders', 'customer_name')) {
+                    $orderData['customer_name'] = $data['shipping_name'];
+                }
+                if (Schema::hasColumn('orders', 'customer_email')) {
+                    $orderData['customer_email'] = optional($user)->email;
+                }
+                if (Schema::hasColumn('orders', 'customer_phone')) {
+                    $orderData['customer_phone'] = $data['shipping_phone'];
+                }
+                // order_source nếu có cột
+                if (Schema::hasColumn('orders', 'order_source')) {
+                    $orderData['order_source'] = 'website';
+                }
+                // priority nếu có cột
+                if (Schema::hasColumn('orders', 'priority')) {
+                    $orderData['priority'] = 'normal';
+                }
+                // notes nếu có cột
+                if (Schema::hasColumn('orders', 'notes')) {
+                    $orderData['notes'] = $data['note'] ?? null;
+                }
+
+                // Tạo đơn hàng
+                $order = Order::create($orderData);
+                Log::info('ClientOrderController@store order created', ['order_id' => $order->id]);
 
                 // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
                 $orderItems = [];
                 foreach ($data['items'] as $item) {
-                    $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+                    // Lấy variant kèm product/color/size để snapshot đầy đủ
+                    $variant = ProductVariant::with(['product','color','size'])->find($item['variant_id']);
                     // Trừ tồn kho
-                    $variant->stock -= $item['quantity'];
+                    $variant->stock -= (int)$item['quantity'];
                     $variant->save();
-                    // Thêm vào mảng orderItems với snapshot đầy đủ
-                    $orderItems[] = [
-                        'variant_id' => $item['variant_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        // Lưu snapshot thông tin sản phẩm
-                        'product_name' => $variant->product->name ?? 'Không có tên',
-                        'variant_color_name' => $variant->color->name ?? 'Không có',
-                        'variant_size_name' => $variant->size->name ?? 'Không có',
-                        'variant_sku' => $variant->sku ?? 'Không có',
-                        'variant_image' => $variant->image ?? null,
+
+                    // Build payload cho order_items, bổ sung các cột nếu schema có
+                    $orderItemPayload = [
+                        'variant_id' => (int)$item['variant_id'],
+                        'quantity' => (int)$item['quantity'],
+                        'price' => (float)$item['price'],
                     ];
+
+                    // product_name là NOT NULL ở một số schema => luôn set nếu có cột
+                    if (Schema::hasColumn('order_items', 'product_name')) {
+                        $orderItemPayload['product_name'] = $item['product_name']
+                            ?? optional(optional($variant)->product)->name
+                            ?? 'Sản phẩm';
+                    }
+                    // Các cột mở rộng nếu tồn tại
+                    if (Schema::hasColumn('order_items', 'product_id')) {
+                        $orderItemPayload['product_id'] = $item['product_id']
+                            ?? optional(optional($variant)->product)->id;
+                    }
+                    if (Schema::hasColumn('order_items', 'product_image')) {
+                        $orderItemPayload['product_image'] = $item['product_image'] ?? null;
+                    }
+                    if (Schema::hasColumn('order_items', 'variant_color_name')) {
+                        $orderItemPayload['variant_color_name'] = $item['variant_color_name']
+                            ?? optional(optional($variant)->color)->name
+                            ?? null;
+                    }
+                    if (Schema::hasColumn('order_items', 'variant_size_name')) {
+                        $orderItemPayload['variant_size_name'] = $item['variant_size_name']
+                            ?? optional(optional($variant)->size)->name
+                            ?? null;
+                    }
+                    if (Schema::hasColumn('order_items', 'variant_sku')) {
+                        $orderItemPayload['variant_sku'] = $item['variant_sku']
+                            ?? (property_exists($variant, 'sku') ? $variant->sku : null);
+                    }
+                    if (Schema::hasColumn('order_items', 'variant_image')) {
+                        $orderItemPayload['variant_image'] = $item['variant_image']
+                            ?? (property_exists($variant, 'image') ? $variant->image : null);
+                    }
+
+                    $orderItems[] = $orderItemPayload;
                 }
                 // Tạo nhiều order item cùng lúc
                 $order->items()->createMany($orderItems);
+                Log::info('ClientOrderController@store items created', ['count' => count($orderItems)]);
 
                 DB::commit();
 
@@ -263,9 +331,16 @@ class ClientOrderController extends Controller
                 ], 201);
             } catch (\Exception $e) {
                 DB::rollback();
+                Log::error('ClientOrderController@store tx failed', [
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
                 throw $e;
             }
         } catch (\Exception $e) {
+            Log::error('ClientOrderController@store failed', [
+                'exception' => $e->getMessage(),
+            ]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Có lỗi xảy ra khi tạo đơn hàng: ' . $e->getMessage()
@@ -475,91 +550,6 @@ class ClientOrderController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Tạo đơn hàng mới
-     */
-    public function store(Request $request)
-    {
-        try {
-            $user = Auth::user();
-            
-            // Validation
-            $validator = Validator::make($request->all(), [
-                'products' => 'required|array|min:1',
-                'products.*.product_id' => 'required|integer|exists:products,id',
-                'products.*.variant_id' => 'required|integer|exists:product_variants,id',
-                'products.*.quantity' => 'required|integer|min:1',
-                'products.*.price' => 'required|numeric|min:0',
-                'total_amount' => 'required|numeric|min:0',
-                'shipping_fee' => 'required|numeric|min:0',
-                'final_amount' => 'required|numeric|min:0',
-                'customer_name' => 'required|string|max:255',
-                'customer_phone' => 'required|string|max:20',
-                'customer_email' => 'required|email|max:255',
-                'shipping_address' => 'required|string|max:500',
-                'payment_method' => 'required|string|max:50',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Dữ liệu không hợp lệ',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            DB::beginTransaction();
-
-            // Tạo đơn hàng
-            $order = Order::create([
-                'user_id' => $user->id,
-                'total_amount' => $request->total_amount,
-                'shipping_fee' => $request->shipping_fee,
-                'discount_amount' => $request->discount_amount ?? 0,
-                'final_amount' => $request->final_amount,
-                'voucher_code' => $request->voucher_code,
-                'customer_name' => $request->customer_name,
-                'customer_phone' => $request->customer_phone,
-                'customer_email' => $request->customer_email,
-                'shipping_address' => $request->shipping_address,
-                'payment_method' => $request->payment_method,
-                'notes' => $request->notes ?? '',
-                'status' => 'pending'
-            ]);
-
-            // Tạo order items
-            foreach ($request->products as $product) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_variant_id' => $product['variant_id'],
-                    'quantity' => $product['quantity'],
-                    'price' => $product['price']
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Tạo đơn hàng thành công',
-                'data' => [
-                    'id' => $order->id,
-                    'total_amount' => $order->total_amount,
-                    'final_amount' => $order->final_amount,
-                    'status' => $order->status,
-                    'created_at' => $order->created_at
-                ]
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Có lỗi xảy ra khi tạo đơn hàng: ' . $e->getMessage()
             ], 500);
         }
     }

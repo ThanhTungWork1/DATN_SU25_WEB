@@ -8,4 +8,18 @@ const publicAxios = axios.create({
   },
 });
 
+// Tự động gắn Authorization từ localStorage nếu có
+publicAxios.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem("user_token");
+    if (token) {
+      config.headers = {
+        ...(config.headers || {}),
+        Authorization: `Bearer ${token}`,
+      } as any;
+    }
+  } catch {}
+  return config;
+});
+
 export default publicAxios;

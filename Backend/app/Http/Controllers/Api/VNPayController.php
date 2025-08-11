@@ -66,8 +66,9 @@ class VNPayController extends Controller
             // Tổng tiền thanh toán từ order
             $amount = (int) round($order->total_amount + $order->shipping_fee - $discount);
 
-            // Tạo mã giao dịch duy nhất
-            $transactionId = 'VNPAY_' . time() . '_' . $order->id . '_' . rand(1000, 9999);
+            // Dùng order_id làm mã giao dịch (vnp_TxnRef) để mapping trực tiếp trong callback/IPN
+            // Điều này giúp callback có thể tìm Order theo ID mà không cần suy luận ngược từ chuỗi ngẫu nhiên
+            $transactionId = (string) $order->id;
             
             // Tạo thông tin thanh toán
             $orderInfo = "Thanh toan don hang #" . ($order->order_code ?? $order->id);
