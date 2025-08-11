@@ -85,7 +85,7 @@ export const createOrder = async (orderData: {
   address: string;
   phone: string;
 }) => {
-  return await axios.post("http://localhost:8000/api/orders", orderData);
+  return await axios.post("http://localhost:8000/api/client/orders", orderData);
 };
 
 export const getOrderById = async (id: number) => {

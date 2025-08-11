@@ -23,7 +23,10 @@ class CartController extends Controller
             'cartItems.productVariant.product',
             'cartItems.productVariant.color',
             'cartItems.productVariant.size'
-        ])->where('user_id', $userId)->latest()->first();
+        ])
+        ->where('user_id', $userId)
+        ->orderBy('updated_at', 'desc')
+        ->first();
         
         if (!$cart) {
             return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
@@ -83,41 +86,89 @@ class CartController extends Controller
     public function store(CreateCartRequest $request)
     {
         try {
+            \Log::info('=== CART STORE DEBUG START ===');
+            \Log::info('Request data', ['data' => $request->all()]);
+            \Log::info('User ID', ['id' => Auth::id()]);
+            \Log::info('User', ['user' => Auth::user()]);
+            
             return DB::transaction(function () use ($request) {
                 $data = $request->validated();
                 $userId = Auth::id();
+                
+                \Log::info('Validated data', ['data' => $data]);
+                \Log::info('User ID in transaction', ['id' => $userId]);
 
-                // Tìm hoặc tạo cart cho user
-                $cart = Cart::firstOrCreate(['user_id' => $userId]);
+                // Tìm cart cập nhật gần nhất cho user, nếu chưa có thì tạo mới
+                $cart = Cart::where('user_id', $userId)
+                    ->orderBy('updated_at', 'desc')
+                    ->first();
+                if (!$cart) {
+                    $cart = Cart::create(['user_id' => $userId]);
+                }
+                \Log::info('Cart created/found:', ['cart_id' => $cart->id, 'user_id' => $cart->user_id]);
 
                 foreach ($data['cartItems'] as $item) {
-                    // Tìm variant_id từ product_id
-                    $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                    \Log::info('Processing cart item', ['item' => $item]);
+                    
+                    // Ưu tiên sử dụng variant_id nếu có, nếu không thì tìm từ product_id
+                    if (isset($item['variant_id']) && $item['variant_id']) {
+                        \Log::info('Using variant_id', ['variant_id' => $item['variant_id']]);
+                        $variant = \App\Models\ProductVariant::find($item['variant_id']);
+                    } else {
+                        \Log::info('Fallback: Finding first variant for product_id', ['product_id' => $item['product_id']]);
+                        // Fallback: Lấy variant đầu tiên của product
+                        $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
+                    }
+                    
+                    \Log::info('Found variant', ['variant' => $variant ? $variant->toArray() : null]);
                     
                     if (!$variant) {
+                        \Log::error('Variant not found for product_id', ['product_id' => $item['product_id']]);
                         return response()->json([
                             'success' => false,
                             'message' => 'Không tìm thấy variant cho sản phẩm ID: ' . $item['product_id']
                         ], 400);
                     }
 
-                    // Kiểm tra xem item đã có trong cart chưa
+                    // Kiểm tra xem item đã có trong cart chưa (cùng variant_id)
                     $existingItem = $cart->cartItems()->where('variant_id', $variant->id)->first();
+                    \Log::info('Existing cart item', ['item' => $existingItem ? $existingItem->toArray() : null]);
                     
                     if ($existingItem) {
                         // Cập nhật số lượng
+                        \Log::info('Updating existing item quantity', ['from' => $existingItem->quantity, 'to' => $existingItem->quantity + $item['quantity']]);
                         $existingItem->update([
                             'quantity' => $existingItem->quantity + $item['quantity']
                         ]);
+                        \Log::info('Updated item', ['item' => $existingItem->fresh()->toArray()]);
                     } else {
                         // Tạo item mới
-                        $cart->cartItems()->create([
+                        \Log::info('Creating new cart item:', [
                             'variant_id' => $variant->id,
                             'quantity' => $item['quantity'],
                             'price' => $item['price'],
                         ]);
+                        $newItem = $cart->cartItems()->create([
+                            'variant_id' => $variant->id,
+                            'quantity' => $item['quantity'],
+                            'price' => $item['price'],
+                        ]);
+                        \Log::info('Created new item:', ['item' => $newItem->toArray()]);
                     }
                 }
+
+                // Cập nhật mốc thời gian cart để đảm bảo index() lấy đúng giỏ hàng vừa chỉnh sửa
+                $cart->touch();
+
+                \Log::info('=== CART STORE SUCCESS ===');
+                \Log::info('Final cart items count', ['count' => $cart->cartItems()->count()]);
+                // Sử dụng đúng tên quan hệ: productVariant.size, productVariant.color
+                \Log::info('All cart items:', [
+                    'items' => $cart->cartItems()
+                        ->with('productVariant.size', 'productVariant.color')
+                        ->get()
+                        ->toArray()
+                ]);
 
                 return response()->json([
                     'success' => true,
@@ -126,6 +177,10 @@ class CartController extends Controller
                 ], 200);
             });
         } catch (\Exception $e) {
+            \Log::error('=== CART STORE ERROR ===');
+            \Log::error('Error message', ['message' => $e->getMessage()]);
+            \Log::error('Error trace', ['trace' => $e->getTraceAsString()]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi thêm vào giỏ hàng: ' . $e->getMessage(),

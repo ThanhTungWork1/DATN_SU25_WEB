@@ -19,6 +19,7 @@ import AdminLogin from "../pages/admin/AdminLogin";
 import OrderList from "../pages/client/Orders/OrderList";
 // import OrderItem from "../pages/client/Orders/OrderItem";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
+import ZaloPayCheckout from "../pages/payment/ZaloPayCheckout";
 
 const ClientRoute = () => {
   return (
@@ -37,6 +38,7 @@ const ClientRoute = () => {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/payment/zalopay" element={<ZaloPayCheckout />} />
           <Route path="/orders" element={<OrderList />} />
           {/* <Route path="/orders/:id" element={<OrderItem />} /> */}
         </Route>

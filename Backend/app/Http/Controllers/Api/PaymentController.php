@@ -144,4 +144,61 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Error checking payment status'], 500);
         }
     }
+
+    /**
+     * Tạo payment record cho tất cả phương thức thanh toán (COD, ZaloPay, Momo, Bank)
+     * POST /api/payments/create
+     */
+    public function createPayment(Request $request)
+    {
+        try {
+            $request->validate([
+                'order_id' => 'required|exists:orders,id',
+                'method' => 'required|string', // 'cod', 'zalopay', 'momo', 'bank'
+                'amount' => 'required|numeric|min:0',
+            ]);
+
+            $order = Order::findOrFail($request->order_id);
+            
+            // Xác định status dựa trên phương thức thanh toán
+            $status = 'pending';
+            $paid_at = null;
+            
+            if ($request->method === 'cod') {
+                // COD - pending, sẽ được cập nhật khi giao hàng
+                $status = 'pending';
+            } elseif (in_array($request->method, ['zalopay', 'momo'])) {
+                // Online payment - pending, chờ callback từ gateway
+                $status = 'pending';
+            } elseif ($request->method === 'bank') {
+                // Bank transfer - pending, chờ admin xác nhận
+                $status = 'pending';
+            }
+
+            // Tạo payment record
+            $payment = Payment::create([
+                'order_id' => $order->id,
+                'method' => $request->method,
+                'amount' => $request->amount,
+                'status' => $status,
+                'transaction_id' => $request->transaction_id ?? null,
+                'paid_at' => $paid_at,
+                'response_data' => $request->response_data ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment record created successfully',
+                'payment' => $payment,
+                'order' => $order
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating payment record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

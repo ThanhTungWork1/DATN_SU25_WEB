@@ -34,11 +34,21 @@ const ProductActions = ({
 
   const handleAddToCart = async () => {
     try {
-      await addToCart({
+      // Debug payload from UI before calling hook
+      console.log('ADD_TO_CART UI PAYLOAD', {
+        productId,
+        variantId,
+        quantity,
+      });
+
+      const result = await addToCart({
         product_id: productId,
-        variant_id: variantId || productId, // Fallback to productId if no variantId
+        // Only send variant_id if user selected one; otherwise let backend pick by product_id
+        variant_id: variantId,
         quantity: quantity,
       });
+      // addToCart currently doesn't return response, but we log completion
+      console.log('ADD_TO_CART UI DONE', { success: true, result });
       toast.success("Đã thêm sản phẩm vào giỏ hàng!");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng!");

@@ -124,7 +124,7 @@ const ZaloPayCheckout: React.FC = () => {
 
         console.log('Payment status check:', response.data);
 
-        if (response.data.payment_status === 'completed') {
+        if (response.data.status === 'completed') {
           setPaymentStatus('completed');
           clearInterval(interval);
           

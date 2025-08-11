@@ -23,15 +23,74 @@ use App\Http\Controllers\Api\CommentController as ApiCommentController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\ProductVariantController;
+use App\Http\Controllers\Api\AddressController;
 // --- ADMIN Controllers ---
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 // --- Middleware ---
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\VNPayController;
+use App\Http\Controllers\Api\ZaloPayController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 // Test API
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+
+// Address Proxy (provinces/districts/wards) to avoid CORS
+Route::prefix('addresses')->group(function () {
+    Route::get('provinces', [AddressController::class, 'provinces']);
+    Route::get('districts/{provinceId}', [AddressController::class, 'districts']);
+    Route::get('wards/{districtId}', [AddressController::class, 'wards']);
+});
+
+// Test Auth API
+Route::middleware(['auth:sanctum'])->get('test-auth', function(Request $request) {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Authentication working',
+        'user' => $request->user(),
+        'token' => $request->bearerToken()
+    ]);
+});
+
+// Test Order API (không cần auth để debug)
+Route::post('test-order', function(Request $request) {
+    try {
+        // Fake user ID = 1 để test
+        $order = \App\Models\Order::create([
+            'user_id' => 1,
+            'total_amount' => $request->total_amount ?? 100000,
+            'shipping_fee' => $request->shipping_fee ?? 30000,
+            'discount_amount' => $request->discount_amount ?? 0,
+            'final_amount' => $request->final_amount ?? 130000,
+            'voucher_code' => $request->voucher_code,
+            'customer_name' => $request->customer_name ?? 'Test User',
+            'customer_phone' => $request->customer_phone ?? '0123456789',
+            'customer_email' => $request->customer_email ?? 'test@example.com',
+            'shipping_address' => $request->shipping_address ?? 'Test Address',
+            'payment_method' => $request->payment_method ?? 'cod',
+            'notes' => $request->notes ?? '',
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Test order created successfully',
+            'data' => [
+                'id' => $order->id,
+                'total_amount' => $order->total_amount,
+                'final_amount' => $order->final_amount,
+                'status' => $order->status,
+                'created_at' => $order->created_at
+            ]
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Error creating test order: ' . $e->getMessage()
+        ], 500);
+    }
+});
 
 // CART API
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -668,11 +727,17 @@ Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
+        Route::post('/create', [PaymentController::class, 'createPayment']); // Route mới cho tất cả phương thức
         Route::get('/status/{order_id}', [PaymentController::class, 'checkStatus']);
 
         Route::prefix('zalopay')->group(function () {
             Route::post('/create', [ZaloPayController::class, 'createOrder']);
             Route::post('/callback', [ZaloPayController::class, 'callback']);
+            Route::get('/status/{order_id}', [ZaloPayController::class, 'checkStatus']);
+            Route::post('/test-zalopay', function () {
+                return 'ok';
+            });
+
         });
 
         Route::prefix('vnpay')->group(function () {

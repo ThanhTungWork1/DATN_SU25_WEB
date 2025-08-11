@@ -393,16 +393,21 @@ const ProductDetail = () => {
 
               <ProductActions
                 productId={product.id}
-                variantId={selectedVariant?.id}
+                variantId={(() => {
+                  return selectedVariant?.id;
+                })()}
                 maxQuantity={selectedVariantStock || 10}
-                disabled={!selectedSize || !selectedColor}
+                disabled={(() => {
+                  // ✅ Nếu chỉ có 1 variant, không cần chọn size/color
+                  if (product.variants && product.variants.length === 1) {
+                    return false;
+                  }
+                  // ✅ Nếu có nhiều variant, yêu cầu chọn size và color
+                  return !selectedSize || !selectedColor;
+                })()}
                 productName={product.name}
                 productPrice={(() => {
                   const price = selectedVariant?.price || product.price || 0;
-                  console.log('=== PRODUCT DETAIL PRICE DEBUG ===');
-                  console.log('selectedVariant?.price:', selectedVariant?.price);
-                  console.log('product.price:', product.price);
-                  console.log('final price passed to ProductActions:', price);
                   return price;
                 })()}
                 productImage={selectedImage || product.image_url || product.image || ""}

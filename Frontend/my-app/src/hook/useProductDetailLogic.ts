@@ -27,60 +27,87 @@ export function useProductDetailLogic(product: Product | undefined) {
 
   const handleAddToCart = (quantity: number) => {
     if (!product) return;
-    // Validate chọn size và màu
-    const { valid, message } = validateProductDetail(
-      selectedSize,
-      selectedColor
-    );
-    if (!valid) {
-      toast.error(message);
+    
+    console.log('=== ADD TO CART START ===');
+    console.log('Product:', product);
+    console.log('Selected Size:', selectedSize);
+    console.log('Selected Color:', selectedColor);
+    
+    // ✅ LOGIC ĐÚNG: Tìm variant dựa trên size/color user đã chọn
+    let targetVariant = null;
+    
+    // Nếu user đã chọn size và color
+    if (selectedSize && selectedColor && product.variants) {
+      targetVariant = product.variants.find((variant: any) => 
+        variant.size?.name === selectedSize && 
+        variant.color?.name === selectedColor?.name
+      );
+      console.log('🎯 Found variant by size/color:', targetVariant);
+    }
+    
+    // Nếu không tìm thấy variant chính xác, lấy variant đầu tiên
+    if (!targetVariant && product.variants && product.variants.length > 0) {
+      targetVariant = product.variants[0];
+      console.log('⚠️ Using first variant as fallback:', targetVariant);
+    }
+    
+    // Nếu vẫn không có variant, báo lỗi
+    if (!targetVariant || !targetVariant.id) {
+      toast.error("Không tìm thấy variant hợp lệ cho sản phẩm!");
       return;
     }
+    
+    console.log('✅ Final variant to add:', targetVariant);
+    
     addToCart({
       product_id: product.id,
+      variant_id: targetVariant.id,
       quantity,
-      price:
-        product.discount && product.discount > 0 && product.discount < 100
-          ? Math.max(
-              0,
-              Math.round(product.price * (1 - product.discount / 100) * 1000) // ✅ Nhân với 1000
-            )
-          : product.price * 1000, // ✅ Nhân với 1000
+      price: targetVariant.price || product.price,
     });
-    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    
+    const sizeName = targetVariant.size?.name || 'N/A';
+    const colorName = targetVariant.color?.name || 'N/A';
+    toast.success(`Đã thêm ${colorName} - ${sizeName} vào giỏ hàng!`);
   };
 
   const handleBuyNow = (quantity: number) => {
     if (!product) return;
-    // Validate chọn size và màu
-    const { valid, message } = validateProductDetail(
-      selectedSize,
-      selectedColor
-    );
-    if (!valid) {
-      toast.error(message);
+    
+    // ✅ LOGIC ĐÚNG: Tìm variant dựa trên size/color user đã chọn
+    let targetVariant = null;
+    
+    // Nếu user đã chọn size và color
+    if (selectedSize && selectedColor && product.variants) {
+      targetVariant = product.variants.find((variant: any) => 
+        variant.size?.name === selectedSize && 
+        variant.color?.name === selectedColor?.name
+      );
+    }
+    
+    // Nếu không tìm thấy variant chính xác, lấy variant đầu tiên
+    if (!targetVariant && product.variants && product.variants.length > 0) {
+      targetVariant = product.variants[0];
+    }
+    
+    // Nếu vẫn không có variant, báo lỗi
+    if (!targetVariant || !targetVariant.id) {
+      toast.error("Không tìm thấy variant hợp lệ cho sản phẩm!");
       return;
     }
+
     const item = {
       product_id: product.id,
+      variant_id: targetVariant.id,
       quantity,
-      price:
-        product.discount && product.discount > 0 && product.discount < 100
-          ? Math.max(
-              0,
-              Math.round(product.price * (1 - product.discount / 100) * 1000) // ✅ Nhân với 1000
-            )
-          : product.price * 1000, // ✅ Nhân với 1000
+      price: targetVariant.price || product.price,
     };
+    
     addToCart(item);
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
-    // Chuyển sang trang thanh toán, truyền sản phẩm vừa chọn
-    navigate("/checkout", {
-      state: {
-        selectedProducts: [item],
-        totalAmount: item.price * item.quantity,
-      },
-    });
+    
+    // Chuyển sang trang thanh toán
+    navigate("/checkout");
   };
 
   // Hàm xử lý chọn size (cho phép bỏ chọn)
@@ -102,7 +129,7 @@ export function useProductDetailLogic(product: Product | undefined) {
     selectedColor,
     handleAddToCart,
     handleBuyNow,
-    handleSizeSelect, // Trả ra hàm mới
-    handleColorSelect, // Trả ra hàm mới
+    handleSizeSelect,
+    handleColorSelect,
   };
 }

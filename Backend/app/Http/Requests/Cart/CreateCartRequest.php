@@ -24,6 +24,7 @@ class CreateCartRequest extends FormRequest
         return [
             'cartItems' => 'required|array',
             'cartItems.*.product_id' => 'required|exists:products,id',
+            'cartItems.*.variant_id' => 'nullable|exists:product_variants,id', // ✅ Thêm validation cho variant_id
             'cartItems.*.quantity' => 'required|integer|min:1',
             'cartItems.*.price' => 'required|numeric',
         ];

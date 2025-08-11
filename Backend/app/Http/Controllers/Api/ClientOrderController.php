@@ -478,4 +478,89 @@ class ClientOrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Tạo đơn hàng mới
+     */
+    public function store(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|integer|exists:products,id',
+                'products.*.variant_id' => 'required|integer|exists:product_variants,id',
+                'products.*.quantity' => 'required|integer|min:1',
+                'products.*.price' => 'required|numeric|min:0',
+                'total_amount' => 'required|numeric|min:0',
+                'shipping_fee' => 'required|numeric|min:0',
+                'final_amount' => 'required|numeric|min:0',
+                'customer_name' => 'required|string|max:255',
+                'customer_phone' => 'required|string|max:20',
+                'customer_email' => 'required|email|max:255',
+                'shipping_address' => 'required|string|max:500',
+                'payment_method' => 'required|string|max:50',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Dữ liệu không hợp lệ',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            // Tạo đơn hàng
+            $order = Order::create([
+                'user_id' => $user->id,
+                'total_amount' => $request->total_amount,
+                'shipping_fee' => $request->shipping_fee,
+                'discount_amount' => $request->discount_amount ?? 0,
+                'final_amount' => $request->final_amount,
+                'voucher_code' => $request->voucher_code,
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
+                'customer_email' => $request->customer_email,
+                'shipping_address' => $request->shipping_address,
+                'payment_method' => $request->payment_method,
+                'notes' => $request->notes ?? '',
+                'status' => 'pending'
+            ]);
+
+            // Tạo order items
+            foreach ($request->products as $product) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_variant_id' => $product['variant_id'],
+                    'quantity' => $product['quantity'],
+                    'price' => $product['price']
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tạo đơn hàng thành công',
+                'data' => [
+                    'id' => $order->id,
+                    'total_amount' => $order->total_amount,
+                    'final_amount' => $order->final_amount,
+                    'status' => $order->status,
+                    'created_at' => $order->created_at
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra khi tạo đơn hàng: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

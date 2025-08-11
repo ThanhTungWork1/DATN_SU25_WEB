@@ -1,10 +1,15 @@
 export type CartItem = {
   id: number;
   product_id: number;
+  variant_id: number;
   name: string;
   price: number;
   quantity: number;
   image?: string;
+  color?: string;
+  size?: string;
+  sku?: string;
+  stock?: number;
 };
 
 

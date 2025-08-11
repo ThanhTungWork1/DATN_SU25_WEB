@@ -7,8 +7,8 @@ export default function useCart(token: string) {
 
   const fetchCart = async () => {
     try {
-      const currentToken = localStorage.getItem('token');
-      console.log("🔄 Fetching cart with token:", currentToken ? 'Token exists' : 'No token');
+      const currentToken = localStorage.getItem('user_token');
+
       
       if (!currentToken) {
         console.warn("⚠️ No token found, setting empty cart");
@@ -23,11 +23,14 @@ export default function useCart(token: string) {
           'Accept': 'application/json'
         },
       });
-      console.log("✅ Cart fetched successfully:", res.data);
+
+      
+      // Debug: Log each item's size and color
+      res.data.cart_items?.forEach((item: any, index: number) => {
+      });
+      
       setCartItems(res.data.cart_items || []);
     } catch (error: any) {
-      console.error("❌ Lỗi fetch cart:", error);
-      console.error("❌ Error details:", error.response?.data);
       if (error.response?.status === 404) {
         setCartItems([]);
       } else {
@@ -39,7 +42,6 @@ export default function useCart(token: string) {
 
   const updateQuantity = async (id: number, quantity: number) => {
     try {
-      console.log("🧪 Updating quantity for cart item ID:", id, "to:", quantity);
       await axios.put(
         `http://localhost:8000/api/cart/${id}`,
         { quantity },
@@ -47,7 +49,7 @@ export default function useCart(token: string) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("✅ Update quantity successful");
+
       fetchCart();
     } catch (error: any) {
       console.error("❌ Lỗi cập nhật:", error);
@@ -57,21 +59,20 @@ export default function useCart(token: string) {
 
   const removeItem = async (id: number) => {
     try {
-      console.log("🧪 Removing cart item ID:", id);
+
       await axios.delete(`http://localhost:8000/api/cart/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("✅ Remove item successful");
+
       fetchCart();
     } catch (error: any) {
-      console.error("❌ Lỗi xóa:", error);
-      console.error("Error response:", error.response?.data);
+
     }
   };
 
   const clearCart = async () => {
     try {
-      console.log("🧪 Clearing entire cart");
+   
       await axios.post(
         "http://localhost:8000/api/cart-clear",
         {},
@@ -79,36 +80,39 @@ export default function useCart(token: string) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("✅ Clear cart successful");
+
       setCartItems([]);
     } catch (error: any) {
-      console.error("❌ Lỗi xóa toàn bộ:", error);
-      console.error("Error response:", error.response?.data);
+
     }
   };
 
   const addToCart = async (item: any) => {
     try {
-      const currentToken = localStorage.getItem('token');
-      console.log("🛒 Adding to cart:", item);
-      console.log("🔑 Using token:", currentToken ? 'Token exists' : 'No token');
+      const currentToken = localStorage.getItem('user_token');
+
       
       if (!currentToken) {
         throw new Error('No authentication token found');
       }
       
       // CartController yêu cầu product_id trong validation
-      const requestData = {
-        cartItems: [
-          {
-            product_id: item.product_id,
-            quantity: item.quantity || 1,
-            price: item.price || 0
-          }
-        ]
+      const cartItem: any = {
+        product_id: item.product_id,
+        quantity: item.quantity || 1,
+        price: item.price || 0
       };
       
-      console.log("📝 Request data:", requestData);
+      // ✅ Chỉ thêm variant_id nếu có giá trị hợp lệ
+      if (item.variant_id && item.variant_id !== null && item.variant_id !== undefined) {
+        cartItem.variant_id = item.variant_id;
+      } else {
+      }
+      
+      const requestData = {
+        cartItems: [cartItem]
+      };
+   
       
       const response = await axios.post("http://localhost:8000/api/cart", requestData, {
         headers: { 
@@ -117,12 +121,12 @@ export default function useCart(token: string) {
           'Accept': 'application/json'
         },
       });
+
       
-      console.log("✅ Added to cart successfully:", response.data);
-      fetchCart(); // Refresh cart
+      // Refresh cart sau khi thêm thành công
+      await fetchCart();
     } catch (error: any) {
-      console.error("❌ Lỗi thêm vào giỏ hàng:", error);
-      console.error("Error response:", error.response?.data);
+      console.error('ADD_TO_CART ERROR', error?.response?.status, error?.response?.data || error?.message || error);
       throw error; // Throw error để ProductActions có thể bắt
     }
   };
