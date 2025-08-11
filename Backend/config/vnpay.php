@@ -27,4 +27,7 @@ return [
 
     // Môi trường (sandbox hoặc production)
     'environment' => env('VNPAY_ENVIRONMENT', 'sandbox'),
+    
+    // URL frontend để redirect sau khi thanh toán
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 ];

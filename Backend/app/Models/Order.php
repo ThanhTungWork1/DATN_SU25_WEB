@@ -8,16 +8,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     protected $fillable = [
+        'order_code',
         'user_id',
         'order_code',
         'status',
         'is_paid',
         'total_amount',
         'shipping_fee',
+        'is_paid',
+        'status',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'delivered_at',
+        'shipping_date',
+        'estimated_delivery_date',
+        'tracking_number',
+        'shipping_company',
+        'order_source',
+        'priority',
         'shipping_address',
         'shipping_phone',
         'shipping_name',
-        'note',
+        'note', // ghi chú khách hàng
+        'notes', // ghi chú nội bộ
         'payment_method',
         'discount_amount',
         'final_amount',
@@ -32,6 +46,7 @@ class Order extends Model
         'voucher_id', // giữ lại từ code cũ
         'created_at',
         'updated_at',
+        'voucher_id'
     ];
 
     /**
