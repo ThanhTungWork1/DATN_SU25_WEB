@@ -52,19 +52,12 @@ class VNPayController extends Controller
                 ], 400);
             }
 
-            // Tính giảm giá từ voucher nếu có
-            $discount = 0;
-            if ($order->voucher) {
-                try {
-                    $discount = $order->voucher->calculateDiscount($order->total_amount);
-                } catch (\Exception $e) {
-                    Log::warning('Voucher calculation error: ' . $e->getMessage());
-                    $discount = 0;
-                }
-            }
-
-            // Tổng tiền thanh toán từ order
-            $amount = (int) round($order->total_amount + $order->shipping_fee - $discount);
+            // TÍNH SỐ TIỀN GỬI VNPAY: ưu tiên final_amount nếu có, tránh lệch với FE và dữ liệu đã lưu
+            // Không phụ thuộc vào quan hệ voucher (có thể không gắn), dùng discount_amount đã lưu trên order
+            $discount = (float) ($order->discount_amount ?? 0);
+            $computed = (float) ($order->total_amount + $order->shipping_fee - $discount);
+            $baseAmount = (float) ($order->final_amount ?? $computed);
+            $amount = (int) max(0, round($baseAmount));
 
             // Dùng order_id làm mã giao dịch (vnp_TxnRef) để mapping trực tiếp trong callback/IPN
             // Điều này giúp callback có thể tìm Order theo ID mà không cần suy luận ngược từ chuỗi ngẫu nhiên
@@ -101,7 +94,7 @@ class VNPayController extends Controller
                     // Cập nhật order
                     $order->update([
                         'payment_method' => 'vnpay',
-                        'discount_amount' => $discount,
+                        // giữ nguyên discount_amount đã có; chỉ cập nhật final_amount nếu cột tồn tại
                         'final_amount' => $amount
                     ]);
 

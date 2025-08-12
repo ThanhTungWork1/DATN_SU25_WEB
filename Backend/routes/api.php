@@ -8,6 +8,7 @@ use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
+use App\Http\Controllers\Api\AddressController;
 // Controllers
 use App\Http\Controllers\Api\{
     HomeSectionController,
@@ -45,6 +46,20 @@ Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
+// Addresses (Public) - Up-to-date provinces/districts/wards
+Route::prefix('addresses')->group(function () {
+    Route::get('/provinces', [AddressController::class, 'provinces']);
+    Route::get('/districts/{provinceId}', [AddressController::class, 'districts']);
+    Route::get('/wards/{districtId}', [AddressController::class, 'wards']);
+});
+
+// Addresses Merged (Public) - Dữ liệu sáp nhập mới từ file override
+Route::prefix('addresses-merged')->group(function () {
+    Route::get('/provinces', [AddressController::class, 'provincesMerged']);
+    Route::get('/districts/{provinceId}', [AddressController::class, 'districtsMerged']);
+    Route::get('/wards/{districtId}', [AddressController::class, 'wardsMerged']);
+});
+
 // Forgot Password
 Route::prefix('forgot-password')->group(function () {
     Route::post('/send-otp', [ForgotPasswordController::class, 'sendOtp']);
@@ -80,6 +95,8 @@ Route::get('/comments/product/{product_id}', [CommentController::class, 'getByPr
 Route::post('/contact', [ContactController::class, 'store']);
 Route::get('/home-sections', [HomeSectionController::class, 'index']);
 Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
+Route::get('/product/detail/{id}', [ProductController::class, 'show']);
+Route::get('/top-selling-products/{limit}', [ProductController::class, 'topSelling']);
 
 // ========== Webhook VNPay (No Auth) ==========
 Route::prefix('payments/vnpay')->group(function () {
@@ -131,6 +148,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
         Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
     });
+
+    // Allow authenticated users to update their own profile
+    Route::put('/users/{id}', [UserController::class, 'update']);
 
     // Orders cho user
     Route::prefix('client/orders')->group(function () {

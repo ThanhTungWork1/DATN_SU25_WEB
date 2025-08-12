@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import publicAxios from "../../../utils/publicAxios";
 import { useAuth } from "../../../provider/AuthContext";
-import { getAddresses } from "../../../utils/addressLoader";
+// Load administrative divisions from backend endpoints to always get up-to-date (merged) data
 
 interface Product {
   id: number;
@@ -44,14 +44,13 @@ const CheckoutPage = () => {
     province: "",
   });
 
-  // Address API states
+  // Address lists (fetched from backend AddressController)
   const [provinces, setProvinces] = useState<any[]>([]);
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [selectedWardId, setSelectedWardId] = useState("");
-  const [addressData, setAddressData] = useState<{ provinces: any[]; districts: any[]; wards: any[] }>({ provinces: [], districts: [], wards: [] });
 
   const [paymentMethod, setPaymentMethod] = useState("Thanh toán khi nhận hàng (COD)");
   const [voucherCode, setVoucherCode] = useState("");
@@ -70,8 +69,6 @@ const CheckoutPage = () => {
         return 'cod';
       case 'Chuyển khoản ngân hàng':
         return 'bank';
-      case 'Ví điện tử Momo':
-        return 'momo';
       case 'VNPay':
         return 'vnpay';
       default:
@@ -206,39 +203,40 @@ const CheckoutPage = () => {
     }>;
   };
 
-  // Load provinces on component mount (full dataset with fallback + cache)
+  // Load provinces from backend on mount
   useEffect(() => {
     (async () => {
       try {
-        const data = await getAddresses();
-        setAddressData(data as any);
-        setProvinces(data.provinces || []);
+        const res = await publicAxios.get('/addresses/provinces');
+        const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setProvinces(list);
       } catch (error) {
-        console.error('Error loading addresses data:', error);
+        console.error('Error loading provinces:', error);
       }
     })();
   }, []);
 
-  // Handle province change
+  // Handle province change: fetch districts from backend
   const handleProvinceChange = async (provinceId: string) => {
     setSelectedProvinceId(provinceId);
     setSelectedDistrictId("");
     setDistricts([]);
     setWards([]);
     setSelectedWardId("");
-    
-    const selectedProvince = provinces.find(p => p.code.toString() === provinceId);
+
+    const selectedProvince = provinces.find(p => String(p.code) === String(provinceId));
     setAddress(prev => ({ ...prev, province: selectedProvince?.name || "", district: "", ward: "" }));
-    
-    if (provinceId) {
-      // Load districts from loaded dataset matching province_code
-      const pid = (selectedProvince?.code ?? provinceId).toString();
-      const allDistricts = (addressData as any).districts || [];
-      const filtered = allDistricts.filter((d: any) => d.province_code?.toString() === pid);
-      setDistricts(filtered);
-      if (filtered.length === 0) {
-        console.warn('No districts for province code:', pid, selectedProvince);
+
+    if (!provinceId) return;
+    try {
+      const res = await publicAxios.get(`/addresses/districts/${encodeURIComponent(provinceId)}`);
+      const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      setDistricts(list);
+      if (!Array.isArray(list) || list.length === 0) {
+        console.warn('No districts returned for province:', provinceId);
       }
+    } catch (e) {
+      console.error('Error loading districts:', e);
     }
   };
 
@@ -299,23 +297,25 @@ const CheckoutPage = () => {
     }
   };
 
-  // Handle district change
+  // Handle district change: fetch wards from backend
   const handleDistrictChange = async (districtId: string) => {
     setSelectedDistrictId(districtId);
     setWards([]);
     setSelectedWardId("");
-    
-    const selectedDistrict = districts.find(d => d.code.toString() === districtId);
+
+    const selectedDistrict = districts.find(d => String(d.code) === String(districtId));
     setAddress(prev => ({ ...prev, district: selectedDistrict?.name || "", ward: "" }));
-    
-    if (districtId) {
-      const did = (selectedDistrict?.code ?? districtId).toString();
-      const allWards = (addressData as any).wards || [];
-      const filtered = allWards.filter((w: any) => w.district_code?.toString() === did);
-      setWards(filtered);
-      if (filtered.length === 0) {
-        console.warn('No wards for district code:', did, selectedDistrict);
+
+    if (!districtId) return;
+    try {
+      const res = await publicAxios.get(`/addresses/wards/${encodeURIComponent(districtId)}`);
+      const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      setWards(list);
+      if (!Array.isArray(list) || list.length === 0) {
+        console.warn('No wards returned for district:', districtId);
       }
+    } catch (e) {
+      console.error('Error loading wards:', e);
     }
   };
 
@@ -550,7 +550,35 @@ const CheckoutPage = () => {
       // 4. Thông báo thành công
       if (paymentMethod === 'cod') {
         alert("Đặt hàng COD thành công! Bạn sẽ thanh toán khi nhận hàng.");
-        navigate('/orders'); // Chuyển đến trang đơn hàng
+        // Điều hướng sang trang OrderSuccess với dữ liệu đơn hàng
+        navigate('/order-success', {
+          state: {
+            orderId,
+            customerName: address.name || user?.name || user?.username || 'Khách hàng',
+            customerPhone: address.phone || user?.phone || '',
+            address: {
+              street: address.street,
+              ward: address.ward,
+              district: address.district,
+              province: address.province,
+            },
+            paymentMethod: 'Thanh toán khi nhận hàng (COD)',
+            paymentStatus: 'pending',
+            voucherCode: appliedVoucher?.code || null,
+            items: selectedProducts.map((it: any) => ({
+              name: it.name,
+              quantity: it.quantity,
+              price: Number(it.price),
+              image: it.image || null,
+            })),
+            // Tổng tiền
+            totalAmount: Number(displayTotalAmount) + Number(shippingFee),
+            discountAmount: Number(discountAmount) || 0,
+            shippingFee: Number(shippingFee),
+            finalOrderAmount: Number(finalAmount),
+            createdAt: new Date().toISOString(),
+          },
+        });
       } else {
         alert("Đặt hàng thành công! Payment record đã được tạo.");
         // Có thể chuyển đến trang thanh toán hoặc đơn hàng
@@ -606,6 +634,7 @@ const CheckoutPage = () => {
 
     if (!token) {
       alert("Vui lòng đăng nhập để đặt hàng");
+      navigate('/login');
       return;
     }
 
@@ -614,9 +643,6 @@ const CheckoutPage = () => {
       await handleVNPayPayment();
     } else if (paymentMethod === "Chuyển khoản ngân hàng") {
       await processOrderWithPayment('bank');
-      setShowQRModal(true); // Hiển thị QR sau khi lưu payment
-    } else if (paymentMethod === "Ví điện tử Momo") {
-      await processOrderWithPayment('momo');
       setShowQRModal(true); // Hiển thị QR sau khi lưu payment
     } else {
       // COD - lưu vào payments với method 'cod'
@@ -821,34 +847,7 @@ const CheckoutPage = () => {
                     VNPay
                   </label>
                 </div>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="momo"
-                    checked={paymentMethod === "Ví điện tử Momo"}
-                    onChange={() => setPaymentMethod("Ví điện tử Momo")}
-                  />
-                  <label className="form-check-label fw-semibold" htmlFor="momo">
-                    <i className="fas fa-mobile-alt text-info me-2"></i>
-                    Ví điện tử Momo
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="zalopay"
-                    checked={paymentMethod === "ZaloPay"}
-                    onChange={() => setPaymentMethod("ZaloPay")}
-                  />
-                  <label className="form-check-label fw-semibold" htmlFor="zalopay">
-                    <i className="fas fa-qrcode text-success me-2"></i>
-                    ZaloPay
-                  </label>
-                </div>
+                {/* Đã loại bỏ Momo và ZaloPay theo yêu cầu */}
               </div>
             </div>
           </div>

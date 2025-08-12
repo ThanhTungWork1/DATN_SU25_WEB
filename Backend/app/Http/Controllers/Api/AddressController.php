@@ -5,10 +5,138 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 
 class AddressController extends Controller
 {
+    /**
+     * Load merged (sáp nhập) dataset from storage/app/addresses_merged.json
+     * Supports two formats:
+     *  - Flat: { provinces: [], districts: [], wards: [] }
+     *  - Hierarchical: [ { Id, Name, Districts: [ { Id, Name, Wards: [...] } ] } ]
+     */
+    private function loadMergedData(): array
+    {
+        try {
+            if (!Storage::disk('local')->exists('addresses_merged.json')) {
+                return [];
+            }
+            $raw = Storage::disk('local')->get('addresses_merged.json');
+            $json = json_decode($raw, true);
+            if (!$json) return [];
+
+            // If already flat
+            if (isset($json['provinces']) && isset($json['districts']) && isset($json['wards'])) {
+                return [
+                    'provinces' => is_array($json['provinces']) ? $json['provinces'] : [],
+                    'districts' => is_array($json['districts']) ? $json['districts'] : [],
+                    'wards' => is_array($json['wards']) ? $json['wards'] : [],
+                ];
+            }
+
+            // If hierarchical, normalize to flat
+            if (is_array($json) && isset($json[0])) {
+                $provinces = [];
+                $districts = [];
+                $wards = [];
+                foreach ($json as $p) {
+                    $pid = $p['Id'] ?? ($p['code'] ?? null);
+                    $pname = $p['Name'] ?? ($p['name'] ?? '');
+                    if ($pid !== null) {
+                        $provinces[] = [
+                            'code' => (string)$pid,
+                            'name' => $pname,
+                        ];
+                    }
+                    if (isset($p['Districts']) && is_array($p['Districts'])) {
+                        foreach ($p['Districts'] as $d) {
+                            $did = $d['Id'] ?? ($d['code'] ?? null);
+                            $dname = $d['Name'] ?? ($d['name'] ?? '');
+                            if ($did !== null) {
+                                $districts[] = [
+                                    'code' => (string)$did,
+                                    'name' => $dname,
+                                    'province_code' => (string)$pid,
+                                ];
+                            }
+                            if (isset($d['Wards']) && is_array($d['Wards'])) {
+                                foreach ($d['Wards'] as $w) {
+                                    $wid = $w['Id'] ?? ($w['code'] ?? null);
+                                    $wname = $w['Name'] ?? ($w['name'] ?? '');
+                                    if ($wid !== null) {
+                                        $wards[] = [
+                                            'code' => (string)$wid,
+                                            'name' => $wname,
+                                            'district_code' => (string)$did,
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return [ 'provinces' => $provinces, 'districts' => $districts, 'wards' => $wards ];
+            }
+        } catch (\Throwable $e) {
+            // ignore and fallback
+        }
+        return [];
+    }
+
+    public function provincesMerged()
+    {
+        try {
+            $cacheKey = 'addresses_merged_provinces';
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached) && !empty($cached)) return response()->json($cached, 200);
+
+            $data = $this->loadMergedData();
+            $provinces = $data['provinces'] ?? [];
+            Cache::put($cacheKey, $provinces, now()->addHours(24));
+            return response()->json($provinces, 200);
+        } catch (\Throwable $e) {
+            return response()->json([], 200);
+        }
+    }
+
+    public function districtsMerged($provinceId)
+    {
+        try {
+            $cacheKey = 'addresses_merged_districts_' . $provinceId;
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached) && !empty($cached)) return response()->json($cached, 200);
+
+            $data = $this->loadMergedData();
+            $pidStr = (string)$provinceId;
+            $list = array_values(array_filter(($data['districts'] ?? []), function($d) use ($pidStr){
+                return (string)($d['province_code'] ?? '') === $pidStr;
+            }));
+            Cache::put($cacheKey, $list, now()->addHours(24));
+            return response()->json($list, 200);
+        } catch (\Throwable $e) {
+            return response()->json([], 200);
+        }
+    }
+
+    public function wardsMerged($districtId)
+    {
+        try {
+            $cacheKey = 'addresses_merged_wards_' . $districtId;
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached) && !empty($cached)) return response()->json($cached, 200);
+
+            $data = $this->loadMergedData();
+            $didStr = (string)$districtId;
+            $list = array_values(array_filter(($data['wards'] ?? []), function($w) use ($didStr){
+                return (string)($w['district_code'] ?? '') === $didStr;
+            }));
+            Cache::put($cacheKey, $list, now()->addHours(24));
+            return response()->json($list, 200);
+        } catch (\Throwable $e) {
+            return response()->json([], 200);
+        }
+    }
     public function provinces()
     {
         try {

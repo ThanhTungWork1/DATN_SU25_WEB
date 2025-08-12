@@ -1,10 +1,12 @@
 import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../../hook/useLogin";
+import { useAuth } from "../../provider/AuthContext";
 
 const UserLogin = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { mutate: loginUser, isPending } = useLogin({ resource: "login" });
 
   const onFinish = (values: { login: string; password: string }) => {
@@ -22,8 +24,14 @@ const UserLogin = () => {
           // User thường
           localStorage.setItem("user_token", data.token);
           localStorage.setItem("role", data.user.role.toString());
+          // Lưu user vào localStorage và cập nhật AuthContext để navbar hiển thị tên
+          if (data?.user) {
+            localStorage.setItem("user", JSON.stringify(data.user));
+            try { login(data.user); } catch {}
+          }
           message.success("Đăng nhập người dùng thành công!");
-          navigate("/");
+          // Điều hướng về trang hồ sơ để cập nhật tài khoản nếu cần
+          navigate("/profile");
         }
       },
       onError: (error: any) => {

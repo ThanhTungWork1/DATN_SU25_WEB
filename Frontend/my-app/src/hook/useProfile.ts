@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import publicAxios from "../utils/publicAxios";
 
 type UseProfileProps = {
   resource: string;
@@ -7,19 +7,9 @@ type UseProfileProps = {
 };
 
 const useProfile = ({ resource, id }: UseProfileProps) => {
-  const token = localStorage.getItem("user_token");
-
   return useMutation({
     mutationFn: async (updatedData: any) => {
-      const response = await axios.put(
-        `http://localhost:8000/api/${resource}/${id}`,
-        updatedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await publicAxios.put(`/${resource}/${id}`, updatedData);
       return response.data;
     },
   });

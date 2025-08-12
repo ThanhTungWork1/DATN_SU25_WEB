@@ -627,4 +627,13 @@ class ProductController extends Controller
             'data' => $products
         ]);
     }
+
+    public function show($id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Không tìm thấy sản phẩm'], 404);
+        }
+        return response()->json($product, 200);
+    }
 }

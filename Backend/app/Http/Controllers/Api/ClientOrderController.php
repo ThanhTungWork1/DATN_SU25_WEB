@@ -152,6 +152,14 @@ class ClientOrderController extends Controller
                 'payload' => $request->all(),
             ]);
 
+            // Bảo vệ: yêu cầu người dùng đăng nhập
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.'
+                ], 401);
+            }
+
             // Validate
             $validator = Validator::make($request->all(), [
                 'shipping_address' => 'required|string|max:500',
