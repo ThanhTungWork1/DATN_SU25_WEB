@@ -17,13 +17,13 @@ const ProductInfo = ({
   // ✅ Ưu tiên giá từ biến thể sản phẩm (variant), fallback về giá chính
   const displayPrice = selectedVariant?.price || product.price;
 
-  // Format giá tiền VN - nhân 1000 để đồng bộ với hệ thống (nếu lưu giá theo nghìn)
+  // Format giá tiền VN - sử dụng trực tiếp đơn vị VND
   const formattedPrice = displayPrice
-    ? Number(displayPrice * 1000).toLocaleString("vi-VN") + "đ"
+    ? Number(displayPrice).toLocaleString("vi-VN") + "đ"
     : "N/A";
 
   const formattedOldPrice = originalPrice
-    ? Number(originalPrice * 1000).toLocaleString("vi-VN") + "đ"
+    ? Number(originalPrice).toLocaleString("vi-VN") + "đ"
     : "";
 
   return (

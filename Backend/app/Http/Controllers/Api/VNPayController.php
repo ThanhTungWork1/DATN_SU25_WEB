@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\VNPayService;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -167,26 +168,53 @@ class VNPayController extends Controller
                     return response()->json(['error' => 'Order not found'], 404);
                 }
 
-                // Cập nhật payment
+                // Cập nhật payment (ưu tiên pending, fallback lấy bản ghi mới nhất của vnpay)
                 $payment = Payment::where('order_id', $order->id)
                     ->where('method', 'vnpay')
                     ->where('status', 'pending')
                     ->first();
 
+                if (!$payment) {
+                    $payment = Payment::where('order_id', $order->id)
+                        ->where('method', 'vnpay')
+                        ->orderByDesc('id')
+                        ->first();
+                    Log::warning('VNPay payment pending not found, fallback to latest', [
+                        'order_id' => $order->id,
+                        'payment_id' => $payment?->id,
+                    ]);
+                }
+
                 if ($payment) {
+                    $before = $payment->toArray();
                     $payment->update([
                         'status' => 'completed',
                         'paid_at' => now(),
-                        'transaction_id' => $result['transaction_no'] ?? null,
-                        'bank_code' => $result['bank_code'] ?? null,
+                        'transaction_id' => $result['transaction_no'] ?? $payment->transaction_id,
+                        'bank_code' => $result['bank_code'] ?? $payment->bank_code,
                         'gateway_response' => $result
+                    ]);
+                    $payment->refresh();
+                    Log::info('VNPay payment row updated', [
+                        'before' => $before,
+                        'after' => $payment->toArray(),
+                    ]);
+                } else {
+                    Log::error('VNPay payment record not found to update', [
+                        'order_id' => $order->id,
                     ]);
                 }
 
                 // Cập nhật đơn hàng
+                $beforeOrder = $order->toArray();
                 $order->update([
                     'is_paid' => true,
-                    'status' => 'paid'
+                    'status' => OrderStatus::CONFIRMED
+                ]);
+                $order->refresh();
+                Log::info('Order row updated after VNPay', [
+                    'before' => $beforeOrder,
+                    'after' => $order->toArray(),
                 ]);
 
                 Log::info('VNPay payment successful', [
@@ -296,7 +324,7 @@ class VNPayController extends Controller
                     // Cập nhật đơn hàng
                     $order->update([
                         'is_paid' => true,
-                        'status' => 'paid'
+                        'status' => OrderStatus::CONFIRMED
                     ]);
 
                     Log::info('VNPay IPN payment successful', [

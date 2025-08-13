@@ -24,6 +24,7 @@ class ClientOrderController extends Controller
         $rand = str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
         return "ORD-{$date}-{$rand}";
     }
+
     /**
      * Lấy danh sách đơn hàng của user hiện tại
      */
@@ -40,7 +41,6 @@ class ClientOrderController extends Controller
             if ($request->has('status') && $request->status !== '') {
                 $query->where('status', $request->status);
             }
-
 
             if ($request->has('date_from')) {
                 $query->whereDate('created_at', '>=', $request->date_from);
@@ -90,7 +90,9 @@ class ClientOrderController extends Controller
         }
     }
 
-
+    /**
+     * Lấy chi tiết đơn hàng
+     */
     public function show($id)
     {
         try {
@@ -142,36 +144,31 @@ class ClientOrderController extends Controller
         }
     }
 
-
+    /**
+     * Tạo đơn hàng mới
+     */
     public function store(Request $request)
     {
         try {
             $user = Auth::user();
-            Log::info('ClientOrderController@store incoming', [
-                'user_id' => optional($user)->id,
-                'payload' => $request->all(),
-            ]);
-
-            // Bảo vệ: yêu cầu người dùng đăng nhập
             if (!$user) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.'
+                    'message' => 'Vui lòng đăng nhập để đặt hàng.'
                 ], 401);
             }
 
-            // Validate
+            // Validate dữ liệu đầu vào
             $validator = Validator::make($request->all(), [
                 'shipping_address' => 'required|string|max:500',
-                'shipping_phone' => 'required|string|max:20',
-                'shipping_name' => 'required|string|max:255',
-                'note' => 'nullable|string|max:1000',
-                'payment_method' => 'required|string|max:100',
-                'discount_amount' => 'nullable|numeric|min:0',
-                'items' => 'required|array|min:1',
+                'shipping_phone'   => 'required|string|max:20',
+                'shipping_name'    => 'required|string|max:255',
+                'note'             => 'nullable|string|max:1000',
+                'payment_method'   => 'required|string|max:100',
+                'discount_amount'  => 'nullable|numeric|min:0',
+                'items'            => 'required|array|min:1',
                 'items.*.variant_id' => 'required|exists:product_variants,id',
-                'items.*.quantity' => 'required|integer|min:1',
-                'items.*.price' => 'required|numeric|min:0'
+                'items.*.quantity'   => 'required|integer|min:1',
             ]);
 
             if ($validator->fails()) {
@@ -186,23 +183,12 @@ class ClientOrderController extends Controller
             }
 
             $data = $validator->validated();
-            Log::info('ClientOrderController@store validated', $data);
+            Log::info('ClientOrderController@store validated', ['data' => $data]);
 
-
+            // Tính tổng tiền và kiểm tra giá
             $total_amount = 0;
             foreach ($data['items'] as $item) {
-                $total_amount += $item['price'] * $item['quantity'];
-            }
-
-
-            $shipping_fee = 30000;
-            $discount = (float)($data['discount_amount'] ?? 0);
-            $final_amount = max(0, $total_amount + $shipping_fee - $discount);
-
-
-            foreach ($data['items'] as $item) {
-                $variant = ProductVariant::with('product', 'color', 'size')->find($item['variant_id']);
-
+                $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
                 if (!$variant) {
                     return response()->json([
                         'status' => 'error',
@@ -210,144 +196,132 @@ class ClientOrderController extends Controller
                     ], 404);
                 }
 
+                // Bỏ kiểm tra giá từ request; giá sẽ luôn lấy theo DB để đảm bảo chính xác
+
                 if ($variant->stock < $item['quantity']) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Sản phẩm ' . $variant->product->name . ' (màu: ' . $variant->color->name . ', size: ' . $variant->size->name . ') không đủ tồn kho! Còn lại: ' . $variant->stock
+                        'message' => 'Sản phẩm ' . optional($variant->product)->name .
+                            ' (màu: ' . optional($variant->color)->name .
+                            ', size: ' . optional($variant->size)->name .
+                            ') không đủ tồn kho! Còn lại: ' . $variant->stock
                     ], 422);
                 }
+
+                $total_amount += $variant->price * $item['quantity'];
             }
 
-            // Use transaction
+            // Chỉ cộng phí ship 1 lần
+            $shipping_fee = $total_amount > 0 ? 30000 : 0;
+            $discount = (float)($data['discount_amount'] ?? 0);
+            $final_amount = max(0, $total_amount + $shipping_fee - $discount);
+
+            Log::info('ClientOrderController@store price calculation', [
+                'total_amount' => $total_amount,
+                'shipping_fee' => $shipping_fee,
+                'discount' => $discount,
+                'final_amount' => $final_amount,
+            ]);
+
             DB::beginTransaction();
 
-            try {
-                // Chuẩn bị payload tạo đơn hàng, chỉ set các cột nếu tồn tại trong schema để tránh lỗi Unknown column
-                $orderData = [
-                    'user_id' => $user->id,
-                    'status' => 'pending',
-                    'is_paid' => false,
-                    'total_amount' => $total_amount,
-                    'shipping_fee' => $shipping_fee,
-                    'shipping_address' => $data['shipping_address'],
-                    'shipping_phone' => $data['shipping_phone'],
-                    'shipping_name' => $data['shipping_name'],
-                    'note' => $data['note'] ?? null,
-                    'payment_method' => $data['payment_method'],
-                    'discount_amount' => $discount,
+            // Chuẩn bị dữ liệu tạo đơn hàng
+            $orderData = [
+                'user_id' => $user->id,
+                'status' => 'pending',
+                'is_paid' => false,
+                'total_amount' => $total_amount,
+                'shipping_fee' => $shipping_fee,
+                'discount_amount' => $discount,
+                'shipping_address' => $data['shipping_address'],
+                'shipping_phone' => $data['shipping_phone'],
+                'shipping_name' => $data['shipping_name'],
+                'note' => $data['note'] ?? null,
+                'payment_method' => $data['payment_method'],
+            ];
+
+            // Chỉ thêm các cột nếu tồn tại trong schema
+            if (Schema::hasColumn('orders', 'final_amount')) {
+                $orderData['final_amount'] = $final_amount;
+            }
+            if (Schema::hasColumn('orders', 'order_code')) {
+                $orderData['order_code'] = self::generateOrderCode();
+            }
+            if (Schema::hasColumn('orders', 'customer_name')) {
+                $orderData['customer_name'] = $data['shipping_name'];
+            }
+            if (Schema::hasColumn('orders', 'customer_email')) {
+                $orderData['customer_email'] = $user->email;
+            }
+            if (Schema::hasColumn('orders', 'customer_phone')) {
+                $orderData['customer_phone'] = $data['shipping_phone'];
+            }
+
+            // Tạo đơn hàng
+            $order = Order::create($orderData);
+            Log::info('ClientOrderController@store order created', ['order_id' => $order->id]);
+
+            $orderItems = [];
+            foreach ($data['items'] as $item) {
+                $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+
+                // Không fail nếu thiếu quan hệ; dùng optional() để snapshot an toàn
+
+                // Validate giá biến thể: không được null/invalid
+                if ($variant === null || $variant->price === null || $variant->price === '' || !is_numeric($variant->price)) {
+                    Log::warning('ClientOrderController@store variant price invalid', [
+                        'variant_id' => $item['variant_id'],
+                        'price' => $variant->price ?? null,
+                    ]);
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Giá sản phẩm tạm thời không khả dụng cho biến thể ' . $item['variant_id']
+                    ], 422);
+                }
+
+                // Trừ tồn kho
+                $variant->decrement('stock', $item['quantity']);
+
+                // Chuẩn bị dữ liệu order item
+                $orderItem = [
+                    'variant_id' => $item['variant_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => (float) $variant->price,
                 ];
 
-                // final_amount nếu có cột
-                if (Schema::hasColumn('orders', 'final_amount')) {
-                    $orderData['final_amount'] = $final_amount;
+                // Chỉ thêm các cột nếu tồn tại trong schema (và đảm bảo không-null)
+                if (Schema::hasColumn('order_items', 'product_name')) {
+                    $orderItem['product_name'] = optional($variant->product)->name ?? 'Sản phẩm không xác định';
                 }
-                // order_code nếu có cột
-                if (Schema::hasColumn('orders', 'order_code')) {
-                    $orderData['order_code'] = self::generateOrderCode();
+                if (Schema::hasColumn('order_items', 'variant_color_name')) {
+                    $orderItem['variant_color_name'] = optional($variant->color)->name ?? 'Không có';
                 }
-                // customer fields nếu có cột
-                if (Schema::hasColumn('orders', 'customer_name')) {
-                    $orderData['customer_name'] = $data['shipping_name'];
-                }
-                if (Schema::hasColumn('orders', 'customer_email')) {
-                    $orderData['customer_email'] = optional($user)->email;
-                }
-                if (Schema::hasColumn('orders', 'customer_phone')) {
-                    $orderData['customer_phone'] = $data['shipping_phone'];
-                }
-                // order_source nếu có cột
-                if (Schema::hasColumn('orders', 'order_source')) {
-                    $orderData['order_source'] = 'website';
-                }
-                // priority nếu có cột
-                if (Schema::hasColumn('orders', 'priority')) {
-                    $orderData['priority'] = 'normal';
-                }
-                // notes nếu có cột
-                if (Schema::hasColumn('orders', 'notes')) {
-                    $orderData['notes'] = $data['note'] ?? null;
+                if (Schema::hasColumn('order_items', 'variant_size_name')) {
+                    $orderItem['variant_size_name'] = optional($variant->size)->name ?? 'Không có';
                 }
 
-                // Tạo đơn hàng
-                $order = Order::create($orderData);
-                Log::info('ClientOrderController@store order created', ['order_id' => $order->id]);
-
-                // Chuẩn bị mảng dữ liệu cho createMany và trừ tồn kho
-                $orderItems = [];
-                foreach ($data['items'] as $item) {
-                    // Lấy variant kèm product/color/size để snapshot đầy đủ
-                    $variant = ProductVariant::with(['product','color','size'])->find($item['variant_id']);
-                    // Trừ tồn kho
-                    $variant->stock -= (int)$item['quantity'];
-                    $variant->save();
-
-                    // Build payload cho order_items, bổ sung các cột nếu schema có
-                    $orderItemPayload = [
-                        'variant_id' => (int)$item['variant_id'],
-                        'quantity' => (int)$item['quantity'],
-                        'price' => (float)$item['price'],
-                    ];
-
-                    // product_name là NOT NULL ở một số schema => luôn set nếu có cột
-                    if (Schema::hasColumn('order_items', 'product_name')) {
-                        $orderItemPayload['product_name'] = $item['product_name']
-                            ?? optional(optional($variant)->product)->name
-                            ?? 'Sản phẩm';
-                    }
-                    // Các cột mở rộng nếu tồn tại
-                    if (Schema::hasColumn('order_items', 'product_id')) {
-                        $orderItemPayload['product_id'] = $item['product_id']
-                            ?? optional(optional($variant)->product)->id;
-                    }
-                    if (Schema::hasColumn('order_items', 'product_image')) {
-                        $orderItemPayload['product_image'] = $item['product_image'] ?? null;
-                    }
-                    if (Schema::hasColumn('order_items', 'variant_color_name')) {
-                        $orderItemPayload['variant_color_name'] = $item['variant_color_name']
-                            ?? optional(optional($variant)->color)->name
-                            ?? null;
-                    }
-                    if (Schema::hasColumn('order_items', 'variant_size_name')) {
-                        $orderItemPayload['variant_size_name'] = $item['variant_size_name']
-                            ?? optional(optional($variant)->size)->name
-                            ?? null;
-                    }
-                    if (Schema::hasColumn('order_items', 'variant_sku')) {
-                        $orderItemPayload['variant_sku'] = $item['variant_sku']
-                            ?? (property_exists($variant, 'sku') ? $variant->sku : null);
-                    }
-                    if (Schema::hasColumn('order_items', 'variant_image')) {
-                        $orderItemPayload['variant_image'] = $item['variant_image']
-                            ?? (property_exists($variant, 'image') ? $variant->image : null);
-                    }
-
-                    $orderItems[] = $orderItemPayload;
-                }
-                // Tạo nhiều order item cùng lúc
-                $order->items()->createMany($orderItems);
-                Log::info('ClientOrderController@store items created', ['count' => count($orderItems)]);
-
-                DB::commit();
-
-                // Load lại order với relationships
-                $order->load(['items.variant.product', 'items.variant.color', 'items.variant.size']);
-
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Đặt hàng thành công!',
-                    'data' => $order
-                ], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                Log::error('ClientOrderController@store tx failed', [
-                    'exception' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                throw $e;
+                $orderItems[] = $orderItem;
             }
+
+            $order->items()->createMany($orderItems);
+            Log::info('ClientOrderController@store order items created', ['count' => count($orderItems)]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đặt hàng thành công!',
+                'data' => $order->load(['items.variant.product', 'items.variant.color', 'items.variant.size'])
+            ], 201);
+
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('ClientOrderController@store failed', [
                 'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
                 'status' => 'error',
@@ -356,6 +330,9 @@ class ClientOrderController extends Controller
         }
     }
 
+    /**
+     * Cập nhật đơn hàng
+     */
     public function update(Request $request, $id)
     {
         try {

@@ -150,7 +150,7 @@ const OrderSuccess = () => {
                         </div>
                         <div className="col-auto">
                           <div className="fw-bold text-danger">
-                            {((item.price * 1000) * item.quantity).toLocaleString('vi-VN')} VND
+                            {(item.price * item.quantity).toLocaleString('vi-VN')} VND
                           </div>
                         </div>
                       </div>

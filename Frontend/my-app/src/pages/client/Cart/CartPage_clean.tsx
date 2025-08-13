@@ -68,7 +68,7 @@ const CartPage = () => {
   }));
   
   const totalAmount = selectedProducts.reduce(
-    (total: number, item: any) => total + (item.variant.price * 1000) * item.quantity,
+    (total, item) => total + item.variant.price * item.quantity,
     0
   );
 
@@ -122,7 +122,7 @@ const CartPage = () => {
                       Màu: {item.variant.color.name} | Size: {item.variant.size.name}
                     </p>
                     <p className="fw-bold text-danger mb-0">
-                      {(item.variant.price * 1000).toLocaleString()} VND
+                      {item.variant.price.toLocaleString()} VND
                     </p>
                   </div>
                   <div className="d-flex align-items-center">
@@ -169,9 +169,7 @@ const CartPage = () => {
                   </div>
                   <div className="d-flex justify-content-between">
                     <span>Tổng tiền:</span>
-                    <span className="fw-bold text-danger">
-                      {totalAmount.toLocaleString()} VND
-                    </span>
+                    <p className="mb-0 fw-bold text-danger">{totalAmount.toLocaleString()} VND</p>
                   </div>
                   <hr />
                   <div className="d-grid gap-2">

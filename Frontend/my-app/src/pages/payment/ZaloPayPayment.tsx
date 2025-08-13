@@ -125,18 +125,18 @@ const ZaloPayPayment: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Tổng tiền hàng:</span>
                 <span className="font-medium">
-                  {state.orderData?.total_amount?.toLocaleString('vi-VN') || '0'} VND
+                  {state.orderData?.total_amount != null ? Number(state.orderData.total_amount).toLocaleString('vi-VN') : '0'} VND
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Phí vận chuyển:</span>
                 <span className="font-medium">
-                  {state.orderData?.shipping_fee?.toLocaleString('vi-VN') || '0'} VND
+                  {state.orderData?.shipping_fee != null ? Number(state.orderData.shipping_fee).toLocaleString('vi-VN') : '0'} VND
                 </span>
               </div>
               <div className="flex justify-between text-lg font-bold text-blue-600 pt-3 border-t">
                 <span>Tổng thanh toán:</span>
-                <span>{state.amount?.toLocaleString('vi-VN')} VND</span>
+                <span>{state.amount != null ? Number(state.amount).toLocaleString('vi-VN') : '0'} VND</span>
               </div>
             </div>
           </div>

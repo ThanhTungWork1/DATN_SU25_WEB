@@ -67,7 +67,7 @@ const CheckoutPage = () => {
   // Cập nhật finalAmount khi totalAmount hoặc selectedProducts thay đổi
   useEffect(() => {
     const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
+      (total, item) => total + item.price * item.quantity,
       0
     );
     setFinalAmount(newTotal);
@@ -132,7 +132,7 @@ const CheckoutPage = () => {
     setAppliedVoucher(null);
     setDiscountAmount(0);
     const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
+      (total, item) => total + item.price * item.quantity,
       0
     );
     setFinalAmount(newTotal);

@@ -35,13 +35,17 @@ const ClientRoute = () => {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/search" element={<ResultProduct />} />
 
+        {/** Public payment callback routes (allow redirect without auth) **/}
+        <Route path="/payment/vnpay/success" element={<VNPaySuccess />} />
+        <Route path="/payment/vnpay/failure" element={<VNPayFailed />} />
+        {/** Generic fallbacks if backend redirects to these paths **/}
+        <Route path="/payment/success" element={<VNPaySuccess />} />
+        <Route path="/payment/failed" element={<VNPayFailed />} />
+
         <Route element={<RequireAuth allowedRoles={["user"]} />}>
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
-          {/** ZaloPay route removed - VNPay only **/}
-          <Route path="/payment/vnpay/success" element={<VNPaySuccess />} />
-          <Route path="/payment/vnpay/failure" element={<VNPayFailed />} />
           <Route path="/orders" element={<OrderList />} />
           {/* <Route path="/orders/:id" element={<OrderItem />} /> */}
         </Route>

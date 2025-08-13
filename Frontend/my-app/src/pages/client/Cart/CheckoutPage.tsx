@@ -31,9 +31,8 @@ const CheckoutPage = () => {
   // Get token from localStorage
   const token = localStorage.getItem('user_token');
   
-  // Xử lý giá khác nhau từ Cart và Buy Now
-  // Cart: totalAmount đã nhân 1000, Buy Now: totalAmount chưa nhân
-  const displayTotalAmount = fromBuyNow ? totalAmount * 1000 : totalAmount;
+  // Tất cả giá trị đều là VND, không nhân thêm
+  const displayTotalAmount = totalAmount;
 
   const [address, setAddress] = useState<Address>({
     name: "",
@@ -540,9 +539,31 @@ const CheckoutPage = () => {
 
       console.log('ORDER CREATED:', orderId);
 
-      // 2. BỎ tạo payment record thủ công trên FE. Với VNPay, gọi create endpoint riêng.
-      const paymentResponse: any = {};
-      console.log('SKIP manual payment record creation on FE');
+      // 2. Tạo payment record cho các phương thức không có cổng thanh toán riêng (COD/Bank)
+      let paymentResponse: any = {};
+      const methodCode = toMethodCode(paymentMethod);
+      if (methodCode === 'cod' || methodCode === 'bank') {
+        try {
+          // Ưu tiên dùng final_amount từ orderResponse nếu có, fallback tính tại FE
+          const orderData = (orderResponse.data as any)?.data || {};
+          const amount = Number(orderData.final_amount ?? (Number(displayTotalAmount) + Number(shippingFee) - Number(discountAmount)));
+          console.log('CREATING PAYMENT RECORD...', { orderId, method: paymentMethod, amount });
+          const pr = await publicAxios.post('/payments/create', {
+            order_id: orderId,
+            method: methodCode, // 'cod' | 'bank'
+            amount,
+          });
+          paymentResponse = pr.data;
+          console.log('PAYMENT RECORD CREATED:', paymentResponse);
+        } catch (pe: any) {
+          console.error('CREATE PAYMENT RECORD FAILED:', pe?.response?.data || pe?.message || pe);
+          alert(pe?.response?.data?.message || 'Không thể tạo payment record');
+          return; // Dừng luồng nếu không tạo được payment record
+        }
+      } else {
+        // Với VNPay: đã có endpoint riêng tạo payment record và trả về payment_url
+        console.log('Gateway payment method detected, skip unified createPayment');
+      }
 
       // 3. Clear cart
       await clearOrderedItems();
@@ -563,7 +584,7 @@ const CheckoutPage = () => {
               province: address.province,
             },
             paymentMethod: 'Thanh toán khi nhận hàng (COD)',
-            paymentStatus: 'pending',
+            paymentStatus: (paymentResponse as any)?.payment?.status || 'pending',
             voucherCode: appliedVoucher?.code || null,
             items: selectedProducts.map((it: any) => ({
               name: it.name,
@@ -691,12 +712,12 @@ const CheckoutPage = () => {
                         <h6 className="fw-bold mb-1">{item.name}</h6>
                         <div className="text-muted mb-2">Số lượng: {item.quantity}</div>
                         <div className="fw-bold text-danger">
-                          {(item.price * 1000).toLocaleString('vi-VN')} VND
+                          {item.price.toLocaleString('vi-VN')} VND
                         </div>
                       </div>
                       <div className="col-auto">
                         <div className="fw-bold fs-5 text-dark">
-                          {(item.price * 1000 * item.quantity).toLocaleString('vi-VN')} VND
+                          {(item.price * item.quantity).toLocaleString('vi-VN')} VND
                         </div>
                       </div>
                     </div>

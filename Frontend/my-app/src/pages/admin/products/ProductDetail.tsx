@@ -24,7 +24,7 @@ const { Title } = Typography;
 // Helper function để format giá - giống hệt như trong ProductsList
 const formatPrice = (price: string | number): string => {
   const numericPrice = Number(price);
-  return `${(numericPrice * 1000).toLocaleString("vi-VN")}₫`;
+  return `${numericPrice.toLocaleString("vi-VN")}₫`;
 };
 
 // Mở rộng interface ProductVariant để bao gồm cả đối tượng color và size từ API

@@ -38,7 +38,7 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
     addToCart({
       product_id: product.id,
       quantity: 1,
-      price: product.price * 1000, // ✅ Nhân với 1000 để đồng nhất với cách hiển thị
+      price: product.price,
     });
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
@@ -100,11 +100,11 @@ export const BoxProduct = ({ product, onAddToCart }: BoxProductProps) => {
       <Link to={`/products/${product.id}`} style={{ textDecoration: "none" }}>
         <div>
           <span className="fashion-price">
-            {Number(product.price * 1000).toLocaleString("vi-VN")} VND
+            {Number(product.price).toLocaleString("vi-VN")} VND
           </span>
           {product.old_price && (
             <span className="fashion-oldprice">
-              {Number(product.old_price * 1000).toLocaleString("vi-VN")} VND
+              {Number(product.old_price).toLocaleString("vi-VN")} VND
             </span>
           )}
         </div>

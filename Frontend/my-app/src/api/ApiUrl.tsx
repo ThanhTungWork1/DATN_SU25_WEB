@@ -78,14 +78,41 @@ export const getAllOrders = async () => {
   return data;
 };
 
-export const createOrder = async (orderData: {
-  userId: number;
-  items: any[];
-  total: number;
-  address: string;
-  phone: string;
-}) => {
-  return await axios.post("http://localhost:8000/api/client/orders", orderData);
+export const createOrder = async (orderData: any) => {
+  // Chuẩn hóa base URL và token
+  const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('user_token') || '';
+
+  // Map dữ liệu FE -> BE yêu cầu
+  const payload = {
+    shipping_name:
+      orderData?.shipping_name || orderData?.customerName || orderData?.name || '',
+    shipping_phone:
+      orderData?.shipping_phone || orderData?.customerPhone || orderData?.phone || '',
+    shipping_address:
+      orderData?.shipping_address || orderData?.address || '',
+    note: orderData?.note ?? undefined,
+    payment_method:
+      orderData?.payment_method || orderData?.paymentMethod || 'cod',
+    discount_amount:
+      orderData?.discount_amount ?? orderData?.discountAmount ?? undefined,
+    items: Array.isArray(orderData?.items)
+      ? orderData.items.map((it: any) => ({
+          variant_id:
+            it?.variant_id || it?.variantId || it?.variant?.id || it?.product_variant_id,
+          quantity: it?.quantity ?? it?.qty ?? 1,
+        }))
+      : [],
+  };
+
+  // Gọi API với Authorization header (yêu cầu bởi auth:sanctum)
+  return await axios.post(`${API_BASE}/api/client/orders`, payload, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    withCredentials: false,
+  });
 };
 
 export const getOrderById = async (id: number) => {

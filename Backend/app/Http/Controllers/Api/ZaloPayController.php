@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\ZaloPayService;
+use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -40,7 +41,7 @@ class ZaloPayController extends Controller
             $order = Order::with('voucher')->findOrFail($request->order_id);
 
             // Không cho tạo thanh toán nếu order đã paid hoặc canceled
-            if ($order->status === 'paid') {
+            if ($order->is_paid || $order->status === OrderStatus::CONFIRMED) {
                 return response()->json(['error' => 'Đơn hàng đã được thanh toán'], 400);
             }
             if ($order->status === 'cancelled') {
@@ -166,7 +167,7 @@ class ZaloPayController extends Controller
             $order = Order::find($orderId);
             if ($order) {
                 $order->update([
-                    'status' => 'paid',
+                    'status' => OrderStatus::CONFIRMED,
                     'is_paid' => true
                 ]);
             }

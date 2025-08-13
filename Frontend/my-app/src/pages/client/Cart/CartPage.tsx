@@ -1,4 +1,3 @@
-import { useForm } from "react-hook-form";
 import { useCart } from "../../../provider/CartProvider";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +8,7 @@ const CartPage = () => {
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
-  const { register, handleSubmit, setValue } = useForm();
+  // Removed react-hook-form (unused)
 
   // Đảm bảo fetch cart khi vào trang (đồng bộ với Provider)
   useEffect(() => {
@@ -51,7 +50,7 @@ const CartPage = () => {
   }));
   const shippingFee = 30000;
   const subtotalAmount = selectedProducts.reduce(
-    (total, item) => total + (item.price * 1000) * item.quantity,
+    (total, item) => total + (item.price) * item.quantity,
     0
   );
   const totalAmount = subtotalAmount + shippingFee;
@@ -139,7 +138,7 @@ const CartPage = () => {
                               </span>
                             </div>
                             <div className="fw-bold text-danger fs-5">
-                              {(item.price * 1000).toLocaleString('vi-VN')} VND
+                              {item.price.toLocaleString('vi-VN')} VND
                             </div>
                           </div>
                           

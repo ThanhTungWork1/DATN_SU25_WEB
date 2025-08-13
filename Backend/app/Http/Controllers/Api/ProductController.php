@@ -630,10 +630,32 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['message' => 'Không tìm thấy sản phẩm'], 404);
+        try {
+            $product = Product::with(['variants.color', 'variants.size'])->find($id);
+            if (!$product) {
+                return response()->json(['message' => 'Không tìm thấy sản phẩm'], 404);
+            }
+
+            // ✅ Append image URLs for product
+            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
+            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
+
+            // ✅ Append image_url for each variant
+            if ($product->variants) {
+                $product->variants->each(function ($variant) {
+                    if ($variant->image) {
+                        $variant->image_url = asset('storage/' . $variant->image);
+                    }
+                });
+            }
+
+            // Trả về trực tiếp product (giữ backward-compat với frontend hiện tại)
+            return response()->json($product, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Lỗi khi lấy chi tiết sản phẩm',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        return response()->json($product, 200);
     }
 }

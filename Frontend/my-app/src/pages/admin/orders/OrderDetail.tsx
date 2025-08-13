@@ -135,7 +135,7 @@ export default function OrderDetail() {
       key: "price",
       render: (price: number) => (
         <div style={{ fontWeight: "bold", color: "#1890ff" }}>
-          {((price || 0) * 1000).toLocaleString()} VND
+          {(price || 0).toLocaleString('vi-VN')} VND
         </div>
       )
     },
@@ -154,7 +154,7 @@ export default function OrderDetail() {
       key: "subtotal",
       render: (record: any) => (
         <div style={{ fontWeight: "bold", color: "#52c41a" }}>
-          {(((record.price || 0) * (record.quantity || 0)) * 1000).toLocaleString()} VND
+          {(((record.price || 0) * (record.quantity || 0))).toLocaleString('vi-VN')} VND
         </div>
       )
     }
@@ -169,10 +169,10 @@ export default function OrderDetail() {
   }
 
   // Đảm bảo các giá trị số không undefined và chuyển đổi sang VND
-  const totalAmount = (order.total_amount || 0) * 1000;
-  const shippingFee = (order.shipping_fee || 0) * 1000;
-  const discountAmount = (order.discount_amount || 0) * 1000;
-  const finalAmount = (order.final_amount || 0) * 1000;
+  const totalAmount = (order.total_amount || 0);
+  const shippingFee = (order.shipping_fee || 0);
+  const discountAmount = (order.discount_amount || 0);
+  const finalAmount = (order.final_amount || 0);
 
   return (
     <div>
@@ -271,7 +271,7 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Phí vận chuyển">
                 <Text strong style={{ color: '#52c41a' }}>
-                  {(order.shipping_fee || 0) * 1000} VND
+                  {(order.shipping_fee || 0).toLocaleString('vi-VN')} VND
                 </Text>
               </Descriptions.Item>
             </Descriptions>
@@ -310,22 +310,22 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Tổng tiền hàng">
                 <Text strong style={{ fontSize: '16px', color: '#1890ff' }}>
-                  {totalAmount.toLocaleString()} VND
+                  {totalAmount.toLocaleString('vi-VN')} VND
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Phí vận chuyển">
                 <Text style={{ color: '#52c41a' }}>
-                  {shippingFee.toLocaleString()} VND
+                  {shippingFee.toLocaleString('vi-VN')} VND
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Giảm giá">
                 <Text type="danger" style={{ fontSize: '14px' }}>
-                  -{discountAmount.toLocaleString()} VND
+                  -{discountAmount.toLocaleString('vi-VN')} VND
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Thành tiền">
                 <Text strong style={{ fontSize: '18px', color: '#f5222d' }}>
-                  {finalAmount.toLocaleString()} VND
+                  {finalAmount.toLocaleString('vi-VN')} VND
                 </Text>
               </Descriptions.Item>
             </Descriptions>

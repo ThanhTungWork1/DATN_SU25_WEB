@@ -183,7 +183,7 @@ class PaymentController extends Controller
                 'status' => $status,
                 'transaction_id' => $request->transaction_id ?? null,
                 'paid_at' => $paid_at,
-                'response_data' => $request->response_data ?? null,
+                'gateway_response' => $request->gateway_response ?? null,
             ]);
 
             return response()->json([

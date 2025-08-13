@@ -12,8 +12,8 @@ export const formatCurrency = (amount: number | string, currency: string = 'VND'
         return '0 ₫';
     }
     
-    // Chuyển đổi từ đơn vị nghìn đồng sang đồng
-    const amountInVND = numAmount * 1000;
+    // Số tiền đã ở đơn vị VND, không nhân thêm
+    const amountInVND = numAmount;
     
     // Format số với dấu phẩy phân cách hàng nghìn
     const formattedNumber = new Intl.NumberFormat('vi-VN').format(amountInVND);
@@ -44,15 +44,12 @@ export const formatCurrencyShort = (amount: number | string): string => {
         return '0 ₫';
     }
     
-    // Chuyển đổi từ đơn vị nghìn đồng sang đồng
-    const amountInVND = numAmount * 1000;
-    
-    if (amountInVND >= 1000000) {
-        return `${(amountInVND / 1000000).toFixed(1)}M ₫`;
-    } else if (amountInVND >= 1000) {
-        return `${(amountInVND / 1000).toFixed(1)}K ₫`;
+    if (numAmount >= 1000000) {
+        return `${(numAmount / 1000000).toFixed(1)}M ₫`;
+    } else if (numAmount >= 1000) {
+        return `${(numAmount / 1000).toFixed(1)}K ₫`;
     } else {
-        return `${amountInVND} ₫`;
+        return `${numAmount} ₫`;
     }
 };
 
@@ -66,8 +63,8 @@ export const formatCurrencyWithColor = (amount: number | string, threshold: numb
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     const formattedText = formatCurrency(numAmount);
     
-    // Chuyển đổi từ đơn vị nghìn đồng sang đồng để so sánh
-    const amountInVND = numAmount * 1000;
+    // So sánh trực tiếp theo VND
+    const amountInVND = numAmount;
     
     let color = '#52c41a'; // Xanh lá (mặc định)
     

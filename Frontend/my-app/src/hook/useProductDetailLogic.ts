@@ -33,27 +33,20 @@ export function useProductDetailLogic(product: Product | undefined) {
     console.log('Selected Size:', selectedSize);
     console.log('Selected Color:', selectedColor);
     
-    // ✅ LOGIC ĐÚNG: Tìm variant dựa trên size/color user đã chọn
-    let targetVariant = null;
-    
-    // Nếu user đã chọn size và color
-    if (selectedSize && selectedColor && product.variants) {
-      targetVariant = product.variants.find((variant: any) => 
-        variant.size?.name === selectedSize && 
-        variant.color?.name === selectedColor?.name
-      );
-      console.log('🎯 Found variant by size/color:', targetVariant);
+    // Bắt buộc phải chọn đủ size và color, KHÔNG fallback tự động
+    if (!selectedSize || !selectedColor) {
+      toast.error("Vui lòng chọn đầy đủ Màu và Size trước khi thêm vào giỏ hàng!");
+      return;
     }
-    
-    // Nếu không tìm thấy variant chính xác, lấy variant đầu tiên
-    if (!targetVariant && product.variants && product.variants.length > 0) {
-      targetVariant = product.variants[0];
-      console.log('⚠️ Using first variant as fallback:', targetVariant);
-    }
-    
-    // Nếu vẫn không có variant, báo lỗi
+
+    // Tìm đúng variant theo size/color đã chọn
+    const targetVariant = (product.variants || []).find((variant: any) => 
+      variant.size?.name === selectedSize && 
+      variant.color?.id === selectedColor?.id
+    );
+
     if (!targetVariant || !targetVariant.id) {
-      toast.error("Không tìm thấy variant hợp lệ cho sản phẩm!");
+      toast.error("Không tìm thấy biến thể phù hợp (màu/size) cho sản phẩm này!");
       return;
     }
     
@@ -74,25 +67,19 @@ export function useProductDetailLogic(product: Product | undefined) {
   const handleBuyNow = (quantity: number) => {
     if (!product) return;
     
-    // ✅ LOGIC ĐÚNG: Tìm variant dựa trên size/color user đã chọn
-    let targetVariant = null;
-    
-    // Nếu user đã chọn size và color
-    if (selectedSize && selectedColor && product.variants) {
-      targetVariant = product.variants.find((variant: any) => 
-        variant.size?.name === selectedSize && 
-        variant.color?.name === selectedColor?.name
-      );
+    // Bắt buộc chọn đủ trước khi mua ngay
+    if (!selectedSize || !selectedColor) {
+      toast.error("Vui lòng chọn đầy đủ Màu và Size trước khi mua!");
+      return;
     }
-    
-    // Nếu không tìm thấy variant chính xác, lấy variant đầu tiên
-    if (!targetVariant && product.variants && product.variants.length > 0) {
-      targetVariant = product.variants[0];
-    }
-    
-    // Nếu vẫn không có variant, báo lỗi
+
+    const targetVariant = (product.variants || []).find((variant: any) => 
+      variant.size?.name === selectedSize && 
+      variant.color?.name === selectedColor?.name
+    );
+
     if (!targetVariant || !targetVariant.id) {
-      toast.error("Không tìm thấy variant hợp lệ cho sản phẩm!");
+      toast.error("Không tìm thấy biến thể phù hợp (màu/size) cho sản phẩm này!");
       return;
     }
 
@@ -112,14 +99,18 @@ export function useProductDetailLogic(product: Product | undefined) {
 
   // Hàm xử lý chọn size (cho phép bỏ chọn)
   const handleSizeSelect = (size: string) => {
+    // Toggle chọn/bỏ chọn size
     setSelectedSize((prevSize) => (prevSize === size ? null : size));
+
+    // Không còn auto-gợi ý màu theo size; user phải tự chọn màu (trừ khi chỉ có 1 variant)
   };
 
   // Hàm xử lý chọn màu (cho phép bỏ chọn)
   const handleColorSelect = (color: ColorType) => {
-    setSelectedColor((prevColor) =>
-      prevColor?.id === color.id ? null : color
-    );
+    // Toggle chọn/bỏ chọn màu
+    setSelectedColor((prevColor) => (prevColor?.id === color.id ? null : color));
+
+    // Không còn auto-gợi ý size theo màu; user phải tự chọn size (trừ khi chỉ có 1 variant)
   };
 
   return {

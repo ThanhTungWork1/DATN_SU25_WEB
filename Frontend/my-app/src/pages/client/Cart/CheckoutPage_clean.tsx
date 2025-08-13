@@ -67,7 +67,7 @@ const CheckoutPage = () => {
   // Cập nhật finalAmount khi totalAmount hoặc selectedProducts thay đổi
   useEffect(() => {
     const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
+      (total, item) => total + item.price * item.quantity,
       0
     );
     setFinalAmount(newTotal);
@@ -131,7 +131,7 @@ const CheckoutPage = () => {
     setAppliedVoucher(null);
     setDiscountAmount(0);
     const newTotal = selectedProducts.reduce(
-      (total, item) => total + item.price * 1000 * item.quantity,
+      (total, item) => total + item.price * item.quantity,
       0
     );
     setFinalAmount(newTotal);
@@ -305,7 +305,7 @@ const CheckoutPage = () => {
               <div className="flex-grow-1">
                 <h6 className="mb-1">{item.name}</h6>
                 <p className="mb-1 text-muted">Số lượng: {item.quantity}</p>
-                <p className="mb-0 fw-bold text-danger">{((item.price * 1000) * item.quantity).toLocaleString()} VND</p>
+                <p className="mb-0 fw-bold text-danger">{(item.price * item.quantity).toLocaleString()} VND</p>
               </div>
             </div>
           ))}

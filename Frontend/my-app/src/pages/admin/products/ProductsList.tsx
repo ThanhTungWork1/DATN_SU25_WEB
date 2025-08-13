@@ -156,7 +156,7 @@ export default function ProductList() {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
-      render: (text) => `${(Number(text) * 1000).toLocaleString("vi-VN")}₫`,
+      render: (text) => `${Number(text).toLocaleString("vi-VN")}₫`,
     },
     {
       title: "Danh mục",

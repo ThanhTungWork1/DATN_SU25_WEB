@@ -102,6 +102,15 @@ Route::get('/top-selling-products/{limit}', [ProductController::class, 'topSelli
 Route::prefix('payments/vnpay')->group(function () {
     Route::get('/callback', [VNPayController::class, 'callback']); // Return URL sau khi thanh toán
     Route::post('/ipn', [VNPayController::class, 'ipn']); // IPN server-to-server
+    Route::get('/check-status', [VNPayController::class, 'checkStatus']); // Kiểm tra trạng thái giao dịch
+});
+
+// ========== VNPay Alternative Aliases (to match VNPay portal configs) ==========
+// Nếu dashboard VNPay đang trỏ về /api/vnpay/return hoặc /api/vnpay/callback, map về cùng handler
+Route::prefix('vnpay')->group(function () {
+    Route::get('/return', [VNPayController::class, 'callback']);
+    Route::get('/callback', [VNPayController::class, 'callback']);
+    Route::post('/ipn', [VNPayController::class, 'ipn']);
 });
 
 // ========== Admin ==========
@@ -211,6 +220,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::apiResource('/cart', CartController::class);
+    // Clear entire cart for current user
+    Route::post('/cart-clear', [CartController::class, 'clearCart']);
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);

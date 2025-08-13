@@ -42,11 +42,16 @@ export default function useCart(token: string) {
 
   const updateQuantity = async (id: number, quantity: number) => {
     try {
+      const currentToken = localStorage.getItem('user_token');
       await axios.put(
         `http://localhost:8000/api/cart/${id}`,
         { quantity },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
         }
       );
 
@@ -59,9 +64,12 @@ export default function useCart(token: string) {
 
   const removeItem = async (id: number) => {
     try {
-
+      const currentToken = localStorage.getItem('user_token');
       await axios.delete(`http://localhost:8000/api/cart/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          'Authorization': `Bearer ${currentToken}`,
+          'Accept': 'application/json'
+        },
       });
 
       fetchCart();
@@ -72,12 +80,16 @@ export default function useCart(token: string) {
 
   const clearCart = async () => {
     try {
-   
+      const currentToken = localStorage.getItem('user_token');
       await axios.post(
         "http://localhost:8000/api/cart-clear",
         {},
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
         }
       );
 

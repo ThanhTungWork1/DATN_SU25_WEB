@@ -29,5 +29,6 @@ return [
     'environment' => env('VNPAY_ENVIRONMENT', 'sandbox'),
     
     // URL frontend để redirect sau khi thanh toán
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+    // Mặc định trỏ tới Vite dev server (5173). Có thể override bằng FRONTEND_URL trong .env
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
 ];

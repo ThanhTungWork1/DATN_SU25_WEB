@@ -78,6 +78,8 @@ const ProductDetail = () => {
     }
   }, [selectedSize, selectedColor, product?.image_url, product?.image]);
 
+  // ❌ Không tự động chọn size/màu dù chỉ có 1 variant. Người dùng phải chọn rõ ràng.
+
   if (isLoading) return <p>Đang tải...</p>;
   if (isError) {
     return <p>Lỗi khi tải sản phẩm.</p>;
@@ -88,7 +90,7 @@ const ProductDetail = () => {
 
   const selectedVariant = product.variants?.find(
     (v) =>
-      v.size?.name === selectedSize && v.color?.name === selectedColor?.name
+      v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -109,16 +111,31 @@ const ProductDetail = () => {
     ];
   }
 
-  const uniqueColors = Array.from(
-    new Map(
-      (product.variants || [])
-        .map((v) => v.color)
-        .filter(
-          (color): color is ColorType => color !== undefined && color !== null
-        )
-        .map((color) => [color.id, color])
-    ).values()
+  const colorMap: Map<number, ColorType> = new Map<number, ColorType>(
+    (product.variants || [])
+      .map((v: any) => v.color as ColorType | undefined | null)
+      .filter((c): c is ColorType => !!c)
+      .map((c) => [c.id, c] as [number, ColorType])
   );
+  const uniqueColors: ColorType[] = Array.from(colorMap.values());
+
+  // ✅ Lấy danh sách size duy nhất từ tất cả variants
+  const normalizeSize = (raw?: string | null): string | null => {
+    if (!raw) return null;
+    const token = raw.toUpperCase();
+    const known = ["5XL", "2XL", "XL", "L", "M", "S"]; // thứ tự ưu tiên
+    for (const k of known) if (token.includes(k)) return k;
+    return raw;
+  };
+
+  const rawSizes: (string | null)[] = (product.variants || [])
+    .map((v: any) => normalizeSize(v.size?.name));
+  const filteredSizes: string[] = rawSizes.filter((s): s is string => !!s);
+  const uniqueSizes: string[] = Array.from(new Set<string>(filteredSizes));
+  uniqueSizes.sort((a: string, b: string) => {
+    const order = ["S", "M", "L", "XL", "2XL", "5XL"]; // sắp xếp quen thuộc
+    return order.indexOf(a) - order.indexOf(b);
+  });
 
   let colorThumbnails: string[] = [];
   const colorSet = new Set();
@@ -365,46 +382,85 @@ const ProductDetail = () => {
                 variants={product.variants || []}
                 selectedSize={selectedSize}
                 onSelectSize={handleSizeSelect}
+                sizes={uniqueSizes}
+                isDisabled={(size) => {
+                  const normalizeSize = (raw?: string | null): string | null => {
+                    if (!raw) return null;
+                    const token = raw.toUpperCase();
+                    const known = ["5XL", "2XL", "XL", "L", "M", "S"];
+                    for (const k of known) if (token.includes(k)) return k;
+                    return raw;
+                  };
+                  // Nếu đã chọn màu, khoá các size không có variant phù hợp hoặc hết hàng
+                  if (selectedColor) {
+                    const v = (product.variants || []).find(
+                      (it: any) => normalizeSize(it.size?.name) === size && it.color?.id === selectedColor.id
+                    );
+                    return !v || v.stock === 0;
+                  }
+                  // Nếu chưa chọn màu, disable nếu size không xuất hiện ở bất kỳ variant còn hàng nào
+                  return !(product.variants || []).some(
+                    (it: any) => normalizeSize(it.size?.name) === size && (it.stock === undefined || it.stock === null || it.stock > 0)
+                  );
+                }}
               />
               <hr />
 
               <Color
+                // Hiển thị đúng các màu có trong variants của sản phẩm
                 colors={uniqueColors}
                 selectedColor={selectedColor}
                 onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
+                  const normalizeSize = (raw?: string | null): string | null => {
+                    if (!raw) return null;
+                    const token = raw.toUpperCase();
+                    const known = ["5XL", "2XL", "XL", "L", "M", "S"];
+                    for (const k of known) if (token.includes(k)) return k;
+                    return raw;
+                  };
+                  const normalizedSelected = normalizeSize(selectedSize);
                   const variant = product.variants?.find(
-                    (v) =>
-                      v.color?.id === color.id && v.size?.name === selectedSize
+                    (v: any) => v.color?.id === color.id && normalizeSize(v.size?.name) === normalizedSelected
                   );
                   if (variant?.image_url) {
                     setSelectedImage(variant.image_url); // ✅ Hiển thị ảnh variant
                   } else if (variant?.image) {
                     setSelectedImage(variant.image); // Fallback
-                  } else if (color.image) {
-                    setSelectedImage(color.image);
                   } else {
                     // ✅ Nếu không có variant, về ảnh chính
                     setSelectedImage(product.image_url || product.image || "");
                   }
+                }}
+                isDisabled={(color) => {
+                  const normalizeSize = (raw?: string | null): string | null => {
+                    if (!raw) return null;
+                    const token = raw.toUpperCase();
+                    const known = ["5XL", "2XL", "XL", "L", "M", "S"];
+                    for (const k of known) if (token.includes(k)) return k;
+                    return raw;
+                  };
+                  // Nếu đã chọn size, khoá màu không có variant phù hợp hoặc hết hàng
+                  if (selectedSize) {
+                    const normalizedSelected = normalizeSize(selectedSize);
+                    const v = (product.variants || []).find(
+                      (it: any) => it.color?.id === color.id && normalizeSize(it.size?.name) === normalizedSelected
+                    );
+                    return !v || v.stock === 0;
+                  }
+                  // Nếu chưa chọn size, disable nếu màu không xuất hiện ở bất kỳ variant còn hàng nào
+                  return !(product.variants || []).some(
+                    (it: any) => it.color?.id === color.id && (it.stock === undefined || it.stock === null || it.stock > 0)
+                  );
                 }}
               />
               <hr />
 
               <ProductActions
                 productId={product.id}
-                variantId={(() => {
-                  return selectedVariant?.id;
-                })()}
+                variantId={selectedVariant?.id || undefined}
                 maxQuantity={selectedVariantStock || 10}
-                disabled={(() => {
-                  // ✅ Nếu chỉ có 1 variant, không cần chọn size/color
-                  if (product.variants && product.variants.length === 1) {
-                    return false;
-                  }
-                  // ✅ Nếu có nhiều variant, yêu cầu chọn size và color
-                  return !selectedSize || !selectedColor;
-                })()}
+                disabled={!selectedSize || !selectedColor}
                 productName={product.name}
                 productPrice={(() => {
                   const price = selectedVariant?.price || product.price || 0;
