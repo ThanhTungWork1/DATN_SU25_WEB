@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { UseOrder } from '../types/UseOrder';
 import { transformOrders, transformOrder } from '../utils/orderTransform';
 import axiosInstance from '../utils/axiosInstance';
+import { ApiResponse } from '../types/ApiResponse';
 
 export const useOrders = () => {
   const queryClient = useQueryClient();
 
-  const getOrders = () =>
+  const getOrders = (enabled: boolean = true) =>
     useQuery<UseOrder[]>({
       queryKey: ['orders'],
       queryFn: async () => {
@@ -25,6 +25,7 @@ export const useOrders = () => {
           throw error;
         }
       },
+      enabled,
     });
 
   const getOrdersByStatus = (status: string) =>
@@ -45,12 +46,13 @@ export const useOrders = () => {
           throw error;
         }
       },
-      enabled: !!status,
+      // Tránh gọi API khi status là 'all' (đã có getOrders xử lý)
+      enabled: !!status && status !== 'all',
     });
 
   const cancelOrder = useMutation({
     mutationFn: async (orderId: number) => {
-      await axios.delete(`/api/client/orders/${orderId}`);
+      await axiosInstance.delete(`/client/orders/${orderId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

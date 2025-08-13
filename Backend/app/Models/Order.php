@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -124,6 +125,14 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Một đơn hàng có thể có một yêu cầu hoàn tiền.
+     */
+    public function refund_request(): HasOne
+    {
+        return $this->hasOne(RefundRequest::class);
     }
 }
 

@@ -9,6 +9,7 @@ import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
 import RequireAuth from "./RequireAuth";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
+import RefundRequestList from '../pages/admin/refunds/RefundRequestList';
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
@@ -42,6 +43,7 @@ const AdminRoute = () => {
           <Route path="orders/edit/:id" element={<OrderForm />} />
           <Route path="orders/detail/:id" element={<OrderDetail />} />
           <Route path="contacts" element={<ContactAdmin />} />
+          <Route path="refund-requests" element={<RefundRequestList />} />
           <Route path="categories" element={<CategoryList />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="voucher" element={<VoucherPage />} />

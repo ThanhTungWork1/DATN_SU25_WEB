@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Contact } from "lucide-react";
 import {
   DesktopOutlined,
   UserOutlined,
@@ -11,6 +10,8 @@ import {
   HomeOutlined, 
   PictureOutlined,
   CommentOutlined,
+  MessageOutlined,
+  SolutionOutlined
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
@@ -47,7 +48,8 @@ const items: MenuItem[] = [
   getItem("Voucher", "/admin/voucher", <GiftOutlined />),
   getItem("Banners", "/admin/banners", <PictureOutlined />),
   getItem("Comments", "/admin/comments", <CommentOutlined />),
-  getItem("Liên hệ", "/admin/contacts", <Contact />),
+  getItem("Quản lý liên hệ", "/admin/contacts", <MessageOutlined />),
+  getItem("Quản lý Hoàn tiền", "/admin/refund-requests", <SolutionOutlined />),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
 ];
 

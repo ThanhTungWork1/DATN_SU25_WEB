@@ -1,10 +1,20 @@
 import { UseOrder, OrderItem } from '../types/UseOrder';
 
+// Ép kiểu an toàn sang số từ giá trị API (có thể là string như "99.00")
+const safeNumber = (v: unknown): number => {
+  const n = Number(v);
+  return isFinite(n) ? n : 0;
+};
+
+// Chuyển giá trị tiền từ đơn vị API (ví dụ: "198.00" ~ 198 nghìn) sang VND
+// Quy ước: nhân 1000 để ra đơn vị đồng
+const toVND = (v: unknown): number => Math.round(safeNumber(v) * 1000);
+
 interface BackendOrderItem {
   id: number;
   variant_id: number;
   quantity: number;
-  price: number;
+  price: number | string;
   variant: {
     product: {
       id: number;
@@ -23,8 +33,9 @@ interface BackendOrderItem {
 interface BackendOrder {
   id: number;
   status: string;
-  total_amount: number;
-  shipping_fee: number;
+  is_paid: any; // Thêm trường is_paid
+  total_amount: number | string;
+  shipping_fee: number | string;
   shipping_address: string;
   shipping_phone: string;
   shipping_name: string;
@@ -35,30 +46,38 @@ interface BackendOrder {
 }
 
 export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
-  const transformedItems: OrderItem[] = backendOrder.items.map(item => ({
-    id: item.id,
-    product_id: item.variant.product.id,
-    product_name: `${item.variant.product.name} (${item.variant.color.name}, ${item.variant.size.name})`,
-    product_image: item.variant.product.image,
-    quantity: item.quantity,
-    price: item.price,
-    total: item.price * item.quantity
-  }));
+  const transformedItems: OrderItem[] = backendOrder.items.map(item => {
+    const price = toVND((item as any).price);
+    const quantity = safeNumber(item.quantity);
+    return {
+      id: item.id,
+      product_id: item.variant.product.id,
+      product_name: `${item.variant.product.name} (${item.variant.color.name}, ${item.variant.size.name})`,
+      product_image: (item as any).variant?.product?.image,
+      quantity,
+      price,
+      total: price * quantity,
+    };
+  });
+
+  const totalAmount = toVND((backendOrder as any).total_amount);
+  const shippingFee = toVND((backendOrder as any).shipping_fee);
 
   return {
     id: backendOrder.id,
     status: backendOrder.status,
-    total_price: backendOrder.total_amount + backendOrder.shipping_fee,
-    total: backendOrder.total_amount,
+    total_price: totalAmount + shippingFee,
+    total: totalAmount,
     created_at: backendOrder.created_at,
     updated_at: backendOrder.updated_at,
     items: transformedItems,
     shipping_address: backendOrder.shipping_address,
     payment_method: 'Thanh toán khi nhận hàng', // Default value
-    note: backendOrder.note
+    note: backendOrder.note,
+    is_paid: backendOrder.is_paid, // Thêm trường is_paid
   };
 };
 
 export const transformOrders = (backendOrders: BackendOrder[]): UseOrder[] => {
   return backendOrders.map(transformOrder);
-}; 
+};

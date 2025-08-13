@@ -9,17 +9,26 @@ const axiosInstance = axios.create({
 
 // Interceptor cho Request
 axiosInstance.interceptors.request.use(
-  config => {
+  (config) => {
+    // Đảm bảo headers tồn tại để tránh lỗi typescript
+    if (!config.headers) {
+      config.headers = {};
+    }
+
     config.headers['Accept'] = 'application/json';
 
-    // Ưu tiên lấy token theo role
-    const adminToken = localStorage.getItem('admin_token');
-    const userToken = localStorage.getItem('user_token'); // thống nhất dùng user_token
-    const token = adminToken || userToken;
+    // Lấy token dựa trên vai trò hiện tại để tránh xung đột
+    const role = localStorage.getItem('role');
+    let token = null;
+
+    if (role === '1' || role === '2') { // Admin hoặc vai trò tương tự
+      token = localStorage.getItem('admin_token');
+    } else { // Mặc định là người dùng
+      token = localStorage.getItem('user_token');
+    }
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-
     }
 
     if (!(config.data instanceof FormData)) {

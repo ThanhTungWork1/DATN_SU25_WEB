@@ -21,9 +21,24 @@ export interface Order {
   estimated_delivery_date?: string | null;
   tracking_number?: string | null;
   shipping_company?: string | null;
-  items?: OrderItem[]; 
+  items: OrderItem[];
+  refund_request?: RefundRequest | null;
   total_quantity?: number; // THÊM MỚI: Để nhận tổng số lượng
   total_items?: number; // THÊM MỚI: Để nhận tổng số sản phẩm
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RefundRequest {
+  id: number;
+  order_id: number;
+  user_id: number;
+  amount: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  bank_account_name: string;
+  bank_account_number: string;
+  bank_name: string;
   created_at: string;
   updated_at: string;
 }

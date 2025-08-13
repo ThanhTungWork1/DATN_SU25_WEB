@@ -1,11 +1,7 @@
 <?php
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use Illuminate\Support\Facades\Auth;
-
-// --- API Controllers (Public & User) ---
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
@@ -31,10 +27,10 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Client\HomePageController;
 use App\Http\Controllers\HomeSectionController;
 use App\Http\Controllers\Api\ChatbotController;
-
+use App\Http\Controllers\Admin\AdminRefundRequestController;
+use App\Http\Controllers\Api\RefundRequestController;
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
-
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 // ===========================================================
@@ -221,6 +217,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
 
+    // Refund Requests (Admin)
+    Route::get('refund-requests', [AdminRefundRequestController::class, 'index']);
+    Route::patch('refund-requests/{id}/status', [AdminRefundRequestController::class, 'updateStatus']);
+
     Route::prefix('inventory')->group(function () {
         Route::get('/stats', [InventoryController::class, 'stats']);
         Route::get('/list', [InventoryController::class, 'list']);
@@ -245,14 +245,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::post('/logout', [AuthenticationController::class, 'logout']);
+    Route::post('/users/change-password', [UserController::class, 'changePassword']);
 
-    Route::prefix('favorites')->group(function () {
-        Route::get('/', [FavoriteController::class, 'index']);
-        Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
-    });
+    // Favorites
+    Route::apiResource('favorites', FavoriteController::class);
 
-
+    // Client-specific order routes (TẤT CẢ đều cần xác thực)
     Route::prefix('client/orders')->group(function () {
         Route::get('/', [ClientOrderController::class, 'index']);
         Route::get('/statistics', [ClientOrderController::class, 'statistics']);
@@ -324,6 +322,9 @@ Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Refund Requests
+    Route::post('/refund-requests', [RefundRequestController::class, 'store']);
 });
 
 // Liên hệ
