@@ -50,23 +50,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [handleTokenChange]);
 
-  const fetchCart = useCallback(async () => {
+    const fetchCart = useCallback(async () => {
+
     if (!token) {
       setCartItems([]);
       return;
     }
     try {
-      const response = await axios.get("http://localhost:8000/api/cart", {
+      // FIX: Thêm kiểu cho response data để TypeScript không báo lỗi
+      const response = await axios.get<any>("http://localhost:8000/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Sửa mapping: thử tất cả các đường dẫn có thể
-      const rawCartItems =
-        response.data?.cartItems ||
-        response.data?.cart_items ||
-        response.data?.cart?.cartItems ||
-        response.data?.cart?.cart_items ||
-        [];
+      // Lấy mảng cart_items từ response. Nếu không có hoặc không phải là mảng, dùng mảng rỗng.
+      
+      const rawCartItems = Array.isArray(response.data?.cart_items) 
+        ? response.data.cart_items 
+        : [];
+
       // Transform data từ nested structure thành flat structure
       const transformedCartItems = rawCartItems.map((item: any) => ({
         id: item.id,
@@ -79,17 +80,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           item.variant?.product?.image || item.variant?.image_url || item.image,
         color: item.variant?.color?.name || item.color,
         size: item.variant?.size?.name || item.size,
-        // Thêm các trường khác nếu cần
         product: item.variant?.product,
         variant: item.variant,
       }));
 
       setCartItems(transformedCartItems);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status !== 404) {
-        console.error("Lỗi khi lấy giỏ hàng:", error);
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as { response?: { status: number }, message: string };
+        if (axiosError.response && axiosError.response.status !== 404) {
+          console.error("Lỗi khi lấy giỏ hàng:", axiosError.message);
+        }
+      } else {
+        console.error("Lỗi không xác định khi lấy giỏ hàng:", error);
       }
-      setCartItems([]); // Luôn reset giỏ hàng nếu có lỗi
+      setCartItems([]);
     }
   }, [token]);
 
@@ -97,7 +102,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchCart();
   }, [fetchCart]);
 
-  const addToCart = async (item: CartItem) => {
+    const addToCart = async (item: CartItem) => {
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
@@ -124,8 +129,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.success("Đã thêm sản phẩm vào giỏ hàng!");
       fetchCart();
     } catch (error) {
+      let message = "Thêm sản phẩm thất bại!";
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          message = axiosError.response.data.message;
+        }
+      }
+      toast.error(message);
       console.error("Lỗi thêm sản phẩm:", error);
-      toast.error("Thêm sản phẩm vào giỏ hàng thất bại!");
     }
   };
 
@@ -133,14 +145,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) return;
     try {
-      await axios.delete(`http://localhost:8000/api/cart-item/${id}`, {
+      // SỬA: Thay 'cart-item' bằng 'cart' để khớp với apiResource
+      await axios.delete(`http://localhost:8000/api/cart/${id}`, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
       fetchCart();
     } catch (error) {
+      let message = "Xóa sản phẩm thất bại!";
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          message = axiosError.response.data.message;
+        }
+      }
+      toast.error(message);
       console.error("Lỗi xóa sản phẩm:", error);
-      toast.error("Xóa sản phẩm thất bại!");
     }
   };
 
@@ -148,14 +168,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) return;
     try {
-      await axios.delete("http://localhost:8000/api/cart", {
+      // SỬA: Sử dụng POST tới /api/cart-clear theo route đã định nghĩa
+      await axios.post("http://localhost:8000/api/cart-clear", null, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       toast.success("Đã xóa toàn bộ giỏ hàng!");
-      setCartItems([]);
+      setCartItems([]); // Cập nhật state ngay lập tức
     } catch (error) {
+      let message = "Xóa giỏ hàng thất bại!";
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          message = axiosError.response.data.message;
+        }
+      }
+      toast.error(message);
       console.error("Lỗi xóa toàn bộ giỏ hàng:", error);
-      toast.error("Xóa toàn bộ giỏ hàng thất bại!");
     }
   };
 
@@ -165,8 +193,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentToken = TokenManager.getToken();
     if (!currentToken) return;
     try {
+      // SỬA: Thay 'cart-item' bằng 'cart' để khớp với apiResource
       await axios.put(
-        `http://localhost:8000/api/cart-item/${id}`,
+        `http://localhost:8000/api/cart/${id}`,
         {
           quantity,
         },
@@ -177,8 +206,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.success("Đã cập nhật số lượng!");
       fetchCart();
     } catch (error) {
+      let message = "Cập nhật số lượng thất bại!";
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          message = axiosError.response.data.message;
+        }
+      }
+      toast.error(message);
       console.error("Lỗi cập nhật số lượng:", error);
-      toast.error("Cập nhật số lượng thất bại!");
     }
   };
 

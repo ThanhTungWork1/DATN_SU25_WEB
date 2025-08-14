@@ -5,7 +5,7 @@ import { useCart } from "../../../provider/CartProvider";
 const CartPage = () => {
   const navigate = useNavigate();
   // Lấy cart từ CartProvider để đồng bộ với addToCart ở ProductActions
-  const { cartItems, updateQuantity, removeItem, clearCart, fetchCart } = useCart();
+    const { cartItems, updateQuantity, removeItem, clearCart, fetchCart } = useCart();
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});

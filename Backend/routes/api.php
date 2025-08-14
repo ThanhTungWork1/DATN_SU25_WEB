@@ -32,7 +32,7 @@ use App\Http\Controllers\Api\RefundRequestController;
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
-
+use App\Http\Controllers\Api\ReviewController;
 // ===========================================================
 // =============== Public Routes =============================
 // ===========================================================
@@ -48,7 +48,6 @@ use App\Http\Controllers\Api\ZaloPayController;
 // Test API
 
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
-
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
@@ -65,6 +64,7 @@ Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'send
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
 
+Route::get('/review-eligibility/{id}', [ReviewController::class, 'checkEligibility']);
 // --- Top Selling Products ---
 Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
 

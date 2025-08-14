@@ -20,10 +20,6 @@ import type { ColorType } from "../../../types/ColorType";
 import "../../../assets/styles/color.css";
 import "../../../assets/styles/productDetail.css";
 
-// =============================
-// Trang chi tiết sản phẩm
-// =============================
-
 type RouteParams = {
   id: string;
 };
