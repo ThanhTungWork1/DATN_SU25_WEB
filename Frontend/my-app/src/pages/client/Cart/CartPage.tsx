@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../provider/CartProvider";
 import CartItem from "../../../components/cart/CartItem"; // Import component CartItem
+import { toast } from "sonner";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, clearCart, fetchCart } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, clearCart, fetchCart } = useCart();
 
   // DEBUG: Log cartItems để kiểm tra dữ liệu
   useEffect(() => {
@@ -34,12 +35,17 @@ const CartPage = () => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleUpdateAllQuantities = () => {
-    cartItems.forEach(item => {
-      if (selectedItems[item.id]) {
-        updateQuantity(item.id, item.quantity);
-      }
-    });
+  const handleUpdateSelectedQuantities = () => {
+    const updates = cartItems
+      .filter(item => selectedItems[item.id])
+      .map(item => updateQuantity(item.id, item.quantity));
+
+    Promise.all(updates)
+      .then(() => {
+        toast.success("Đã cập nhật giỏ hàng!");
+        fetchCart?.(); // Tải lại để đảm bảo đồng bộ
+      })
+      .catch(() => toast.error("Có lỗi xảy ra khi cập nhật giỏ hàng."));
   };
 
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
@@ -78,7 +84,7 @@ const CartPage = () => {
             </button>
           </div>
         ) : (
-          <form onSubmit={(e) => { e.preventDefault(); handleUpdateAllQuantities(); }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleUpdateSelectedQuantities(); }}>
             <div className="row g-4">
               {/* Danh sách sản phẩm */}
               <div className="col-lg-8">
@@ -104,7 +110,11 @@ const CartPage = () => {
                         </div>
                         <div className="flex-grow-1">
                            {/* Sử dụng component CartItem đã được chuẩn hóa */}
-                          <CartItem item={item} />
+                          <CartItem 
+                            item={item} 
+                            onUpdateQuantity={(id, quantity) => updateQuantity(id, quantity)}
+                            onRemove={(id) => removeFromCart(id)}
+                          />
                         </div>
                       </div>
                     ))}

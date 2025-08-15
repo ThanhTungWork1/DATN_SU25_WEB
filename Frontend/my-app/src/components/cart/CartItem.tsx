@@ -1,13 +1,12 @@
-import { useDispatch } from "react-redux";
-import { updateQuantity, removeFromCart } from "../../store/cartSlice";
 import type { CartItem as CartItemType } from "../../types/CartType"; // Sử dụng type chung
 
 interface CartItemProps {
   item: CartItemType;
+  onUpdateQuantity: (id: number, quantity: number) => void;
+  onRemove: (id: number) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ item }) => {
-  const dispatch = useDispatch();
+const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove }) => {
 
   // Lấy thông tin màu và size từ product_variant
   const color = item.product_variant?.color;
@@ -50,14 +49,14 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
         onChange={(e) => {
           const newQuantity = Number(e.target.value);
           if (newQuantity > 0) {
-            dispatch(updateQuantity({ id: item.id, quantity: newQuantity }));
+            onUpdateQuantity(item.id, newQuantity);
           }
         }}
       />
       <p className="fw-bold mx-3" style={{ minWidth: '120px', textAlign: 'right' }}>
         {(item.price * item.quantity * 1000).toLocaleString('vi-VN')} VND
       </p>
-      <button type="button" onClick={() => dispatch(removeFromCart(item.id))} className="btn btn-danger ms-3">
+      <button type="button" onClick={() => onRemove(item.id)} className="btn btn-danger ms-3">
         Xóa
       </button>
     </div>
