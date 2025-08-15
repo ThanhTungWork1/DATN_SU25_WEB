@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../provider/CartProvider";
+import CartItem from "../../../components/cart/CartItem"; // Import component CartItem
 
 const CartPage = () => {
   const navigate = useNavigate();
-  // Lấy cart từ CartProvider để đồng bộ với addToCart ở ProductActions
-    const { cartItems, updateQuantity, removeItem, clearCart, fetchCart } = useCart();
+  const { cartItems, updateQuantity, clearCart, fetchCart } = useCart();
+
+  // DEBUG: Log cartItems để kiểm tra dữ liệu
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      console.log("Dữ liệu giỏ hàng hiện tại:", cartItems);
+    }
+  }, [cartItems]);
 
   const [selectedItems, setSelectedItems] = useState<{ [key: number]: boolean }>({});
-  const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
 
   // Tự động chọn tất cả sản phẩm khi cartItems thay đổi
   useEffect(() => {
@@ -17,13 +23,6 @@ const CartPage = () => {
       return acc;
     }, {} as { [key: number]: boolean });
     setSelectedItems(allSelected);
-    
-    // Khởi tạo quantities từ cartItems
-    const initialQuantities = cartItems.reduce((acc, item) => {
-      acc[item.id] = item.quantity;
-      return acc;
-    }, {} as { [key: number]: number });
-    setQuantities(initialQuantities);
   }, [cartItems]);
 
   // Đảm bảo đồng bộ lần đầu mở trang
@@ -35,22 +34,18 @@ const CartPage = () => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const onSubmit = () => {
-    // Cập nhật số lượng từ state quantities
-    Object.keys(quantities).forEach((idStr) => {
-      const id = Number(idStr);
-      const quantity = quantities[id];
-      if (quantity > 0) updateQuantity(id, quantity);
+  const handleUpdateAllQuantities = () => {
+    cartItems.forEach(item => {
+      if (selectedItems[item.id]) {
+        updateQuantity(item.id, item.quantity);
+      }
     });
   };
 
-  const selectedProducts = cartItems.filter((item) => selectedItems[item.id]).map(item => ({
-    ...item,
-    quantity: quantities[item.id] || item.quantity
-  }));
+  const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
   const shippingFee = 30000;
   const subtotalAmount = selectedProducts.reduce(
-    (total, item) => total + (item.price * 1000) * item.quantity,
+    (total, item) => total + item.price * 1000 * item.quantity,
     0
   );
   const totalAmount = subtotalAmount + shippingFee;
@@ -76,14 +71,14 @@ const CartPage = () => {
             <p className="text-muted mb-4">Hãy thêm một số sản phẩm vào giỏ hàng của bạn</p>
             <button 
               className="btn btn-primary btn-lg px-4 py-2"
-              onClick={() => window.location.href = '/products'}
+              onClick={() => navigate('/products')}
             >
               <i className="fas fa-shopping-bag me-2"></i>
               Mua sắm ngay
             </button>
           </div>
         ) : (
-          <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleUpdateAllQuantities(); }}>
             <div className="row g-4">
               {/* Danh sách sản phẩm */}
               <div className="col-lg-8">
@@ -96,84 +91,20 @@ const CartPage = () => {
                   </div>
                   <div className="card-body p-0">
                     {cartItems.map((item, index) => (
-                      <div key={item.id} className={`p-4 ${index !== cartItems.length - 1 ? 'border-bottom' : ''}`}>
-                        <div className="row align-items-center">
-                          {/* Checkbox */}
-                          <div className="col-auto">
-                            <div className="form-check">
-                              <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id={`item-${item.id}`}
-                                checked={selectedItems[item.id] || false}
-                                onChange={() => toggleSelectItem(item.id)}
-                                style={{ transform: 'scale(1.2)' }}
-                              />
-                            </div>
-                          </div>
-                          
-                          {/* Hình ảnh sản phẩm */}
-                          <div className="col-auto">
-                            <div className="position-relative">
-                              <img 
-                                src={item.image || 'https://via.placeholder.com/100'} 
-                                alt={item.name} 
-                                className="rounded-3 shadow-sm"
-                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                              />
-                            </div>
-                          </div>
-                          
-                          {/* Thông tin sản phẩm */}
-                          <div className="col">
-                            <h6 className="fw-bold mb-2 text-dark">{item.name}</h6>
-                            <div className="d-flex align-items-center mb-2">
-                              <span className="badge bg-light text-dark me-2">
-                                <i className="fas fa-palette me-1"></i>
-                                {item.color || 'Mặc định'}
-                              </span>
-                              <span className="badge bg-light text-dark">
-                                <i className="fas fa-expand-arrows-alt me-1"></i>
-                                {item.size || 'M'}
-                              </span>
-                            </div>
-                            <div className="fw-bold text-danger fs-5">
-                              {(item.price * 1000).toLocaleString('vi-VN')} VND
-                            </div>
-                          </div>
-                          
-                          {/* Số lượng */}
-                          <div className="col-auto">
-                            <div className="d-flex align-items-center">
-                              <label className="form-label me-2 mb-0 fw-semibold">Số lượng:</label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={quantities[item.id] || item.quantity}
-                                onChange={(e) => {
-                                  const newQuantity = parseInt(e.target.value) || 1;
-                                  setQuantities(prev => ({
-                                    ...prev,
-                                    [item.id]: newQuantity
-                                  }));
-                                }}
-                                className="form-control text-center fw-bold"
-                                style={{ width: '70px' }}
-                              />
-                            </div>
-                          </div>
-                          
-                          {/* Nút xóa */}
-                          <div className="col-auto">
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() => removeItem(item.id)}
-                              title="Xóa sản phẩm"
-                            >
-                              <i className="fas fa-trash-alt"></i>
-                            </button>
-                          </div>
+                      <div key={item.id} className={`d-flex align-items-center p-3 ${index !== cartItems.length - 1 ? 'border-bottom' : ''}`}>
+                        <div className="form-check me-3">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id={`item-${item.id}`}
+                            checked={selectedItems[item.id] || false}
+                            onChange={() => toggleSelectItem(item.id)}
+                            style={{ transform: 'scale(1.2)' }}
+                          />
+                        </div>
+                        <div className="flex-grow-1">
+                           {/* Sử dụng component CartItem đã được chuẩn hóa */}
+                          <CartItem item={item} />
                         </div>
                       </div>
                     ))}
@@ -181,7 +112,7 @@ const CartPage = () => {
                   <div className="card-footer bg-white border-0 py-3">
                     <button type="submit" className="btn btn-outline-primary">
                       <i className="fas fa-sync-alt me-2"></i>
-                      Cập nhật số lượng
+                      Cập nhật giỏ hàng
                     </button>
                   </div>
                 </div>

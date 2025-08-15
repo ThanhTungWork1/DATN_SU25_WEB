@@ -29,6 +29,6 @@ class CartItem extends Model
 
     public function product()
     {
-        return $this->hasOneThrough(Product::class, ProductVariant::class, 'id', 'id', 'variant_id', 'product_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

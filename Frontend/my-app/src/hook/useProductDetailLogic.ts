@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { Product } from "../types/DetailType";
 import type { ColorType } from "../types/ColorType"; // Sửa đường dẫn import
+import type { CartItem } from "../types/CartType";
 import { useCart } from "../provider/CartProvider";
 import { validateProductDetail } from "../validation/productDetailValidation"; // Sửa đường dẫn import
 
@@ -24,8 +25,20 @@ export const useProductDetailLogic = (product: Product | undefined) => {
       "";
     setSelectedImage(initialImage);
 
-    setSelectedSize(null);
-    setSelectedColor(null);
+    // Tự động chọn size và màu đầu tiên nếu có
+    if (product.variants && product.variants.length > 0) {
+      const firstVariant = product.variants[0];
+      if (firstVariant.size) {
+        setSelectedSize(firstVariant.size.name);
+      }
+      if (firstVariant.color) {
+        setSelectedColor(firstVariant.color);
+      }
+    } else {
+      // Nếu không có variant, reset
+      setSelectedSize(null);
+      setSelectedColor(null);
+    }
   }, [product]);
 
   const handleAddToCart = async (quantity: number) => {
@@ -42,19 +55,40 @@ export const useProductDetailLogic = (product: Product | undefined) => {
       (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
     );
 
-    if (!selectedVariant) {
-      toast.error("Không tìm thấy biến thể sản phẩm phù hợp.");
+    if (
+      !selectedVariant ||
+      !selectedVariant.color ||
+      !selectedVariant.color.hex_code ||
+      !selectedVariant.size
+    ) {
+      toast.error(
+        "Không tìm thấy biến thể sản phẩm phù hợp hoặc dữ liệu biến thể không đầy đủ."
+      );
       return;
     }
 
-    const payload = {
-      id: selectedVariant.id, // Yêu cầu của CartProvider
-      name: product.name, // Yêu cầu của CartProvider
-      product_id: product.id,
-      variant_id: selectedVariant.id,
-      quantity: quantity,
+    const payload: CartItem = {
+      id: selectedVariant.id, // ID tạm thời, sẽ được ghi đè bởi ID của cart_item từ backend
+      name: product.name,
       price: selectedVariant.price || product.price,
-      image: selectedImage || product.image_url || "", // Thêm ảnh để hiển thị trong giỏ hàng
+      quantity: quantity,
+      product_variant_id: selectedVariant.id,
+      product_variant: {
+        id: selectedVariant.id,
+        color: {
+          id: selectedVariant.color.id,
+          name: selectedVariant.color.name,
+          hex_code: selectedVariant.color.hex_code, // TypeScript giờ đã biết đây là string
+        },
+        size: {
+          id: selectedVariant.size.id,
+          name: selectedVariant.size.name,
+        },
+        product: {
+          id: product.id,
+          name: product.name,
+        },
+      },
     };
 
     console.log("--- [LOGIC V3] Dữ liệu gửi đi ---", payload);

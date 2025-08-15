@@ -1,13 +1,40 @@
+// Định nghĩa cấu trúc chi tiết cho các thành phần
+interface Color {
+  id: number;
+  name: string;
+  hex_code: string;
+}
+
+interface Size {
+  id: number;
+  name: string;
+}
+
+interface ProductInfo {
+  id: number;
+  name: string;
+  image_url?: string;
+}
+
+interface ProductVariant {
+  id: number;
+  color: Color;
+  size: Size;
+  product?: ProductInfo;
+}
+
+// Cập nhật CartItem để sử dụng cấu trúc lồng nhau
 export type CartItem = {
   id: number;
-  product_id: number;
-  variant_id?: number;
-  name: string;
-  price: number;
+  product_variant_id: number;
   quantity: number;
+  price: number;
+  // Các thuộc tính dưới đây có thể không cần thiết nếu đã có product_variant
+  // nhưng giữ lại để tương thích với các logic hiện có
+  name: string;
   image?: string;
-  color?: string;
-  size?: string;
+  // Thêm đối tượng product_variant
+  product_variant?: ProductVariant;
 };
 
 export interface CartContextType {

@@ -1,31 +1,52 @@
 import { useDispatch } from "react-redux";
 import { updateQuantity, removeFromCart } from "../../store/cartSlice";
+import type { CartItem as CartItemType } from "../../types/CartType"; // Sử dụng type chung
 
 interface CartItemProps {
-  item: {
-    id: number;
-    name: string;
-    price: number;
-    quantity: number;
-    image: string;
-  };
+  item: CartItemType;
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
   const dispatch = useDispatch();
 
+  // Lấy thông tin màu và size từ product_variant
+  const color = item.product_variant?.color;
+  const size = item.product_variant?.size;
+  const image = item.product_variant?.product?.image_url || item.image;
+
   return (
     <div className="d-flex align-items-center border-bottom py-2">
-      <img src={item.image} alt={item.name} className="img-thumbnail" width={80} />
-      <div className="ms-3">
+      <img src={image} alt={item.name} className="img-thumbnail" width={80} />
+      <div className="ms-3 flex-grow-1">
         <h5>{item.name}</h5>
-        <p>{item.price.toLocaleString()} VND</p>
+        
+        {/* Hiển thị Size và Color */}
+        <div className="d-flex align-items-center my-1">
+          {size && <span className="me-3">Size: {size.name}</span>}
+          {color && (
+            <div className="d-flex align-items-center">
+              <span className="me-2">Màu:</span>
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: color.hex_code,
+                  border: "1px solid #ccc",
+                  borderRadius: "50%",
+                }}
+                title={color.name} // Tooltip hiển thị tên màu
+              ></div>
+            </div>
+          )}
+        </div>
+
+        <p className="mb-0">{(item.price * 1000).toLocaleString('vi-VN')} VND</p>
       </div>
       <input
         type="number"
         min="1"
         value={item.quantity}
-        className="form-control w-25 mx-2"
+        className="form-control mx-2" style={{ width: '70px' }}
         onChange={(e) => {
           const newQuantity = Number(e.target.value);
           if (newQuantity > 0) {
@@ -33,8 +54,10 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
           }
         }}
       />
-      <p className="fw-bold">{(item.price * item.quantity).toLocaleString()} VND</p>
-      <button onClick={() => dispatch(removeFromCart(item.id))} className="btn btn-danger ms-3">
+      <p className="fw-bold mx-3" style={{ minWidth: '120px', textAlign: 'right' }}>
+        {(item.price * item.quantity * 1000).toLocaleString('vi-VN')} VND
+      </p>
+      <button type="button" onClick={() => dispatch(removeFromCart(item.id))} className="btn btn-danger ms-3">
         Xóa
       </button>
     </div>

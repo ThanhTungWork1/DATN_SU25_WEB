@@ -316,8 +316,17 @@ Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
     Route::post('/momo-webhook', [PaymentController::class, 'webhook']);
     Route::post('/banking-webhook', [PaymentController::class, 'webhook']);
 
-    Route::apiResource('/cart', CartController::class);
-    Route::post('/cart-clear', [CartController::class, 'clearCart']);
+    // Giữ lại các route cần thiết từ apiResource (index, show, store)
+    Route::apiResource('/cart', CartController::class)->only(['index', 'show', 'store']);
+
+    // Route để cập nhật số lượng của một sản phẩm trong giỏ hàng
+    Route::put('/cart/items/{cartItem}', [CartController::class, 'updateItem']);
+
+    // Route để xóa một sản phẩm khỏi giỏ hàng
+    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']);
+
+    // Route để xóa toàn bộ sản phẩm trong giỏ hàng
+    Route::post('/cart/clear', [CartController::class, 'clearCart']);
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);

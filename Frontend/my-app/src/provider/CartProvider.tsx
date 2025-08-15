@@ -68,20 +68,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         ? response.data.cart_items 
         : [];
 
-      // Transform data từ nested structure thành flat structure
-      const transformedCartItems = rawCartItems.map((item: any) => ({
+      // Transform data to match the CartItem type, preserving the nested structure
+      const transformedCartItems: CartItem[] = rawCartItems.map((item: any) => ({
         id: item.id,
-        product_id: item.variant?.product?.id || item.product_id,
-        variant_id: item.variant_id,
-        name: item.variant?.product?.name || item.name || "Sản phẩm không tên",
-        price: item.price,
+        product_variant_id: item.product_variant_id,
         quantity: item.quantity,
-        image:
-          item.variant?.product?.image || item.variant?.image_url || item.image,
-        color: item.variant?.color?.name || item.color,
-        size: item.variant?.size?.name || item.size,
-        product: item.variant?.product,
-        variant: item.variant,
+        price: item.price,
+        // Provide fallback name and image from the variant's product info
+        name: item.product_variant?.product?.name || "Sản phẩm không tên",
+        image: item.product_variant?.product?.image_url,
+        // CRITICAL: Pass the entire nested product_variant object as expected by the type
+        product_variant: item.product_variant,
       }));
 
       setCartItems(transformedCartItems);
@@ -102,22 +99,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchCart();
   }, [fetchCart]);
 
-    const addToCart = async (item: CartItem) => {
+  const addToCart = async (item: CartItem) => {
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-      return; // Dừng lại ngay lập tức
+      return;
+    }
+
+    // Ensure we have the necessary IDs from the new data structure
+    const productId = item.product_variant?.product?.id;
+    const variantId = item.product_variant_id || item.product_variant?.id;
+
+    if (!productId || !variantId) {
+      toast.error("Thông tin sản phẩm không đầy đủ, không thể thêm vào giỏ hàng.");
+      console.error("Missing product_id or variant_id in item:", item);
+      return;
     }
 
     try {
-      // **FIX 2: Gửi dữ liệu đúng định dạng mà backend yêu cầu**
       await axios.post(
         "http://localhost:8000/api/cart",
         {
           cartItems: [
             {
-              product_id: item.product_id, // Thêm product_id
-              variant_id: item.variant_id,
+              product_id: productId,
+              variant_id: variantId,
               quantity: item.quantity,
               price: item.price,
             },
@@ -128,7 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       );
       toast.success("Đã thêm sản phẩm vào giỏ hàng!");
-      fetchCart();
+      fetchCart(); // Refresh cart from server
     } catch (error) {
       let message = "Thêm sản phẩm thất bại!";
       if (typeof error === 'object' && error !== null && 'response' in error) {
@@ -146,22 +152,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) return;
     try {
-      // SỬA: Thay 'cart-item' bằng 'cart' để khớp với apiResource
-      await axios.delete(`http://localhost:8000/api/cart/${id}`, {
+      // Đảm bảo gọi đúng API: DELETE /api/cart/items/{id}
+      await axios.delete(`http://localhost:8000/api/cart/items/${id}`, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
-      fetchCart();
+      fetchCart(); // Tải lại giỏ hàng để cập nhật UI
     } catch (error) {
-      let message = "Xóa sản phẩm thất bại!";
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        if (axiosError.response?.data?.message) {
-          message = axiosError.response.data.message;
-        }
-      }
-      toast.error(message);
-      console.error("Lỗi xóa sản phẩm:", error);
+      toast.error("Xóa sản phẩm thất bại!");
+      console.error("Lỗi khi xóa sản phẩm:", error);
     }
   };
 
@@ -169,40 +168,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentToken = TokenManager.getUserToken();
     if (!currentToken) return;
     try {
-      // SỬA: Sử dụng POST tới /api/cart-clear theo route đã định nghĩa
-      await axios.post("http://localhost:8000/api/cart-clear", null, {
+      // Đảm bảo gọi đúng API: POST /api/cart/clear
+      await axios.post("http://localhost:8000/api/cart/clear", null, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       toast.success("Đã xóa toàn bộ giỏ hàng!");
-      setCartItems([]); // Cập nhật state ngay lập tức
+      setCartItems([]); // Cập nhật state ngay để UI phản hồi nhanh
     } catch (error) {
-      let message = "Xóa giỏ hàng thất bại!";
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        if (axiosError.response?.data?.message) {
-          message = axiosError.response.data.message;
-        }
-      }
-      toast.error(message);
-      console.error("Lỗi xóa toàn bộ giỏ hàng:", error);
+      toast.error("Xóa giỏ hàng thất bại!");
+      console.error("Lỗi khi xóa toàn bộ giỏ hàng:", error);
     }
   };
 
   const removeItem = removeFromCart;
 
   const updateQuantity = async (id: number, quantity: number) => {
-    const currentToken = TokenManager.getToken();
+    const currentToken = TokenManager.getUserToken();
     if (!currentToken) return;
     try {
-      // SỬA: Thay 'cart-item' bằng 'cart' để khớp với apiResource
+      // SỬA: Gọi đúng API cập nhật một sản phẩm
       await axios.put(
-        `http://localhost:8000/api/cart/${id}`,
-        {
-          quantity,
-        },
-        {
-          headers: { Authorization: `Bearer ${currentToken}` },
-        }
+        `http://localhost:8000/api/cart/items/${id}`,
+        { quantity },
+        { headers: { Authorization: `Bearer ${currentToken}` } }
       );
       toast.success("Đã cập nhật số lượng!");
       fetchCart();

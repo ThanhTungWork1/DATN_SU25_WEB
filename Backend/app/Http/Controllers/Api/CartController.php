@@ -17,20 +17,25 @@ class CartController extends Controller
         protected CartItem $cartItemModel,
     ) {
     }
-    public function index()
-    {
-        $userId = Auth::id();
-        $cart = Cart::with([
-            'cartItems.productVariant.product',
-            'cartItems.productVariant.color',
-            'cartItems.productVariant.size'
-        ])->where('user_id', $userId)->latest()->first();
-        if (!$cart) {
-            return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
-        }
-        return response()->json($cart);
+public function index()
+{
+    $userId = Auth::id();
+    $cart = Cart::with([
+        'cartItems.productVariant.product', // Đường dẫn đúng
+        'cartItems.productVariant.color',
+        'cartItems.productVariant.size'
+    ])->where('user_id', $userId)->where('status', 1)->latest()->first();
+
+    if (!$cart) {
+        return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
     }
-   public function store(CreateCartRequest $request)
+
+    \Log::info('Cart Data at ' . now(), ['cart' => $cart->toArray()]);
+
+    return response()->json($cart);
+}
+
+public function store(CreateCartRequest $request)
 {
     return DB::transaction(function () use ($request) {
         $data = $request->validated();
@@ -39,42 +44,45 @@ class CartController extends Controller
         \Log::info('Cart Store Request Data:', $data);
         $userId = Auth::id();
 
-        // 🔹 Tìm giỏ hàng hiện tại của user (chưa checkout)
-        $cart = $this->model
-            ->where('user_id', $userId)
-            ->whereNull('status')
-            ->latest()
-            ->first();
+        // 🔹 Đảm bảo chỉ có một giỏ hàng đang hoạt động cho user
+        $cart = $this->model->updateOrCreate(
+            ['user_id' => $userId, 'status' => 1], // Điều kiện tìm
+            ['user_id' => $userId, 'status' => 1]   // Giá trị để tạo mới nếu không tìm thấy
+        );
 
-        // 🔹 Nếu chưa có thì tạo mới
-        if (!$cart) {
-            $cart = $this->model->create(['user_id' => $userId]);
-        }
+        // Nếu có nhiều giỏ hàng với status = 1, cập nhật các bản khác về status = 0
+        $this->model->where('user_id', $userId)
+                    ->where('id', '!=', $cart->id)
+                    ->where('status', 1)
+                    ->update(['status' => 0]);
 
         // 🔹 Xử lý các cartItems
         foreach ($data['cartItems'] as $item) {
-            // Bỏ qua nếu thiếu product_id hoặc quantity
-            if (empty($item['product_id']) || empty($item['quantity'])) {
-                \Log::warning('Thiếu product_id hoặc quantity trong cartItems', ['item' => $item]);
-                continue;
+            if (empty($item['product_id']) || empty($item['variant_id']) || empty($item['quantity'])) {
+                \Log::warning('Thiếu thông tin cần thiết trong cart item', ['item' => $item]);
+                continue; // Bỏ qua item không hợp lệ
             }
 
-            // So sánh variant_id cẩn thận (NULL cũng được tính riêng)
+            // 🔹 VALIDATION: Kiểm tra xem variant có thực sự thuộc về product không
+            $variant = \App\Models\ProductVariant::find($item['variant_id']);
+
+            if (!$variant || $variant->product_id != $item['product_id']) {
+                \Log::error('Lỗi dữ liệu: Biến thể không thuộc về sản phẩm.', [
+                    'request_item' => $item,
+                    'variant_found' => $variant ? $variant->toArray() : null
+                ]);
+                continue; // Bỏ qua, không thêm vào giỏ hàng
+            }
+
             $existingCartItem = $cart->cartItems()
-                ->where('product_id', $item['product_id'])
-                ->when(array_key_exists('variant_id', $item), function ($query) use ($item) {
-                    $query->where('variant_id', $item['variant_id']);
-                }, function ($query) {
-                    $query->whereNull('variant_id');
-                })
+                // Chỉ cần tìm theo variant_id là đủ vì nó là duy nhất
+                ->where('variant_id', $item['variant_id'])
                 ->first();
 
             if ($existingCartItem) {
-                // Nếu đã tồn tại, tăng số lượng
                 $existingCartItem->quantity += (int) $item['quantity'];
                 $existingCartItem->save();
             } else {
-                // Nếu chưa tồn tại, tạo mới
                 $cart->cartItems()->create([
                     'product_id' => $item['product_id'],
                     'variant_id' => $item['variant_id'] ?? null,
@@ -93,7 +101,6 @@ class CartController extends Controller
         ], 200);
     });
 }
-
     /**
      * Display the specified resource.
      */
@@ -128,6 +135,32 @@ class CartController extends Controller
             }
         }
         return response()->json(['message' => 'Cập nhật giỏ hàng thành công!']);
+    }
+
+    public function updateItem(Request $request, CartItem $cartItem)
+    {
+        // Logic cập nhật số lượng
+        $validated = $request->validate(['quantity' => 'required|integer|min:1']);
+        $cartItem->update(['quantity' => $validated['quantity']]);
+        return response()->json($cartItem);
+    }
+
+    public function destroyItem(CartItem $cartItem)
+    {
+        // Logic xóa một sản phẩm
+        $cartItem->delete();
+        return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng']);
+    }
+
+    public function clearCart()
+    {
+        // Logic xóa toàn bộ giỏ hàng
+        $userId = Auth::id();
+        $cart = Cart::where('user_id', $userId)->where('status', 1)->first();
+        if ($cart) {
+            $cart->cartItems()->delete();
+        }
+        return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng']);
     }
 
     public function destroy($id)
