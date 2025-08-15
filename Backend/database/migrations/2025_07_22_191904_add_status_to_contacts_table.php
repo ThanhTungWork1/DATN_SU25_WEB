@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('contacts', function (Blueprint $table) {
-            $table->tinyInteger('status')->default(0)->after('message');
+            
         });
     }
 

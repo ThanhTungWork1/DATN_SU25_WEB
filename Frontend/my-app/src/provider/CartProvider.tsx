@@ -116,6 +116,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         {
           cartItems: [
             {
+              product_id: item.product_id, // Thêm product_id
               variant_id: item.variant_id,
               quantity: item.quantity,
               price: item.price,

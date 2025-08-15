@@ -72,35 +72,60 @@ class CartController extends Controller
         return null;
     }
     
-    public function store(CreateCartRequest $request)
-    {
-        return DB::transaction(function () use ($request) {
-            $data = $request->validated();
+     public function store(CreateCartRequest $request)
+{
+    return DB::transaction(function () use ($request) {
+        $data = $request->validated();
+        $userId = Auth::id();
 
-            $cart = [
-                'user_id' => Auth::id(),
-            ];
+        // 🔹 Lấy giỏ hàng hiện tại (nếu chưa có thì tạo mới)
+        $cart = $this->model
+            ->where('user_id', $userId)
+            ->whereNull('status')
+            ->latest()
+            ->first();
 
-            $record = $this->model->create($cart);
+        if (!$cart) {
+            $cart = $this->model->create(['user_id' => $userId]);
+        }
 
-            $cartItem = collect($data['cartItems'])->map(function ($item) use ($record) {
-                // Tìm variant_id từ product_id và size/color nếu có
-                $variant = \App\Models\ProductVariant::where('product_id', $item['product_id'])->first();
-                $variant_id = $variant ? $variant->id : null;
-                
-                return [
-                    'cart_id' => $record->id,
-                    'variant_id' => $variant_id,
+        // 🔹 Xử lý từng cartItem
+        foreach ($data['cartItems'] as $item) {
+
+            // Đảm bảo luôn có key variant_id
+            $variantId = $item['variant_id'] ?? null;
+
+            // Kiểm tra sản phẩm đã tồn tại chưa
+            $existingCartItem = $cart->cartItems()
+                ->where('product_id', $item['product_id'])
+                ->where('variant_id', $variantId)
+                ->first();
+
+            if ($existingCartItem) {
+                // Nếu có rồi -> cộng dồn số lượng
+                $existingCartItem->quantity += $item['quantity'];
+                $existingCartItem->save();
+            } else {
+                // Nếu chưa có -> tạo mới
+                $cart->cartItems()->create([
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $variantId,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                ];
-            })->toArray();
+                ]);
+            }
+        }
 
-            $record->cartItems()->createMany($cartItem);
+        // Load lại dữ liệu giỏ hàng
+        $cart->load('cartItems.product');
 
-            return response()->json(['message' => 'Thêm giỏ hàng thành công!'], 200);
-        });
-    }
+        return response()->json([
+            'message' => 'Thêm giỏ hàng thành công!',
+            'cart' => $cart
+        ], 200);
+    });
+}
+
 
     public function show($id)
     {

@@ -9,18 +9,13 @@ class CartItem extends Model
 {
     use HasFactory;
 
-  // Thêm dòng này để Laravel biết tên bảng chính xác
-    protected $table = 'cartitems';
-
     protected $fillable = [
         'cart_id',
+        'product_id',
         'variant_id',
         'quantity',
         'price'
     ];
-
-    // Add appends to include computed attributes
-    protected $appends = ['name', 'image'];
 
     public function cart()
     {
@@ -32,32 +27,8 @@ class CartItem extends Model
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
-
-    // Alias for productVariant to match controller usage
-    public function variant()
-    {
-        return $this->belongsTo(ProductVariant::class, 'variant_id');
-    }
-
     public function product()
     {
-        if ($this->productVariant && $this->productVariant->product) {
-            return $this->productVariant->product->name;
-        }
-        return 'Unknown Product';
-    }
-
-    // Add accessor to get product image from variant or product
-    public function getImageAttribute()
-    {
-        // First try to get image from variant
-        if ($this->productVariant && $this->productVariant->image_url) {
-            return $this->productVariant->image_url;
-        }
-        // Then try to get image from product
-        if ($this->productVariant && $this->productVariant->product && $this->productVariant->product->image_url) {
-            return $this->productVariant->product->image_url;
-        }
-        return null;
+        return $this->hasOneThrough(Product::class, ProductVariant::class, 'id', 'id', 'variant_id', 'product_id');
     }
 }

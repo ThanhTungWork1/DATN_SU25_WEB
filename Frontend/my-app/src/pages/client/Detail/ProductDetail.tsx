@@ -14,8 +14,7 @@ import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
-import type { Product } from "../../../types/DetailType";
-import { getAllColors } from "../../../api/ApiProduct";
+import type { Product, Variant } from "../../../types/DetailType"; // Thêm Variant
 import type { ColorType } from "../../../types/ColorType";
 import "../../../assets/styles/color.css";
 import "../../../assets/styles/productDetail.css";
@@ -26,12 +25,6 @@ type RouteParams = {
 
 const ProductDetail = () => {
   const { id } = useParams<RouteParams>();
-  const [forceRefresh, setForceRefresh] = useState(0);
-
-  // Force refresh khi component mount
-  useEffect(() => {
-    setForceRefresh((prev) => prev + 1);
-  }, []);
 
   const { data: productRaw, isLoading, isError } = useProductDetail(id!);
 
@@ -58,14 +51,12 @@ const ProductDetail = () => {
   } = useProductDetailLogic(product);
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
-  const [allColors, setAllColors] = useState<ColorType[]>([]);
 
   useEffect(() => {
     getBanners().then((banners) => {
       const found = banners.find((b) => b.public_id === "banner2");
       setBanner2(found || null);
     });
-    getAllColors().then((res: ColorType[]) => setAllColors(res));
   }, []);
 
   // ✅ Tự động về ảnh chính khi không có variant được chọn
@@ -84,7 +75,7 @@ const ProductDetail = () => {
   }
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
+    (v: Variant) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
@@ -105,16 +96,6 @@ const ProductDetail = () => {
     ];
   }
 
-  const uniqueColors = Array.from(
-    new Map(
-      (product.variants || [])
-        .map((v) => v.color)
-        .filter(
-          (color): color is ColorType => color !== undefined && color !== null
-        )
-        .map((color) => [color.id, color])
-    ).values()
-  );
 
   let colorThumbnails: string[] = [];
   const colorSet = new Set();
@@ -329,18 +310,17 @@ const ProductDetail = () => {
   }
 
   // Lọc màu chỉ từ variants của sản phẩm này
-  const productColors = Array.from(
-    new Map(
-      (product.variants || [])
-        .map((v) => v.color)
-        .filter(
-          (color): color is ColorType => color !== undefined && color !== null
-        )
-        .map((color) => [color.id, color])
-    ).values()
-  );
+  const productColors: ColorType[] = [];
+  const seenColorIds = new Set<number>();
 
-  const mappedColors = productColors.map((c) => ({
+  (product.variants || []).forEach((variant: Variant) => {
+    if (variant.color && !seenColorIds.has(variant.color.id)) {
+      productColors.push(variant.color);
+      seenColorIds.add(variant.color.id);
+    }
+  });
+
+  const mappedColors = productColors.map((c: ColorType) => ({
     ...c,
     code: c.code || (c as any).hex_code || "",
   }));
@@ -392,17 +372,14 @@ const ProductDetail = () => {
                 onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) =>
+                    (v: Variant) =>
                       v.color?.id === color.id && v.size?.name === selectedSize
                   );
                   if (variant?.image_url) {
-                    setSelectedImage(variant.image_url); // ✅ Hiển thị ảnh variant
+                    setSelectedImage(variant.image_url);
                   } else if (variant?.image) {
-                    setSelectedImage(variant.image); // Fallback
-                  } else if (color.image) {
-                    setSelectedImage(color.image);
+                    setSelectedImage(variant.image);
                   } else {
-                    // ✅ Nếu không có variant, về ảnh chính
                     setSelectedImage(product.image_url || product.image || "");
                   }
                 }}
@@ -410,18 +387,10 @@ const ProductDetail = () => {
               <hr />
 
               <ProductActions
-                productId={product.id}
-                variantId={selectedVariant?.id}
                 maxQuantity={selectedVariantStock || 10}
                 disabled={!selectedSize || !selectedColor}
-                productName={product.name}
-                productPrice={(() => {
-                  const price = selectedVariant?.price || product.price || 0;
-                  return price;
-                })()}
-                productImage={
-                  selectedImage || product.image_url || product.image || ""
-                }
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
               />
 
               <hr />

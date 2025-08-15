@@ -10,14 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('home_sections', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 100);
-            $table->string('title', 255);
-            $table->text('description')->nullable();
-            $table->boolean('status')->default(true);
-            $table->timestamps();
-        });
+       if (!Schema::hasTable('home_sections')) {
+    Schema::create('home_sections', function (Blueprint $table) {
+        $table->id();
+        $table->string('name', 255);
+        $table->string('title', 255);
+        $table->text('description')->nullable();
+        $table->tinyInteger('status')->default(1);
+        $table->timestamps();
+    });
+}
+
 
     }
 

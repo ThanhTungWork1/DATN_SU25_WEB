@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\ProductImage;
 
 class Product extends Model
 {
@@ -125,10 +126,10 @@ class Product extends Model
     }
 
 
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
+    // public function comments()
+    // {
+    //     return $this->hasMany(ProductComment::class);
+    // }
     public function favoritedByUsers()
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
@@ -140,5 +141,11 @@ class Product extends Model
             ->withTimestamps();
     }
 
-
+    /**
+     * Get the images for the product.
+     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
 }

@@ -1,87 +1,32 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
-import { useCart } from "../provider/CartProvider";
-import { toast } from "sonner";
 import "../assets/styles/action.css";
 
 type ProductActionsProps = {
-  productId: number;
-  variantId?: number;
   maxQuantity: number;
   disabled?: boolean;
-  productName?: string;
-  productPrice?: number;
-  productImage?: string;
+  onAddToCart: (quantity: number) => void;
+  onBuyNow: (quantity: number) => void;
 };
 
 const ProductActions = ({
-  productId,
-  variantId,
   maxQuantity,
   disabled = false,
-  productName = "Sản phẩm",
-  productPrice = 0,
-  productImage = "",
+  onAddToCart,
+  onBuyNow,
 }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   const increase = () =>
     setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-  const handleAddToCart = async () => {
-    try {
-      // Giao cho CartProvider hiển thị toast (success/error)
-      const payload: any = {
-        product_id: productId,
-        quantity: quantity,
-        price: productPrice ?? 0,
-      };
-
-      if (variantId) {
-        payload.variant_id = variantId;
-      }
-
-      await addToCart(payload);
-    } catch (error) {
-      // Nếu provider ném lỗi, chỉ log — tránh toast trùng lặp
-      console.error("Error adding to cart:", error);
-    }
+  const handleAddToCart = () => {
+    onAddToCart(quantity);
   };
 
-  const handleBuyNow = async () => {
-    // Debug giá trước khi tạo object
-    console.log('=== BUY NOW DEBUG ===');
-    console.log('productPrice from props:', productPrice);
-    console.log('productName from props:', productName);
-    console.log('quantity:', quantity);
-    
-    // Tạo object sản phẩm để truyền đến checkout
-    const selectedProduct = {
-      id: productId,
-      name: productName,
-      price: productPrice, // Giữ nguyên giá gốc
-      quantity: quantity,
-      image: productImage,
-      variant_id: variantId || productId
-    };
-    
-    const totalAmount = (productPrice * quantity);
-    
-    console.log('selectedProduct:', selectedProduct);
-    console.log('totalAmount:', totalAmount);
-    
-    // Chuyển thẳng đến checkout KHÔNG thêm vào giỏ hàng
-    navigate("/checkout", { 
-      state: { 
-        selectedProducts: [selectedProduct],
-        totalAmount: totalAmount,
-        fromBuyNow: true 
-      } 
-    });
+  const handleBuyNow = () => {
+    onBuyNow(quantity);
   };
 
   return (

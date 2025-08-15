@@ -33,6 +33,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
+    "gensync": "^1.0.0-beta.2",
     "joi": "^17.13.3",
     "json-server": "^1.0.0-beta.3",
     "json-server-auth": "^2.1.0",

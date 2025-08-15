@@ -1,6 +1,7 @@
 import type { ColorType } from "./ColorType";
 
 export interface Variant {
+  id: number; // Thêm ID cho biến thể
   size?: { id: number; name: string; created_at?: string; updated_at?: string };
   stock: number;
   color?: {
