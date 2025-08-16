@@ -28,7 +28,7 @@ class ProductVariantSeeder extends Seeder
                 'color_id' => 1, // Giả sử ID 1 là màu Đỏ
                 'size_id' => 1,  // Giả sử ID 1 là size S
                 'stock' => 100,
-                'price' => 150000,
+                'price' => 99000,
                 'sku' => 'AOTHUN-PREMIUM-DO-S', // THÊM: Mã SKU
                 'image' => 'https://example.com/images/aothun-do.jpg', // THÊM: Ảnh riêng
                 'created_at' => now(),
@@ -39,7 +39,7 @@ class ProductVariantSeeder extends Seeder
                 'color_id' => 2, // Giả sử ID 2 là màu Xanh
                 'size_id' => 2,  // Giả sử ID 2 là size M
                 'stock' => 80,
-                'price' => 150000,
+                'price' => 99000,
                 'sku' => 'AOTHUN-PREMIUM-XANH-M',
                 'image' => 'https://example.com/images/aothun-xanh.jpg',
                 'created_at' => now(),

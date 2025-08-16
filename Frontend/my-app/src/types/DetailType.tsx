@@ -1,5 +1,20 @@
 import type { ColorType } from "./ColorType";
 
+export interface User {
+  id: number;
+  name: string;
+  avatar?: string;
+}
+
+export interface Comment {
+  id: number;
+  user: User;
+  content: string;
+  rating: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Variant {
   id: number; // Thêm ID cho biến thể
   size?: { id: number; name: string; created_at?: string; updated_at?: string };
@@ -21,6 +36,7 @@ export interface Product {
   id: number;
   name: string;
   price: number;
+  final_price?: number;
   original_price?: number;
   old_price?: number;
   description?: string;
@@ -35,15 +51,19 @@ export interface Product {
   sold?: number;
   discount?: number;
   sku?: string;
-  category?: string;
+  category?: { id: number; name: string };
   tags?: string[];
-  images?: string[];
+  images?: { id: number; image_url: string; public_id?: string }[];
   detailImages?: string[];
   variants?: Variant[];
   colors?: ColorType[];
   rating?: number;
   reviews?: number;
   details?: string[];
+  comments?: Comment[];
+  average_rating?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type SizeProps = {

@@ -2,7 +2,6 @@ import axios from "axios";
 import type { Product } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
 
-
 // ======================= GET PRODUCT BY ID ========================
 export const getProductById = async (id: string): Promise<Product> => {
   try {
@@ -13,7 +12,7 @@ export const getProductById = async (id: string): Promise<Product> => {
       sizesResponse,
       categoriesResponse,
     ] = await Promise.all([
-      axios.get(`http://localhost:8000/api/product/${id}`),
+      axios.get(`http://localhost:8000/api/products/${id}`),
       axios.get(`http://localhost:8000/api/product-variants?product_id=${id}`),
       axios.get(`http://localhost:8000/api/colors`),
       axios.get(`http://localhost:8000/api/sizes`),
@@ -35,91 +34,150 @@ export const getProductById = async (id: string): Promise<Product> => {
 
 // ======================= GET ALL PRODUCTS ========================
 export const getAllProducts = async (): Promise<Product[]> => {
-  const { data } = await axios.get(`http://localhost:8000/api/product`);
-  // Backend trả về {success: true, data: [...]}
-  return data.data || data as Product[];
+  const { data } = await axios.get(`http://localhost:8000/api/products`);
+  return data.data || (data as Product[]);
 };
 
 // ======================= GET COMMENTS BY PRODUCT ========================
 export const getProductReviews = async (productId: number) => {
-  return await axios.get(`http://localhost:8000/api/comments/product/${productId}`);
+  return await axios.get(
+    `http://localhost:8000/api/client/comments/product/${productId}`
+  );
 };
 
 // ======================= SUBMIT REVIEW ========================
-export const submitReview = async (reviewData: {
-  product_id: number;
-  content: string;
-  rating: number;
-}, token: string) => {
-  return await axios.post(`http://localhost:8000/api/comments`, reviewData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
+export const submitReview = async (
+  reviewData: {
+    product_id: number;
+    content: string;
+    rating: number;
+  },
+  token: string
+) => {
+  return await axios.post(
+    `http://localhost:8000/api/client/comments`,
+    reviewData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     }
-  });
+  );
 };
 
 // ======================= CHECK REVIEW ELIGIBILITY ========================
-export const checkReviewEligibility = async (productId: number, token: string) => {
-  return await axios.get(`http://localhost:8000/api/review-eligibility/${productId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
+export const checkReviewEligibility = async (
+  productId: number,
+  token: string
+) => {
+  return await axios.get(
+    `http://localhost:8000/api/client/review-eligibility/${productId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
-  });
+  );
 };
 
-// ======================= GET USERS ========================
-export const getAllUsers = async () => {
-  return await axios.get(`http://localhost:8000/api/users`);
+// ======================= GET USERS (phải auth) ========================
+export const getAllUsers = async (token: string) => {
+  return await axios.get(`http://localhost:8000/api/client/users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 // ======================= CART ========================
-export const getCart = async () => {
-  const { data } = await axios.get("http://localhost:8000/api/cart");
+export const getCart = async (token: string) => {
+  const { data } = await axios.get("http://localhost:8000/api/client/cart", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return data;
 };
 
-export const addToCart = async (item: {
-  variant_id: number;
-  quantity: number;
-  price: number;
-  color?: string;
-  size?: string;
-}) => {
-  return await axios.post("http://localhost:8000/api/cart", {
-    cartItems: [{
-      variant_id: item.variant_id,
-      quantity: item.quantity,
-      price: item.price
-    }]
+export const addToCart = async (
+  item: {
+    variant_id: number;
+    quantity: number;
+    price: number;
+    color?: string;
+    size?: string;
+  },
+  token: string
+) => {
+  return await axios.post(
+    "http://localhost:8000/api/client/cart",
+    {
+      cartItems: [
+        {
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          price: item.price,
+        },
+      ],
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+
+export const updateCartItem = async (
+  id: number,
+  quantity: number,
+  token: string
+) => {
+  return await axios.patch(
+    `http://localhost:8000/api/client/cart/${id}`,
+    { quantity },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+
+export const removeCartItem = async (id: number, token: string) => {
+  return await axios.delete(`http://localhost:8000/api/client/cart/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-export const updateCartItem = async (id: number, quantity: number) => {
-  return await axios.patch(`http://localhost:8000/api/cart/${id}`, { quantity });
-};
-
-export const removeCartItem = async (id: number) => {
-  return await axios.delete(`http://localhost:8000/api/cart/${id}`);
-};
-
-// ======================= ORDERS ========================
-export const getAllOrders = async () => {
-  const { data } = await axios.get("http://localhost:8000/api/orders");
+// ======================= ORDERS (phải auth) ========================
+export const getAllOrders = async (token: string) => {
+  const { data } = await axios.get("http://localhost:8000/api/client/orders", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return data;
 };
 
-export const createOrder = async (orderData: {
-  userId: number;
-  items: any[];
-  total: number;
-  address: string;
-  phone: string;
-}) => {
-  return await axios.post("http://localhost:8000/api/orders", orderData);
+export const createOrder = async (
+  orderData: {
+    userId: number;
+    items: any[];
+    total: number;
+    address: string;
+    phone: string;
+  },
+  token: string
+) => {
+  return await axios.post(
+    "http://localhost:8000/api/client/orders",
+    orderData,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
 };
 
-export const getOrderById = async (id: number) => {
-  const { data } = await axios.get(`http://localhost:8000/api/orders/${id}`);
+export const getOrderById = async (id: number, token: string) => {
+  const { data } = await axios.get(
+    `http://localhost:8000/api/client/orders/${id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return data;
 };

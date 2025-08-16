@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\DB;
 class CommentController extends Controller
 {
     // ✅ Lấy comment của 1 sản phẩm (hiển thị công khai)
-    public function getByProduct($productId)
+    public function getByProduct($id)
     {
         return response()->json(
-            Comment::where('product_id', $productId)
+            Comment::where('product_id', $id)
                 ->where('status', 1)
                 ->with('user')
                 ->get()

@@ -29,8 +29,7 @@ const ProductDetail = () => {
   const { data: productRaw, isLoading, isError } = useProductDetail(id!);
 
   // ✅ Sửa lại logic: sử dụng product_full từ API response
-  const product =
-    (productRaw as any)?.product_full || (productRaw as Product | undefined);
+  const product: Product | undefined = (productRaw as any)?.data;
 
   // ✅ Thêm image_url và hover_image_url từ response vào product object
   if (product && productRaw) {
@@ -49,6 +48,7 @@ const ProductDetail = () => {
     handleSizeSelect,
     handleColorSelect,
   } = useProductDetailLogic(product);
+
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
 
@@ -85,17 +85,13 @@ const ProductDetail = () => {
     product.variants = [
       {
         id: 1,
-        product_id: product.id,
-        color_id: 1,
-        size_id: 1,
         stock: 10,
         sku: `SKU-${product.id}`,
-        color: { id: 1, name: "Default", code: "#000000" },
+        color: { id: 1, name: "Default", hex_code: "#000000" },
         size: { id: 1, name: "M" },
       },
     ];
   }
-
 
   let colorThumbnails: string[] = [];
   const colorSet = new Set();
@@ -117,15 +113,15 @@ const ProductDetail = () => {
   }
 
   // ✅ Sửa lại logic: ưu tiên sử dụng image_url từ backend
-  const thumbnailImages = colorThumbnails.length
+  const thumbnailImages: string[] = colorThumbnails.length
     ? colorThumbnails
     : product?.images && product.images.length
-      ? product.images
-      : product?.image_url
-        ? [product.image_url] // ✅ Ưu tiên image_url
-        : product?.image
-          ? [product.image] // Fallback cho image path
-          : [];
+    ? product.images.map((img) => img.image_url)
+    : product?.image_url
+    ? [product.image_url]
+    : product?.image
+    ? [product.image]
+    : [];
 
   // Kiểm tra xem sản phẩm có đủ thông tin cần thiết không
   if (!product.name || !product.price) {
@@ -248,51 +244,20 @@ const ProductDetail = () => {
   }
 
   // Nếu không có hex_code, sử dụng hex_code mặc định
-  if (!product.hex_code) {
-    product.hex_code = "#000000";
-  }
 
   // Nếu không có public_id, sử dụng public_id mặc định
-  if (!product.public_id) {
-    product.public_id = `product-${product.id}`;
-  }
 
   // Nếu không có success, sử dụng success mặc định
-  if (product.success === undefined || product.success === null) {
-    product.success = true;
-  }
 
   // Nếu không có message, sử dụng message mặc định
-  if (!product.message) {
-    product.message = "Lấy sản phẩm thành công";
-  }
 
   // Nếu không có pagination, sử dụng pagination mặc định
-  if (!product.pagination) {
-    product.pagination = {
-      current_page: 1,
-      per_page: 10,
-      total: 1,
-      total_pages: 1,
-      has_next_page: false,
-      has_prev_page: false,
-    };
-  }
 
   // Nếu không có status_code, sử dụng status_code mặc định
-  if (!product.status_code) {
-    product.status_code = 200;
-  }
 
   // Nếu không có error, sử dụng error mặc định
-  if (!product.error) {
-    product.error = null;
-  }
 
   // Nếu không có data, sử dụng data mặc định
-  if (!product.data) {
-    product.data = product;
-  }
 
   // Nếu không có id, sử dụng id mặc định
   if (!product.id) {
@@ -344,7 +309,7 @@ const ProductDetail = () => {
             <div className="col-12 col-md-6 col-lg-6 d-flex">
               <Aside
                 images={thumbnailImages}
-                onSelect={setSelectedImage}
+                onSelect={(image: string) => setSelectedImage(image)}
                 selectedImage={selectedImage}
               />
               <MainImage imageUrl={selectedImage} />

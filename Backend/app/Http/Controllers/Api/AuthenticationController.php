@@ -208,4 +208,9 @@ class AuthenticationController extends Controller
             ], 500);
         }
     }
+
+    public function me(Request $request)
+    {
+        return response()->json($request->user());
+    }
 }

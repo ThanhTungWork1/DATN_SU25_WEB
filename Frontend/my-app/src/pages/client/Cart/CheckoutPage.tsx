@@ -12,6 +12,7 @@ const CheckoutPage = () => {
     handleProvinceChange,
     selectedDistrictId,
     handleDistrictChange,
+    selectedWardCode,
     handleWardChange,
     paymentMethod,
     setPaymentMethod,
@@ -150,13 +151,13 @@ const CheckoutPage = () => {
                     </label>
                     <select
                       className="form-select"
-                      value={address.ward}
+                      value={selectedWardCode}
                       onChange={(e) => handleWardChange(e.target.value)}
                       disabled={!selectedDistrictId}
                     >
                       <option value="">Chọn phường/xã</option>
                       {wards.map((ward: Ward) => (
-                        <option key={ward.code} value={ward.name}>
+                        <option key={ward.code} value={ward.code}>
                           {ward.name}
                         </option>
                       ))}

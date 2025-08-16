@@ -1,79 +1,66 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Api\AuthenticationController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
-use App\Http\Controllers\Admin\InventoryController;
-use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\ComplaintController;
-use App\Http\Controllers\Api\CommentController;
-use App\Http\Controllers\Api\BannerController;
-use App\Http\Controllers\Api\ClientOrderController;
-use App\Http\Controllers\Api\SizeController;
-use App\Http\Controllers\Api\ColorController;
-use App\Http\Controllers\Api\CommentController as ApiCommentController;
-use App\Http\Controllers\Api\FavoriteController;
-use App\Http\Controllers\Api\ProductVariantController;
-use App\Http\Controllers\Api\ForgotPasswordController;
-use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Client\HomePageController;
-use App\Http\Controllers\HomeSectionController;
-use App\Http\Controllers\Api\ChatbotController;
-use App\Http\Controllers\Admin\AdminRefundRequestController;
-use App\Http\Controllers\Api\RefundRequestController;
+
+// Middleware
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use App\Http\Controllers\Api\ReviewController;
-// ===========================================================
-// =============== Public Routes =============================
-// ===========================================================
-
-
-// --- ADMIN Controllers ---
-use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
+// Controllers
+use App\Http\Controllers\Api\{
+    HomeSectionController,
+    HomeSectionProductController,
+    AuthenticationController,
+    BannerController,
+    CartController,
+    CategoryController,
+    ClientOrderController,
+    ColorController,
+    CommentController,
+    ComplaintController,
+    ContactController,
+    DashboardController,
+    FavoriteController,
+    ForgotPasswordController,
+    InventoryController,
+    InventoryLogController,
+    NotificationController,
+    OrderController,
+    PaymentController,
+    ProductController,
+    ProductVariantController,
+    ReviewController,
+    SizeController,
+    UserController,
+    VoucherController
+};
 
-// --- Middleware ---
-
-// Test API
-
+// ========== Public ==========
 Route::get('test', fn() => response()->json(['status' => 'success'], 200));
+
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/me', [AuthenticationController::class, 'me'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
-// Chatbot endpoint
-Route::post('/chatbot', [ChatbotController::class, 'handle']);
-
-
 // Forgot Password
-
-Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
-Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
-Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
-
-Route::get('/review-eligibility/{id}', [ReviewController::class, 'checkEligibility']);
-// --- Top Selling Products ---
-Route::get('/top-selling-products', [\App\Http\Controllers\Api\ProductController::class, 'topSellingProducts']);
+Route::prefix('forgot-password')->group(function () {
+    Route::post('/send-otp', [ForgotPasswordController::class, 'sendOtp']);
+    Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
+    Route::post('/reset', [ForgotPasswordController::class, 'resetPassword']);
+});
 
 // Email Verification
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return response()->json(['message' => 'Đã gửi lại email xác minh']);
-})->middleware(['auth:sanctum', 'throttle:6,1']);
-Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
+});
+
+Route::middleware(['auth:sanctum', 'signed'])->get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     $user = \App\Models\User::findOrFail($id);
     if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
         return response()->json(['message' => 'Link xác minh không hợp lệ'], 400);
@@ -84,173 +71,73 @@ Route::get('/email/verify/{id}/{hash}', function ($id, Request $request) {
     return response()->json(['message' => 'Xác minh email thành công']);
 })->name('verification.verify');
 
-// Public - Categories, Sizes, Colors, etc.
-
-
+// ========== Public Resources ==========
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/product-variants/{product_id}', [ProductVariantController::class, 'byProduct']);
-Route::get('/comments/product/{product_id}', [ApiCommentController::class, 'getByProduct']);
+Route::get('/client/comments/product/{id}', [CommentController::class, 'getByProduct']);
+Route::post('/contact', [ContactController::class, 'store']);
+Route::get('/home-sections', [HomeSectionController::class, 'index']);
+Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
 
-// Public orders endpoint for testing
-Route::post('/orders', [\App\Http\Controllers\Api\ClientOrderController::class, 'store']);
-
-// Simple test order endpoint
-// Use ClientOrderController for real order creation
-Route::post('/test-order', [ClientOrderController::class, 'store']);
-
-// Create test user endpoint
-Route::post('/create-test-user', function() {
-    try {
-        // Tạo user giả để test (không cần database)
-        $userId = 1; // ID cố định
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Test user created successfully',
-            'data' => [
-                'id' => $userId,
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'phone' => '0123456789'
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
+// ========== Webhook VNPay (No Auth) ==========
+Route::prefix('payments/vnpay')->group(function () {
+    Route::get('/callback', [VNPayController::class, 'callback']); // Return URL sau khi thanh toán
+    Route::post('/ipn', [VNPayController::class, 'ipn']); // IPN server-to-server
 });
 
-// Products (public)
-
-Route::prefix('product')->group(function () {
-    Route::get('/test', [\App\Http\Controllers\Api\ProductController::class, 'test']);
-    Route::get('/debug/{id}', [\App\Http\Controllers\Api\ProductController::class, 'debug']);
-    Route::get('/detail/{id}', [\App\Http\Controllers\Api\ProductController::class, 'debug']);
-    Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'index']);
-    Route::get('/search', [\App\Http\Controllers\Api\ProductController::class, 'search']);
-    Route::get('/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
-    Route::get('/category/{categoryId}', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
-    Route::get('/{id}', [\App\Http\Controllers\Api\ProductController::class, 'showProduct']);
-});
-
-// ✅ THÊM MỚI: Lấy dữ liệu cho trang chủ (hiển thị section và sản phẩm)
-Route::get('/home', [HomePageController::class, 'index']);
-
-// Authentication
-Route::post('/register', [AuthenticationController::class, 'register']);
-Route::post('/login', [AuthenticationController::class, 'login']);
-Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
-Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
-
-// ====================================================================
-
-
-// ADMIN ROUTES (Gộp tất cả vào một nhóm được bảo vệ)
-
-// ====================================================================
-Route::prefix('admin')/*->middleware(['auth:sanctum', CheckAdminMiddleware::class])*/->group(function () {
-    // Products
-    Route::apiResource('products', ProductController::class)->except(['store', 'update']);
-    // Product statistics
-    Route::get('products/{id}/statistics', [ProductController::class, 'statistics']);
-    Route::post('products', [ProductController::class, 'store']);
-    Route::post('products/{id}', [ProductController::class, 'update']);
-
-    // Orders
-    Route::apiResource('orders', OrderController::class);
-
-    // Categories
-    Route::get('categories/{id}/statistics', [CategoryController::class, 'statistics']);
-});
-Route::middleware(['auth:sanctum'])->group(function () {
-    
-    // --- General Authenticated User Info ---
-    Route::post('/logout', [AuthenticationController::class, 'logout']);
-    Route::get('/me', fn(Request $request) => response()->json($request->user()));
-    Route::put('/me', [AuthenticationController::class, 'updateProfile']);
-    Route::apiResource('categories', CategoryController::class);
-});
-
-// ====================================================================
-// ===================== ADMIN ROUTES (CẦN XÁC THỰC) =================
-// ====================================================================
+// ========== Admin ==========
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
-
-    // Order thống kê và export
-    Route::get('orders/statistics', [OrderController::class, 'getOrderStatistics']);
-    Route::get('orders/export', [OrderController::class, 'export']);
+    Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
-
-    // Vouchers management (Admin)
-    Route::apiResource('vouchers', AdminVoucherController::class);
-    // Usage details for a voucher
-    Route::get('vouchers/{id}/usage', [AdminVoucherController::class, 'usageDetails']);
-    // Toggle voucher status (lock/unlock)
-    Route::patch('vouchers/{id}/toggle', [AdminVoucherController::class, 'toggle']);
-
-    // Dashboard
-
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/revenue-by-time', [DashboardController::class, 'revenueByTime']);
-        Route::get('/orders-by-status', [DashboardController::class, 'ordersByStatus']);
-        Route::get('/top-selling-products', [DashboardController::class, 'topSellingProducts']);
-        Route::get('/recent-orders', [DashboardController::class, 'recentOrders']);
-        Route::get('/recent-users', [DashboardController::class, 'recentUsers']);
-        Route::get('/users-by-month', [DashboardController::class, 'usersByMonth']);
-        Route::get('/user-growth', [DashboardController::class, 'userGrowth']);
-        Route::get('/rating-stats', [DashboardController::class, 'ratingStats']);
-        Route::get('/recent-reviews', [DashboardController::class, 'recentReviews']);
-        Route::get('/low-stock-products', [DashboardController::class, 'lowStockProducts']);
-        Route::get('/all-stats', [DashboardController::class, 'allStats']);
-
-    });
-
     Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::apiResource('vouchers', VoucherController::class);
+    Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
+    Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
-    Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
+    // Home Sections
+    Route::apiResource('home-sections', HomeSectionController::class)->only(['store', 'update', 'destroy']);
 
-    // Refund Requests (Admin)
-    Route::get('refund-requests', [AdminRefundRequestController::class, 'index']);
-    Route::patch('refund-requests/{id}/status', [AdminRefundRequestController::class, 'updateStatus']);
-
-    Route::prefix('inventory')->group(function () {
-        Route::get('/stats', [InventoryController::class, 'stats']);
-        Route::get('/list', [InventoryController::class, 'list']);
-        Route::get('/low-stock-alerts', [InventoryController::class, 'lowStockAlerts']);
-        Route::post('/update-stock-for-order', [InventoryController::class, 'updateStockForOrder']);
+    Route::prefix('home-section-products')->group(function () {
+        Route::post('/', [HomeSectionProductController::class, 'store']);
+        Route::delete('/{section_id}/product/{product_id}', [HomeSectionProductController::class, 'destroy']);
     });
+
+    // Inventory
+    Route::prefix('inventories')->group(function () {
+        Route::post('/import', [InventoryController::class, 'import']);
+        Route::post('/export', [InventoryController::class, 'export']);
+        Route::get('/low-stock', [InventoryController::class, 'lowStock']);
+        Route::get('/', [InventoryController::class, 'index']);
+    });
+
+    Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
 });
 
+// ========== Authenticated Users ==========
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('product')->group(function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::get('/search', [ProductController::class, 'search']);
+        Route::get('/featured', [ProductController::class, 'featured']);
+        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
+        Route::get('/{id}', [ProductController::class, 'show']);
+    });
 
-// ✅ THÊM MỚI: Quản lý Home Sections (Admin) - TẠM THỜI KHÔNG CẦN AUTH
-Route::prefix('admin')->group(function () {
-    Route::apiResource('home-sections', \App\Http\Controllers\HomeSectionController::class)->except(['index']);
-    Route::get('home-sections/{id}/products', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'index']);
-    Route::post('home-sections/{id}/products', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'store']);
-    Route::delete('home-sections/{id}/products/{productId}', [\App\Http\Controllers\Api\HomeSectionProductController::class, 'destroy']);
-});
+    // Route for /products/{id} to match frontend calls
+    Route::get('/products/{id}', [ProductController::class, 'show']);
 
-// ====================================================================
-// ===================== AUTHENTICATED USER ROUTES ====================
-// ====================================================================
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', fn(Request $request) => response()->json($request->user()));
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::post('/users/change-password', [UserController::class, 'changePassword']);
+    Route::prefix('favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
+    });
 
-    // Favorites
-    Route::apiResource('favorites', FavoriteController::class);
-
-    // Client-specific order routes (TẤT CẢ đều cần xác thực)
+    // Orders cho user
     Route::prefix('client/orders')->group(function () {
         Route::get('/', [ClientOrderController::class, 'index']);
         Route::get('/statistics', [ClientOrderController::class, 'statistics']);
@@ -284,19 +171,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Vouchers
     Route::prefix('vouchers')->group(function () {
-    Route::get('/', [VoucherController::class, 'index']);
-    Route::get('/{code}', [VoucherController::class, 'show']);
-    Route::post('/validate', [VoucherController::class, 'validateVoucher']);
-    Route::get('/available/list', [VoucherController::class, 'getAvailableVouchers']);
-});
-
-// Use VoucherController for voucher validation
-Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
+        Route::get('/', [VoucherController::class, 'index']);
+        Route::get('/{code}', [VoucherController::class, 'show']);
+        Route::post('/validate', [VoucherController::class, 'validateVoucher']); // Route cho user validate voucher
+    });
 
     // Payments (ZaloPay + VNPay)
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
+
         Route::prefix('zalopay')->group(function () {
             Route::post('/create', [ZaloPayController::class, 'createOrder']);
             Route::post('/callback', [ZaloPayController::class, 'callback']);
@@ -304,52 +188,26 @@ Route::post('/test-voucher', [VoucherController::class, 'validateVoucher']);
 
         Route::prefix('vnpay')->group(function () {
             Route::post('/create', [VNPayController::class, 'createPayment']);
-            Route::get('/callback', [VNPayController::class, 'callback']);
-            Route::post('/ipn', [VNPayController::class, 'ipn']);
             Route::post('/check-status', [VNPayController::class, 'checkStatus']);
         });
-
     });
 
-    // Webhook routes (không cần authentication)
-    Route::post('/payment-webhook', [PaymentController::class, 'webhook']);
-    Route::post('/momo-webhook', [PaymentController::class, 'webhook']);
-    Route::post('/banking-webhook', [PaymentController::class, 'webhook']);
-
-    // Giữ lại các route cần thiết từ apiResource (index, show, store)
-    Route::apiResource('/cart', CartController::class)->only(['index', 'show', 'store']);
-
-    // Route để cập nhật số lượng của một sản phẩm trong giỏ hàng
-    Route::put('/cart/items/{cartItem}', [CartController::class, 'updateItem']);
-
-    // Route để xóa một sản phẩm khỏi giỏ hàng
-    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']);
-
-    // Route để xóa toàn bộ sản phẩm trong giỏ hàng
-    Route::post('/cart/clear', [CartController::class, 'clearCart']);
+    Route::apiResource('/cart', CartController::class);
+    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']); // Route để xóa một item cụ thể
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    // Refund Requests
-    Route::post('/refund-requests', [RefundRequestController::class, 'store']);
-});
+    // Comments and Reviews
+    Route::get('/client/review-eligibility/{id}', [ReviewController::class, 'checkEligibility']);
 
-// Liên hệ
-Route::post('/contact', [ContactController::class, 'store']);
-
-// Home Sections - Public API
-Route::get('/home-sections', [\App\Http\Controllers\HomeSectionController::class, 'index']);
-
-
-    // Quản lý comment (role = 1) - cần xác thực Sanctum
-    Route::prefix('comments')->middleware(['auth:sanctum', CheckRole::class . ':1'])->group(function () {
+    // Quản lý comment (role = 1)
+    Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {
         Route::get('/', [CommentController::class, 'index']);
         Route::put('/approve/{id}', [CommentController::class, 'approve']);
         Route::put('/hide/{id}', [CommentController::class, 'hide']);
         Route::delete('/{id}', [CommentController::class, 'destroy']);
         Route::get('/filter/spam', [CommentController::class, 'filterSpam']);
     });
-
-
+});

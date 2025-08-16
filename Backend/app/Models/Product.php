@@ -125,11 +125,10 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-
-    // public function comments()
-    // {
-    //     return $this->hasMany(ProductComment::class);
-    // }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
     public function favoritedByUsers()
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();

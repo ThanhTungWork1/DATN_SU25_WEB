@@ -84,6 +84,6 @@ export const getProductsPaginatedAndFiltered = async (params: any) => {
  * Lấy chi tiết sản phẩm từ backend
  */
 export const getProductDetail = async (id: string | number) => {
-  const response = await config.get(`/product/detail/${id}`);
+    const response = await config.get(`/product/${id}`);
   return response.data;
 };

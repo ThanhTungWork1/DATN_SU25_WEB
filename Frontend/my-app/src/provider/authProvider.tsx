@@ -1,4 +1,4 @@
-import axiosInstance from "../utils/axios";
+import axiosInstance from "../api/axiosConfig";
 // dùng đúng axiosInstance từ utils/axios.ts
 import type { IUser } from "../types/users";
 

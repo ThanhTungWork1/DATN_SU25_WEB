@@ -6,7 +6,7 @@ import ProductSection from "./ProductSection";
 import { useHomeSection } from "../../../hook/useHomeSection";
 
 const HomePage = () => {
-  const { sections, loading, error } = useHomeSection();
+    const { sections = [], loading, error } = useHomeSection();
 
   if (loading) {
     return (

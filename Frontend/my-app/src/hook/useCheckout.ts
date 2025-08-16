@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../api/axiosConfig";
+import axios from 'axios'; // Giữ lại cho các API không cần xác thực
 import { Address, Product, Voucher } from "../types/Checkout";
 
 // --- Type Definitions for API Responses ---
@@ -52,7 +53,8 @@ export const useCheckout = () => {
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
-  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+    const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedWardCode, setSelectedWardCode] = useState("");
 
   const [paymentMethod, setPaymentMethod] = useState("Thanh toán khi nhận hàng (COD)");
   const [voucherCode, setVoucherCode] = useState("");
@@ -77,6 +79,7 @@ export const useCheckout = () => {
   const handleProvinceChange = async (provinceId: string) => {
     setSelectedProvinceId(provinceId);
     setSelectedDistrictId("");
+    setSelectedWardCode("");
     setDistricts([]);
     setWards([]);
     const selectedProvince = provinces.find((p) => p.code.toString() === provinceId);
@@ -91,6 +94,7 @@ export const useCheckout = () => {
 
   const handleDistrictChange = async (districtId: string) => {
     setSelectedDistrictId(districtId);
+    setSelectedWardCode("");
     setWards([]);
     const selectedDistrict = districts.find((d) => d.code.toString() === districtId);
     setAddress((prev) => ({ ...prev, district: selectedDistrict?.name || "", ward: "" }));
@@ -102,8 +106,9 @@ export const useCheckout = () => {
     }
   };
 
-  const handleWardChange = (wardId: string) => {
-    const selectedWard = wards.find((w) => w.code.toString() === wardId);
+  const handleWardChange = (wardCode: string) => {
+    setSelectedWardCode(wardCode);
+    const selectedWard = wards.find((w) => w.code.toString() === wardCode);
     setAddress((prev) => ({ ...prev, ward: selectedWard?.name || "" }));
   };
 
@@ -114,7 +119,8 @@ export const useCheckout = () => {
     if (!voucherCode.trim()) return alert("Vui lòng nhập mã voucher");
     setIsValidatingVoucher(true);
     try {
-      const response = await axios.post<VoucherApiResponse>("http://localhost:8000/api/test-voucher", { code: voucherCode, order_amount: totalAmount }, { headers: { Authorization: `Bearer ${token}` } });
+      // Sử dụng displayTotalAmount vì nó đã được chuẩn hóa (nhân 1000 nếu cần)
+      const response = await axiosInstance.post<VoucherApiResponse>("/vouchers/validate", { code: voucherCode, order_amount: displayTotalAmount });
       const voucher = response.data?.voucher;
       const discount = response.data?.discount_amount || 0;
       if (voucher) {
@@ -138,7 +144,7 @@ export const useCheckout = () => {
   const clearOrderedItems = async () => {
     try {
       for (const product of selectedProducts as Product[]) {
-        await axios.delete(`http://localhost:8000/api/cart/${product.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                await axiosInstance.delete(`/cart/items/${product.id}`);
       }
     } catch (error) {}
   };
@@ -146,20 +152,25 @@ export const useCheckout = () => {
   const processOrder = async () => {
     const orderRequestData = {
       user_id: parseInt(user.id),
+      customer_name: user.name || user.username || "Khách hàng",
+      customer_phone: user.phone || "0123456789",
       shipping_address: `${address.street}, ${address.ward}, ${address.district}, ${address.province}`,
       shipping_phone: user.phone || "0123456789",
       shipping_name: user.name || user.username || "Khách hàng",
-      note: `Phương thức thanh toán: ${paymentMethod}`,
-      items: (selectedProducts as Product[]).map((item) => ({ variant_id: item.variant_id || 1, quantity: item.quantity, price: item.price })),
+      note: `Ghi chú đơn hàng`,
+      payment_method: paymentMethod,
+      voucher_code: appliedVoucher?.code || null,
+      discount_amount: discountAmount,
+      items: (selectedProducts as Product[]).map((item) => ({ variant_id: item.variant_id || 1, quantity: item.quantity })),
     };
 
     try {
-      const orderResponse = await axios.post<OrderApiResponse>("http://localhost:8000/api/test-order", orderRequestData, { headers: { Authorization: `Bearer ${token}` } });
+      const orderResponse = await axiosInstance.post<OrderApiResponse>("/client/orders", orderRequestData);
       const orderId = orderResponse.data?.data?.id;
       if (!orderId) throw new Error(`Không nhận được ID đơn hàng`);
 
       if (paymentMethod !== "Thanh toán khi nhận hàng (COD)") {
-        await axios.post("http://localhost:8000/api/payments", { order_id: orderId, amount: finalAmount, method: paymentMethod }, { headers: { Authorization: `Bearer ${token}` } });
+        await axiosInstance.post("/payments", { order_id: orderId, amount: finalAmount, method: paymentMethod });
       }
 
       await clearOrderedItems();
@@ -204,7 +215,7 @@ export const useCheckout = () => {
 
   return {
     address, setAddress, provinces, districts, wards,
-    selectedProvinceId, handleProvinceChange, selectedDistrictId, handleDistrictChange, handleWardChange,
+    selectedProvinceId, handleProvinceChange, selectedDistrictId, handleDistrictChange, selectedWardCode, handleWardChange,
     paymentMethod, setPaymentMethod, voucherCode, setVoucherCode, appliedVoucher, discountAmount,
     handleValidateVoucher, handleRemoveVoucher, isValidatingVoucher,
     finalAmount, displayTotalAmount, shippingFee,
