@@ -365,7 +365,7 @@ const CheckoutPage = () => {
                       {paymentMethod === "Chuyển khoản ngân hàng" ? (
                         <div>
                           <img
-                            src={`https://img.vietqr.io/image/970422-0686809012005-compact2.jpg?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20${Date.now()}&accountName=LE%20KHAI%20HOAN`}
+                            src={`https://img.vietqr.io/image/970422-0050051668899-compact2.jpg?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20${Date.now()}&accountName=PHAM%20VAN%20DUONG`}
                             alt="QR Chuyển khoản MB Bank"
                             className="img-fluid border rounded"
                             style={{ maxWidth: "280px" }}
@@ -380,11 +380,11 @@ const CheckoutPage = () => {
                                 <div className="col-6">
                                   <strong>Số TK:</strong>
                                 </div>
-                                <div className="col-6">0686809012005</div>
+                                <div className="col-6">0050051668899</div>
                                 <div className="col-6">
                                   <strong>Chủ TK:</strong>
                                 </div>
-                                <div className="col-6">LE KHAI HOAN</div>
+                                <div className="col-6">PHAM VAN DUONG</div>
                               </div>
                             </div>
                           </div>
@@ -392,7 +392,7 @@ const CheckoutPage = () => {
                       ) : (
                         <div>
                           <img
-                            src={`https://momosv3.apimienphi.com/api/QRCode?phone=0686809012005&amount=${finalAmount}&note=Thanh%20toan%20don%20hang%20${Date.now()}`}
+                            src={`https://momosv3.apimienphi.com/api/QRCode?phone=0050051668899&amount=${finalAmount}&note=Thanh%20toan%20don%20hang%20${Date.now()}`}
                             alt="QR Momo"
                             className="img-fluid border rounded"
                             style={{ maxWidth: "280px" }}
@@ -407,11 +407,11 @@ const CheckoutPage = () => {
                                 <div className="col-6">
                                   <strong>Ví Momo:</strong>
                                 </div>
-                                <div className="col-6">0686809012005</div>
+                                <div className="col-6">0050051668899</div>
                                 <div className="col-6">
                                   <strong>Tên:</strong>
                                 </div>
-                                <div className="col-6">LE KHAI HOAN</div>
+                                <div className="col-6">PHAM VAN DUONG</div>
                               </div>
                             </div>
                           </div>

@@ -93,8 +93,8 @@ class OrderController extends Controller
 
         // QR thanh toán MB Bank
         $mbBankCode = '970422';
-        $mbAccount = '0686809012005';
-        $mbAccountName = 'LE KHAI HOAN';
+        $mbAccount = '0050051668899';
+        $mbAccountName = 'PHAM VAN DUONG';
         $transferNote = 'ORDER_' . $order->id;
         $qrTemplate = 'compact'; // Hoặc 'print', 'vertical'
         $amount = $order->total_amount + $order->shipping_fee;

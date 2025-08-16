@@ -152,15 +152,21 @@ public function store(CreateCartRequest $request)
         return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng']);
     }
 
-    public function clearCart()
+    public function clear(Request $request)
     {
-        // Logic xóa toàn bộ giỏ hàng
-        $userId = Auth::id();
-        $cart = Cart::where('user_id', $userId)->where('status', 1)->first();
+        $user = $request->user();
+        // Tìm giỏ hàng đang hoạt động của người dùng
+        $cart = Cart::where('user_id', $user->id)->where('status', 1)->first();
+
         if ($cart) {
+            // Xóa tất cả các cart items liên quan đến giỏ hàng này
             $cart->cartItems()->delete();
+            // Sau đó xóa chính giỏ hàng đó
+            $cart->delete();
+            return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng thành công']);
         }
-        return response()->json(['message' => 'Đã xóa toàn bộ giỏ hàng']);
+
+        return response()->json(['message' => 'Không tìm thấy giỏ hàng để xóa'], 404);
     }
 
     public function destroy($id)

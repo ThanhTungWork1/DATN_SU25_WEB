@@ -169,7 +169,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!currentToken) return;
     try {
       // Đảm bảo gọi đúng API: POST /api/cart/clear
-      await axios.post("http://localhost:8000/api/cart/clear", null, {
+      await axios.post(`http://localhost:8000/api/cart/clear`, null, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       toast.success("Đã xóa toàn bộ giỏ hàng!");
