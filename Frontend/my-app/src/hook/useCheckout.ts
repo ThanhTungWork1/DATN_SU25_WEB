@@ -161,7 +161,11 @@ export const useCheckout = () => {
       payment_method: paymentMethod,
       voucher_code: appliedVoucher?.code || null,
       discount_amount: discountAmount,
-      items: (selectedProducts as Product[]).map((item) => ({ variant_id: item.variant_id || 1, quantity: item.quantity })),
+      items: (selectedProducts as Product[]).map((item) => ({
+        variant_id: item.variant_id || 1,
+        quantity: item.quantity,
+        price: item.price, // Gửi giá sản phẩm lên backend
+      })),
     };
 
     try {

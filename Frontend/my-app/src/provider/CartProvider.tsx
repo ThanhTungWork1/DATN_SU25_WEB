@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useLocation } from "react-router-dom";
 import type { CartItem, CartContextType } from "../types/CartType";
 import axios from "axios";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [token, setToken] = useState<string | null>(
     TokenManager.getUserToken()
   );
+  const location = useLocation();
 
   // Hàm xử lý khi token thay đổi - CHỈ THEO DÕI USER TOKEN
   const handleTokenChange = useCallback(() => {
@@ -51,6 +53,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [handleTokenChange]);
 
     const fetchCart = useCallback(async () => {
+    // Không fetch giỏ hàng nếu đang ở trang admin
+    if (location.pathname.startsWith("/admin")) {
+      setCartItems([]);
+      return;
+    }
 
     if (!token) {
       setCartItems([]);

@@ -29,13 +29,11 @@ const Dashboard: React.FC = () => {
   const { data, isLoading, refetch } = useDashboardOverview();
 
   const formatCurrency = (value: number) => {
+    // Chỉ định dạng số, không bao gồm đơn vị tiền tệ
     return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
+      style: "decimal",
       minimumFractionDigits: 0,
-    })
-      .format(value)
-      .replace("₫", " VND");
+    }).format(value);
   };
 
   if (isLoading) {
@@ -108,6 +106,7 @@ const Dashboard: React.FC = () => {
               prefix={<DollarOutlined style={{ color: "#52c41a" }} />}
               valueStyle={{ color: "#52c41a", fontWeight: "bold" }}
               formatter={(value) => formatCurrency(value as number)}
+              suffix="VND"
             />
           </Card>
         </Col>

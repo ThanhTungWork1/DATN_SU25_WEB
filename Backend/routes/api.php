@@ -94,7 +94,20 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::apiResource('users', UserController::class);
     Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
-    Route::get('dashboard', [DashboardController::class, 'index']);
+
+    // Category Statistics
+    Route::get('categories/{id}/statistics', [CategoryController::class, 'getStatistics']);
+
+    // Dashboard Routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::get('/user-growth', [DashboardController::class, 'userGrowth']);
+        Route::get('/orders-by-status', [DashboardController::class, 'ordersByStatus']);
+        Route::get('/top-selling-products', [DashboardController::class, 'topSellingProducts']);
+        Route::get('/revenue-by-time', [DashboardController::class, 'revenueByTime']);
+        Route::get('/rating-stats', [DashboardController::class, 'ratingStats']);
+    });
+
     Route::apiResource('vouchers', VoucherController::class);
     Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
     Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
