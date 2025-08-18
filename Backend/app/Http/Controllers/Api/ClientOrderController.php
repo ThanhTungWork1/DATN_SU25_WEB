@@ -185,7 +185,9 @@ class ClientOrderController extends Controller
                     'price' => $price, // Snapshot giá tại thời điểm đặt hàng
                     'product_name' => $variant->product->name,
                     'variant_color_name' => $variant->color->name ?? null,
-                    'variant_size_name' => $variant->size->name ?? null
+                    'variant_size_name' => $variant->size->name ?? null,
+                    // Lưu URL ảnh để hiển thị lại trong lịch sử đơn hàng
+                    'image_url' => $variant->image_url ?? $variant->product->thumbnail_url ?? ''
                 ];
             }
 
@@ -222,7 +224,7 @@ class ClientOrderController extends Controller
                 $voucher_id = $voucher->id;
             }
 
-            $shipping_fee = $total_amount >= 500000 ? 0 : 30000;
+            $shipping_fee = $total_amount >= 500000 ? 0 : 30;
             $final_amount = $total_amount + $shipping_fee - $discount_amount;
 
             $order = Order::create([
@@ -259,7 +261,10 @@ class ClientOrderController extends Controller
 
             DB::commit();
 
-            $order->load(['items.variant.product', 'items.variant.color', 'items.variant.size']);
+            // Tải lại các mối quan hệ cần thiết để trả về cho client, bao gồm cả ảnh
+            $order->load(['items.variant' => function ($query) {
+                $query->with(['product', 'color', 'size']);
+            }]);
 
             // Đảm bảo dữ liệu trả về nhất quán với frontend
             $order->total_amount = (int)$order->total_amount;

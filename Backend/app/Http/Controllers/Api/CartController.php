@@ -139,15 +139,33 @@ public function store(CreateCartRequest $request)
 
     public function updateItem(Request $request, CartItem $cartItem)
     {
-        // Logic cập nhật số lượng
+        // Authorization: Ensure the cart item belongs to the authenticated user.
+        if ($cartItem->cart->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Không có quyền truy cập'], 403);
+        }
+
+        // Logic to update quantity
         $validated = $request->validate(['quantity' => 'required|integer|min:1']);
         $cartItem->update(['quantity' => $validated['quantity']]);
-        return response()->json($cartItem);
+
+        // Return the updated cart item along with the entire cart for a better frontend experience
+        $cart = Cart::with(['cartItems.productVariant.product', 'cartItems.productVariant.color', 'cartItems.productVariant.size'])
+                    ->find($cartItem->cart_id);
+
+        return response()->json([
+            'message' => 'Cập nhật số lượng thành công!',
+            'cart' => $cart
+        ]);
     }
 
     public function destroyItem(CartItem $cartItem)
     {
-        // Logic xóa một sản phẩm
+        // Authorization: Ensure the cart item belongs to the authenticated user.
+        if ($cartItem->cart->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Không có quyền truy cập'], 403);
+        }
+
+        // Logic to delete the item
         $cartItem->delete();
         return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng']);
     }

@@ -17,17 +17,25 @@ interface District extends GeoUnit {
 }
 interface Ward extends GeoUnit {}
 
+
 interface VoucherApiResponse {
   voucher: Voucher;
   discount_amount: number;
 }
 
+interface OrderData {
+  id: number;
+  created_at: string;
+  status: string;
+  is_paid: boolean;
+  total_amount: number;
+  shipping_fee: number;
+  discount_amount: number;
+  final_amount: number;
+}
+
 interface OrderApiResponse {
-  data: {
-    id: number;
-    created_at: string;
-    // Add other properties from your order response
-  };
+  data: OrderData;
 }
 
 export const useCheckout = () => {
@@ -53,7 +61,7 @@ export const useCheckout = () => {
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
-    const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [selectedWardCode, setSelectedWardCode] = useState("");
 
   const [paymentMethod, setPaymentMethod] = useState("Thanh toán khi nhận hàng (COD)");
@@ -144,7 +152,7 @@ export const useCheckout = () => {
   const clearOrderedItems = async () => {
     try {
       for (const product of selectedProducts as Product[]) {
-                await axiosInstance.delete(`/cart/items/${product.id}`);
+        await axiosInstance.delete(`/cart/items/${product.id}`);
       }
     } catch (error) {}
   };
@@ -170,7 +178,7 @@ export const useCheckout = () => {
 
     try {
       const orderResponse = await axiosInstance.post<OrderApiResponse>("/client/orders", orderRequestData);
-      const orderId = orderResponse.data?.data?.id;
+      const orderId = orderResponse.data.data.id;
       if (!orderId) throw new Error(`Không nhận được ID đơn hàng`);
 
       if (paymentMethod !== "Thanh toán khi nhận hàng (COD)") {
@@ -180,23 +188,24 @@ export const useCheckout = () => {
       await clearOrderedItems();
       alert("Đặt hàng thành công!");
 
+      const fullOrderData = {
+        ...orderResponse.data.data, // Spread backend data first
+        // Override with corrected values
+        total_amount: orderResponse.data.data.total_amount * 1000,
+        shipping_fee: orderResponse.data.data.shipping_fee * 1000,
+        discount_amount: orderResponse.data.data.discount_amount * 1000,
+        final_amount: orderResponse.data.data.final_amount * 1000,
+        // Add frontend-specific data
+        address,
+        paymentMethod,
+                        items: (selectedProducts as Product[]).map((p: Product) => ({ ...p, name: p.name, image: p.image })),
+        customerName: user.name || user.username || "Khách hàng",
+        customerPhone: user.phone || "",
+        voucherCode: appliedVoucher?.code || null,
+      };
+
       navigate("/order-success", {
-        state: {
-          orderId,
-          orderData: orderResponse.data?.data,
-          address,
-          totalAmount: finalAmount,
-          paymentMethod,
-          createdAt: orderResponse.data?.data?.created_at || new Date().toISOString(),
-          items: selectedProducts,
-          customerName: user.name || user.username || "Khách hàng",
-          customerPhone: user.phone || "",
-          voucherCode: appliedVoucher?.code || null,
-          discountAmount,
-          paymentStatus: paymentMethod === 'Thanh toán khi nhận hàng (COD)' ? 'pending' : 'paid',
-          shippingFee,
-          finalOrderAmount: finalAmount,
-        },
+        state: { orderData: fullOrderData },
       });
     } catch (error: any) {
       alert(error.response?.data?.message || error.message || "Xảy ra lỗi, thử lại sau.");

@@ -464,6 +464,10 @@ const CheckoutPage = () => {
                             <strong>nội dung</strong> để đơn hàng được xử lý tự
                             động.
                           </div>
+                          <div className="alert alert-success mt-3">
+                            <i className="fas fa-spinner fa-spin me-2"></i>
+                            Hệ thống đang chờ xác nhận thanh toán. Trạng thái đơn hàng sẽ được tự động cập nhật.
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -475,17 +479,7 @@ const CheckoutPage = () => {
                     className="btn btn-secondary"
                     onClick={() => setShowQRModal(false)}
                   >
-                    <i className="fas fa-times me-2"></i>Hủy
-                  </button>
-                  <button
-                    className="btn btn-success"
-                    onClick={() => {
-                      setShowQRModal(false);
-                      processOrder();
-                    }}
-                  >
-                    <i className="fas fa-check me-2"></i>Đã thanh toán - Hoàn
-                    tất đơn hàng
+                    <i className="fas fa-times me-2"></i>Đóng
                   </button>
                 </div>
               </div>

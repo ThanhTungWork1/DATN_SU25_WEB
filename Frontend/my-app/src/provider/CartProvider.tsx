@@ -194,7 +194,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!currentToken) return;
     try {
       // SỬA: Gọi đúng API cập nhật một sản phẩm
-      await axios.put(
+      await axios.post(
         `http://localhost:8000/api/cart/items/${id}`,
         { quantity },
         { headers: { Authorization: `Bearer ${currentToken}` } }

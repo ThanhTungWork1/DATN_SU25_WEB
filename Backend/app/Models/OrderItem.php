@@ -21,6 +21,7 @@ class OrderItem extends Model
         'variant_size_name',
         'variant_sku',
         'variant_image',
+        'image_url',
     ];
 
     protected $appends = ['variant_image_url'];
