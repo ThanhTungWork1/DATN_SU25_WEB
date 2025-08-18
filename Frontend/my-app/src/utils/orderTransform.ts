@@ -6,9 +6,6 @@ const safeNumber = (v: unknown): number => {
   return isFinite(n) ? n : 0;
 };
 
-// Chuyển giá trị tiền từ đơn vị API (ví dụ: "198.00" ~ 198 nghìn) sang VND
-// Quy ước: nhân 1000 để ra đơn vị đồng
-const toVND = (v: unknown): number => Math.round(safeNumber(v) * 1000);
 
 interface BackendOrderItem {
   id: number;
@@ -47,10 +44,11 @@ interface BackendOrder {
 
 export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
   const transformedItems: OrderItem[] = backendOrder.items.map(item => {
-    const price = toVND((item as any).price);
+    const price = safeNumber((item as any).price);
     const quantity = safeNumber(item.quantity);
     return {
       id: item.id,
+      variant_id: item.variant_id,
       product_id: item.variant.product.id,
       product_name: `${item.variant.product.name} (${item.variant.color.name}, ${item.variant.size.name})`,
       product_image: (item as any).variant?.product?.image,
@@ -60,8 +58,8 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
     };
   });
 
-  const totalAmount = toVND((backendOrder as any).total_amount);
-  const shippingFee = toVND((backendOrder as any).shipping_fee);
+  const totalAmount = safeNumber((backendOrder as any).total_amount);
+  const shippingFee = safeNumber((backendOrder as any).shipping_fee);
 
   return {
     id: backendOrder.id,

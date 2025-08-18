@@ -1,5 +1,6 @@
 export interface OrderItem {
   id: number;
+  variant_id: number;
   product_id: number;
   product_name: string;
   product_image: string;

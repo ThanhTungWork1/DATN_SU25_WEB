@@ -197,15 +197,15 @@ export const useOrders = () => {
   // Thêm chức năng mua lại
   const reorder = useMutation({
     mutationFn: async (order: UseOrder) => {
-      // Thêm tất cả sản phẩm từ đơn hàng vào giỏ hàng
-      const addToCartPromises = order.items.map((item) =>
-        axiosInstance.post("/cart", {
-          product_id: item.product_id,
-          quantity: item.quantity,
-        })
-      );
+      const cartItems = order.items.map(item => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        price: item.price, // Gửi cả giá để backend không cần truy vấn lại
+      }));
 
-      await Promise.all(addToCartPromises);
+      // Gửi một yêu cầu duy nhất với tất cả các sản phẩm
+      await axiosInstance.post('/cart', { cartItems });
     },
     onSuccess: () => {
       // Invalidate cart queries để cập nhật giỏ hàng

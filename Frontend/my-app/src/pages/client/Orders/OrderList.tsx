@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Modal } from "antd";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useOrders } from "../../../hook/useOrders";
 import OrderItem from "./OrderItem";
@@ -18,27 +20,35 @@ const OrderList = () => {
   const isError = activeQuery.isError;
 
   const handleCancel = (id: number) => {
-    if (window.confirm("Bạn chắc chắn muốn huỷ đơn hàng này?")) {
-      cancelOrder.mutate(id);
-    }
+    Modal.confirm({
+      title: 'Xác nhận hủy đơn hàng',
+      content: 'Bạn chắc chắn muốn huỷ đơn hàng này?',
+      okText: 'Xác nhận',
+      cancelText: 'Không',
+      onOk: () => {
+        cancelOrder.mutate(id);
+      },
+    });
   };
 
   const handleReorder = (order: UseOrder) => {
-    if (
-      window.confirm(
-        "Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?"
-      )
-    ) {
-      reorder.mutate(order, {
-        onSuccess: () => {
-          alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
-          navigate("/cart");
-        },
-        onError: () => {
-          alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
-        },
-      });
-    }
+    Modal.confirm({
+      title: 'Xác nhận mua lại',
+      content: 'Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?',
+      okText: 'Mua lại',
+      cancelText: 'Không',
+      onOk: () => {
+        reorder.mutate(order, {
+          onSuccess: () => {
+            toast.success("Đã thêm sản phẩm vào giỏ hàng thành công!");
+            navigate("/cart");
+          },
+          onError: () => {
+            toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+          },
+        });
+      },
+    });
   };
 
   if (isLoading)

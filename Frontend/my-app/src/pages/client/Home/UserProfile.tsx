@@ -1,12 +1,10 @@
 import { useEffect } from "react";
-import { Button, Form, Input, Radio, DatePicker, message, Spin } from "antd";
-import dayjs from "dayjs";
+import { Button, Form, Input, message, Spin } from "antd";
 import useCurrentUser from "../../../hook/useCurrentUser";
 import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
-import { LogoutOutlined, ShoppingOutlined, HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { LogoutOutlined, ShoppingOutlined } from "@ant-design/icons";
 import { TokenManager } from "../../../utils/tokenUtils";
-import OrderList from "../Orders/OrderList";
 
 
 
@@ -20,28 +18,17 @@ const UserProfile = () => {
     navigate("/");
     window.location.reload();
   };
-  const userId = user?.id?.toString() || "";
-
+  
   const { mutate, isPending } = useProfile();
 
   useEffect(() => {
     if (user) {
-      form.setFieldsValue({
-        ...user,
-        birthdate: user.birthdate ? dayjs(user.birthdate) : null,
-      });
+      form.setFieldsValue(user);
     }
   }, [user, form]);
 
   const onFinish = (values: any) => {
-    const formattedValues = {
-      ...values,
-      birthdate: dayjs.isDayjs(values.birthdate)
-        ? values.birthdate.format("YYYY-MM-DD")
-        : null,
-    };
-
-    mutate(formattedValues, {
+    mutate(values, {
       onSuccess: () => {
         message.success("Cập nhật hồ sơ thành công");
         refetch();
@@ -100,18 +87,7 @@ const UserProfile = () => {
           <Input autoComplete="tel" />
         </Form.Item>
 
-        <Form.Item label="Giới tính" name="gender">
-          <Radio.Group>
-            <Radio value="male">Nam</Radio>
-            <Radio value="female">Nữ</Radio>
-            <Radio value="other">Khác</Radio>
-          </Radio.Group>
-        </Form.Item>
-
-        <Form.Item label="Ngày sinh" name="birthdate">
-          <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
-        </Form.Item>
-
+        
         <Form.Item>
           <div
             style={{
