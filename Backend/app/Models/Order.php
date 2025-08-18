@@ -11,6 +11,7 @@ class Order extends Model
     protected $fillable = [
         'order_code',
         'user_id',
+        'voucher_id',
         'order_code',
         'status',
         'is_paid',
@@ -134,6 +135,15 @@ class Order extends Model
     {
         return $this->hasOne(RefundRequest::class);
     }
+
+    /**
+     * Relationship với Voucher
+     */
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
 }
 
 

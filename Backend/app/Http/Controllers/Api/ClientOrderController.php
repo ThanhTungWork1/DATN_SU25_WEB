@@ -187,7 +187,7 @@ class ClientOrderController extends Controller
                     'variant_color_name' => $variant->color->name ?? null,
                     'variant_size_name' => $variant->size->name ?? null,
                     // Lưu URL ảnh để hiển thị lại trong lịch sử đơn hàng
-                    'image_url' => $variant->image_url ?? $variant->product->thumbnail_url ?? ''
+                    'image_url' => $variant->image_url ?? $variant->product->image_url ?? null
                 ];
             }
 
@@ -224,7 +224,7 @@ class ClientOrderController extends Controller
                 $voucher_id = $voucher->id;
             }
 
-            $shipping_fee = $total_amount >= 500000 ? 0 : 30;
+            $shipping_fee = $total_amount >= 500000 ? 0 : 30000;
             $final_amount = $total_amount + $shipping_fee - $discount_amount;
 
             $order = Order::create([

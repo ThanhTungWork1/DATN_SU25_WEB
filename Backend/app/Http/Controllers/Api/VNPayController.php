@@ -9,6 +9,7 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class VNPayController extends Controller
 {
@@ -67,7 +68,7 @@ class VNPayController extends Controller
             $amount = (int) round($order->total_amount + $order->shipping_fee - $discount);
 
             // Tạo mã giao dịch duy nhất
-            $transactionId = 'VNPAY_' . time() . '_' . $order->id . '_' . rand(1000, 9999);
+            $transactionId = $order->id;
             
             // Tạo thông tin thanh toán
             $orderInfo = "Thanh toan don hang #" . ($order->order_code ?? $order->id);
@@ -85,17 +86,37 @@ class VNPayController extends Controller
             }
 
             if (isset($result['payment_url'])) {
+                DB::beginTransaction();
+                
                 try {
-                    // Tạo record payment với status pending
-                    Payment::create([
-                        'order_id' => $order->id,
-                        'method' => 'vnpay',
-                        'status' => 'pending',
-                        'amount' => $amount,
-                        'payment_method' => 'vnpay',
-                        'transaction_id' => $transactionId,
-                        'gateway_response' => $result
-                    ]);
+                    // Kiểm tra xem có payment pending nào cho order này không
+                    $existingPayment = Payment::where('order_id', $order->id)
+                        ->where('status', 'pending')
+                        ->first();
+
+                    if ($existingPayment) {
+                        // Cập nhật payment hiện có
+                        $existingPayment->update([
+                            'method' => 'vnpay',
+                            'payment_method' => 'vnpay',
+                            'status' => 'pending',
+                            'amount' => $amount,
+                            'transaction_id' => $transactionId,
+                            'gateway_response' => json_encode($result)
+                        ]);
+                        $payment = $existingPayment;
+                    } else {
+                        // Tạo record payment mới với status pending
+                        $payment = Payment::create([
+                            'order_id' => $order->id,
+                            'method' => 'vnpay',
+                            'payment_method' => 'vnpay',
+                            'status' => 'pending',
+                            'amount' => $amount,
+                            'transaction_id' => $transactionId,
+                            'gateway_response' => json_encode($result) // Chuyển về JSON string
+                        ]);
+                    }
 
                     // Cập nhật order
                     $order->update([
@@ -104,7 +125,10 @@ class VNPayController extends Controller
                         'final_amount' => $amount
                     ]);
 
+                    DB::commit();
+
                     Log::info('VNPay payment created successfully', [
+                        'payment_id' => $payment->id,
                         'order_id' => $order->id,
                         'transaction_id' => $transactionId,
                         'amount' => $amount,
@@ -123,8 +147,24 @@ class VNPayController extends Controller
                     ], 200);
 
                 } catch (\Exception $e) {
-                    Log::error('Payment record creation error: ' . $e->getMessage());
-                    return response()->json(['error' => 'Không thể tạo payment record'], 500);
+                    DB::rollback();
+                    Log::error('Payment record creation error: ' . $e->getMessage(), [
+                        'order_id' => $order->id,
+                        'transaction_id' => $transactionId,
+                        'error_trace' => $e->getTraceAsString()
+                    ]);
+                    
+                    // Log chi tiết lỗi để debug
+                    Log::error('Payment data being inserted:', [
+                        'order_id' => $order->id,
+                        'method' => 'vnpay',
+                        'status' => 'pending',
+                        'amount' => $amount,
+                        'transaction_id' => $transactionId,
+                        'gateway_response' => json_encode($result)
+                    ]);
+                    
+                    return response()->json(['error' => 'Không thể tạo payment record: ' . $e->getMessage()], 500);
                 }
             }
 
@@ -138,7 +178,7 @@ class VNPayController extends Controller
                 'order_id' => $request->order_id,
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Có lỗi xảy ra khi tạo thanh toán'], 500);
+            return response()->json(['error' =>  $e->getMessage()], 500);
         }
     }
 
@@ -185,14 +225,14 @@ class VNPayController extends Controller
                         'paid_at' => now(),
                         'transaction_id' => $result['transaction_no'] ?? null,
                         'bank_code' => $result['bank_code'] ?? null,
-                        'gateway_response' => $result
+                        'gateway_response' => json_encode($result)
                     ]);
                 }
 
                 // Cập nhật đơn hàng
                 $order->update([
                     'is_paid' => true,
-                    'status' => 'paid'
+                    'status' => 'pending'
                 ]);
 
                 Log::info('VNPay payment successful', [
@@ -203,8 +243,8 @@ class VNPayController extends Controller
                 ]);
 
                 // Redirect về frontend với thông tin thanh toán
-                $frontendUrl = config('vnpay.frontend_url', 'http://localhost:3000');
-                $redirectUrl = $frontendUrl . '/payment/success?' . http_build_query([
+                $frontendSuccessUrl = config('vnpay.frontend_success_url', 'http://localhost:5173/payment/success');
+                $redirectUrl = $frontendSuccessUrl . '?' . http_build_query([
                     'order_id' => $order->id,
                     'amount' => $result['amount'],
                     'status' => 'success',
@@ -230,13 +270,13 @@ class VNPayController extends Controller
                 if ($payment) {
                     $payment->update([
                         'status' => 'failed',
-                        'gateway_response' => $result
+                        'gateway_response' => json_encode($result)
                     ]);
                 }
 
                 // Redirect về frontend với thông tin lỗi
-                $frontendUrl = config('vnpay.frontend_url', 'http://localhost:3000');
-                $redirectUrl = $frontendUrl . '/payment/failed?' . http_build_query([
+                $frontendFailedUrl = config('vnpay.frontend_failed_url', 'http://localhost:5173/payment/failed');
+                $redirectUrl = $frontendFailedUrl . '?' . http_build_query([
                     'order_id' => $result['order_id'],
                     'status' => 'failed',
                     'message' => $result['message'],
@@ -253,7 +293,7 @@ class VNPayController extends Controller
             ]);
 
             return response()->json([
-                'error' => 'Có lỗi xảy ra khi xử lý thanh toán'
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -295,7 +335,7 @@ class VNPayController extends Controller
                             'paid_at' => now(),
                             'transaction_id' => $result['transaction_no'] ?? null,
                             'bank_code' => $result['bank_code'] ?? null,
-                            'gateway_response' => $result
+                            'gateway_response' => json_encode($result)
                         ]);
                     }
 

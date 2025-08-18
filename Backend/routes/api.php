@@ -31,7 +31,7 @@ use App\Http\Controllers\Api\{
     PaymentController,
     ProductController,
     ProductVariantController,
-    ReviewController,
+
     SizeController,
     UserController,
     VoucherController
@@ -82,6 +82,7 @@ Route::get('/client/comments/product/{id}', [CommentController::class, 'getByPro
 Route::post('/contact', [ContactController::class, 'store']);
 Route::get('/home-sections', [HomeSectionController::class, 'index']);
 Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
+Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
 
 // ========== Webhook VNPay (No Auth) ==========
 Route::prefix('payments/vnpay')->group(function () {
@@ -109,8 +110,13 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
 
     Route::apiResource('vouchers', VoucherController::class);
+    Route::put('vouchers/{id}', [VoucherController::class, 'update']);
     Route::post('vouchers/validate', [VoucherController::class, 'validateVoucher']);
     Route::post('vouchers/{id}/use', [VoucherController::class, 'useVoucher']);
+    Route::patch('vouchers/{id}/toggle', [VoucherController::class, 'toggle']);
+    Route::get('vouchers/{id}/usage', [VoucherController::class, 'usageDetails']);
+    Route::get('vouchers/{id}/statistics', [VoucherController::class, 'getStatistics']);
+
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     // Home Sections
@@ -206,16 +212,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::apiResource('/cart', CartController::class);
-        Route::post('/cart/items/{cartItem}', [CartController::class, 'updateItem']); // Route để cập nhật một item cụ thể
-    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']); // Route để xóa một item cụ thể
+        Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']); // Route để xóa một item cụ thể
                 Route::post('/cart/clear', [CartController::class, 'clear']); // Route để xóa toàn bộ giỏ hàng (sử dụng POST do hạn chế của môi trường dev)
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
+
+
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Comments and Reviews
-    Route::get('/client/review-eligibility/{id}', [ReviewController::class, 'checkEligibility']);
+    Route::get('/client/review-eligibility/{id}', [CommentController::class, 'checkEligibility']);
 
     // Quản lý comment (role = 1)
     Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {

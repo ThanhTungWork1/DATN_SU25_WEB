@@ -55,7 +55,7 @@ const CartPage = () => {
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
   const shippingFee = 30000;
   const subtotalAmount = selectedProducts.reduce(
-    (total, item) => total + item.price * 1000 * item.quantity,
+    (total, item) => total + item.price * item.quantity,
     0
   );
   const totalAmount = subtotalAmount + shippingFee;

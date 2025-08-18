@@ -28,9 +28,9 @@ const VoucherPage = () => {
 
   const [form, setForm] = useState({
     code: "",
-    value: 0,
+    discount_amount: 0,
     start_date: "",
-    expiry_date: "",
+    end_date: "",
     min_order_amount: 0,
     max_usage: 1,
     discount_type: "fixed" as "fixed" | "percent",
@@ -53,25 +53,27 @@ const VoucherPage = () => {
       const res = await axiosInstance.get<ApiResponsePaginated<Voucher>>(
         `/admin/vouchers?page=${page}`
       );
-      
+
       // Backend returns: { status, message, data: { current_page, data: [...], last_page, ... } }
-      if (res.data.status === 'success' && res.data.data) {
+      if (res.data.status === "success" && res.data.data) {
         const paginationData = res.data.data;
         setVouchers(paginationData.data || []);
         setCurrentPage(paginationData.current_page);
         setLastPage(paginationData.last_page);
       } else {
-        throw new Error(res.data.message || 'Unknown error');
+        throw new Error(res.data.message || "Unknown error");
       }
     } catch (error: any) {
       console.error("Error fetching vouchers:", error);
       console.error("Error response:", error.response);
       console.error("Error data:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      
+
       if (error.response?.status === 500) {
         setHasBackendError(true);
-        message.error("Lỗi server nội bộ khi tải danh sách voucher. Vui lòng liên hệ admin.");
+        message.error(
+          "Lỗi server nội bộ khi tải danh sách voucher. Vui lòng liên hệ admin."
+        );
       } else if (error.response?.status === 404) {
         setHasBackendError(true);
         message.error("Không tìm thấy API endpoint cho voucher.");
@@ -79,7 +81,9 @@ const VoucherPage = () => {
         message.error("Phiên đăng nhập đã hết hạn.");
       } else {
         setHasBackendError(true);
-        message.error(`Không thể tải danh sách voucher: ${error.response?.data?.message || error.message || "Lỗi không xác định"}`);
+        message.error(
+          `Không thể tải danh sách voucher: ${error.response?.data?.message || error.message || "Lỗi không xác định"}`
+        );
       }
       setVouchers([]);
     } finally {
@@ -102,7 +106,7 @@ const VoucherPage = () => {
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
     const numericValue = parseInt(raw || "0");
-    setForm({ ...form, value: numericValue });
+    setForm({ ...form, discount_amount: numericValue });
   };
 
   const handleInputChange = (
@@ -126,9 +130,11 @@ const VoucherPage = () => {
     setForm({
       ...form,
       start_date: start || "",
-      expiry_date: end || "",
+      end_date: end || "",
     });
   };
+
+  // Trong VoucherPage.tsx, sửa handleSubmit function:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,15 +148,15 @@ const VoucherPage = () => {
       message.error("Vui lòng chọn ngày bắt đầu");
       return;
     }
-    if (!form.expiry_date) {
+    if (!form.end_date) {
       message.error("Vui lòng chọn ngày kết thúc");
       return;
     }
-    if (form.value <= 0) {
+    if (form.discount_amount <= 0) {
       message.error("Giá trị giảm giá phải lớn hơn 0");
       return;
     }
-    if (new Date(form.start_date) >= new Date(form.expiry_date)) {
+    if (new Date(form.start_date) >= new Date(form.end_date)) {
       message.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
       return;
     }
@@ -159,31 +165,63 @@ const VoucherPage = () => {
     try {
       const payload = {
         code: form.code.trim(),
-        value: Number(form.value),
+        discount_amount: Number(form.discount_amount),
         start_date: form.start_date,
-        expiry_date: form.expiry_date,
+        end_date: form.end_date,
         min_order_amount: Number(form.min_order_amount) || 0,
         max_usage: Number(form.max_usage) || 1,
-        discount_type: form.discount_type,
+        discount_type: String(form.discount_type).toLowerCase(), // ✅ Ensure string và lowercase
+        max_discount_amount:
+          form.discount_type === "percent"
+            ? Number(form.max_discount_amount) || 0
+            : undefined,
         description: form.description || "",
       };
-      
-      console.log("Payload gửi lên:", payload); 
+
+      // 🔍 DEBUG: Log payload chi tiết
+      console.log("=== VOUCHER DEBUG ===");
+      console.log("Form state:", form);
+      console.log("Final payload:", payload);
+      console.log("discount_type value:", payload.discount_type);
+      console.log("discount_type type:", typeof payload.discount_type);
+      console.log("discount_type length:", payload.discount_type.length);
+      console.log(
+        "discount_type charCodes:",
+        Array.from(payload.discount_type).map((c) => c.charCodeAt(0))
+      );
+
+      // 🔍 Test validation trước khi gửi
+      const validTypes = ["fixed", "percent"];
+      if (!validTypes.includes(payload.discount_type)) {
+        message.error(
+          `Invalid discount_type: "${payload.discount_type}". Expected: ${validTypes.join(" or ")}`
+        );
+        return;
+      }
+
       if (isEditing && editId !== null) {
-        await axiosInstance.put(`/admin/vouchers/${editId}`, payload);
+        console.log(`Sending PUT to: /admin/vouchers/${editId}`);
+        const response = await axiosInstance.put(
+          `/admin/vouchers/${editId}`,
+          payload
+        );
+        console.log("Update response:", response.data);
         message.success("Cập nhật voucher thành công!");
       } else {
-        await axiosInstance.post("/admin/vouchers", payload);
+        console.log("Sending POST to: /admin/vouchers");
+        const response = await axiosInstance.post("/admin/vouchers", payload);
+        console.log("Create response:", response.data);
         message.success("Tạo voucher thành công!");
       }
       resetForm();
       fetchVouchers(currentPage);
     } catch (error: any) {
-      console.error("Error saving voucher:", error);
+      console.error("=== ERROR DEBUG ===");
+      console.error("Error object:", error);
+      console.error("Error response:", error.response);
       console.error("Error response data:", error.response?.data);
-
       console.error("Error status:", error.response?.status);
-      
+
       if (error.response?.data?.errors) {
         // Laravel validation errors
         const errors = error.response.data.errors;
@@ -191,12 +229,16 @@ const VoucherPage = () => {
         Object.keys(errors).forEach((field) => {
           const fieldErrors = errors[field];
           console.error(`Field '${field}' errors:`, fieldErrors);
-          fieldErrors.forEach((err: string) => message.error(`${field}: ${err}`));
+          fieldErrors.forEach((err: string) =>
+            message.error(`${field}: ${err}`)
+          );
         });
       } else if (error.response?.data?.message) {
         message.error(error.response.data.message);
       } else {
-        message.error(`Có lỗi xảy ra khi lưu voucher: ${error.message || "Không xác định"}`);
+        message.error(
+          `Có lỗi xảy ra khi lưu voucher: ${error.message || "Không xác định"}`
+        );
       }
     } finally {
       setLoading(false);
@@ -206,9 +248,9 @@ const VoucherPage = () => {
   const resetForm = () => {
     setForm({
       code: "",
-      value: 0,
+      discount_amount: 0,
       start_date: "",
-      expiry_date: "",
+      end_date: "",
       min_order_amount: 0,
       max_usage: 1,
       discount_type: "fixed",
@@ -222,14 +264,14 @@ const VoucherPage = () => {
   const handleEdit = (voucher: Voucher) => {
     setForm({
       code: voucher.code,
-      value: voucher.value || voucher.discount_amount || 0,
+      discount_amount: voucher.value || voucher.discount_amount || 0,
       start_date: voucher.start_date?.split("T")[0] || "",
-      expiry_date: (voucher.expiry_date || voucher.end_date)?.split("T")[0] || "",
-
+      end_date: (voucher.end_date || voucher.expiry_date)?.split("T")[0] || "",
       min_order_amount: voucher.min_order_amount || 0,
       max_usage: voucher.max_usage || 1,
-      discount_type: voucher.discount_type === "percentage" ? "percent" : "fixed",
-      max_discount_amount: voucher.max_discount_amount || 0,
+      discount_type: voucher.discount_type as "fixed" | "percent",
+      max_discount_amount:
+        voucher.max_value || voucher.max_discount_amount || 0,
       description: voucher.description || "",
     });
     setIsEditing(true);
@@ -245,7 +287,7 @@ const VoucherPage = () => {
       console.error("Error toggling voucher:", error);
       console.error("Error response:", error.response);
       console.error("Error data:", error.response?.data);
-      
+
       if (error.response?.status === 500) {
         message.error("Lỗi server nội bộ khi thay đổi trạng thái voucher.");
       } else if (error.response?.status === 404) {
@@ -268,7 +310,7 @@ const VoucherPage = () => {
         console.error("Error deleting voucher:", error);
         console.error("Error response:", error.response);
         console.error("Error data:", error.response?.data);
-        
+
         if (error.response?.status === 500) {
           message.error("Lỗi server nội bộ khi xóa voucher.");
         } else if (error.response?.status === 404) {
@@ -303,8 +345,7 @@ const VoucherPage = () => {
   const getStatusDisplay = (voucher: Voucher) => {
     const now = new Date();
     const startDate = new Date(voucher.start_date);
-    const endDate = new Date(voucher.end_date || voucher.expiry_date || '');
-
+    const endDate = new Date(voucher.end_date || voucher.expiry_date || "");
 
     if (!voucher.status) return { label: "Đã khóa", color: "red" };
     if (now < startDate) return { label: "Chưa bắt đầu", color: "blue" };
@@ -319,34 +360,37 @@ const VoucherPage = () => {
     return (
       <div className="voucher-container">
         <h2>Quản lý Voucher</h2>
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '60px 20px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          border: '1px dashed #dee2e6'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
-          <h3 style={{ color: '#6c757d', marginBottom: '12px' }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "60px 20px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+            border: "1px dashed #dee2e6",
+          }}
+        >
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>🚧</div>
+          <h3 style={{ color: "#6c757d", marginBottom: "12px" }}>
             Tính năng Voucher đang được phát triển
           </h3>
-          <p style={{ color: '#6c757d', marginBottom: '20px' }}>
-            API endpoint cho quản lý voucher chưa sẵn sàng.<br/>
+          <p style={{ color: "#6c757d", marginBottom: "20px" }}>
+            API endpoint cho quản lý voucher chưa sẵn sàng.
+            <br />
             Vui lòng liên hệ team backend để thiết lập endpoint /admin/vouchers
           </p>
-          <button 
+          <button
             onClick={() => fetchVouchers(currentPage)}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
+              padding: "8px 16px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
             }}
             disabled={loading}
           >
-            {loading ? 'Đang thử lại...' : 'Thử lại'}
+            {loading ? "Đang thử lại..." : "Thử lại"}
           </button>
         </div>
       </div>
@@ -369,22 +413,28 @@ const VoucherPage = () => {
             />
           </div>
           <div className="form-group">
-            <label>{form.discount_type === "fixed" ? "Số tiền giảm *" : "Phần trăm giảm *"}</label>
+            <label>
+              {form.discount_type === "fixed"
+                ? "Số tiền giảm *"
+                : "Phần trăm giảm *"}
+            </label>
             <div className="currency-input">
               <input
                 type="text"
-                name="value"
+                name="discount_amount"
                 value={
                   form.discount_type === "fixed"
-                    ? formatCurrency(form.value)
-                    : form.value
+                    ? formatCurrency(form.discount_amount)
+                    : form.discount_amount
                 }
                 onChange={
                   form.discount_type === "fixed"
                     ? handleCurrencyChange
                     : handleInputChange
                 }
-                placeholder={form.discount_type === "fixed" ? "VD: 50000" : "VD: 10 (%)"}
+                placeholder={
+                  form.discount_type === "fixed" ? "VD: 50000" : "VD: 10 (%)"
+                }
                 required
               />
               <span className="currency-label">
@@ -424,7 +474,7 @@ const VoucherPage = () => {
               allowClear
               value={[
                 form.start_date ? dayjs(form.start_date) : null,
-                form.expiry_date ? dayjs(form.expiry_date) : null,
+                form.end_date ? dayjs(form.end_date) : null,
               ]}
               onChange={handleDateRangeChange}
               format="YYYY-MM-DD"
@@ -531,11 +581,11 @@ const VoucherPage = () => {
                 <td>
                   {v.discount_type === "fixed"
                     ? `${(v.value || v.discount_amount || 0).toLocaleString()}₫`
-                    : `${(v.value || v.discount_amount || 0)}% (Tối đa ${v.max_discount_amount?.toLocaleString()}₫)`}
+                    : `${v.value || v.discount_amount || 0}% (Tối đa ${(v.max_value || v.max_discount_amount || 0)?.toLocaleString()}₫)`}
                 </td>
                 <td>
                   {v.min_order_amount > 0
-                    ? `Đơn từ ${v.min_order_amount.toLocaleString()}₫`
+                    ? `Đơn từ ${(v.min_order_amount * 1).toLocaleString("vi-VN")}₫`
                     : "Không điều kiện"}
                 </td>
                 <td>{v.start_date?.split("T")[0] || "N/A"}</td>
@@ -577,9 +627,11 @@ const VoucherPage = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(v.id)}
-                      disabled={new Date(v.end_date || v.expiry_date || '') > new Date()}
+                      disabled={
+                        new Date(v.end_date || v.expiry_date || "") > new Date()
+                      }
                       title={
-                        new Date(v.end_date || v.expiry_date || '') > new Date()
+                        new Date(v.end_date || v.expiry_date || "") > new Date()
                           ? "Chỉ có thể xóa voucher đã hết hạn"
                           : "Xóa voucher"
                       }
@@ -622,4 +674,4 @@ const VoucherPage = () => {
   );
 };
 
-export default VoucherPage; 
+export default VoucherPage;

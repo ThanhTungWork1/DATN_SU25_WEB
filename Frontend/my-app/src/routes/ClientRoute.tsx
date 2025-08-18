@@ -15,9 +15,10 @@ import UserProfile from "../pages/client/Home/UserProfile";
 import RequireAuth from "./RequireAuth";
 import OrderList from "../pages/client/Orders/OrderList";
 import OrderSuccess from "../pages/checkout/OrderSuccess";
+import PaymentSuccess from "../pages/client/Payment/PaymentSuccess";
+import PaymentFailed from "../pages/client/Payment/PaymentFailed";
 import LoginPage from "../pages/auth/Login";
 import ChatWidget from "../components/ChatWidget";
-
 
 const ClientRoute = () => {
   return (
@@ -46,6 +47,8 @@ const ClientRoute = () => {
               <Route path="/wishlist" element={<LikeProduct />} />
               <Route path="/contact" element={<ContactClient />} />
               <Route path="/order-success" element={<OrderSuccess />} />
+              <Route path="/payment/success" element={<PaymentSuccess />} />
+              <Route path="/payment/failed" element={<PaymentFailed />} />
             </Routes>
             <Footer />
             <ContactFloating />
@@ -54,7 +57,6 @@ const ClientRoute = () => {
         }
       />
     </Routes>
-
   );
 };
 

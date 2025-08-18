@@ -39,7 +39,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove })
           )}
         </div>
 
-        <p className="mb-0">{(item.price * 1000).toLocaleString('vi-VN')} VND</p>
+        <p className="mb-0">{Math.round(item.price).toLocaleString('vi-VN')} VND</p>
       </div>
       <input
         type="number"
@@ -54,7 +54,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove })
         }}
       />
       <p className="fw-bold mx-3" style={{ minWidth: '120px', textAlign: 'right' }}>
-        {(item.price * item.quantity * 1000).toLocaleString('vi-VN')} VND
+        {Math.round(item.price * item.quantity).toLocaleString('vi-VN')} VND
       </p>
       <button type="button" onClick={() => onRemove(item.id)} className="btn btn-danger ms-3">
         Xóa

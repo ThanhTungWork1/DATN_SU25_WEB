@@ -26,7 +26,7 @@ const OrderSuccess = () => {
   // Helper to parse status like '0 pending' -> 'pending'
   const getStatusKey = (status: string) => {
     if (!status) return "";
-    const parts = status.split(' ');
+    const parts = status.split(" ");
     return parts[parts.length - 1];
   };
 
@@ -118,7 +118,7 @@ const OrderSuccess = () => {
                         <strong>Trạng thái đơn hàng:</strong>
                         <span
                           className={`badge ms-2 ${
-                            ({
+                            {
                               pending: "bg-warning text-dark",
                               confirmed: "bg-primary",
                               processing: "bg-info text-dark",
@@ -126,18 +126,18 @@ const OrderSuccess = () => {
                               delivered: "bg-success",
                               completed: "bg-success",
                               cancelled: "bg-danger",
-                            }[statusKey] || "bg-secondary")
+                            }[statusKey] || "bg-secondary"
                           }`}
                         >
                           {{
-                              pending: "Chờ xác nhận",
-                              confirmed: "Đã xác nhận",
-                              processing: "Đang xử lý",
-                              shipping: "Đang giao hàng",
-                              delivered: "Đã giao hàng",
-                              completed: "Đã hoàn thành",
-                              cancelled: "Đã huỷ",
-                            }[statusKey] || "Không xác định"}
+                            pending: "Chờ xác nhận",
+                            confirmed: "Đã xác nhận",
+                            processing: "Đang xử lý",
+                            shipping: "Đang giao hàng",
+                            delivered: "Đã giao hàng",
+                            completed: "Đã hoàn thành",
+                            cancelled: "Đã huỷ",
+                          }[statusKey] || "Không xác định"}
                         </span>
                       </div>
                       {orderData.voucher_code && (
@@ -172,7 +172,7 @@ const OrderSuccess = () => {
                       <div className="row align-items-center">
                         <div className="col-auto">
                           <img
-                            src={item.image || "https://via.placeholder.com/60"}
+                            src={item.image_url}
                             alt={item.name}
                             className="rounded-3"
                             style={{
@@ -190,7 +190,7 @@ const OrderSuccess = () => {
                         </div>
                         <div className="col-auto">
                           <div className="fw-bold text-danger">
-                            {(item.price * 1000 * item.quantity).toLocaleString(
+                            {Math.round(item.price * item.quantity).toLocaleString(
                               "vi-VN"
                             )}{" "}
                             VND
@@ -218,22 +218,20 @@ const OrderSuccess = () => {
                       <div className="d-flex justify-content-between mb-2">
                         <span>Tổng tiền sản phẩm:</span>
                         <span className="fw-semibold">
-                          {orderData.total_amount.toLocaleString("vi-VN")}{" "}
-                          VND
+                          {Math.round(orderData.total_amount).toLocaleString("vi-VN")} VND
                         </span>
                       </div>
                       <div className="d-flex justify-content-between mb-2">
                         <span>Phí vận chuyển:</span>
                         <span className="fw-semibold">
-                          {orderData.shipping_fee.toLocaleString("vi-VN")}{" "}
-                          VND
+                          {Math.round(orderData.shipping_fee).toLocaleString("vi-VN")} VND
                         </span>
                       </div>
                       {orderData.discount_amount > 0 && (
                         <div className="d-flex justify-content-between mb-2">
                           <span>Giảm giá:</span>
                           <span className="fw-semibold text-success">
-                            -{orderData.discount_amount.toLocaleString("vi-VN")}{" "}
+                            -{Math.round(orderData.discount_amount).toLocaleString("vi-VN")}{" "}
                             VND
                           </span>
                         </div>
@@ -243,8 +241,7 @@ const OrderSuccess = () => {
                       <div className="text-end">
                         <div className="fs-4 fw-bold text-danger">
                           Tổng cộng:{" "}
-                          {orderData.final_amount.toLocaleString("vi-VN")}{" "}
-                          VND
+                          {Math.round(orderData.final_amount).toLocaleString("vi-VN")} VND
                         </div>
                       </div>
                     </div>

@@ -27,9 +27,6 @@ const CheckoutPage = () => {
     displayTotalAmount,
     shippingFee,
     handleCheckout,
-    showQRModal,
-    setShowQRModal,
-    processOrder,
     selectedProducts,
   } = useCheckout();
 
@@ -66,7 +63,7 @@ const CheckoutPage = () => {
                       <div className="row align-items-center">
                         <div className="col-auto">
                           <img
-                            src={item.image || "https://via.placeholder.com/80"}
+                            src={item.image}
                             alt={item.name}
                             className="rounded-3 shadow-sm"
                             style={{
@@ -82,12 +79,12 @@ const CheckoutPage = () => {
                             Số lượng: {item.quantity}
                           </div>
                           <div className="fw-bold text-danger">
-                            {(item.price * 1000).toLocaleString("vi-VN")} VND
+                            {Math.round(item.price).toLocaleString("vi-VN")} VND
                           </div>
                         </div>
                         <div className="col-auto">
                           <div className="fw-bold fs-5 text-dark">
-                            {(item.price * 1000 * item.quantity).toLocaleString(
+                            {Math.round(item.price * item.quantity).toLocaleString(
                               "vi-VN"
                             )}{" "}
                             VND
@@ -206,40 +203,21 @@ const CheckoutPage = () => {
                     Thanh toán khi nhận hàng (COD)
                   </label>
                 </div>
-                <div className="form-check mb-3">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="bank"
-                    checked={paymentMethod === "Chuyển khoản ngân hàng"}
-                    onChange={() => setPaymentMethod("Chuyển khoản ngân hàng")}
-                  />
-                  <label
-                    className="form-check-label fw-semibold"
-                    htmlFor="bank"
-                  >
-                    <i className="fas fa-university text-primary me-2"></i>
-                    Chuyển khoản ngân hàng
-                  </label>
-                </div>
                 <div className="form-check">
                   <input
                     className="form-check-input"
                     type="radio"
                     name="paymentMethod"
-                    id="ewallet"
-                    checked={paymentMethod === "Ví điện tử (Momo/ZaloPay)"}
-                    onChange={() =>
-                      setPaymentMethod("Ví điện tử (Momo/ZaloPay)")
-                    }
+                    id="vnpay"
+                    checked={paymentMethod === "VNPay"}
+                    onChange={() => setPaymentMethod("VNPay")}
                   />
                   <label
                     className="form-check-label fw-semibold"
-                    htmlFor="ewallet"
+                    htmlFor="vnpay"
                   >
-                    <i className="fas fa-mobile-alt text-info me-2"></i>Ví điện
-                    tử (Momo/ZaloPay)
+                    <i className="fas fa-credit-card text-success me-2"></i>
+                    Thanh toán VNPay
                   </label>
                 </div>
               </div>
@@ -338,154 +316,6 @@ const CheckoutPage = () => {
             </div>
           </div>
         </div>
-
-        {/* QR Modal */}
-        {showQRModal && (
-          <div
-            className="modal show d-block"
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          >
-            <div className="modal-dialog modal-dialog-centered modal-lg">
-              <div className="modal-content">
-                <div className="modal-header bg-primary text-white">
-                  <h5 className="modal-title">
-                    <i className="fas fa-qrcode me-2"></i>Thanh toán{" "}
-                    {paymentMethod}
-                  </h5>
-                  <button
-                    type="button"
-                    className="btn-close btn-close-white"
-                    onClick={() => setShowQRModal(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-6 text-center">
-                      <h6 className="fw-bold mb-3">Quét mã QR để thanh toán</h6>
-                      {paymentMethod === "Chuyển khoản ngân hàng" ? (
-                        <div>
-                          <img
-                            src={`https://img.vietqr.io/image/970422-0050051668899-compact2.jpg?amount=${finalAmount}&addInfo=Thanh%20toan%20don%20hang%20${Date.now()}&accountName=PHAM%20VAN%20DUONG`}
-                            alt="QR Chuyển khoản MB Bank"
-                            className="img-fluid border rounded"
-                            style={{ maxWidth: "280px" }}
-                          />
-                          <div className="mt-3 card bg-light">
-                            <div className="card-body p-3">
-                              <div className="row text-start">
-                                <div className="col-6">
-                                  <strong>Ngân hàng:</strong>
-                                </div>
-                                <div className="col-6">MB Bank</div>
-                                <div className="col-6">
-                                  <strong>Số TK:</strong>
-                                </div>
-                                <div className="col-6">0050051668899</div>
-                                <div className="col-6">
-                                  <strong>Chủ TK:</strong>
-                                </div>
-                                <div className="col-6">PHAM VAN DUONG</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <img
-                            src={`https://momosv3.apimienphi.com/api/QRCode?phone=0050051668899&amount=${finalAmount}&note=Thanh%20toan%20don%20hang%20${Date.now()}`}
-                            alt="QR Momo"
-                            className="img-fluid border rounded"
-                            style={{ maxWidth: "280px" }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "https://via.placeholder.com/280x280/28a745/ffffff?text=MOMO+QR";
-                            }}
-                          />
-                          <div className="mt-3 card bg-light">
-                            <div className="card-body p-3">
-                              <div className="row text-start">
-                                <div className="col-6">
-                                  <strong>Ví Momo:</strong>
-                                </div>
-                                <div className="col-6">0050051668899</div>
-                                <div className="col-6">
-                                  <strong>Tên:</strong>
-                                </div>
-                                <div className="col-6">PHAM VAN DUONG</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="col-md-6">
-                      <h6 className="fw-bold mb-3">Thông tin thanh toán</h6>
-                      <div className="card border-primary">
-                        <div className="card-body">
-                          <div className="d-flex justify-content-between mb-2">
-                            <span>Tạm tính:</span>
-                            <span className="fw-semibold">
-                              {displayTotalAmount.toLocaleString("vi-VN")} VND
-                            </span>
-                          </div>
-                          <div className="d-flex justify-content-between mb-2">
-                            <span>Phí vận chuyển:</span>
-                            <span className="fw-semibold">
-                              {shippingFee.toLocaleString("vi-VN")} VND
-                            </span>
-                          </div>
-                          {discountAmount > 0 && (
-                            <div className="d-flex justify-content-between mb-2">
-                              <span>Giảm giá:</span>
-                              <span className="fw-semibold text-success">
-                                -{discountAmount.toLocaleString("vi-VN")} VND
-                              </span>
-                            </div>
-                          )}
-                          <hr />
-                          <div className="d-flex justify-content-between mb-3">
-                            <span className="fs-5 fw-bold">
-                              Tổng thanh toán:
-                            </span>
-                            <span className="fs-4 fw-bold text-danger">
-                              {finalAmount.toLocaleString("vi-VN")} VND
-                            </span>
-                          </div>
-                          <div className="alert alert-info">
-                            <i className="fas fa-info-circle me-2"></i>
-                            <strong>Nội dung chuyển khoản:</strong>
-                            <br />
-                            Thanh toan don hang {Date.now()}
-                          </div>
-                          <div className="alert alert-warning">
-                            <i className="fas fa-exclamation-triangle me-2"></i>
-                            Vui lòng chuyển khoản{" "}
-                            <strong>chính xác số tiền</strong> và{" "}
-                            <strong>nội dung</strong> để đơn hàng được xử lý tự
-                            động.
-                          </div>
-                          <div className="alert alert-success mt-3">
-                            <i className="fas fa-spinner fa-spin me-2"></i>
-                            Hệ thống đang chờ xác nhận thanh toán. Trạng thái đơn hàng sẽ được tự động cập nhật.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowQRModal(false)}
-                  >
-                    <i className="fas fa-times me-2"></i>Đóng
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

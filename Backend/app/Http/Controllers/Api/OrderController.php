@@ -91,30 +91,29 @@ class OrderController extends Controller
             ]);
         }
 
-        // QR thanh toán MB Bank
-        $mbBankCode = '970422';
-        $mbAccount = '0050051668899';
-        $mbAccountName = 'PHAM VAN DUONG';
-        $transferNote = 'ORDER_' . $order->id;
-        $qrTemplate = 'compact'; // Hoặc 'print', 'vertical'
-        $amount = $order->total_amount + $order->shipping_fee;
-        $qrImageUrl = "https://img.vietqr.io/image/{$mbBankCode}-{$mbAccount}-{$qrTemplate}.png?amount={$amount}&addInfo={$transferNote}";
+        // // QR thanh toán MB Bank
+        // $mbBankCode = '970422';
+        // $mbAccount = '0050051668899';
+        // $mbAccountName = 'PHAM VAN DUONG';
+        // $transferNote = 'ORDER_' . $order->id;
+        // $qrTemplate = 'compact'; // Hoặc 'print', 'vertical'
+        // $amount = $order->total_amount + $order->shipping_fee;
+        // $qrImageUrl = "https://img.vietqr.io/image/{$mbBankCode}-{$mbAccount}-{$qrTemplate}.png?amount={$amount}&addInfo={$transferNote}";
 
-        return response()->json([
-            'message' => 'Đặt hàng thành công, vui lòng chuyển khoản đúng thông tin bên dưới',
-            'order_id' => $order->id,
-            'amount' => $amount,
-            'bank_transfer' => [
-                'bank_name' => 'MB Bank',
-                'account_number' => $mbAccount,
-                'account_name' => $mbAccountName,
-                'transfer_note' => $transferNote,
-                'qr_code_url' => $qrImageUrl
-            ],
-            'order' => $order->load('items.variant.product')
-        ], 201);
+        // return response()->json([
+        //     'message' => 'Đặt hàng thành công, vui lòng chuyển khoản đúng thông tin bên dưới',
+        //     'order_id' => $order->id,
+        //     'amount' => $amount,
+        //     'bank_transfer' => [
+        //         'bank_name' => 'MB Bank',
+        //         'account_number' => $mbAccount,
+        //         'account_name' => $mbAccountName,
+        //         'transfer_note' => $transferNote,
+        //         'qr_code_url' => $qrImageUrl
+        //     ],
+        //     'order' => $order->load('items.variant.product')
+        // ], 201);
     }
-
     public function show($id)
     {
         return Order::with('items.variant.product')->findOrFail($id);
@@ -186,5 +185,5 @@ class OrderController extends Controller
             'order' => $order->load('items.variant.product')
         ]);
     }
-}
+    }
 
