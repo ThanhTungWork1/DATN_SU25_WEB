@@ -82,6 +82,7 @@ const OrderList = () => {
           className="order-list-select"
         >
           <option value="all">Tất cả đơn hàng</option>
+          <option value="waiting_for_payment">Chờ thanh toán</option>
           <option value="pending">Chờ xác nhận</option>
           <option value="confirmed">Đã xác nhận</option>
           <option value="processing">Đang xử lý</option>

@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 
 class ClientOrderController extends Controller
 {
@@ -244,7 +243,7 @@ class ClientOrderController extends Controller
                 'customer_email' => $user->email,
                 'note' => $data['note'] ?? null,
                 'payment_method' => $data['payment_method'],
-                'status' => 'pending',
+                'status' => $data['payment_method'] === 'VNPay' ? 'waiting_for_payment' : 'pending',
                 'is_paid' => false,
             ]);
 

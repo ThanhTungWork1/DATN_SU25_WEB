@@ -42,7 +42,7 @@ class Order extends Model
      * Điều này sẽ tự động thêm trường 'total_quantity' vào mỗi khi
      * một đối tượng Order được chuyển thành JSON để gửi về frontend.
      */
-    protected $appends = ['total_quantity', 'calculated_final_amount'];
+    protected $appends = ['total_quantity', 'total_price'];
 
     /**
      * Boot method để tự động tạo order_code khi tạo order mới
@@ -99,28 +99,6 @@ class Order extends Model
     }
 
     /**
-     * THÊM MỚI: Accessor để tính toán lại final_amount từ items.
-     * Sử dụng khi final_amount trong database không chính xác.
-     */
-    public function getCalculatedFinalAmountAttribute()
-    {
-        // Nếu không có items, trả về 0
-        if ($this->items->isEmpty()) {
-            return 0;
-        }
-        
-        // Tính tổng tiền từ items
-        $totalFromItems = $this->items->sum(function($item) {
-            return $item->price * $item->quantity;
-        });
-        
-        // Thêm phí vận chuyển và trừ giảm giá
-        $calculatedAmount = $totalFromItems + $this->shipping_fee - $this->discount_amount;
-        
-        return max(0, $calculatedAmount); // Đảm bảo không âm
-    }
-
-    /**
      * Một đơn hàng có nhiều sản phẩm (items).
      */
     public function items(): HasMany
@@ -142,6 +120,15 @@ class Order extends Model
     public function voucher()
     {
         return $this->belongsTo(Voucher::class);
+    }
+
+    /**
+     * Accessor để tạo thuộc tính total_price, đồng bộ với final_amount.
+     * Điều này đảm bảo frontend luôn nhận được trường total_price.
+     */
+    public function getTotalPriceAttribute()
+    {
+        return $this->final_amount;
     }
 
 }

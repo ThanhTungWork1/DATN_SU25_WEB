@@ -27,5 +27,6 @@ export interface UseOrder {
   total_amount?: number | string; // ví dụ: "198.00"
   shipping_fee?: number | string; // ví dụ: "35.00"
   discount_amount?: number | string; // ví dụ: "10.00"
+  final_amount: number | string;
   is_paid: boolean | number;
 }
