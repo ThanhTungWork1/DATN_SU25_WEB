@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\VNPayService;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -206,7 +207,7 @@ class VNPayController extends Controller
 
             if ($result['success']) {
                 // Thanh toán thành công
-                $order = Order::find($result['order_id']);
+                $order = Order::with('user')->find($result['order_id']);
 
                 if (!$order) {
                     Log::error('Order not found', ['order_id' => $result['order_id']]);
@@ -234,6 +235,16 @@ class VNPayController extends Controller
                     'is_paid' => true,
                     'status' => 'pending'
                 ]);
+
+                // Xóa giỏ hàng sau khi thanh toán thành công
+                if ($order->user) {
+                    $cart = Cart::where('user_id', $order->user_id)->where('status', 1)->first();
+                    if ($cart) {
+                        $cart->cartItems()->delete();
+                        $cart->delete();
+                        Log::info('Cart cleared for user after successful VNPay payment.', ['user_id' => $order->user_id, 'cart_id' => $cart->id]);
+                    }
+                }
 
                 Log::info('VNPay payment successful', [
                     'order_id' => $order->id,
@@ -321,7 +332,7 @@ class VNPayController extends Controller
             }
 
             if ($result['success']) {
-                $order = Order::find($result['order_id']);
+                $order = Order::with('user')->find($result['order_id']);
 
                 if ($order && !$order->is_paid) {
                     // Cập nhật payment
@@ -344,6 +355,16 @@ class VNPayController extends Controller
                         'is_paid' => true,
                         'status' => 'paid'
                     ]);
+
+                    // Xóa giỏ hàng sau khi thanh toán thành công
+                    if ($order->user) {
+                        $cart = Cart::where('user_id', $order->user_id)->where('status', 1)->first();
+                        if ($cart) {
+                            $cart->cartItems()->delete();
+                            $cart->delete();
+                            Log::info('Cart cleared for user via IPN.', ['user_id' => $order->user_id, 'cart_id' => $cart->id]);
+                        }
+                    }
 
                     Log::info('VNPay IPN payment successful', [
                         'order_id' => $order->id,

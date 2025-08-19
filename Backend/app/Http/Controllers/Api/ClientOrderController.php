@@ -254,9 +254,9 @@ class ClientOrderController extends Controller
                 'shipping_address' => $data['shipping_address'],
                 'shipping_phone' => $data['shipping_phone'],
                 'shipping_name' => $data['shipping_name'],
-                'customer_name' => $data['customer_name'],
-                'customer_phone' => $data['customer_phone'],
-                'customer_email' => $user->email,
+                'customer_name' => $user->name, // Lấy từ user đã xác thực
+                'customer_phone' => $user->phone, // Lấy từ user đã xác thực
+                'customer_email' => $user->email, // Lấy từ user đã xác thực
                 'note' => $data['note'] ?? null,
                 'payment_method' => $data['payment_method'],
                 'status' => $data['payment_method'] === 'VNPay' ? 'waiting_for_payment' : 'pending',

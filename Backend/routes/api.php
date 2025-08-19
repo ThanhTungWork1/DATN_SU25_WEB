@@ -213,6 +213,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::apiResource('/cart', CartController::class);
+        Route::put('/cart/items/{cartItem}', [CartController::class, 'updateItem']); // Route để cập nhật một item cụ thể
         Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']); // Route để xóa một item cụ thể
                 Route::post('/cart/clear', [CartController::class, 'clear']); // Route để xóa toàn bộ giỏ hàng (sử dụng POST do hạn chế của môi trường dev)
     Route::post('/comments', [CommentController::class, 'store']);

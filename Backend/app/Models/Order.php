@@ -123,6 +123,14 @@ class Order extends Model
     }
 
     /**
+     * Một đơn hàng thuộc về một người dùng.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
      * Accessor để tạo thuộc tính total_price, đồng bộ với final_amount.
      * Điều này đảm bảo frontend luôn nhận được trường total_price.
      */
