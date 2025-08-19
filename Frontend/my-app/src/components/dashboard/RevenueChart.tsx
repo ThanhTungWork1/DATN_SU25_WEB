@@ -154,7 +154,7 @@ const RevenueChart: React.FC = () => {
             <Line 
               yAxisId="left"
               type="monotone" 
-              dataKey="revenue" 
+              dataKey="total" 
               stroke="#1890ff" 
               strokeWidth={2}
               dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}

@@ -44,6 +44,7 @@ class Order extends Model
      */
     protected $appends = ['total_quantity', 'total_price'];
 
+
     /**
      * Boot method để tự động tạo order_code khi tạo order mới
      */

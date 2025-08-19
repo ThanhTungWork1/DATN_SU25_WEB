@@ -144,7 +144,7 @@ const OrdersStatusChart: React.FC = () => {
               }}
             />
             <span style={{ whiteSpace: "nowrap" }}>
-              {statusMap[entry.value] || entry.value} (
+              {statusMap[entry.payload.status] || entry.payload.status} (
               {(
                 (entry.payload.count /
                   data.reduce(
@@ -195,9 +195,10 @@ const OrdersStatusChart: React.FC = () => {
               innerRadius={20}
               fill="#8884d8"
               dataKey="count"
+              nameKey="status"
               paddingAngle={2}
             >
-              {data?.map((entry: any, index: number) => (
+              {data?.map((_: any, index: number) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}

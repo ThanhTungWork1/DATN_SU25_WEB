@@ -18,8 +18,8 @@ class DashboardController extends Controller
     public function index()
     {
         // Lấy các đơn hàng đã giao và tính tổng doanh thu từ accessor
-        $delivered_orders = Order::where('status', 'delivered')->get();
-        $total_revenue = $delivered_orders->sum('calculated_final_amount');
+        $delivered_orders = Order::whereIn('status', ['delivered', 'completed'])->get();
+        $total_revenue = $delivered_orders->sum('final_amount');
         $orders_today = Order::whereDate('created_at', Carbon::today())->count();
         $new_users_this_month = User::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
@@ -86,11 +86,11 @@ class DashboardController extends Controller
             ->select(
                 'products.id',
                 'products.name',
-                'products.image_url as image',
+                'products.image as image',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
                 DB::raw('SUM(order_items.quantity * order_items.price) as total_revenue')
             )
-            ->groupBy('products.id', 'products.name', 'products.image_url')
+            ->groupBy('products.id', 'products.name', 'products.image')
             ->orderByDesc('total_sold')
             ->limit($limit)
             ->get();
@@ -100,31 +100,36 @@ class DashboardController extends Controller
 
     public function revenueByTime(Request $request)
     {
-        $query = Order::where('status', 'delivered');
+        // 1. Lọc các đơn hàng đã được tính doanh thu (delivered hoặc completed)
+        $query = Order::whereIn('status', ['delivered', 'completed']);
 
+        // 2. Lọc theo khoảng thời gian dựa trên ngày tạo đơn (created_at)
         if ($request->has('start_date') && $request->has('end_date')) {
             $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
             $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
             $query->whereBetween('created_at', [$startDate, $endDate]);
         } else {
+            // Mặc định lấy 30 ngày gần nhất
             $days = $request->input('days', 30);
             $query->where('created_at', '>=', Carbon::now()->subDays($days));
         }
 
         $revenue = $query
-            ->with('items') // Tải sẵn các items để tính toán
             ->get()
+            // 3. Nhóm các đơn hàng theo ngày tạo đơn
             ->groupBy(function ($order) {
                 return $order->created_at->format('Y-m-d');
             })
             ->map(function ($dailyOrders, $date) {
                 return [
                     'date' => $date,
-                    'total' => $dailyOrders->sum('calculated_final_amount'),
+                    // 4. Tính tổng doanh thu bằng 'final_amount'
+                    'total' => $dailyOrders->sum('final_amount'),
+                    'order_count' => $dailyOrders->count(),
                 ];
             })
-            ->sortBy('date')
-            ->values();
+            ->sortBy('date') // Sắp xếp kết quả theo ngày
+            ->values(); // Reset keys của array
 
         return response()->json($revenue);
     }
