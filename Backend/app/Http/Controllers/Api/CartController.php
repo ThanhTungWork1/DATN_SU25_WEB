@@ -80,14 +80,16 @@ public function store(CreateCartRequest $request)
                 ->first();
 
             if ($existingCartItem) {
+                // Nếu sản phẩm đã có, chỉ cập nhật số lượng
                 $existingCartItem->quantity += (int) $item['quantity'];
                 $existingCartItem->save();
             } else {
+                // Nếu chưa có, tạo mới và LẤY GIÁ TỪ DATABASE
                 $cart->cartItems()->create([
                     'product_id' => $item['product_id'],
-                    'variant_id' => $item['variant_id'] ?? null,
+                    'variant_id' => $variant->id,
                     'quantity'   => (int) $item['quantity'],
-                    'price'      => $item['price'] ?? 0,
+                    'price'      => $variant->sale_price > 0 ? $variant->sale_price : $variant->price, // Lấy giá chính xác (bao gồm cả giá sale)
                 ]);
             }
         }

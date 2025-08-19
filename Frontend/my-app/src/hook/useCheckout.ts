@@ -394,9 +394,11 @@ export const useCheckout = () => {
 
         console.log("Phản hồi từ API phí vận chuyển:", response.data);
         setShippingFee(response.data.data.shipping_fee);
-
       } catch (error: any) {
-        console.error("Lỗi khi tính phí vận chuyển:", error.response?.data || error.message);
+        console.error(
+          "Lỗi khi tính phí vận chuyển:",
+          error.response?.data || error.message
+        );
         setShippingFee(30000); // Reset về phí mặc định nếu lỗi
       }
     } else {
@@ -458,8 +460,11 @@ export const useCheckout = () => {
         "/vouchers/validate",
         { code: voucherCode, order_amount: displayTotalAmount }
       );
+      console.log("Phản hồi từ API voucher:", response.data);
       const voucher = response.data?.voucher;
       const discount = response.data?.discount_amount || 0;
+      console.log("Voucher nhận được:", voucher);
+      console.log("Số tiền giảm giá:", discount);
       if (voucher) {
         setAppliedVoucher(voucher);
         setDiscountAmount(discount);

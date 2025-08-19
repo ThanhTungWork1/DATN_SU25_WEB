@@ -20,11 +20,10 @@ class VoucherController extends Controller
             'message' => 'Vouchers retrieved successfully',
             'data' => $vouchers
         ], 200);
-
     }
 
     // POST /api/vouchers/apply - Áp dụng voucher khi đặt hàng
-    public function applyVoucher(Request $request)
+    public function validateVoucher(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'code' => 'required|string',
@@ -49,7 +48,7 @@ class VoucherController extends Controller
             return response()->json(['message' => 'Voucher đã hết hạn'], 400);
         }
 
-        if ($voucher->usage_limit !== null && $voucher->used >= $voucher->usage_limit) {
+        if ($voucher->max_usage !== null && $voucher->used_count >= $voucher->max_usage) {
             return response()->json(['message' => 'Voucher đã được sử dụng hết'], 400);
         }
 
@@ -59,18 +58,18 @@ class VoucherController extends Controller
 
         // Tính giảm giá
         $discount = 0;
-        if ($voucher->discount_type === 'percent') {
-            $discount = $request->order_amount * $voucher->discount_value / 100;
-            if ($voucher->max_discount && $discount > $voucher->max_discount) {
-                $discount = $voucher->max_discount;
+        if ($voucher->discount_type === 'percentage') {
+            $discount = $request->order_amount * $voucher->value / 100;
+            if ($voucher->max_value && $discount > $voucher->max_value) {
+                $discount = $voucher->max_value;
             }
-        } else {
-            $discount = $voucher->discount_value;
+        } else { // amount
+            $discount = $voucher->value;
         }
 
         return response()->json([
-            'voucher_id' => $voucher->id,
-            'discount_amount' => round($discount),
+            'voucher' => $voucher, // Trả về toàn bộ đối tượng voucher
+            'discount_amount' => round($discount, 2),
             'message' => 'Áp dụng voucher thành công',
         ]);
     }
@@ -79,25 +78,19 @@ class VoucherController extends Controller
     public function store(Request $request)
     {
         try {
-            Log::info('Voucher store request:', $request->all());
-            
             $validator = Validator::make($request->all(), [
                 'code' => 'required|string|unique:vouchers,code|max:50',
-                'discount_amount' => 'required|numeric|min:0',
+                'discount_type' => 'required|in:percentage,amount',
+                'value' => 'required|numeric|min:0',
+                'max_value' => 'nullable|numeric|min:0',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'min_order_amount' => 'nullable|numeric|min:0',
                 'max_usage' => 'required|integer|min:1',
-                'discount_type' => 'required|in:percentage,amount',
                 'description' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
-                Log::error('Voucher validation failed:', [
-                    'request_data' => $request->all(),
-                    'errors' => $validator->errors()->toArray()
-                ]);
-                
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Validation failed',
@@ -108,10 +101,11 @@ class VoucherController extends Controller
             $voucher = Voucher::create([
                 'title' => $request->code,
                 'code' => $request->code,
-                'value' => $request->discount_amount,
-                'max_value' => $request->discount_amount,
+                'discount_type' => $request->discount_type,
+                'value' => $request->value,
+                'max_value' => $request->max_value,
                 'quantity' => $request->max_usage,
-                'description' => $request->description ?? 'Voucher giảm giá ' . $request->discount_amount . ' VND',
+                'description' => $request->description ?? 'Voucher giảm giá',
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'min_order_amount' => $request->min_order_amount ?? 0,
@@ -140,7 +134,7 @@ class VoucherController extends Controller
     {
         try {
             $voucher = Voucher::find($id);
-            
+
             if (!$voucher) {
                 return response()->json([
                     'status' => 'error',
@@ -150,12 +144,13 @@ class VoucherController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'code' => 'required|string|max:50|unique:vouchers,code,' . $id,
-                'discount_amount' => 'required|numeric|min:0',
+                'discount_type' => 'required|in:percentage,amount',
+                'value' => 'required|numeric|min:0',
+                'max_value' => 'nullable|numeric|min:0',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'min_order_amount' => 'nullable|numeric|min:0',
                 'max_usage' => 'required|integer|min:1',
-                'discount_type' => 'required|in:percentage,amount',
                 'description' => 'nullable|string',
             ]);
 
@@ -166,13 +161,14 @@ class VoucherController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $voucher->update([
                 'title' => $request->code,
                 'code' => $request->code,
-                'value' => $request->discount_amount,
-                'max_value' => $request->discount_amount,
-                'description' => $request->description ?? 'Voucher giảm giá ' . $request->discount_amount . ' VND',
+                'discount_type' => $request->discount_type,
+                'value' => $request->value,
+                'max_value' => $request->max_value,
+                'description' => $request->description ?? 'Voucher giảm giá',
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'min_order_amount' => $request->min_order_amount ?? 0,
@@ -199,7 +195,7 @@ class VoucherController extends Controller
     {
         try {
             $voucher = Voucher::find($id);
-            
+
             if (!$voucher) {
                 return response()->json([
                     'status' => 'error',
@@ -228,7 +224,7 @@ class VoucherController extends Controller
     {
         try {
             $voucher = Voucher::find($id);
-            
+
             if (!$voucher) {
                 return response()->json([
                     'status' => 'error',

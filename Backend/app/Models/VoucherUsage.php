@@ -10,6 +10,7 @@ class VoucherUsage extends Model
     use HasFactory;
 
     protected $table = 'voucher_usage';
+    public $timestamps = false;
 
     protected $fillable = [
         'voucher_id',
@@ -24,27 +25,18 @@ class VoucherUsage extends Model
         'discount_amount' => 'decimal:2'
     ];
 
-    /**
-     * Relationship với Voucher
-     */
     public function voucher()
     {
-        return $this->belongsTo(Voucher::class);
+        return $this->belongsTo(Voucher::class, 'voucher_id');
     }
 
-    /**
-     * Relationship với User
-     */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Relationship với Order
-     */
     public function order()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

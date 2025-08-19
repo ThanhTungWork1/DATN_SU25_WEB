@@ -198,22 +198,30 @@ class ClientOrderController extends Controller
             $voucher_code = $data['voucher_code'] ?? null;
 
             if ($voucher_code) {
-                $voucher = Voucher::where('code', $voucher_code)->first();
+                // Lấy voucher hợp lệ: đang hoạt động, còn hạn, còn lượt dùng
+                $voucher = Voucher::where('code', $voucher_code)
+                    ->where('status', 1)
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->whereColumn('used_count', '<', 'max_usage')
+                    ->orderBy('created_at', 'desc') // Ưu tiên voucher mới nhất nếu có nhiều mã trùng
+                    ->first();
 
                 if (!$voucher) {
+                    // Cung cấp thông báo lỗi rõ ràng hơn
+                    $anyVoucher = Voucher::where('code', $voucher_code)->first();
+                    if (!$anyVoucher) throw new \Exception('Mã giảm giá không tồn tại.');
+                    if ($anyVoucher->status != 1) throw new \Exception('Mã giảm giá không hoạt động.');
+                    if ($anyVoucher->start_date > now()) throw new \Exception('Mã giảm giá chưa đến ngày sử dụng.');
+                    if ($anyVoucher->end_date < now()) throw new \Exception('Mã giảm giá đã hết hạn.');
+                    if ($anyVoucher->used_count >= $anyVoucher->max_usage) throw new \Exception('Mã giảm giá đã hết lượt sử dụng.');
                     throw new \Exception('Mã giảm giá không hợp lệ.');
                 }
 
-                // Kiểm tra các điều kiện của voucher
-                if (!$voucher->status || $voucher->start_date > now() || $voucher->end_date < now()) {
-                    throw new \Exception('Mã giảm giá không hoạt động hoặc đã hết hạn.');
-                }
-                if ($voucher->used_count >= $voucher->quantity) {
-                    throw new \Exception('Mã giảm giá đã hết lượt sử dụng.');
-                }
-                if ($total_amount < $voucher->min_order_amount) {
-                    throw new \Exception('Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.');
-                }
+                // Chỉ kiểm tra điều kiện về giá trị đơn hàng vì các điều kiện khác đã được lọc
+                // if ($total_amount < $voucher->min_order_amount) {
+                //     throw new \Exception('Đơn hàng chưa đạt giá trị tối thiểu là ' . number_format($voucher->min_order_amount) . 'đ để áp dụng mã này.');
+                // }
 
                 // Tính toán số tiền giảm giá
                 if ($voucher->discount_type === 'fixed') {

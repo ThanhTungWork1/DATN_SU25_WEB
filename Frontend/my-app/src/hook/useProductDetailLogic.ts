@@ -16,33 +16,25 @@ export const useProductDetailLogic = (product: Product | undefined) => {
   const [selectedColor, setSelectedColor] = useState<ColorType | null>(null);
 
   useEffect(() => {
-    if (!product) return;
-    const initialImage =
-      product.image_url ||
-      (product.variants && product.variants[0]?.image_url) ||
-      (product.images && product.images[0]) ||
-      product.image ||
-      "";
-    setSelectedImage(initialImage);
+    if (product) {
+        // Ưu tiên ảnh của biến thể đầu tiên, nếu không có thì lấy ảnh chính của sản phẩm
+        const initialImage = product.variants?.[0]?.image_url || product.image_url || "";
+        setSelectedImage(initialImage);
 
-    // Tự động chọn size và màu đầu tiên nếu có
-    if (product.variants && product.variants.length > 0) {
-      const firstVariant = product.variants[0];
-      if (firstVariant.size) {
-        setSelectedSize(firstVariant.size.name);
-      }
-      if (firstVariant.color) {
-        setSelectedColor(firstVariant.color);
-      }
-    } else {
-      // Nếu không có variant, reset
-      setSelectedSize(null);
-      setSelectedColor(null);
+        // Thiết lập các lựa chọn biến thể ban đầu
+        if (product.variants && product.variants.length > 0) {
+            const firstVariant = product.variants[0];
+            setSelectedSize(firstVariant.size?.name || '');
+            setSelectedColor(firstVariant.color || null);
+        } else {
+            // Reset nếu không có biến thể
+            setSelectedSize(null);
+            setSelectedColor(null);
+        }
     }
   }, [product]);
 
   const handleAddToCart = async (quantity: number) => {
-    console.log("--- [LOGIC V3] Bắt đầu handleAddToCart ---");
     if (!product) return;
 
     const { valid, message } = validateProductDetail(selectedSize, selectedColor);
@@ -54,6 +46,8 @@ export const useProductDetailLogic = (product: Product | undefined) => {
     const selectedVariant = product.variants?.find(
       (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
     );
+
+    console.log("[DEBUG] Biến thể được chọn khi thêm vào giỏ hàng:", selectedVariant);
 
     if (
       !selectedVariant ||
@@ -91,7 +85,6 @@ export const useProductDetailLogic = (product: Product | undefined) => {
       },
     };
 
-    console.log("--- [LOGIC V3] Dữ liệu gửi đi ---", payload);
     await addToCart(payload);
   };
 
