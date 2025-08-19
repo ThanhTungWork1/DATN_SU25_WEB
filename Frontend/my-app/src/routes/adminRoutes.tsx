@@ -11,6 +11,7 @@ import ProductDetail from "../pages/admin/products/ProductDetail";
 // THÊM MỚI: Import component CategoryList
 import CategoryList from "../pages/admin/categories/CategoryList";
 import CommentList from "../pages/admin/comments/CommentList";
+import BannerEdit from "../pages/admin/banners/BannerEdit";
 
 export const adminRoutes = (
   // Route chính cho admin, sử dụng AdminLayout làm cha
@@ -33,5 +34,7 @@ export const adminRoutes = (
     {/* THÊM MỚI: Route cho trang quản lý danh mục */}
     <Route path="categories" element={<CategoryList />} />
         <Route path="comments" element={<CommentList />} />
+        {/* Banners - Edit only */}
+        <Route path="banners/edit" element={<BannerEdit />} />
   </Route>
 );

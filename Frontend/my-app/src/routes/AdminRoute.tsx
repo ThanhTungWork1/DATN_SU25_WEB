@@ -16,6 +16,8 @@ import CategoryList from "../pages/admin/categories/CategoryList";
 import InventoryPage from "../pages/admin/inventory/InventoryPage";
 import VoucherPage from "../pages/admin/voucher/Voucher";
 import AdminLogin from "../pages/auth/adminLogin";
+import BannerEdit from "../pages/admin/banners/BannerEdit";
+import BannerList from "../pages/admin/banners/BannerList";
 
 const AdminRoute = () => {
   return (
@@ -44,6 +46,9 @@ const AdminRoute = () => {
           <Route path="categories" element={<CategoryList />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="voucher" element={<VoucherPage />} />
+          <Route path="banners" element={<BannerList />} />
+          {/* Banners - Edit only */}
+          <Route path="banners/edit" element={<BannerEdit />} />
         </Route>
       </Route>
     </Routes>

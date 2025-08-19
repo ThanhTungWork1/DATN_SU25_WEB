@@ -64,14 +64,19 @@ const ProductActions = ({
     console.log('quantity:', quantity);
     
     // Tạo object sản phẩm để truyền đến checkout
-    const selectedProduct = {
+    // Quan trọng: KHÔNG được gán variant_id = productId khi người dùng chưa chọn biến thể
+    // Thay vào đó: truyền product_id và chỉ kèm variant_id nếu thực sự có
+    const selectedProduct: any = {
       id: productId,
+      product_id: productId,
       name: productName,
       price: productPrice, // Giữ nguyên giá gốc
       quantity: quantity,
       image: productImage,
-      variant_id: variantId || productId
     };
+    if (typeof variantId === 'number' && !Number.isNaN(variantId)) {
+      selectedProduct.variant_id = variantId;
+    }
     
     const totalAmount = (productPrice * quantity);
     

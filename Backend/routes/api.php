@@ -105,6 +105,11 @@ Route::prefix('payments/vnpay')->group(function () {
     Route::get('/check-status', [VNPayController::class, 'checkStatus']); // Kiểm tra trạng thái giao dịch
 });
 
+// ========== Webhook ZaloPay (No Auth) ==========
+// ZaloPay server sẽ gọi trực tiếp vào endpoint này, không có Bearer token
+// Vì vậy KHÔNG được đặt sau middleware auth
+Route::post('/payments/zalopay/callback', [ZaloPayController::class, 'callback']);
+
 // ========== VNPay Alternative Aliases (to match VNPay portal configs) ==========
 // Nếu dashboard VNPay đang trỏ về /api/vnpay/return hoặc /api/vnpay/callback, map về cùng handler
 Route::prefix('vnpay')->group(function () {
@@ -141,6 +146,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
 
     Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
+
+    // Banners (Admin - only create)
+    Route::get('/banners', [BannerController::class, 'adminIndex']);
+    Route::post('/banners', [BannerController::class, 'store']);
+    Route::put('/banners/{id}', [BannerController::class, 'update']);
 });
 
 // ========== Authenticated Users ==========
@@ -210,7 +220,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::prefix('zalopay')->group(function () {
             Route::post('/create', [ZaloPayController::class, 'createOrder']);
-            Route::post('/callback', [ZaloPayController::class, 'callback']);
         });
 
         Route::prefix('vnpay')->group(function () {

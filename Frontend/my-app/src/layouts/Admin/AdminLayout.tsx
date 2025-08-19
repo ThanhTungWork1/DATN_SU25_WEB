@@ -10,6 +10,7 @@ import {
   ShoppingCartOutlined,
   ContactsOutlined,
   GiftOutlined, // Icon cho voucher
+  PictureOutlined,
 } from "@ant-design/icons";
 
 // Import logo và Ant Design CSS (nếu chưa được import ở main.tsx)
@@ -40,6 +41,8 @@ function SidebarMenu() {
                 ? "7"
                 : path.startsWith("/admin/contacts")
                   ? "8"
+                  : path.startsWith("/admin/banners")
+                    ? "9"
                   : "";
 
   return (
@@ -87,6 +90,11 @@ function SidebarMenu() {
           key: "8",
           icon: <ContactsOutlined />,
           label: <a href="/admin/contacts">Liên hệ</a>,
+        },
+        {
+          key: "9",
+          icon: <PictureOutlined />,
+          label: <a href="/admin/banners/edit">Banner</a>,
         },
       ]}
     />
