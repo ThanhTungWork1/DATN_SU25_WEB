@@ -89,8 +89,36 @@
 //     setSelectedWardCode("");
 //     setDistricts([]);
 //     setWards([]);
+
 //     const selectedProvince = provinces.find((p) => p.code.toString() === provinceId);
-//     setAddress((prev) => ({ ...prev, province: selectedProvince?.name || "", district: "", ward: "" }));
+//     const provinceName = selectedProvince?.name || "";
+
+//     setAddress((prev) => ({
+//       ...prev,
+//       province: provinceName,
+//       district: "",
+//       ward: "",
+//     }));
+
+//     // Tính phí vận chuyển khi tỉnh thay đổi
+//     if (provinceName) {
+//       try {
+//         const response = await axiosInstance.post<ShippingFeeResponse>(
+//           "/client/orders/calculate-shipping",
+//           {
+//             province_name: provinceName,
+//             total_amount: displayTotalAmount,
+//           }
+//         );
+//         setShippingFee(response.data.data.shipping_fee);
+//       } catch (error) {
+//         console.error("Lỗi tính phí vận chuyển:", error);
+//         setShippingFee(30000); // Reset về phí mặc định nếu lỗi
+//       }
+//     } else {
+//       setShippingFee(30000); // Reset về phí mặc định nếu không chọn tỉnh
+//     }
+
 //     if (provinceId) {
 //       try {
 //         const response = await axios.get<Province>(`https://provinces.open-api.vn/api/p/${provinceId}?depth=2`);
@@ -119,7 +147,7 @@
 //     setAddress((prev) => ({ ...prev, ward: selectedWard?.name || "" }));
 //   };
 
-//   const shippingFee = 30000;
+//   const [shippingFee, setShippingFee] = useState(30000);
 //   const finalAmount = displayTotalAmount + shippingFee - discountAmount;
 
 //   const handleValidateVoucher = async () => {
@@ -197,7 +225,7 @@
 //         // Add frontend-specific data
 //         address,
 //         paymentMethod,
-//                         items: (selectedProducts as Product[]).map((p: Product) => ({ ...p, name: p.name, image: p.image })),
+//         items: (selectedProducts as Product[]).map((p: Product) => ({ ...p, name: p.name, image: p.image })),
 //         customerName: user.name || user.username || "Khách hàng",
 //         customerPhone: user.phone || "",
 //         voucherCode: appliedVoucher?.code || null,
@@ -230,7 +258,7 @@
 //     selectedProvinceId, handleProvinceChange, selectedDistrictId, handleDistrictChange, selectedWardCode, handleWardChange,
 //     paymentMethod, setPaymentMethod, voucherCode, setVoucherCode, appliedVoucher, discountAmount,
 //     handleValidateVoucher, handleRemoveVoucher, isValidatingVoucher,
-//     finalAmount, displayTotalAmount, shippingFee,
+//     finalAmount, displayTotalAmount, shippingFee, setShippingFee,
 //     handleCheckout, showQRModal, setShowQRModal, processOrder,
 //     selectedProducts,
 //     user,
@@ -272,6 +300,12 @@ interface OrderApiResponse {
   };
 }
 
+interface ShippingFeeResponse {
+  data: {
+    shipping_fee: number;
+  };
+}
+
 export const useCheckout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -306,6 +340,7 @@ export const useCheckout = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
+  const [shippingFee, setShippingFee] = useState(30000); // Phí vận chuyển mặc định
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("user_token") || "";
@@ -317,7 +352,9 @@ export const useCheckout = () => {
           "https://provinces.open-api.vn/api/p/"
         );
         setProvinces(response.data);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Lỗi tải danh sách tỉnh/thành:", error);
+      }
     };
     fetchProvinces();
   }, []);
@@ -328,22 +365,53 @@ export const useCheckout = () => {
     setSelectedWardCode("");
     setDistricts([]);
     setWards([]);
+
     const selectedProvince = provinces.find(
       (p) => p.code.toString() === provinceId
     );
+    const provinceName = selectedProvince?.name || "";
+
     setAddress((prev) => ({
       ...prev,
-      province: selectedProvince?.name || "",
+      province: provinceName,
       district: "",
       ward: "",
     }));
+
+    // Tính phí vận chuyển khi tỉnh thay đổi
+    if (provinceName) {
+      try {
+        const payload = {
+          province_name: provinceName,
+          total_amount: displayTotalAmount,
+        };
+        console.log("Đang gửi yêu cầu tính phí vận chuyển:", payload);
+
+        const response = await axiosInstance.post<ShippingFeeResponse>(
+          "/client/orders/calculate-shipping",
+          payload
+        );
+
+        console.log("Phản hồi từ API phí vận chuyển:", response.data);
+        setShippingFee(response.data.data.shipping_fee);
+
+      } catch (error: any) {
+        console.error("Lỗi khi tính phí vận chuyển:", error.response?.data || error.message);
+        setShippingFee(30000); // Reset về phí mặc định nếu lỗi
+      }
+    } else {
+      setShippingFee(30000); // Reset về phí mặc định nếu không chọn tỉnh
+    }
+
     if (provinceId) {
       try {
         const response = await axios.get<Province>(
           `https://provinces.open-api.vn/api/p/${provinceId}?depth=2`
         );
         setDistricts(response.data.districts || []);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Lỗi tải danh sách quận/huyện:", error);
+      }
     }
   };
 
@@ -365,7 +433,9 @@ export const useCheckout = () => {
           `https://provinces.open-api.vn/api/d/${districtId}?depth=2`
         );
         setWards(response.data.wards || []);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Lỗi tải danh sách phường/xã:", error);
+      }
     }
   };
 
@@ -375,7 +445,6 @@ export const useCheckout = () => {
     setAddress((prev) => ({ ...prev, ward: selectedWard?.name || "" }));
   };
 
-  const shippingFee = 30000;
   const finalAmount = displayTotalAmount + shippingFee - discountAmount;
 
   const handleValidateVoucher = async () => {
@@ -385,7 +454,6 @@ export const useCheckout = () => {
     }
     setIsValidatingVoucher(true);
     try {
-      // Sử dụng displayTotalAmount vì nó đã được chuẩn hóa (nhân 1000 nếu cần)
       const response = await axiosInstance.post<VoucherApiResponse>(
         "/vouchers/validate",
         { code: voucherCode, order_amount: displayTotalAmount }
@@ -417,7 +485,9 @@ export const useCheckout = () => {
       for (const product of selectedProducts as Product[]) {
         await axiosInstance.delete(`/cart/items/${product.id}`);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Lỗi xóa sản phẩm trong giỏ hàng:", error);
+    }
   };
 
   const processOrder = async () => {
@@ -430,12 +500,13 @@ export const useCheckout = () => {
       shipping_name: user.name || user.username || "Khách hàng",
       note: `Ghi chú đơn hàng`,
       payment_method: paymentMethod,
+      province_name: address.province, // Gửi tên tỉnh/thành phố
       voucher_code: appliedVoucher?.code || null,
       discount_amount: discountAmount,
       items: (selectedProducts as Product[]).map((item) => ({
         variant_id: item.variant_id || 1,
         quantity: item.quantity,
-        price: item.price, // Gửi giá sản phẩm lên backend
+        price: item.price,
       })),
     };
 
@@ -447,12 +518,10 @@ export const useCheckout = () => {
       const orderId = orderResponse.data?.data?.id;
       if (!orderId) throw new Error(`Không nhận được ID đơn hàng`);
 
-      // Xử lý thanh toán VNPay
       if (paymentMethod === "VNPay") {
         try {
           const vnpayResponse = await createVNPayPayment(orderId, token);
           if ((vnpayResponse.data as any)?.payment_url) {
-            // Chuyển hướng đến trang thanh toán VNPay
             window.location.href = (vnpayResponse.data as any).payment_url;
             return;
           }
@@ -465,7 +534,6 @@ export const useCheckout = () => {
         }
       }
 
-      // Xử lý các phương thức thanh toán khác
       if (
         paymentMethod !== "Thanh toán khi nhận hàng (COD)" &&
         paymentMethod !== "VNPay"
@@ -526,13 +594,11 @@ export const useCheckout = () => {
       return;
     }
 
-    // Xử lý VNPay - chuyển hướng trực tiếp
     if (paymentMethod === "VNPay") {
       await processOrder();
       return;
     }
 
-    // Xử lý các phương thức thanh toán khác
     if (paymentMethod !== "Thanh toán khi nhận hàng (COD)") {
       setShowQRModal(true);
     } else {
@@ -564,6 +630,7 @@ export const useCheckout = () => {
     finalAmount,
     displayTotalAmount,
     shippingFee,
+    setShippingFee,
     handleCheckout,
     showQRModal,
     setShowQRModal,

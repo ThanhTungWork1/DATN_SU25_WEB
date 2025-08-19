@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ClientOrderController extends Controller
 {
@@ -137,6 +138,7 @@ class ClientOrderController extends Controller
             'customer_phone' => 'required|string|max:20',
             'note' => 'nullable|string|max:1000',
             'payment_method' => 'required|string|max:100',
+            'province_name' => 'required|string|max:255', // Thêm validation cho tỉnh/thành phố
             'voucher_code' => 'nullable|string|exists:vouchers,code',
             'items' => 'required|array|min:1',
             'items.*.variant_id' => 'required|exists:product_variants,id',
@@ -223,7 +225,21 @@ class ClientOrderController extends Controller
                 $voucher_id = $voucher->id;
             }
 
-            $shipping_fee = $total_amount >= 500000 ? 0 : 30000;
+            // === Logic tính phí vận chuyển theo miền ===
+            $shipping_fee = 30000; // Phí mặc định
+            $provinceName = $data['province_name'] ?? null;
+
+            if ($provinceName) {
+                $zone = DB::table('shipping_zones')->where('province_name', $provinceName)->first();
+                if ($zone) {
+                    $shipping_fee = $zone->shipping_fee;
+                }
+            }
+
+            // Miễn phí vận chuyển cho đơn hàng trên 500k
+            if ($total_amount >= 500000) {
+                $shipping_fee = 0;
+            }
             $final_amount = $total_amount + $shipping_fee - $discount_amount;
 
             $order = Order::create([
@@ -487,6 +503,57 @@ class ClientOrderController extends Controller
                     'last_page' => $orders->lastPage(),
                     'per_page' => $orders->perPage(),
                     'total' => $orders->total()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API tính toán phí vận chuyển real-time
+     */
+    public function calculateShippingFee(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'province_name' => 'required|string|max:255',
+            'total_amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'Dữ liệu không hợp lệ', 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $data = $validator->validated();
+            $total_amount = (float)$data['total_amount'];
+            $provinceName = $data['province_name'];
+
+            // Logic tính phí vận chuyển theo miền
+            $shipping_fee = 30000; // Phí mặc định
+
+            // Chuẩn hóa tên tỉnh/thành phố (loại bỏ "Tỉnh ", "Thành phố ") và tìm kiếm linh hoạt
+            $cleanedProvinceName = str_replace(['Tỉnh ', 'Thành phố '], '', $provinceName);
+
+            $zone = DB::table('shipping_zones')->where('province_name', 'LIKE', '%' . $cleanedProvinceName . '%')->first();
+
+            if ($zone) {
+                $shipping_fee = $zone->shipping_fee;
+            }
+
+            // Miễn phí vận chuyển cho đơn hàng trên 500k
+            if ($total_amount >= 500000) {
+                $shipping_fee = 0;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tính phí vận chuyển thành công',
+                'data' => [
+                    'shipping_fee' => $shipping_fee
                 ]
             ]);
         } catch (\Exception $e) {

@@ -163,6 +163,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/status/{status}', [ClientOrderController::class, 'getByStatus']);
         Route::get('/{id}', [ClientOrderController::class, 'show']);
         Route::post('/', [ClientOrderController::class, 'store']);
+        Route::post('/calculate-shipping', [ClientOrderController::class, 'calculateShippingFee']); // API tính phí ship
         Route::put('/{id}', [ClientOrderController::class, 'update']);
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
     });
