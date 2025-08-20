@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\{
     BannerController,
     CartController,
     CategoryController,
+    ChatbotController,
     ClientOrderController,
     ColorController,
     CommentController,
@@ -84,6 +85,9 @@ Route::post('/contact', [ContactController::class, 'store']);
 Route::get('/home-sections', [HomeSectionController::class, 'index']);
 Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
 Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
+
+// Chatbot API
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
 
 // ========== Webhook VNPay (No Auth) ==========
 Route::prefix('payments/vnpay')->group(function () {
@@ -187,6 +191,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [ClientOrderController::class, 'update']);
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
     });
+
+    // User profile update
+    Route::put('/users/{id}', [UserController::class, 'update']);
 
     // Orders cho admin
     Route::prefix('order')->group(function () {

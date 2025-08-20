@@ -6,17 +6,28 @@ import { TokenManager } from "../utils/tokenUtils";
 const useProfile = () => {
   return useMutation({
     mutationFn: async (updatedData: any) => {
-                  const token = TokenManager.getUserToken();
-      
+      const token = TokenManager.getUserToken();
+
       if (!token) {
         throw new Error("Bạn cần đăng nhập để cập nhật thông tin");
       }
 
       console.log("Đang cập nhật thông tin profile:", updatedData);
-      
-      // Gọi API /me để cập nhật thông tin của chính user đang đăng nhập
+
+      // Lấy user ID từ localStorage
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        throw new Error("Không tìm thấy thông tin user");
+      }
+
+      const user = JSON.parse(userData);
+      const userId = user.id;
+
+      console.log("User ID để cập nhật:", userId);
+
+      // Gọi API /users/{id} để cập nhật thông tin user
       const response = await axios.put(
-        `http://localhost:8000/api/me`,
+        `http://localhost:8000/api/users/${userId}`,
         updatedData,
         {
           headers: {
@@ -24,8 +35,15 @@ const useProfile = () => {
           },
         }
       );
-      
+
       console.log("Kết quả cập nhật profile:", response.data);
+
+      // Cập nhật localStorage với thông tin mới
+      if (response.data.data) {
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+        console.log("Đã cập nhật localStorage với thông tin mới");
+      }
+
       return response.data;
     },
   });
