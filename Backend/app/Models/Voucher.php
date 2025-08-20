@@ -23,7 +23,8 @@ class Voucher extends Model
         'min_order_amount',
         'max_usage',
         'used_count',
-        'discount_type'
+        'discount_type',
+        'quantity'
     ];
 
     protected $casts = [
@@ -165,11 +166,44 @@ class Voucher extends Model
      */
     public function calculateDiscount($orderAmount)
     {
-        if ($this->discount_type === 'percent') {
+        if ($this->discount_type === 'percentage') {
             $discount = $orderAmount * ($this->value / 100);
-            return min($discount, $this->max_value);
+            if ($this->max_value > 0) {
+                return min($discount, $this->max_value);
+            }
+            return $discount;
         }
 
-        return min($this->value, $this->max_value);
+        return $this->value;
+    }
+
+    /**
+     * Accessor for discount_type.
+     * Converts 'fixed' to 'amount' and 'percent' to 'percentage'.
+     */
+    public function getDiscountTypeAttribute($value)
+    {
+        if ($value === 'fixed') {
+            return 'amount';
+        }
+        if ($value === 'percent') {
+            return 'percentage';
+        }
+        return $value;
+    }
+
+    /**
+     * Mutator for discount_type.
+     * Converts 'amount' to 'fixed' and 'percentage' to 'percent' before saving.
+     */
+    public function setDiscountTypeAttribute($value)
+    {
+        if ($value === 'amount') {
+            $this->attributes['discount_type'] = 'fixed';
+        } elseif ($value === 'percentage') {
+            $this->attributes['discount_type'] = 'percent';
+        } else {
+            $this->attributes['discount_type'] = $value;
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Voucher;
+use App\Models\Order;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -20,6 +21,44 @@ class VoucherController extends Controller
             'message' => 'Vouchers retrieved successfully',
             'data' => $vouchers
         ], 200);
+    }
+
+    // GET /admin/vouchers/{id}/usage - Lấy chi tiết và lịch sử sử dụng voucher
+    public function usageDetails($id)
+    {
+        try {
+            $voucher = Voucher::find($id);
+
+            if (!$voucher) {
+                return response()->json(['status' => 'error', 'message' => 'Voucher not found'], 404);
+            }
+
+            // Lấy lịch sử sử dụng từ các đơn hàng
+            $usage_history = Order::where('voucher_id', $id)
+                ->with('user') // Eager load thông tin user
+                ->get()
+                ->map(function ($order) {
+                    return [
+                        'user_name' => $order->user ? $order->user->name : 'N/A',
+                        'user_email' => $order->user ? $order->user->email : 'N/A',
+                        'order_code' => $order->code,
+                        'discount_amount' => $order->discount_amount,
+                        'used_at' => $order->created_at->toDateTimeString(),
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Voucher details retrieved successfully',
+                'data' => [
+                    'voucher' => $voucher,
+                    'usage_history' => $usage_history,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching voucher usage details:', ['error' => $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => 'Internal Server Error'], 500);
+        }
     }
 
     // POST /api/vouchers/apply - Áp dụng voucher khi đặt hàng
@@ -146,7 +185,7 @@ class VoucherController extends Controller
                 'code' => 'required|string|max:50|unique:vouchers,code,' . $id,
                 'discount_type' => 'required|in:percentage,amount',
                 'value' => 'required|numeric|min:0',
-                'max_value' => 'nullable|numeric|min:0',
+                'max_value' => 'required_if:discount_type,percentage|numeric|min:0|nullable',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'min_order_amount' => 'nullable|numeric|min:0',
@@ -162,18 +201,20 @@ class VoucherController extends Controller
                 ], 422);
             }
 
-            $voucher->update([
-                'title' => $request->code,
-                'code' => $request->code,
-                'discount_type' => $request->discount_type,
-                'value' => $request->value,
-                'max_value' => $request->max_value,
-                'description' => $request->description ?? 'Voucher giảm giá',
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-                'min_order_amount' => $request->min_order_amount ?? 0,
-                'max_usage' => $request->max_usage,
+            $validatedData = $validator->validated();
+
+            // Nếu là giảm giá theo số tiền, gán max_value = value
+            if ($validatedData['discount_type'] === 'amount') {
+                $validatedData['max_value'] = $validatedData['value'];
+            }
+
+            $updateData = array_merge($validatedData, [
+                'title' => $validatedData['code'],
+                'description' => $validatedData['description'] ?? 'Voucher giảm giá',
+                'min_order_amount' => $validatedData['min_order_amount'] ?? 0,
             ]);
+
+            $voucher->update($updateData);
 
             return response()->json([
                 'status' => 'success',

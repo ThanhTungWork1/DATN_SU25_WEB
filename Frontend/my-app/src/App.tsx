@@ -18,7 +18,13 @@ function App() {
         <Route path="/*" element={<ClientRoute />} />
         <Route path="/admin/*" element={<AdminRoute />} />
       </Routes>
-      <Toaster position="top-right" richColors />
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        duration={4000}
+        style={{ zIndex: 9999 }}
+      />
     </WishlistProvider>
   );
 }

@@ -10,16 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('home_section_products', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('home_section_id')->constrained('home_sections')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('sort_order')->default(0);
-            $table->timestamps();
+        if (!Schema::hasTable('home_section_products')) {
+            Schema::create('home_section_products', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('home_section_id')->constrained('home_sections')->onDelete('cascade');
+                $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+                $table->integer('sort_order')->default(0);
+                $table->timestamps();
 
-            $table->unique(['home_section_id', 'product_id']);
-        });
-
+                $table->unique(['home_section_id', 'product_id']);
+            });
+        }
     }
 
     /**

@@ -2,8 +2,7 @@ export interface Voucher {
   id: number;
   title: string;
   code: string;
-  value?: number;
-  discount_amount?: number;
+  value: number;
   max_value: number;
   quantity: number;
   description: string;
@@ -14,10 +13,9 @@ export interface Voucher {
   min_order_amount: number;
   max_usage: number;
   used_count: number;
-  discount_type: "fixed" | "percent" | "percentage" | "amount";
+  discount_type: "amount" | "percentage";
   created_at: string;
   updated_at: string;
-  max_discount_amount?: number;
 
   // Computed properties from backend
   status_label?: string;

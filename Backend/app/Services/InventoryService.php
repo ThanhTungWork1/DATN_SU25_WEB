@@ -36,7 +36,7 @@ class InventoryService
             'total_products' => $totalProducts,
             'low_stock_products' => $lowStockProducts,
             'out_of_stock_products' => $outOfStockProducts,
-            'total_value' => $totalValue * 1000, // Convert to VND
+            'total_value' => $totalValue, // Total value in VND
         ];
     }
 
@@ -78,7 +78,7 @@ class InventoryService
                     'stock' => $variant->stock,
                     'stock_reserved' => $variant->stock_reserved,
                     'stock_available' => $variant->stock_available,
-                    'price' => ($product->price ?? 0) * 1000, // Convert to VND
+                    'price' => ($product->price ?? 0), // Price in VND
                 ];
             });
 
@@ -89,7 +89,7 @@ class InventoryService
                 'name' => $product->name,
                 'image' => $product->image_url ?? 'https://via.placeholder.com/60x60',
                 'category' => $product->category->name ?? 'N/A',
-                'price' => ($product->price ?? 0) * 1000, // Convert to VND
+                'price' => ($product->price ?? 0), // Price in VND
                 'variants' => $variants,
                 'total_stock' => $product->total_available_stock,
                 'min_stock' => $product->min_available_stock,
@@ -208,7 +208,7 @@ class InventoryService
                         'size_name' => $variant->size->name ?? 'N/A',
                         'color_name' => $variant->color->name ?? 'N/A',
                         'stock' => $variant->stock_available,
-                        'price' => ($product->price ?? 0) * 1000, // Convert to VND
+                        'price' => ($product->price ?? 0), // Price in VND
                     ];
                 })
                 ->toArray();

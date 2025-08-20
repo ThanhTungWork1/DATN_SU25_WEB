@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  getOrders,
-  updateOrder,
-  getOrderStatistics,
-  exportOrders,
-} from "../../../api/order";
-import { Order } from "../../../types/ProductType"; 
+import { getOrders, updateOrder, getOrderStatistics } from "../../../api/order";
+import { Order } from "../../../types/ProductType";
 import {
   Table,
   Button,
@@ -23,21 +18,24 @@ import {
   Tooltip,
 } from "antd";
 import type { TableProps } from "antd";
-import { 
-    ORDER_STATUS_OPTIONS, 
+import {
+  ORDER_STATUS_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
   getPaymentStatusDisplayText,
-} from "../../../utils/orderStatus"; 
-import { DownloadOutlined, ReloadOutlined, EyeOutlined } from "@ant-design/icons";
+} from "../../../utils/orderStatus";
+import { ReloadOutlined, EyeOutlined } from "@ant-design/icons";
 import CancelledOrderPaymentStatus from "../../../components/CancelledOrderPaymentStatus";
-import { formatCurrency, formatCurrencyWithColor } from "../../../utils/currencyFormatter";
+import {
+  formatCurrency,
+  formatCurrencyWithColor,
+} from "../../../utils/currencyFormatter";
 import { formatDateVietnam } from "../../../utils/dateFormatter";
-import { 
-    canChangePaymentStatus, 
-    canChangeOrderStatus, 
-    getAllowedPaymentStatuses, 
-    getAllowedOrderStatuses,
-    shouldAutoUpdatePayment,
+import {
+  canChangePaymentStatus,
+  canChangeOrderStatus,
+  getAllowedPaymentStatuses,
+  getAllowedOrderStatuses,
+  shouldAutoUpdatePayment,
 } from "../../../utils/orderBusinessLogic";
 
 const { Title } = Typography;
@@ -46,40 +44,40 @@ const { Option } = Select;
 
 // Định nghĩa kiểu cho phản hồi phân trang từ Laravel
 interface PaginatedResponse<T> {
-    current_page: number;
-    data: T[];
-    total: number;
-    per_page: number;
+  current_page: number;
+  data: T[];
+  total: number;
+  per_page: number;
 }
 
 export default function OrderList() {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [paymentFilter, setPaymentFilter] = useState<string>("");
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [statistics, setStatistics] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(false);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [pagination, setPagination] = useState({
-        currentPage: 1,
-        pageSize: 15, // Mặc định khớp với backend
-        total: 0,
-    });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 15, // Mặc định khớp với backend
+    total: 0,
+  });
 
-    // Sử dụng Debounce để tránh gọi API liên tục khi người dùng đang gõ
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 500); // Gửi request sau 500ms ngừng gõ
+  // Sử dụng Debounce để tránh gọi API liên tục khi người dùng đang gõ
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Gửi request sau 500ms ngừng gõ
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchTerm]);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   const fetchData = async (
     page = 1,
@@ -89,8 +87,8 @@ export default function OrderList() {
     dateFrom = "",
     dateTo = ""
   ) => {
-        setLoading(true);
-        try {
+    setLoading(true);
+    try {
       const params: any = { page, search };
       if (status) params.status = status;
       if (isPaid !== "") params.is_paid = isPaid;
@@ -98,22 +96,22 @@ export default function OrderList() {
       if (dateTo) params.date_to = dateTo;
 
       const res = await getOrders(params);
-            
-            const paginatedData: PaginatedResponse<Order> = res.data;
-            
-            setOrders(paginatedData.data);
-            setPagination({
-                currentPage: paginatedData.current_page,
-                pageSize: paginatedData.per_page,
-                total: paginatedData.total,
-            });
-        } catch (error) {
-            message.error("Không thể tải danh sách đơn hàng.");
-            console.error("Fetch orders error:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+
+      const paginatedData: PaginatedResponse<Order> = res.data;
+
+      setOrders(paginatedData.data);
+      setPagination({
+        currentPage: paginatedData.current_page,
+        pageSize: paginatedData.per_page,
+        total: paginatedData.total,
+      });
+    } catch (error) {
+      message.error("Không thể tải danh sách đơn hàng.");
+      console.error("Fetch orders error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchStatistics = async () => {
     setStatsLoading(true);
@@ -125,252 +123,227 @@ export default function OrderList() {
     } finally {
       setStatsLoading(false);
     }
-    };
+  };
 
-    const columns: TableProps<Order>['columns'] = [
-        { title: "Mã đơn", dataIndex: "id", key: "id", render: (text) => `#${text}` },
-        { 
-            title: "Khách hàng", 
-            dataIndex: "customer_name", 
-            key: "customer_name",
-            render: (text, record) => {
-                console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
-                console.log("🔍 [FRONTEND DEBUG] Customer name:", text);
-                console.log("🔍 [FRONTEND DEBUG] Full order record:", record);
-                return text || "Không có tên";
-            }
-        },
-        { title: "Ngày đặt", dataIndex: "created_at", key: "created_at", render: (text) => new Date(text).toLocaleDateString() },
-        { title: "Số lượng", dataIndex: "total_quantity", key: "total_quantity", render: (qty) => `${qty} Sản phẩm` },
-        { 
-            title: "Tổng tiền", 
-            key: "total_price", 
-            render: (_, record) => {
-                const finalAmount = record.final_amount || (record.total_amount + record.shipping_fee - (record.discount_amount || 0));
-                // Dùng formatter để tự động nhân 1000 và format VND
-                return formatCurrency(finalAmount);
-            }
-        },
-        {
-            title: "Trạng thái ĐH",
-            dataIndex: "status",
-            key: "status",
-            render: (status, record) => {
-                // Lấy danh sách trạng thái được phép (có disable workflow)
-                const allowedStatuses = getAllowedOrderStatuses(
-                    record.is_paid, 
-                    record.payment_method || 'COD',
-                    record.status  // Pass current status để disable previous
-                );
+  const columns: TableProps<Order>["columns"] = [
+    {
+      title: "Mã đơn",
+      dataIndex: "id",
+      key: "id",
+      render: (text) => `#${text}`,
+    },
+    {
+      title: "Khách hàng",
+      dataIndex: "customer_name",
+      key: "customer_name",
+      render: (text, record) => {
+        console.log("🔍 [FRONTEND DEBUG] Order ID:", record.id);
+        console.log("🔍 [FRONTEND DEBUG] Customer name:", text);
+        console.log("🔍 [FRONTEND DEBUG] Full order record:", record);
+        return text || "Không có tên";
+      },
+    },
+    {
+      title: "Ngày đặt",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text) => new Date(text).toLocaleDateString(),
+    },
+    {
+      title: "Số lượng",
+      dataIndex: "total_quantity",
+      key: "total_quantity",
+      render: (qty) => `${qty} Sản phẩm`,
+    },
+    {
+      title: "Tổng tiền",
+      key: "total_price",
+      render: (_, record) => {
+        const finalAmount =
+          record.final_amount ||
+          record.total_amount +
+            record.shipping_fee -
+            (record.discount_amount || 0);
+        // Dùng formatter để tự động nhân 1000 và format VND
+        return formatCurrency(finalAmount);
+      },
+    },
+    {
+      title: "Trạng thái ĐH",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) => {
+        // Lấy danh sách trạng thái được phép (có disable workflow)
+        const allowedStatuses = getAllowedOrderStatuses(
+          record.is_paid,
+          record.payment_method || "COD",
+          record.status // Pass current status để disable previous
+        );
 
-                return (
-                    <Select
-                        value={status} 
-                        style={{ width: 150 }}
-                        onChange={async (newStatus) => {
-                            // Validate business logic trước khi update
-                            const validation = canChangeOrderStatus(
-                                record.status, 
-                                record.is_paid, 
-                                newStatus, 
-                                record.payment_method || 'COD'
-                            );
-                            
-                            if (!validation.allowed) {
-                                message.error(validation.reason);
-                                return;
-                            }
-                            
-                            // Check auto-update payment status
-                            const autoPayment = shouldAutoUpdatePayment(
-                                record.status,
-                                newStatus,
-                                record.payment_method || 'COD'
-                            );
-                            
-                            // Update order status
-                            await handleUpdateStatus(record.id, "status", newStatus);
-                            
-                            // Auto-update payment status if needed
-                            if (autoPayment.shouldUpdate) {
-                                setTimeout(async () => {
-                                    await handleUpdateStatus(record.id, "is_paid", autoPayment.newPaymentStatus);
-                                    message.success(autoPayment.reason);
-                                }, 500); // Delay để order status update trước
-                            }
-                        }}
-                    >
-                        {ORDER_STATUS_OPTIONS.map((option) => (
-                            <Option 
-                                key={option.value} 
-                                value={option.value}
-                                disabled={!allowedStatuses.includes(option.value)}
-                                style={{
-                                    color: !allowedStatuses.includes(option.value) ? '#ccc' : 'inherit'
-                                }}
-                            >
-                                {option.label}
-                                {!allowedStatuses.includes(option.value) && ' (Không khả dụng)'}
-                            </Option>
-                        ))}
-                    </Select>
-                );
-            }
-        },
-        {
-            title: "Trạng thái TT",
-            dataIndex: "is_paid",
-            key: "is_paid",
-            render: (is_paid, record) => {
-                // Nếu là đơn đã huỷ, hiển thị logic chuyên biệt
-                if (record.status === 'cancelled') {
-                    return (
-                        <CancelledOrderPaymentStatus 
-                            isPaid={is_paid} 
-                            paymentMethod={record.payment_method || 'COD'} 
-                        />
-                    );
-                }
+        return (
+          <Select
+            value={status}
+            style={{ width: 150 }}
+            onChange={async (newStatus) => {
+              // Validate business logic trước khi update
+              const validation = canChangeOrderStatus(
+                record.status,
+                record.is_paid,
+                newStatus,
+                record.payment_method || "COD"
+              );
 
-                // Các trạng thái khác: giữ nguyên logic cũ
-                const allowedPaymentStatuses = getAllowedPaymentStatuses(record.status, record.payment_method || 'COD');
-                const displayValue = getPaymentStatusDisplayText(is_paid);
+              if (!validation.allowed) {
+                message.error(validation.reason);
+                return;
+              }
 
-                return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span 
-                            style={{ 
-                                padding: '4px 8px',
-                                borderRadius: 4,
-                                backgroundColor: is_paid ? '#f6ffed' : '#fff2e8',
-                                color: is_paid ? '#52c41a' : '#fa8c16',
-                                border: `1px solid ${is_paid ? '#b7eb8f' : '#ffbb96'}`,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                minWidth: 100,
-                                textAlign: 'center'
-                            }}
-                        >
-                            {displayValue}
-                        </span>
-                        <Select
-                            value={null}
-                            placeholder="Thay đổi"
-                            style={{ width: 100 }}
-                            size="small"
-                            onChange={(newPaymentStatus) => {
-                                const validation = canChangePaymentStatus(
-                                    record.status, 
-                                    record.is_paid, 
-                                    newPaymentStatus, 
-                                    record.payment_method || 'COD'
-                                );
-                                if (!validation.allowed) {
-                                    message.error(validation.reason);
-                                    return;
-                                }
-                                handleUpdateStatus(record.id, "is_paid", newPaymentStatus);
-                            }}
-                            allowClear
-                        >
-                            {PAYMENT_STATUS_OPTIONS.map((option) => (
-                                <Option 
-                                    key={option.value} 
-                                    value={option.value}
-                                    disabled={!allowedPaymentStatuses.includes(option.value) || option.value === is_paid}
-                                    style={{
-                                        color: (!allowedPaymentStatuses.includes(option.value) || option.value === is_paid) ? '#ccc' : 'inherit'
-                                    }}
-                                >
-                                    {option.label}
-                                    {!allowedPaymentStatuses.includes(option.value) && ' (Không khả dụng)'}
-                                    {option.value === is_paid && ' (Hiện tại)'}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
-                );
-            }
-        },
-        {
-            title: "Hành động",
-            key: "action",
-            align: "center",
-            render: (_, record) => (
-                <Space>
-                    <Tooltip title="Xem chi tiết">
-                        <Button
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            size="small"
-                            onClick={() => navigate(`/admin/orders/detail/${record.id}`)}
-                        />
-                    </Tooltip>
-                </Space>
-            ),
+              // Check auto-update payment status
+              const autoPayment = shouldAutoUpdatePayment(
+                record.status,
+                newStatus,
+                record.payment_method || "COD"
+              );
+
+              // Update order status
+              await handleUpdateStatus(record.id, "status", newStatus);
+
+              // Auto-update payment status if needed
+              if (autoPayment.shouldUpdate) {
+                setTimeout(async () => {
+                  await handleUpdateStatus(
+                    record.id,
+                    "is_paid",
+                    autoPayment.newPaymentStatus
+                  );
+                  message.success(autoPayment.reason);
+                }, 500); // Delay để order status update trước
+              }
+            }}
+          >
+            {ORDER_STATUS_OPTIONS.map((option) => (
+              <Option
+                key={option.value}
+                value={option.value}
+                disabled={!allowedStatuses.includes(option.value)}
+                style={{
+                  color: !allowedStatuses.includes(option.value)
+                    ? "#ccc"
+                    : "inherit",
+                }}
+              >
+                {option.label}
+                {!allowedStatuses.includes(option.value) && " (Không khả dụng)"}
+              </Option>
+            ))}
+          </Select>
+        );
+      },
+    },
+    {
+      title: "Trạng thái TT",
+      dataIndex: "is_paid",
+      key: "is_paid",
+      render: (is_paid, record) => {
+        // Nếu là đơn đã huỷ, hiển thị logic chuyên biệt
+        if (record.status === "cancelled") {
+          return (
+            <CancelledOrderPaymentStatus
+              isPaid={is_paid}
+              paymentMethod={record.payment_method || "COD"}
+            />
+          );
         }
-    ];
 
-  const handleExport = async () => {
-    try {
-      const params: any = {};
-      if (debouncedSearchTerm) params.search = debouncedSearchTerm;
-      if (statusFilter) params.status = statusFilter;
-      if (paymentFilter !== "") params.is_paid = paymentFilter;
+        // Các trạng thái khác: giữ nguyên logic cũ
+        const allowedPaymentStatuses = getAllowedPaymentStatuses(
+          record.status,
+          record.payment_method || "COD"
+        );
+        const displayValue = getPaymentStatusDisplayText(is_paid);
 
-      const res = await exportOrders(params);
-
-      // Tạo download link
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `orders_${new Date().toISOString().split("T")[0]}.csv`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      message.success("Xuất file thành công!");
-    } catch (error) {
-      message.error("Không thể xuất file.");
-      console.error("Export error:", error);
-    }
-  };
-
-  // Fix payment status cho các orders delivered nhưng chưa paid
-  const handleFixPaymentStatus = async () => {
-    try {
-      const ordersToFix = orders.filter(order => 
-        (order.status === 'delivered' || order.status === 'completed') && 
-        !order.is_paid &&
-        order.payment_method === 'COD'
-      );
-      
-      if (ordersToFix.length === 0) {
-        message.info('Không có đơn hàng nào cần fix payment status');
-        return;
-      }
-
-      message.loading('Đang cập nhật payment status...', 0);
-      
-      for (const order of ordersToFix) {
-        await handleUpdateStatus(order.id, "is_paid", true);
-      }
-      
-      message.destroy();
-      message.success(`Đã cập nhật payment status cho ${ordersToFix.length} đơn hàng`);
-      
-      // Reload data
-      fetchData(pagination.currentPage, debouncedSearchTerm, statusFilter, paymentFilter);
-      
-    } catch (error) {
-      message.destroy();
-      message.error('Có lỗi xảy ra khi cập nhật payment status');
-      console.error('Fix payment status error:', error);
-    }
-  };
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                padding: "4px 8px",
+                borderRadius: 4,
+                backgroundColor: is_paid ? "#f6ffed" : "#fff2e8",
+                color: is_paid ? "#52c41a" : "#fa8c16",
+                border: `1px solid ${is_paid ? "#b7eb8f" : "#ffbb96"}`,
+                fontSize: 12,
+                fontWeight: 500,
+                minWidth: 100,
+                textAlign: "center",
+              }}
+            >
+              {displayValue}
+            </span>
+            <Select
+              value={null}
+              placeholder="Thay đổi"
+              style={{ width: 100 }}
+              size="small"
+              onChange={(newPaymentStatus) => {
+                const validation = canChangePaymentStatus(
+                  record.status,
+                  record.is_paid,
+                  newPaymentStatus,
+                  record.payment_method || "COD"
+                );
+                if (!validation.allowed) {
+                  message.error(validation.reason);
+                  return;
+                }
+                handleUpdateStatus(record.id, "is_paid", newPaymentStatus);
+              }}
+              allowClear
+            >
+              {PAYMENT_STATUS_OPTIONS.map((option) => (
+                <Option
+                  key={option.value}
+                  value={option.value}
+                  disabled={
+                    !allowedPaymentStatuses.includes(option.value) ||
+                    option.value === is_paid
+                  }
+                  style={{
+                    color:
+                      !allowedPaymentStatuses.includes(option.value) ||
+                      option.value === is_paid
+                        ? "#ccc"
+                        : "inherit",
+                  }}
+                >
+                  {option.label}
+                  {!allowedPaymentStatuses.includes(option.value) &&
+                    " (Không khả dụng)"}
+                  {option.value === is_paid && " (Hiện tại)"}
+                </Option>
+              ))}
+            </Select>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="primary"
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => navigate(`/admin/orders/detail/${record.id}`)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
 
   // Gọi lại API mỗi khi từ khóa tìm kiếm (đã được debounce) hoặc trang thay đổi
   useEffect(() => {
@@ -426,9 +399,9 @@ export default function OrderList() {
     }));
   };
 
-    return (
-        <div>
-            <Title level={3}>Quản lý đơn hàng</Title>
+  return (
+    <div>
+      <Title level={3}>Quản lý đơn hàng</Title>
 
       {/* Statistics Cards */}
       {statistics && (
@@ -505,17 +478,21 @@ export default function OrderList() {
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Tìm kiếm</div>
-            <Search 
+            <div style={{ marginBottom: 4, fontWeight: 500, color: "#333" }}>
+              Tìm kiếm
+            </div>
+            <Search
               placeholder="Tìm theo order code, tên, email, SĐT..."
-                onChange={(e) => setSearchTerm(e.target.value)}
-                enterButton 
+              onChange={(e) => setSearchTerm(e.target.value)}
+              enterButton
             />
           </div>
         </Col>
         <Col span={4}>
           <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Trạng thái đơn hàng</div>
+            <div style={{ marginBottom: 4, fontWeight: 500, color: "#333" }}>
+              Trạng thái đơn hàng
+            </div>
             <Select
               placeholder="Chọn trạng thái"
               style={{ width: "100%" }}
@@ -533,7 +510,9 @@ export default function OrderList() {
         </Col>
         <Col span={4}>
           <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Trạng thái thanh toán</div>
+            <div style={{ marginBottom: 4, fontWeight: 500, color: "#333" }}>
+              Trạng thái thanh toán
+            </div>
             <Select
               placeholder="Chọn trạng thái"
               style={{ width: "100%" }}
@@ -551,7 +530,9 @@ export default function OrderList() {
         </Col>
         <Col span={6}>
           <div>
-            <div style={{ marginBottom: 4, fontWeight: 500, color: '#333' }}>Khoảng thời gian</div>
+            <div style={{ marginBottom: 4, fontWeight: 500, color: "#333" }}>
+              Khoảng thời gian
+            </div>
             <DatePicker.RangePicker
               style={{ width: "100%" }}
               placeholder={["Từ ngày", "Đến ngày"]}
@@ -583,35 +564,23 @@ export default function OrderList() {
                   }}
                 />
               </Tooltip>
-              <Tooltip title="Xuất file CSV">
-                <Button icon={<DownloadOutlined />} onClick={handleExport} />
-              </Tooltip>
-              <Tooltip title="Fix payment status cho orders đã giao hàng">
-                <Button 
-                  type="dashed" 
-                  onClick={handleFixPaymentStatus}
-                  style={{ color: '#faad14', borderColor: '#faad14' }}
-                >
-                  Fix Payment
-                </Button>
-              </Tooltip>
             </Space>
           </div>
         </Col>
       </Row>
 
-            <Table 
-                columns={columns} 
-                dataSource={orders} 
-                rowKey="id" 
-                loading={loading} 
-                pagination={{
-                    current: pagination.currentPage,
-                    pageSize: pagination.pageSize,
-                    total: pagination.total,
-                }}
-                onChange={handleTableChange} 
-            />
-        </div>
-    );
+      <Table
+        columns={columns}
+        dataSource={orders}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: pagination.currentPage,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+        }}
+        onChange={handleTableChange}
+      />
+    </div>
+  );
 }

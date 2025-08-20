@@ -121,6 +121,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
     // Home Sections
+    Route::get('home-sections', [HomeSectionController::class, 'adminIndex']);
     Route::apiResource('home-sections', HomeSectionController::class)->only(['store', 'update', 'destroy']);
 
     Route::prefix('home-section-products')->group(function () {
@@ -128,7 +129,19 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
         Route::delete('/{section_id}/product/{product_id}', [HomeSectionProductController::class, 'destroy']);
     });
 
+    // Home Section Products
+    Route::get('home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
+    Route::post('home-sections/{id}/products', [HomeSectionProductController::class, 'store']);
+    Route::delete('home-sections/{section_id}/products/{product_id}', [HomeSectionProductController::class, 'destroy']);
+
     // Inventory
+    Route::prefix('inventory')->group(function () {
+        Route::get('/stats', [\App\Http\Controllers\Admin\InventoryController::class, 'stats']);
+        Route::get('/list', [\App\Http\Controllers\Admin\InventoryController::class, 'list']);
+        Route::get('/low-stock-alerts', [\App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts']);
+        Route::post('/update-stock-for-order', [\App\Http\Controllers\Admin\InventoryController::class, 'updateStockForOrder']);
+    });
+
     Route::prefix('inventories')->group(function () {
         Route::post('/import', [InventoryController::class, 'import']);
         Route::post('/export', [InventoryController::class, 'export']);

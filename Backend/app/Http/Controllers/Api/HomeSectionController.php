@@ -14,6 +14,23 @@ class HomeSectionController extends Controller
         return HomeSection::where('status', true)->get();
     }
 
+    // GET /api/admin/home-sections (admin) - trả về tất cả sections
+    public function adminIndex()
+    {
+        $sections = HomeSection::with('products')->get();
+        
+        return response()->json([
+            'sections' => $sections
+        ]);
+    }
+
+    // GET /api/home-sections/{id} (public)
+    public function show($id)
+    {
+        $section = HomeSection::with('products')->findOrFail($id);
+        return response()->json($section);
+    }
+
     // POST /api/admin/home-sections (admin)
     public function store(Request $request)
     {
@@ -35,10 +52,10 @@ class HomeSectionController extends Controller
         $section = HomeSection::findOrFail($id);
 
         $data = $request->validate([
-            'name' => 'required|unique:home_sections,name,' . $id,
-            'title' => 'required|string|max:255',
+            'name' => 'sometimes|required|unique:home_sections,name,' . $id,
+            'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'boolean'
+            'status' => 'sometimes|boolean'
         ]);
 
         $section->update($data);

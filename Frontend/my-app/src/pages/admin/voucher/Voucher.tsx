@@ -33,7 +33,7 @@ const VoucherPage = () => {
     end_date: "",
     min_order_amount: 0,
     max_usage: 1,
-    discount_type: "fixed" as "fixed" | "percent",
+    discount_type: "amount" as "amount" | "percentage",
     max_discount_amount: 0, // thêm trường giảm tối đa
     description: "",
   });
@@ -165,16 +165,16 @@ const VoucherPage = () => {
     try {
       const payload = {
         code: form.code.trim(),
-        discount_amount: Number(form.discount_amount),
+        value: Number(form.discount_amount), // Sửa thành `value`
         start_date: form.start_date,
         end_date: form.end_date,
         min_order_amount: Number(form.min_order_amount) || 0,
         max_usage: Number(form.max_usage) || 1,
-        discount_type: String(form.discount_type).toLowerCase(), // ✅ Ensure string và lowercase
-        max_discount_amount:
-          form.discount_type === "percent"
+        discount_type: form.discount_type, // Giữ nguyên giá trị `amount` hoặc `percentage`
+        max_value:
+          form.discount_type === "percentage"
             ? Number(form.max_discount_amount) || 0
-            : undefined,
+            : undefined, // Sửa thành `max_value`
         description: form.description || "",
       };
 
@@ -191,7 +191,7 @@ const VoucherPage = () => {
       );
 
       // 🔍 Test validation trước khi gửi
-      const validTypes = ["fixed", "percent"];
+      const validTypes: ("amount" | "percentage")[] = ["amount", "percentage"];
       if (!validTypes.includes(payload.discount_type)) {
         message.error(
           `Invalid discount_type: "${payload.discount_type}". Expected: ${validTypes.join(" or ")}`
@@ -253,7 +253,7 @@ const VoucherPage = () => {
       end_date: "",
       min_order_amount: 0,
       max_usage: 1,
-      discount_type: "fixed",
+      discount_type: "amount",
       max_discount_amount: 0,
       description: "",
     });
@@ -264,14 +264,13 @@ const VoucherPage = () => {
   const handleEdit = (voucher: Voucher) => {
     setForm({
       code: voucher.code,
-      discount_amount: voucher.value || voucher.discount_amount || 0,
+      discount_amount: voucher.value || 0,
       start_date: voucher.start_date?.split("T")[0] || "",
       end_date: (voucher.end_date || voucher.expiry_date)?.split("T")[0] || "",
       min_order_amount: voucher.min_order_amount || 0,
       max_usage: voucher.max_usage || 1,
-      discount_type: voucher.discount_type as "fixed" | "percent",
-      max_discount_amount:
-        voucher.max_value || voucher.max_discount_amount || 0,
+      discount_type: voucher.discount_type,
+      max_discount_amount: voucher.max_value || 0,
       description: voucher.description || "",
     });
     setIsEditing(true);
@@ -414,7 +413,7 @@ const VoucherPage = () => {
           </div>
           <div className="form-group">
             <label>
-              {form.discount_type === "fixed"
+              {form.discount_type === "amount"
                 ? "Số tiền giảm *"
                 : "Phần trăm giảm *"}
             </label>
@@ -423,28 +422,28 @@ const VoucherPage = () => {
                 type="text"
                 name="discount_amount"
                 value={
-                  form.discount_type === "fixed"
+                  form.discount_type === "amount"
                     ? formatCurrency(form.discount_amount)
                     : form.discount_amount
                 }
                 onChange={
-                  form.discount_type === "fixed"
+                  form.discount_type === "amount"
                     ? handleCurrencyChange
                     : handleInputChange
                 }
                 placeholder={
-                  form.discount_type === "fixed" ? "VD: 50000" : "VD: 10 (%)"
+                  form.discount_type === "amount" ? "VD: 50000" : "VD: 10 (%)"
                 }
                 required
               />
               <span className="currency-label">
-                {form.discount_type === "fixed" ? "₫" : "%"}
+                {form.discount_type === "amount" ? "₫" : "%"}
               </span>
             </div>
           </div>
         </div>
 
-        {form.discount_type === "percent" && (
+        {form.discount_type === "percentage" && (
           <div className="form-row">
             <div className="form-group">
               <label>Giảm tối đa (₫) *</label>
@@ -528,8 +527,8 @@ const VoucherPage = () => {
               onChange={handleInputChange}
               required
             >
-              <option value="fixed">Giảm theo tiền (₫)</option>
-              <option value="percent">Giảm theo phần trăm (%)</option>
+              <option value="amount">Giảm theo tiền (₫)</option>
+              <option value="percentage">Giảm theo phần trăm (%)</option>
             </select>
           </div>
         </div>
@@ -579,9 +578,9 @@ const VoucherPage = () => {
               <tr key={v.id}>
                 <td>{v.code}</td>
                 <td>
-                  {v.discount_type === "fixed"
-                    ? `${(v.value || v.discount_amount || 0).toLocaleString()}₫`
-                    : `${v.value || v.discount_amount || 0}% (Tối đa ${(v.max_value || v.max_discount_amount || 0)?.toLocaleString()}₫)`}
+                  {v.discount_type === "amount"
+                    ? `${(v.value || 0).toLocaleString()}₫`
+                    : `${v.value || 0}% (Tối đa ${(v.max_value || 0)?.toLocaleString()}₫)`}
                 </td>
                 <td>
                   {v.min_order_amount > 0

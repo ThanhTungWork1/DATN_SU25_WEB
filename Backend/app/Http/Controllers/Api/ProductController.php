@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\OrderItem;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -297,26 +298,113 @@ class ProductController extends Controller
         }
     }
 
-    public function getStatistics(Request $request, $id)
+        public function getStatistics(Request $request, $id)
     {
         try {
-            $product = Product::with('variants')->findOrFail($id);
+            $product = Product::with(['variants.color', 'variants.size'])->findOrFail($id);
             $variantIds = $product->variants->pluck('id');
 
-            $stats = OrderItem::whereIn('variant_id', $variantIds)
+            // Base query
+            $query = OrderItem::whereIn('variant_id', $variantIds)
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                ->where('orders.status', 'delivered') // Chỉ tính các đơn hàng đã giao thành công
-                ->selectRaw('
-                    COUNT(DISTINCT order_items.order_id) as total_orders,
-                    SUM(order_items.quantity * order_items.price) as total_revenue,
-                    SUM(order_items.quantity) as total_quantity_sold
-                ')
-                ->first();
+                ->where('orders.status', 'delivered');
+
+            // Date range filtering
+            $period = $request->input('period', 'month');
+            $startDate = null;
+            $endDate = Carbon::now()->endOfDay();
+
+            switch ($period) {
+                case 'week':
+                    $startDate = Carbon::now()->startOfWeek();
+                    break;
+                case 'quarter':
+                    $startDate = Carbon::now()->startOfQuarter();
+                    break;
+                case 'custom':
+                    $request->validate([
+                        'start_date' => 'required|date_format:Y-m-d',
+                        'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
+                    ]);
+                    $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+                    $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+                    break;
+                case 'month':
+                default:
+                    $startDate = Carbon::now()->startOfMonth();
+                    break;
+            }
+
+            if ($startDate) {
+                $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+            }
+
+            // --- General Statistics ---
+            $statsQuery = clone $query;
+            $stats = $statsQuery->selectRaw('
+                COUNT(DISTINCT order_items.order_id) as total_orders,
+                SUM(order_items.quantity * order_items.price) as total_revenue,
+                SUM(order_items.quantity) as total_quantity_sold
+            ')->first();
 
             $totalRevenue = $stats->total_revenue ?? 0;
             $totalQuantitySold = $stats->total_quantity_sold ?? 0;
-
             $averagePrice = $totalQuantitySold > 0 ? $totalRevenue / $totalQuantitySold : 0;
+
+            // --- Time-based Data for Charts ---
+            $timeDataQuery = clone $query;
+            $dateFormat = "DATE_FORMAT(orders.created_at, '%Y-%m-%d')"; // Group by day as default
+
+            if ($period === 'quarter') {
+                $dateFormat = "DATE_FORMAT(orders.created_at, '%Y-%u')"; // Group by week
+            }
+
+            $timeDataRaw = $timeDataQuery->selectRaw("
+                {$dateFormat} as period_key,
+                COUNT(DISTINCT order_items.order_id) as orders,
+                SUM(order_items.quantity * order_items.price) as revenue
+            ")
+            ->groupBy('period_key')
+            ->orderBy('period_key', 'asc')
+            ->get();
+
+            $timeData = $timeDataRaw->map(function ($item) use ($period) {
+                if ($period === 'quarter') {
+                    // Format 'YYYY-WW' to 'Week WW, YYYY'
+                    list($year, $week) = explode('-', $item->period_key);
+                    $period_display = "Tuần {$week}, {$year}";
+                } else {
+                    $period_display = Carbon::parse($item->period_key)->format('d/m');
+                }
+                return [
+                    'period' => $period_display,
+                    'orders' => (int) $item->orders,
+                    'revenue' => (float) $item->revenue,
+                ];
+            });
+
+            // --- Top Selling Variants ---
+            $topVariantsQuery = clone $query;
+            $topVariants = $topVariantsQuery
+                ->with(['variant.color', 'variant.size'])
+                ->selectRaw('
+                    variant_id,
+                    SUM(quantity) as sold_quantity,
+                    SUM(quantity * price) as revenue
+                ')
+                ->groupBy('variant_id')
+                ->orderBy('sold_quantity', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'id' => $item->variant->id,
+                        'color' => $item->variant->color->name ?? 'N/A',
+                        'size' => $item->variant->size->name ?? 'N/A',
+                        'sold_quantity' => (int) $item->sold_quantity,
+                        'revenue' => (float) $item->revenue
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
@@ -325,8 +413,11 @@ class ProductController extends Controller
                     'total_revenue' => (float) $totalRevenue,
                     'total_quantity_sold' => (int) $totalQuantitySold,
                     'average_price' => (float) $averagePrice,
+                    'time_data' => $timeData,
+                    'top_variants' => $topVariants,
                 ]
             ]);
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại.'], 404);
         } catch (\Exception $e) {
