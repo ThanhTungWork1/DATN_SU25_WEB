@@ -8,6 +8,7 @@ use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
+use App\Http\Controllers\Admin\AdminRefundRequestController;
 // Controllers
 use App\Http\Controllers\Api\{
     HomeSectionController,
@@ -31,7 +32,7 @@ use App\Http\Controllers\Api\{
     PaymentController,
     ProductController,
     ProductVariantController,
-
+    RefundRequestController,
     SizeController,
     UserController,
     VoucherController
@@ -120,6 +121,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
+    
+    // Refund Requests Management
+    Route::get('refund-requests', [AdminRefundRequestController::class, 'index']);
+    Route::patch('refund-requests/{id}/status', [AdminRefundRequestController::class, 'updateStatus']);
+    
     // Home Sections
     Route::get('home-sections', [HomeSectionController::class, 'adminIndex']);
     Route::apiResource('home-sections', HomeSectionController::class)->only(['store', 'update', 'destroy']);
@@ -233,6 +239,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
 
+    // Refund Requests
+    Route::apiResource('/refund-requests', RefundRequestController::class);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);

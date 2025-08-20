@@ -5,8 +5,7 @@ import useProfile from "../../../hook/useProfile";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined, ShoppingOutlined } from "@ant-design/icons";
 import { TokenManager } from "../../../utils/tokenUtils";
-
-
+import "../../../layouts/Client/UserProfile.css";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -18,7 +17,7 @@ const UserProfile = () => {
     navigate("/");
     window.location.reload();
   };
-  
+
   const { mutate, isPending } = useProfile();
 
   useEffect(() => {
@@ -39,77 +38,83 @@ const UserProfile = () => {
     });
   };
 
-  if (isLoading || !user?.id) return <Spin tip="Đang tải hồ sơ..." />;
+  if (isLoading || !user?.id)
+    return (
+      <div className="profile-loading">
+        <Spin size="large" tip="Đang tải hồ sơ..." />
+      </div>
+    );
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
-      <h1>Thông tin cá nhân</h1>
-      
-      {/* Quick Actions */}
-      <div style={{ 
-        marginBottom: 24, 
-        padding: 16, 
-        backgroundColor: '#f8f9fa', 
-        borderRadius: 8,
-        border: '1px solid #e9ecef'
-      }}>
-        <h3 style={{ marginBottom: 12, color: '#495057' }}>Thao tác nhanh</h3>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Button
-            type="primary"
-            icon={<ShoppingOutlined />}
-            onClick={() => navigate('/orders')}
-            style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+    <div className="user-profile-container">
+      {/* Header Section */}
+      <div className="user-profile-header">
+        <h1 className="user-profile-title">Thông tin cá nhân</h1>
+        <p className="user-profile-subtitle">
+          Quản lý thông tin tài khoản của bạn
+        </p>
+      </div>
+
+      {/* Quick Actions Section */}
+      <div className="quick-actions-section">
+        <h3 className="quick-actions-title">Thao tác nhanh</h3>
+        <div className="quick-actions-grid">
+          <button
+            className="quick-action-btn success"
+            onClick={() => navigate("/orders")}
           >
+            <ShoppingOutlined />
             Lịch sử đơn hàng
-          </Button>
+          </button>
         </div>
       </div>
 
-      <Form form={form} onFinish={onFinish} layout="vertical">
-        <Form.Item
-          label="Họ tên"
-          name="name"
-          rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+      {/* Profile Form Section */}
+      <div className="profile-form-section">
+        <h3 className="profile-form-title">Thông tin cá nhân</h3>
+        <Form
+          form={form}
+          onFinish={onFinish}
+          layout="vertical"
+          className="profile-form"
         >
-          <Input autoComplete="name" />
-        </Form.Item>
-
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[{ required: true, message: "Vui lòng nhập email" }]}
-        >
-          <Input autoComplete="email" />
-        </Form.Item>
-
-        <Form.Item label="Số điện thoại" name="phone">
-          <Input autoComplete="tel" />
-        </Form.Item>
-
-        
-        <Form.Item>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "flex-start",
-            }}
+          <Form.Item
+            label="Họ tên"
+            name="name"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
           >
-            <Button type="primary" htmlType="submit" loading={isPending}>
-              Cập nhật thông tin
-            </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<LogoutOutlined />}
-              onClick={handleLogout}
-            >
-              Đăng xuất
-            </Button>
-          </div>
-        </Form.Item>
-      </Form>
+            <Input autoComplete="name" />
+          </Form.Item>
+
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{ required: true, message: "Vui lòng nhập email" }]}
+          >
+            <Input autoComplete="email" />
+          </Form.Item>
+
+          <Form.Item label="Số điện thoại" name="phone">
+            <Input autoComplete="tel" />
+          </Form.Item>
+
+          <Form.Item>
+            <div className="profile-form-actions">
+              <Button type="primary" htmlType="submit" loading={isPending}>
+                Cập nhật thông tin
+              </Button>
+              <Button
+                type="primary"
+                danger
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+              >
+                Đăng xuất
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 };

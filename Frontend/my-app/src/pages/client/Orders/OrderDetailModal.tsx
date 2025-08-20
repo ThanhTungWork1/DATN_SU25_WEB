@@ -1,4 +1,5 @@
 import { useOrders } from "../../../hook/useOrders";
+import { formatCurrency } from "../../../utils/currencyFormatter";
 
 const OrderDetailModal = ({
   orderId,
@@ -10,16 +11,7 @@ const OrderDetailModal = ({
   const { getOrderDetail } = useOrders();
   const { data: order, isLoading } = getOrderDetail(orderId);
 
-  // Định dạng tiền tệ VND chuẩn
-  const formatVND = (value: unknown) => {
-    const num = Number(value);
-    if (!isFinite(num)) return "0 ₫";
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
+  // Sử dụng formatCurrency từ utils thay vì formatVND local
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -52,6 +44,18 @@ const OrderDetailModal = ({
         return "Đã huỷ";
       default:
         return status;
+    }
+  };
+
+  // Hàm hiển thị trạng thái thanh toán
+  const getPaymentMethodDisplay = () => {
+    if (!order) return "";
+
+    // Hiển thị trạng thái thanh toán dựa trên is_paid
+    if (order.is_paid) {
+      return "Đã thanh toán";
+    } else {
+      return "Chưa thanh toán";
     }
   };
 
@@ -134,12 +138,14 @@ const OrderDetailModal = ({
                       Số lượng: {item.quantity}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Đơn giá: {formatVND(item.price)}
+                      Đơn giá: {formatCurrency(item.price)}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">
-                      {formatVND(Number(item.price) * Number(item.quantity))}
+                      {formatCurrency(
+                        Number(item.price) * Number(item.quantity)
+                      )}
                     </p>
                   </div>
                 </div>
@@ -161,7 +167,7 @@ const OrderDetailModal = ({
               <h4 className="text-lg font-semibold mb-2">
                 Phương thức thanh toán
               </h4>
-              <p className="text-gray-600">{order.payment_method}</p>
+              <p className="text-gray-600">{getPaymentMethodDisplay()}</p>
             </div>
           )}
 
@@ -177,7 +183,7 @@ const OrderDetailModal = ({
           <div className="border-t pt-4">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Tổng cộng:</span>
-              <span>{formatVND(order.total_price)}</span>
+              <span>{formatCurrency(order.total_price)}</span>
             </div>
           </div>
         </div>

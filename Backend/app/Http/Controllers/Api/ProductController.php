@@ -304,10 +304,10 @@ class ProductController extends Controller
             $product = Product::with(['variants.color', 'variants.size'])->findOrFail($id);
             $variantIds = $product->variants->pluck('id');
 
-            // Base query
+            // Base query - chỉ tính orders đã giao hàng và hoàn thành
             $query = OrderItem::whereIn('variant_id', $variantIds)
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                ->where('orders.status', 'delivered');
+                ->whereIn('orders.status', ['delivered', 'completed']);
 
             // Date range filtering
             $period = $request->input('period', 'month');

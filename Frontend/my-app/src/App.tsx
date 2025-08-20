@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "./utils/testAuth"; // Import để có thể sử dụng testAuth() trong console
+import "./utils/testAdminLogin"; // Import để có thể sử dụng testAdminLogin() trong console
 
 function App() {
   useEffect(() => {

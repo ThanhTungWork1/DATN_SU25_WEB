@@ -119,6 +119,13 @@ class ClientOrderController extends Controller
     {
         Log::info('Bắt đầu xử lý đơn hàng mới.', ['request_data' => $request->all()]);
 
+        // 🔍 DEBUG: Log chi tiết variant_id từ frontend
+        Log::info('🔍 DEBUG VARIANT_ID:', [
+            'items_received' => $request->input('items', []),
+            'variant_ids' => collect($request->input('items', []))->pluck('variant_id'),
+            'request_all' => $request->all(),
+        ]);
+
         // Log chi tiết các giá trị tiền tệ để debug
         Log::info('Giá trị tiền tệ nhận được:', [
             'total_amount_from_items' => collect($request->input('items', []))->sum(function($item) {
@@ -139,6 +146,7 @@ class ClientOrderController extends Controller
             'note' => 'nullable|string|max:1000',
             'payment_method' => 'required|string|max:100',
             'province_name' => 'required|string|max:255', // Thêm validation cho tỉnh/thành phố
+            'shipping_fee' => 'nullable|numeric|min:0', // Thêm validation cho phí vận chuyển
             'voucher_code' => 'nullable|string|exists:vouchers,code',
             'items' => 'required|array|min:1',
             'items.*.variant_id' => 'required|exists:product_variants,id',
@@ -233,14 +241,20 @@ class ClientOrderController extends Controller
                 $voucher_id = $voucher->id;
             }
 
-            // === Logic tính phí vận chuyển theo miền ===
+            // === Logic tính phí vận chuyển ===
             $shipping_fee = 30000; // Phí mặc định
             $provinceName = $data['province_name'] ?? null;
-
-            if ($provinceName) {
-                $zone = DB::table('shipping_zones')->where('province_name', $provinceName)->first();
-                if ($zone) {
-                    $shipping_fee = $zone->shipping_fee;
+            
+            // Ưu tiên sử dụng phí vận chuyển từ frontend nếu có
+            if (isset($data['shipping_fee']) && $data['shipping_fee'] >= 0) {
+                $shipping_fee = $data['shipping_fee'];
+            } else {
+                // Fallback: Tính phí vận chuyển theo miền nếu frontend không gửi
+                if ($provinceName) {
+                    $zone = DB::table('shipping_zones')->where('province_name', $provinceName)->first();
+                    if ($zone) {
+                        $shipping_fee = $zone->shipping_fee;
+                    }
                 }
             }
 

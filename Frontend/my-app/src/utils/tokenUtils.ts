@@ -55,20 +55,46 @@ export class TokenManager {
    * **FIX: Không xóa token của loại khác để cho phép đăng nhập đồng thời**
    */
   static setToken(token: string, role: "admin" | "user"): void {
+    console.log("🔐 TokenManager - setToken được gọi với:", {
+      token: token.substring(0, 20) + "...",
+      role,
+    });
+
     // **FIX CHÍNH: Chỉ set token cho role hiện tại, KHÔNG xóa token của role khác**
     if (role === "admin") {
       // Chỉ set admin token, GIỮ NGUYÊN user token
       localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
+      console.log(
+        "🔐 TokenManager - Đã lưu admin token vào:",
+        this.ADMIN_TOKEN_KEY
+      );
     } else {
       // Chỉ set user token, GIỮ NGUYÊN admin token
       localStorage.setItem(this.USER_TOKEN_KEY, token);
+      console.log(
+        "🔐 TokenManager - Đã lưu user token vào:",
+        this.USER_TOKEN_KEY
+      );
     }
 
     // Chỉ xóa legacy token (cũ)
     localStorage.removeItem(this.LEGACY_TOKEN_KEY);
+    console.log("🔐 TokenManager - Đã xóa legacy token");
 
     // **DÒNG QUAN TRỌNG NHẤT:** Phát ra sự kiện để CartProvider lắng nghe
     window.dispatchEvent(new Event("token-changed"));
+    console.log("🔐 TokenManager - Đã phát event token-changed");
+
+    // Log để debug
+    console.log("🔐 TokenManager - Token hiện tại trong localStorage:");
+    console.log(
+      "   - admin_token:",
+      localStorage.getItem(this.ADMIN_TOKEN_KEY) ? "Có" : "Không"
+    );
+    console.log(
+      "   - user_token:",
+      localStorage.getItem(this.USER_TOKEN_KEY) ? "Có" : "Không"
+    );
   }
 
   /**
@@ -102,7 +128,12 @@ export class TokenManager {
   static clearAdminToken(): void {
     localStorage.removeItem(this.ADMIN_TOKEN_KEY);
     localStorage.removeItem("admin_user");
-    // Không xóa role vì có thể user vẫn đăng nhập
+
+    // Kiểm tra xem có user token không, nếu không có thì xóa role
+    const userToken = localStorage.getItem(this.USER_TOKEN_KEY);
+    if (!userToken) {
+      localStorage.removeItem("role");
+    }
 
     // Thông báo thay đổi
     window.dispatchEvent(new Event("token-changed"));

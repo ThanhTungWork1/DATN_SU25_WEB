@@ -1,9 +1,8 @@
-import { Input, Table, Tag, Switch, message, Modal, Button } from "antd";
+import { Input, Table, Tag, Switch, message, Modal } from "antd";
 import useList from "../../../hook/users/UseList";
 import type { IUser } from "../../../types/users";
 import { useState } from "react";
 import { config } from "../../../api/axios";
-import { Link } from "react-router-dom";
 
 const UserList = () => {
   const { data, isLoading, refetch } = useList({ resource: "users" });
@@ -110,10 +109,6 @@ const UserList = () => {
   return (
     <div>
       <h1 className="font-semibold text-xl py-5">Danh sách người dùng</h1>
-
-      <Button type="primary">
-        <Link to="/admin/users/create">Thêm người dùng</Link>
-      </Button>
 
       <Input.Search
         placeholder="Tìm theo tên người dùng"

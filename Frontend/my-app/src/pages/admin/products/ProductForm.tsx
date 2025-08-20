@@ -88,14 +88,12 @@ export default function ProductForm() {
           getSizes(),
         ]);
         setCategories(
-          Array.isArray((catRes as any).data?.data) ? (catRes as any).data.data : (catRes as any).data || []
+          Array.isArray((catRes as any).data?.data)
+            ? (catRes as any).data.data
+            : (catRes as any).data || []
         );
-        setColors(
-          (colorRes as any).data?.data || (colorRes as any).data || []
-        );
-        setSizes(
-          (sizeRes as any).data?.data || (sizeRes as any).data || []
-        );
+        setColors((colorRes as any).data?.data || (colorRes as any).data || []);
+        setSizes((sizeRes as any).data?.data || (sizeRes as any).data || []);
 
         if (isEditing) {
           const productId = Number(id);
@@ -104,7 +102,8 @@ export default function ProductForm() {
             getProductVariants(productId),
           ]);
 
-          const productData: Product = (productRes as any).data?.data || (productRes as any).data;
+          const productData: Product =
+            (productRes as any).data?.data || (productRes as any).data;
 
           if (
             productData &&
@@ -162,7 +161,7 @@ export default function ProductForm() {
           navigate("/admin/products");
         } else if (error.response?.status === 401) {
           message.error("Phiên đăng nhập đã hết hạn.");
-          navigate("/admin/login");
+          navigate("/login");
         } else {
           message.error("Lỗi khi tải dữ liệu ban đầu. Vui lòng thử lại.");
         }
@@ -178,25 +177,25 @@ export default function ProductForm() {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, 'a')
-      .replace(/[éèẻẽẹêếềểễệ]/g, 'e')
-      .replace(/[íìỉĩị]/g, 'i')
-      .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, 'o')
-      .replace(/[úùủũụưứừửữự]/g, 'u')
-      .replace(/[ýỳỷỹỵ]/g, 'y')
-      .replace(/đ/g, 'd')
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, "a")
+      .replace(/[éèẻẽẹêếềểễệ]/g, "e")
+      .replace(/[íìỉĩị]/g, "i")
+      .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, "o")
+      .replace(/[úùủũụưứừửữự]/g, "u")
+      .replace(/[ýỳỷỹỵ]/g, "y")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   };
 
   const onFinish = async (values: any) => {
     const formData = new FormData();
 
     // Generate slug if not provided or empty
-    if (!values.slug || values.slug.trim() === '') {
-      if (!values.name || values.name.trim() === '') {
+    if (!values.slug || values.slug.trim() === "") {
+      if (!values.name || values.name.trim() === "") {
         message.error("Tên sản phẩm không được để trống!");
         return;
       }
@@ -226,7 +225,7 @@ export default function ProductForm() {
     // Sửa lại cách gửi variants để tương thích với FormData và PHP
     if (values.variants && Array.isArray(values.variants)) {
       values.variants.forEach((variant: any, index: number) => {
-        Object.keys(variant).forEach(key => {
+        Object.keys(variant).forEach((key) => {
           if (variant[key] !== undefined && variant[key] !== null) {
             formData.append(`variants[${index}][${key}]`, variant[key]);
           }
@@ -267,7 +266,7 @@ export default function ProductForm() {
       console.error("Error response:", error.response);
       console.error("Error data:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      
+
       if (error.response?.data?.errors) {
         // Laravel validation errors
         Object.entries(error.response.data.errors).forEach(([key, value]) => {
@@ -278,12 +277,14 @@ export default function ProductForm() {
         // API error message
         message.error(error.response.data.message);
       } else if (error.response?.status === 500) {
-        message.error("Lỗi server nội bộ. Vui lòng thử lại sau hoặc liên hệ admin.");
+        message.error(
+          "Lỗi server nội bộ. Vui lòng thử lại sau hoặc liên hệ admin."
+        );
       } else if (error.response?.status === 422) {
         message.error("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.");
       } else if (error.response?.status === 401) {
         message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-        navigate("/admin/login");
+        navigate("/login");
       } else {
         message.error(
           `Lỗi khi ${isEditing ? "cập nhật" : "tạo mới"} sản phẩm: ${error.message || "Không xác định"}`
@@ -384,22 +385,22 @@ export default function ProductForm() {
           name="name"
           rules={[{ required: true }]}
         >
-          <Input 
-            autoComplete="off" 
+          <Input
+            autoComplete="off"
             onChange={(e) => {
               const name = e.target.value;
-              const currentSlug = formRef.getFieldValue('slug');
+              const currentSlug = formRef.getFieldValue("slug");
               // Only auto-generate slug if current slug is empty or was auto-generated
-              if (!currentSlug || currentSlug.trim() === '') {
+              if (!currentSlug || currentSlug.trim() === "") {
                 const newSlug = generateSlug(name);
-                formRef.setFieldValue('slug', newSlug);
+                formRef.setFieldValue("slug", newSlug);
               }
             }}
           />
         </Form.Item>
         <Form.Item label="Slug" name="slug">
-          <Input 
-            placeholder="Tự động tạo từ tên sản phẩm" 
+          <Input
+            placeholder="Tự động tạo từ tên sản phẩm"
             autoComplete="off"
             addonBefore="/"
           />
@@ -540,12 +541,16 @@ export default function ProductForm() {
                     rules={[{ required: true }]}
                     style={{ width: 100 }}
                   >
-                    <Input type="number" min={0} placeholder="Số lượng còn lại" />
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="Số lượng còn lại"
+                    />
                   </Form.Item>
                   <Form.Item
                     {...restField}
                     name={[name, "variant_price"]}
-                    rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+                    rules={[{ required: true, message: "Vui lòng nhập giá" }]}
                     style={{ width: 120 }}
                   >
                     <Input type="number" min={0} placeholder="Giá biến thể" />

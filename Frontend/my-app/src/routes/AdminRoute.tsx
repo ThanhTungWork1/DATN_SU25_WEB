@@ -9,7 +9,7 @@ import OrderForm from "../pages/admin/orders/OrderForm";
 import OrderDetail from "../pages/admin/orders/OrderDetail";
 import RequireAuth from "./RequireAuth";
 import { ContactAdmin } from "../pages/admin/contact/contactAdmin";
-import RefundRequestList from '../pages/admin/refunds/RefundRequestList';
+import RefundRequestList from "../pages/admin/refunds/RefundRequestList";
 import UserList from "../pages/admin/users/UserList";
 import UserEdit from "../pages/admin/users/UserEdit";
 import CategoryList from "../pages/admin/categories/CategoryList";
@@ -22,10 +22,16 @@ import HomeSectionProducts from "../pages/admin/home-sections/HomeSectionProduct
 import BannerList from "../pages/admin/banners/BannerList";
 import CommentList from "../pages/admin/comments/CommentList";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
+import LoginPage from "../pages/auth/Login";
 
 const AdminRoute = () => {
+  console.log("🛣️ AdminRoute rendered");
   return (
     <Routes>
+      {/* Admin Login Route - Không cần authentication */}
+      <Route path="login" element={<LoginPage />} />
+
+      {/* Admin Protected Routes */}
       <Route element={<RequireAuth allowedRoles={["admin"]} />}>
         <Route path="" element={<LayoutAdmin />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -50,7 +56,10 @@ const AdminRoute = () => {
           <Route path="category-statistics" element={<CategoryStatistics />} />
           <Route path="product-statistics" element={<ProductStatistics />} />
           <Route path="home-sections" element={<HomeSectionList />} />
-          <Route path="home-sections/:id/products" element={<HomeSectionProducts />}/>
+          <Route
+            path="home-sections/:id/products"
+            element={<HomeSectionProducts />}
+          />
           <Route path="banners" element={<BannerList />} />
           <Route path="comments" element={<CommentList />} />
         </Route>

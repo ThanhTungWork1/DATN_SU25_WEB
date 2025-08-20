@@ -19,6 +19,16 @@ const RequireAuth = ({ allowedRoles }: Props) => {
   const adminToken = localStorage.getItem("admin_token");
   const role = mapRole(storedRole);
 
+  console.log("🔒 RequireAuth check:", {
+    allowedRoles,
+    storedRole,
+    role,
+    hasUserToken: !!userToken,
+    hasToken: !!token,
+    hasAdminToken: !!adminToken,
+    currentPath: location.pathname,
+  });
+
   // Nếu không có role, redirect đến login
   if (!role) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -39,17 +49,16 @@ const RequireAuth = ({ allowedRoles }: Props) => {
 
   // Nếu đang truy cập trang admin (allowedRoles = ["admin"])
   if (allowedRoles.includes("admin")) {
-    if (role === "admin" && adminToken) {
+    if (role === "admin" && (adminToken || userToken || token)) {
       return <Outlet />;
     }
   }
 
-  // Nếu không có quyền, redirect
-  if (role === "admin") {
-    return <Navigate to="/login/admin" state={{ from: location }} replace />;
-  } else {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Nếu không có quyền, redirect về admin login nếu đang truy cập admin route
+  if (location.pathname.startsWith("/admin")) {
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
+  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default RequireAuth;

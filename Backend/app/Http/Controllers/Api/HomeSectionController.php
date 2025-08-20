@@ -11,7 +11,11 @@ class HomeSectionController extends Controller
     // GET /api/home-sections (public)
     public function index()
     {
-        return HomeSection::where('status', true)->get();
+        $sections = HomeSection::where('status', true)->with('products')->get();
+        
+        return response()->json([
+            'sections' => $sections
+        ]);
     }
 
     // GET /api/admin/home-sections (admin) - trả về tất cả sections

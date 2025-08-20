@@ -13,7 +13,7 @@ const useLogout = () => {
     console.log("✅ Đã đăng xuất");
 
     // Redirect sau logout nếu muốn
-    window.location.href = role === "1" ? "/admin/login" : "/login";
+    window.location.href = "/login";
   };
 };
 

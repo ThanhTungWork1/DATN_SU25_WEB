@@ -2,10 +2,17 @@ import axiosInstance from "../utils/axiosInstance";
 import { HomeSectionResponse, HomeSection } from "../types/HomeSection";
 
 const ApiHomeSection = {
-  // Lấy tất cả sections cho trang chủ (Admin)
+  // Lấy tất cả sections cho trang chủ (Public)
   getHomeSections: async (): Promise<HomeSectionResponse> => {
-    const response = await axiosInstance.get("/admin/home-sections");
-    return response.data;
+    console.log("🏠 ApiHomeSection - Gọi API /home-sections");
+    try {
+      const response = await axiosInstance.get("/home-sections");
+      console.log("🏠 ApiHomeSection - Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("❌ ApiHomeSection - Error:", error);
+      throw error;
+    }
   },
 
   // Lấy section theo ID

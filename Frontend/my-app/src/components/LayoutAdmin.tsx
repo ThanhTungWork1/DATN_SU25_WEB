@@ -7,15 +7,16 @@ import {
   InboxOutlined,
   GiftOutlined,
   BarChartOutlined,
-  HomeOutlined, 
+  HomeOutlined,
   PictureOutlined,
   CommentOutlined,
   MessageOutlined,
-  SolutionOutlined
+  SolutionOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
+import { TokenManager } from "../utils/tokenUtils";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -61,9 +62,8 @@ const LayoutAdmin: React.FC = () => {
   } = theme.useToken();
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("role");
-    navigate("/");
+    TokenManager.clearAdminToken();
+    navigate("/login");
   };
 
   return (

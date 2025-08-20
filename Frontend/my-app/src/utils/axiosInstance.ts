@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
@@ -15,16 +15,18 @@ axiosInstance.interceptors.request.use(
       config.headers = {};
     }
 
-    config.headers['Accept'] = 'application/json';
+    config.headers["Accept"] = "application/json";
 
     // Lấy token dựa trên vai trò hiện tại để tránh xung đột
-    const role = localStorage.getItem('role');
+    const role = localStorage.getItem("role");
     let token = null;
 
-    if (role === '1' || role === '2') { // Admin hoặc vai trò tương tự
-      token = localStorage.getItem('admin_token');
-    } else { // Mặc định là người dùng
-      token = localStorage.getItem('user_token');
+    if (role === "1" || role === "2") {
+      // Admin hoặc vai trò tương tự
+      token = localStorage.getItem("admin_token");
+    } else {
+      // Mặc định là người dùng
+      token = localStorage.getItem("user_token");
     }
 
     if (token) {
@@ -32,22 +34,27 @@ axiosInstance.interceptors.request.use(
     }
 
     if (!(config.data instanceof FormData)) {
-      config.headers['Content-Type'] = 'application/json';
+      config.headers["Content-Type"] = "application/json";
     }
 
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Interceptor cho Response (xử lý lỗi 401/403)
 axiosInstance.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error("❌ Token không hợp lệ hoặc đã hết hạn. Đang chuyển hướng...");
+  (response) => response,
+  (error) => {
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      console.error(
+        "❌ Token không hợp lệ hoặc đã hết hạn. Đang chuyển hướng..."
+      );
 
       const role = localStorage.getItem("role");
 
@@ -55,7 +62,7 @@ axiosInstance.interceptors.response.use(
       if (role === "1" || role === "2") {
         // 👉 Admin hoặc moderator
         localStorage.removeItem("admin_token");
-        window.location.href = "/admin/login";
+        window.location.href = "/login";
       } else if (role === "0") {
         // 👉 User
         localStorage.removeItem("user_token");
@@ -64,7 +71,6 @@ axiosInstance.interceptors.response.use(
         // 👉 Không xác định vai trò → về trang login mặc định
         window.location.href = "/login";
       }
-
     }
 
     return Promise.reject(error);

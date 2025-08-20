@@ -53,12 +53,11 @@ const CartPage = () => {
   };
 
   const selectedProducts = cartItems.filter((item) => selectedItems[item.id]);
-  const shippingFee = 30000;
   const subtotalAmount = selectedProducts.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
-  const totalAmount = subtotalAmount + shippingFee;
+  const totalAmount = subtotalAmount; // Không cộng phí vận chuyển nữa
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: "#f8f9fa" }}>
@@ -170,12 +169,7 @@ const CartPage = () => {
                         {subtotalAmount.toLocaleString("vi-VN")} VND
                       </span>
                     </div>
-                    <div className="d-flex justify-content-between mb-3">
-                      <span>Phí vận chuyển:</span>
-                      <span className="fw-bold">
-                        {shippingFee.toLocaleString("vi-VN")} VND
-                      </span>
-                    </div>
+
                     <hr />
                     <div className="d-flex justify-content-between mb-4">
                       <span className="fs-5 fw-bold">Tổng cộng:</span>
@@ -187,14 +181,53 @@ const CartPage = () => {
                     <button
                       className="btn btn-success w-100 mb-3 py-2"
                       type="button"
-                      onClick={() =>
+                      onClick={() => {
+                        // 🔧 FIX: Transform CartItem[] thành Product[] để match với useCheckout
+                        console.log("🛒 === CART TO CHECKOUT DEBUG ===");
+                        console.log(
+                          "🛒 selectedProducts (CartItem[]):",
+                          selectedProducts
+                        );
+
+                        const transformedProducts = selectedProducts.map(
+                          (item) => {
+                            const transformed = {
+                              id: item.id,
+                              name: item.name,
+                              price: item.price,
+                              quantity: item.quantity,
+                              image: item.image,
+                              variant_id: item.product_variant_id, // ← Map product_variant_id thành variant_id
+                            };
+                            console.log("🛒 Transform item:", {
+                              original: {
+                                id: item.id,
+                                name: item.name,
+                                product_variant_id: item.product_variant_id,
+                              },
+                              transformed: {
+                                id: transformed.id,
+                                name: transformed.name,
+                                variant_id: transformed.variant_id,
+                              },
+                            });
+                            return transformed;
+                          }
+                        );
+
+                        console.log(
+                          "🛒 Final transformedProducts:",
+                          transformedProducts
+                        );
+                        console.log("🛒 totalAmount:", subtotalAmount);
+
                         navigate("/checkout", {
                           state: {
-                            selectedProducts,
+                            selectedProducts: transformedProducts,
                             totalAmount: subtotalAmount,
                           },
-                        })
-                      }
+                        });
+                      }}
                       disabled={selectedProducts.length === 0}
                     >
                       <i className="fas fa-credit-card me-2"></i>

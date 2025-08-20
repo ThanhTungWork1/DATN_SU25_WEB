@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { ApiHomeSection } from "../../../api/ApiHomeSection";
 import { getAllProducts } from "../../../api/ApiProduct";
 import { HomeSection, Product } from "../../../types/HomeSection";
+import { formatCurrency } from "../../../utils/currencyFormatter";
+import "../../../layouts/Admin/HomeSectionProducts.css";
 
 const HomeSectionProducts = () => {
   const { id } = useParams<{ id: string }>();
@@ -159,56 +161,56 @@ const HomeSectionProducts = () => {
   );
 
   if (loading) {
-    return <div className="p-4">Đang tải...</div>;
+    return <div className="loading-container">Đang tải...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Lỗi: {error}</div>;
+    return <div className="error-container">Lỗi: {error}</div>;
   }
 
   if (!section) {
-    return <div className="p-4">Không tìm thấy section</div>;
+    return <div className="error-container">Không tìm thấy section</div>;
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="home-section-products-container">
+      <div className="home-section-header">
+        <h1 className="home-section-title">
           Quản lý sản phẩm - {section.name}
         </h1>
-        <p className="text-gray-600">
+        <p className="home-section-description">
           Thêm, xóa hoặc thay thế sản phẩm trong section này
         </p>
       </div>
 
       {/* Sản phẩm hiện tại trong section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">
+      <div className="current-products-section">
+        <h2 className="current-products-title">
           Sản phẩm hiện tại ({section.products?.length || 0})
         </h2>
         {section.products && section.products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="current-products-grid">
             {section.products.map((product) => (
-              <div key={product.id} className="border rounded p-4 bg-white">
+              <div key={product.id} className="current-product-card">
                 <img
                   src={product.image || "https://via.placeholder.com/150"}
                   alt={product.name}
-                  className="w-full h-32 object-cover rounded mb-2"
+                  className="current-product-image"
                 />
-                <h3 className="font-semibold">{product.name}</h3>
-                <p className="text-gray-600">
-                  {product.price?.toLocaleString()}đ
+                <h3 className="current-product-name">{product.name}</h3>
+                <p className="current-product-price">
+                  {formatCurrency(product.price || 0)}
                 </p>
-                <div className="flex gap-2 mt-2">
+                <div className="current-product-actions">
                   <button
                     onClick={() => openReplaceModal(product.id)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                    className="btn-replace"
                   >
                     Thay thế
                   </button>
                   <button
                     onClick={() => handleRemoveProduct(product.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                    className="btn-remove"
                   >
                     Xóa
                   </button>
@@ -217,9 +219,12 @@ const HomeSectionProducts = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-8">
-            <p>Chưa có sản phẩm nào trong section này</p>
-            <p className="text-sm mt-2">
+          <div className="empty-state">
+            <div className="empty-state-icon">📦</div>
+            <p className="empty-state-title">
+              Chưa có sản phẩm nào trong section này
+            </p>
+            <p className="empty-state-description">
               Hãy thêm sản phẩm từ danh sách bên dưới
             </p>
           </div>
@@ -227,36 +232,36 @@ const HomeSectionProducts = () => {
       </div>
 
       {/* Thêm sản phẩm mới */}
-      <div className="border-t pt-8">
-        <h2 className="text-xl font-semibold mb-4">Thêm sản phẩm mới</h2>
+      <div className="add-products-section">
+        <h2 className="add-products-title">Thêm sản phẩm mới</h2>
 
         {/* Tìm kiếm sản phẩm */}
-        <div className="mb-4">
-          <div className="flex gap-2 mb-4">
+        <div className="search-container">
+          <div className="search-input-group">
             <input
               type="text"
               placeholder="Tìm kiếm theo tên sản phẩm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="search-input"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="btn-clear-search"
               >
                 Xóa
               </button>
             )}
           </div>
-          <p className="text-sm text-gray-600 mb-2">
+          <p className="search-stats">
             Hiển thị {filteredProducts.length} / {allProducts.length} sản phẩm
           </p>
         </div>
 
         {/* Danh sách tất cả sản phẩm */}
         <div className="mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          <div className="products-grid">
             {filteredProducts.map((product) => {
               const isInSection = section.products?.some(
                 (p) => p.id === product.id
@@ -266,12 +271,8 @@ const HomeSectionProducts = () => {
               return (
                 <div
                   key={product.id}
-                  className={`border rounded p-4 cursor-pointer ${
-                    isInSection
-                      ? "bg-gray-100 opacity-50 cursor-not-allowed"
-                      : isSelected
-                        ? "border-blue-500 bg-blue-50"
-                        : "hover:border-gray-300"
+                  className={`product-card ${
+                    isInSection ? "disabled" : isSelected ? "selected" : ""
                   }`}
                   onClick={() =>
                     !isInSection && handleProductSelect(product.id)
@@ -280,19 +281,19 @@ const HomeSectionProducts = () => {
                   <img
                     src={product.image || "https://via.placeholder.com/150"}
                     alt={product.name}
-                    className="w-full h-32 object-cover rounded mb-2"
+                    className="product-image"
                   />
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <p className="text-gray-600">
-                    {product.price?.toLocaleString()}đ
+                  <h3 className="product-name">{product.name}</h3>
+                  <p className="product-price">
+                    {formatCurrency(product.price || 0)}
                   </p>
                   {isInSection && (
-                    <span className="text-sm text-green-600">
+                    <span className="product-status in-section">
                       ✓ Đã có trong section
                     </span>
                   )}
                   {!isInSection && isSelected && (
-                    <span className="text-sm text-blue-600">✓ Đã chọn</span>
+                    <span className="product-status selected">✓ Đã chọn</span>
                   )}
                 </div>
               );
@@ -302,16 +303,13 @@ const HomeSectionProducts = () => {
 
         {/* Nút thêm sản phẩm */}
         {selectedProducts.length > 0 && (
-          <div className="flex gap-2">
-            <button
-              onClick={handleAddProducts}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Thêm {selectedProducts.length} sản phẩm vào section
+          <div className="action-buttons">
+            <button onClick={handleAddProducts} className="btn-add-products">
+              ➕ Thêm {selectedProducts.length} sản phẩm vào section
             </button>
             <button
               onClick={() => setSelectedProducts([])}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="btn-cancel-selection"
             >
               Hủy chọn
             </button>
@@ -321,17 +319,15 @@ const HomeSectionProducts = () => {
 
       {/* Modal thay thế sản phẩm */}
       {showReplaceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Thay thế sản phẩm</h3>
-            <p className="text-gray-600 mb-4">
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Thay thế sản phẩm</h3>
+            <p className="modal-description">
               Chọn sản phẩm mới để thay thế sản phẩm hiện tại
             </p>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Sản phẩm mới:
-              </label>
+            <div className="modal-form-group">
+              <label className="modal-label">Sản phẩm mới:</label>
 
               {/* Tìm kiếm trong modal */}
               <div className="mb-3">
@@ -340,42 +336,39 @@ const HomeSectionProducts = () => {
                   placeholder="Tìm kiếm sản phẩm..."
                   value={replaceSearchTerm}
                   onChange={(e) => setReplaceSearchTerm(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="modal-search-input"
                 />
               </div>
 
               <select
                 value={newProductId || ""}
                 onChange={(e) => setNewProductId(Number(e.target.value))}
-                className="w-full border p-2 rounded"
+                className="modal-select"
               >
                 <option value="">Chọn sản phẩm...</option>
                 {filteredReplaceProducts.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - {product.price?.toLocaleString()}đ
+                    {product.name} - {formatCurrency(product.price || 0)}
                   </option>
                 ))}
               </select>
 
               {replaceSearchTerm && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="modal-stats">
                   Hiển thị {filteredReplaceProducts.length} /{" "}
                   {availableProductsForReplacement.length} sản phẩm
                 </p>
               )}
             </div>
 
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={closeReplaceModal}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-              >
+            <div className="modal-actions">
+              <button onClick={closeReplaceModal} className="btn-cancel">
                 Hủy
               </button>
               <button
                 onClick={handleReplaceProduct}
                 disabled={!newProductId}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="btn-replace-confirm"
               >
                 Thay thế
               </button>

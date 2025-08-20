@@ -316,6 +316,14 @@ export const useCheckout = () => {
     fromBuyNow = false,
   } = location.state || {};
 
+  // 🔍 DEBUG: Log selectedProducts khi hook khởi tạo
+  console.log("🔍 === useCheckout HOOK INITIALIZED ===");
+  console.log("🔍 location.state:", location.state);
+  console.log("🔍 selectedProducts from location.state:", selectedProducts);
+  console.log("🔍 selectedProducts length:", selectedProducts?.length);
+  console.log("🔍 totalAmount:", totalAmount);
+  console.log("🔍 fromBuyNow:", fromBuyNow);
+
   const displayTotalAmount = fromBuyNow ? totalAmount : totalAmount;
 
   const [address, setAddress] = useState<Address>({
@@ -340,7 +348,7 @@ export const useCheckout = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
-  const [shippingFee, setShippingFee] = useState(30000); // Phí vận chuyển mặc định
+  const [shippingFee, setShippingFee] = useState(0); // Phí vận chuyển mặc định là 0 khi chưa chọn địa chỉ
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("user_token") || "";
@@ -399,10 +407,10 @@ export const useCheckout = () => {
           "Lỗi khi tính phí vận chuyển:",
           error.response?.data || error.message
         );
-        setShippingFee(30000); // Reset về phí mặc định nếu lỗi
+        setShippingFee(0); // Reset về 0 nếu lỗi
       }
     } else {
-      setShippingFee(30000); // Reset về phí mặc định nếu không chọn tỉnh
+      setShippingFee(0); // Reset về 0 nếu không chọn tỉnh
     }
 
     if (provinceId) {
@@ -496,6 +504,53 @@ export const useCheckout = () => {
   };
 
   const processOrder = async () => {
+    // 🔍 DEBUG: Log selectedProducts chi tiết
+    console.log("🔍 === DEBUG SELECTED PRODUCTS ===");
+    console.log("🔍 selectedProducts:", selectedProducts);
+    console.log("🔍 selectedProducts length:", selectedProducts?.length);
+
+    if (selectedProducts && selectedProducts.length > 0) {
+      selectedProducts.forEach((item: any, index: number) => {
+        console.log(`🔍 Item ${index + 1}:`, {
+          name: item.name,
+          variant_id: item.variant_id,
+          variant_id_type: typeof item.variant_id,
+          product_variant_id: item.product_variant_id,
+          product_variant_id_type: typeof item.product_variant_id,
+          quantity: item.quantity,
+          price: item.price,
+          product_id: item.product_id,
+          id: item.id,
+          // Kiểm tra các field khác có thể chứa variant_id
+          variant: item.variant,
+          "variant?.id": item.variant?.id,
+        });
+      });
+    }
+
+    // 🔍 DEBUG: Log items được tạo
+    const mappedItems = (selectedProducts as Product[]).map((item: any) => {
+      // 🔧 FIX: Sử dụng product_variant_id nếu variant_id không có
+      const variantId =
+        item.variant_id || item.product_variant_id || item.variant?.id || 1;
+
+      const mappedItem = {
+        variant_id: variantId,
+        quantity: item.quantity,
+        price: item.price,
+      };
+      console.log("🔍 Mapped item:", {
+        original_variant_id: item.variant_id,
+        product_variant_id: item.product_variant_id,
+        variant_id: item.variant?.id,
+        final_variant_id: mappedItem.variant_id,
+        name: item.name,
+        quantity: mappedItem.quantity,
+        price: mappedItem.price,
+      });
+      return mappedItem;
+    });
+
     const orderRequestData = {
       user_id: parseInt(user.id),
       customer_name: user.name || user.username || "Khách hàng",
@@ -506,14 +561,16 @@ export const useCheckout = () => {
       note: `Ghi chú đơn hàng`,
       payment_method: paymentMethod,
       province_name: address.province, // Gửi tên tỉnh/thành phố
+      shipping_fee: shippingFee, // Gửi phí vận chuyển thực tế từ frontend
       voucher_code: appliedVoucher?.code || null,
       discount_amount: discountAmount,
-      items: (selectedProducts as Product[]).map((item) => ({
-        variant_id: item.variant_id || 1,
-        quantity: item.quantity,
-        price: item.price,
-      })),
+      items: mappedItems,
     };
+
+    // 🔍 DEBUG: Log final request data
+    console.log("🔍 === FINAL REQUEST DATA ===");
+    console.log("🔍 orderRequestData:", orderRequestData);
+    console.log("🔍 items being sent:", orderRequestData.items);
 
     try {
       const orderResponse = await axiosInstance.post<OrderApiResponse>(
