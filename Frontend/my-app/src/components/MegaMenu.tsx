@@ -19,7 +19,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ menuData }) => {
   const col2 = allItems.slice(mid);
 
   return (
-    <div className="mega-menu-nam">
+    <div className="mega-menu-custom mega-menu-nam">
       <div className="mega-menu-cols">
         {/* Cột 1: render các mục và thêm mục Xem tất cả sản phẩm ở cuối */}
         <div className="mega-menu-col">

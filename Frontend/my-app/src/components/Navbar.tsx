@@ -4,8 +4,9 @@ import SearchBar from "./SearchBar";
 import MegaMenu from "./MegaMenu";
 import useCurrentUser from "../hook/useCurrentUser";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
-import "../assets/styles/navbar.css";
 import "../assets/styles/menu.css";
+import "../assets/styles/navbar.css";
+import "../assets/styles/navbar-override.css";
 import { MEGA_MENU_NAM, MEGA_MENU_NU, MEGA_MENU_PHUKIEN } from "./megaMenuData";
 
 const MENU = [{ label: "Nam" }, { label: "Nữ" }, { label: "Phụ kiện" }];
@@ -110,24 +111,30 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar-custom">
       <div
-        className="navbar-logo"
+        className="navbar-logo-custom"
         onClick={() => {
           navigate("/");
           setMenuOpen(false);
         }}
       >
-        <span className="logo-text">
-          Stride<span className="logo-x">X</span>
+        <span className="logo-text-custom">
+          Stride<span className="logo-x-custom">X</span>
         </span>
       </div>
 
       {menuOpen && (
-        <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>
+        <div
+          className="menu-overlay-custom"
+          onClick={() => setMenuOpen(false)}
+        ></div>
       )}
 
-      <ul className={`menu-links${menuOpen ? " active" : ""}`} id="navLinks">
+      <ul
+        className={`menu-links-custom${menuOpen ? " active" : ""}`}
+        id="navLinks"
+      >
         <li>
           <NavLink
             to="/"
@@ -142,7 +149,7 @@ const Navbar = () => {
         {MENU.map((menu) => (
           <li className="dropdown" key={menu.label}>
             <div
-              className="dropdown-wrapper"
+              className="dropdown-wrapper-custom"
               onMouseEnter={
                 menu.label === "Nam"
                   ? handleMouseEnterNam
@@ -204,10 +211,10 @@ const Navbar = () => {
           </NavLink>
         </li>
       </ul>
-      <div className="icon-group" ref={iconGroupRef}>
+      <div className="icon-group-custom" ref={iconGroupRef}>
         {showSearch && <SearchBar onSearch={handleSearch} autoFocus />}
         <button
-          className="searchbar-icon"
+          className="searchbar-icon-custom"
           aria-label="Tìm kiếm"
           type="button"
           onClick={() => setShowSearch((prev) => !prev)}
@@ -217,7 +224,7 @@ const Navbar = () => {
           </span>
         </button>
         <div
-          className="icon-btn icon-favorite-navbar"
+          className="icon-btn-custom icon-favorite-navbar-custom"
           title="Yêu thích"
           style={{ cursor: "pointer" }}
           onClick={() => {
@@ -228,7 +235,7 @@ const Navbar = () => {
           <i className="far fa-heart"></i>
         </div>
         <div
-          className="icon-btn"
+          className="icon-btn-custom"
           title="Giỏ hàng"
           onClick={() => {
             goToCart();
@@ -240,12 +247,12 @@ const Navbar = () => {
         </div>
 
         {isLoading ? (
-          <div className="icon-btn" style={{ cursor: "wait" }}>
+          <div className="icon-btn-custom" style={{ cursor: "wait" }}>
             Đang tải...
           </div>
         ) : user ? (
           <div
-            className="icon-btn"
+            className="icon-btn-custom"
             title="Hồ sơ cá nhân"
             onClick={() => {
               const role = localStorage.getItem("role");
@@ -263,7 +270,7 @@ const Navbar = () => {
           </div>
         ) : (
           <div
-            className="icon-btn"
+            className="icon-btn-custom"
             title="Tài khoản"
             onClick={() => {
               navigate("/login");
@@ -275,7 +282,7 @@ const Navbar = () => {
         )}
 
         <div
-          className="menu-toggle"
+          className="menu-toggle-custom"
           id="menuToggle"
           onClick={() => setMenuOpen(!menuOpen)}
         >
