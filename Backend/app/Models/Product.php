@@ -74,12 +74,8 @@ class Product extends Model
             }
             
             // Xử lý file local trong storage
-            $exists = Storage::disk('public')->exists($this->image);
-            // Log::info('🔍 [MODEL DEBUG] Storage exists check: ' . ($exists ? 'true' : 'false'));
-            
-            if ($exists) {
+            if (file_exists(public_path('storage/' . $this->image))) {
                 $url = asset('storage/' . $this->image);
-                // Log::info('🔍 [MODEL DEBUG] Local image exists, URL generated: ' . $url);
                 return $url;
             } else {
                 // Log::info('🔍 [MODEL DEBUG] Local image file not found in storage');
@@ -106,9 +102,8 @@ class Product extends Model
             }
             
             // Xử lý file local trong storage
-            if (Storage::disk('public')->exists($this->hover_image)) {
+            if (file_exists(public_path('storage/' . $this->hover_image))) {
                 $url = asset('storage/' . $this->hover_image);
-                // Log::info('🔍 [MODEL DEBUG] Local hover image exists, URL generated: ' . $url);
                 return $url;
             } else {
                 // Log::info('🔍 [MODEL DEBUG] Local hover image file not found in storage');

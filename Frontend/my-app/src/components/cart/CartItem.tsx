@@ -11,7 +11,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove })
   // Lấy thông tin màu và size từ product_variant
   const color = item.product_variant?.color;
   const size = item.product_variant?.size;
-  const image = item.product_variant?.product?.image_url || item.image;
+  const image = item.product_variant?.image_url || item.product_variant?.product?.image_url || 'https://via.placeholder.com/80';
 
   return (
     <div className="d-flex align-items-center border-bottom py-2">

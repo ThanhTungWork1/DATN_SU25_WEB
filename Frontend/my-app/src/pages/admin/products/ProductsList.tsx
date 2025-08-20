@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts, deleteProduct } from "../../../api/product";
-import { getCategories } from "../../../api/category";
-import { Product, Category } from "../../../types/ProductType";
+import { Product} from "../../../types/ProductType";
 import {
   Table,
   Button,
@@ -30,7 +29,6 @@ interface PaginatedResponse<T> {
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   // State này sẽ lưu trữ từ khóa tìm kiếm cuối cùng, sau khi đã được "debounced"
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,44 +40,28 @@ export default function ProductList() {
     total: 0,
   });
 
-  // State này sẽ lưu trữ từ khóa tìm kiếm đã được "debounced"
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Sử dụng Debounce để tránh gọi API liên tục khi người dùng đang gõ
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500); // Gửi request sau 500ms ngừng gõ
-
-    // Hủy timeout nếu người dùng tiếp tục gõ
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
   const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      const productsRes = await getProducts({ page, search, per_page: pagination.pageSize });
-      console.log("🔍 [DEBUG] API response:", productsRes);
-      const paginatedData = (productsRes as any).data as PaginatedResponse<Product>;
-      console.log("🔍 [DEBUG] Paginated data:", paginatedData);
-      console.log("🔍 [DEBUG] Products:", paginatedData.data);
+      const productsRes = await getProducts({
+        page,
+        search,
+        per_page: pagination.pageSize,
+      });
 
-      if (categories.length === 0) {
-        const categoriesRes = await getCategories();
-        const categoriesData = (categoriesRes as any).data as Category[]; // API trả mảng thuần
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      }
+      const paginatedData = (productsRes as any)
+        .data as PaginatedResponse<Product>;
 
       setProducts(paginatedData.data);
       setPagination((prev) => ({
+        ...prev,
         currentPage: paginatedData.current_page,
         pageSize: paginatedData.per_page || prev.pageSize,
         total: paginatedData.total,
       }));
     } catch (error) {
       message.error("Không thể tải danh sách sản phẩm.");
-      console.error("Fetch products error:", error);
     } finally {
       setLoading(false);
     }
@@ -91,21 +73,21 @@ export default function ProductList() {
   }, [searchTerm, pagination.currentPage]);
 
   // --- SỬA ĐỔI: Thêm logic "debouncing" cho việc tìm kiếm ---
-  const [inputValue, setInputValue] = useState(''); // State để lưu giá trị gõ vào ngay lập tức
-  
-  useEffect(() => {
-      // Thiết lập một bộ đếm thời gian
-      const timer = setTimeout(() => {
-          // Sau 500ms không gõ nữa, cập nhật searchTerm thật
-          setSearchTerm(inputValue);
-          // và quay về trang 1
-          setPagination(prev => ({ ...prev, currentPage: 1 }));
-      }, 500); // Chờ 500 mili giây
+  const [inputValue, setInputValue] = useState(""); // State để lưu giá trị gõ vào ngay lập tức
 
-      // Hủy bộ đếm thời gian nếu người dùng lại gõ chữ mới
-      return () => {
-          clearTimeout(timer);
-      };
+  useEffect(() => {
+    // Thiết lập một bộ đếm thời gian
+    const timer = setTimeout(() => {
+      // Sau 500ms không gõ nữa, cập nhật searchTerm thật
+      setSearchTerm(inputValue);
+      // và quay về trang 1
+      setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    }, 500); // Chờ 500 mili giây
+
+    // Hủy bộ đếm thời gian nếu người dùng lại gõ chữ mới
+    return () => {
+      clearTimeout(timer);
+    };
   }, [inputValue]); // useEffect này sẽ chạy lại mỗi khi người dùng gõ một ký tự mới
 
   const handleDelete = async (id: number) => {
@@ -127,10 +109,6 @@ export default function ProductList() {
     }));
   };
 
-  const getCategoryName = (categoryId: number): string => {
-    const category = categories.find((cat) => cat.id === categoryId);
-    return category ? category.name : "Không rõ";
-  };
 
   const columns: TableProps<Product>["columns"] = [
     { title: "ID", dataIndex: "id", key: "id", render: (text) => `#${text}` },
@@ -138,13 +116,7 @@ export default function ProductList() {
       title: "Ảnh",
       dataIndex: "image_url",
       key: "image",
-      render: (url: string, record: any) => {
-        console.log(
-          "🔍 [DEBUG] Rendering image for product:",
-          record.id,
-          "URL:",
-          url
-        );
+      render: (url: string) => {
         return (
           <img
             src={url || "https://placehold.co/50x50/cccccc/333333?text=N/A"}
@@ -155,12 +127,8 @@ export default function ProductList() {
               objectFit: "cover",
               borderRadius: 4,
             }}
-            onError={(e) => {
-              console.error("🔍 [DEBUG] Image failed to load:", url, e);
-            }}
-            onLoad={() => {
-              console.log("🔍 [DEBUG] Image loaded successfully:", url);
-            }}
+            onError={() => {}}
+            onLoad={() => {}}
           />
         );
       },
@@ -174,9 +142,9 @@ export default function ProductList() {
     },
     {
       title: "Danh mục",
-      dataIndex: "category_id",
-      key: "category_id",
-      render: (catId) => getCategoryName(catId),
+      dataIndex: "category",
+      key: "category",
+      render: (category) => category?.name || "Không rõ",
     },
     {
       title: "Trạng thái",

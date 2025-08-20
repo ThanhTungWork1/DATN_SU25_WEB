@@ -223,7 +223,16 @@ export default function ProductForm() {
       }
     });
 
-    formData.append("variants", JSON.stringify(values.variants));
+    // Sửa lại cách gửi variants để tương thích với FormData và PHP
+    if (values.variants && Array.isArray(values.variants)) {
+      values.variants.forEach((variant: any, index: number) => {
+        Object.keys(variant).forEach(key => {
+          if (variant[key] !== undefined && variant[key] !== null) {
+            formData.append(`variants[${index}][${key}]`, variant[key]);
+          }
+        });
+      });
+    }
 
     if (mainImageFileList.length > 0 && mainImageFileList[0].originFileObj) {
       formData.append("image", mainImageFileList[0].originFileObj);
@@ -248,7 +257,11 @@ export default function ProductForm() {
       message.success(
         `${isEditing ? "Cập nhật" : "Tạo mới"} sản phẩm thành công!`
       );
+      // Điều hướng và buộc tải lại trang để cập nhật danh sách
       navigate("/admin/products");
+      setTimeout(() => {
+        window.location.reload();
+      }, 300); // Đợi một chút để message hiển thị
     } catch (error: any) {
       console.error("Lỗi gửi form sản phẩm:", error);
       console.error("Error response:", error.response);
@@ -531,11 +544,11 @@ export default function ProductForm() {
                   </Form.Item>
                   <Form.Item
                     {...restField}
-                    name={[name, "price"]}
-                    rules={[{ required: true }]}
+                    name={[name, "variant_price"]}
+                    rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
                     style={{ width: 120 }}
                   >
-                    <Input type="number" min={0} placeholder="Giá" />
+                    <Input type="number" min={0} placeholder="Giá biến thể" />
                   </Form.Item>
                   <Form.Item
                     {...restField}

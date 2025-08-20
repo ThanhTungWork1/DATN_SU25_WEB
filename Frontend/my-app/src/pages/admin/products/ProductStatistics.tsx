@@ -14,17 +14,13 @@ type ProductLite = { id: number; name: string };
 type TimeDataPoint = { period: string; orders: number; revenue: number };
 
 type ProductStatisticsResponse = {
-  product_id: number;
-  product_name: string;
   total_orders: number;
   total_revenue: number;
-  total_items: number;
-  average_per_item: number;
-  top_variants: Array<{ id: number; color?: string; size?: string; sold_quantity: number; revenue: number }>;
-  time_data: TimeDataPoint[];
-  period: TimePeriod;
-  start_date: string;
-  end_date: string;
+  total_quantity_sold: number;
+  average_price: number;
+  // Các trường dưới đây chưa có trong API response, tạm thời để optional
+  top_variants?: Array<{ id: number; color?: string; size?: string; sold_quantity: number; revenue: number }>;
+  time_data?: TimeDataPoint[];
 };
 
 const ProductStatistics: React.FC = () => {
@@ -72,12 +68,16 @@ const ProductStatistics: React.FC = () => {
         params.end_date = dateRange[1].format("YYYY-MM-DD");
       }
       const res = await getProductStatistics(productId, params);
-      const d = (res as any).data as ProductStatisticsResponse;
+      // API trả về dữ liệu trong `res.data.data`
+      const d = (res as any).data.data as ProductStatisticsResponse;
 
       setTotalOrders(d.total_orders || 0);
       setTotalRevenue(d.total_revenue || 0);
-      setTotalItems(d.total_items || 0);
-      setAveragePerItem(d.average_per_item || 0);
+      // Sử dụng đúng tên thuộc tính từ API
+      setTotalItems(d.total_quantity_sold || 0);
+      setAveragePerItem(d.average_price || 0);
+
+      // Xử lý các trường có thể không tồn tại
       setTimeData(Array.isArray(d.time_data) ? d.time_data : []);
       setTopVariants(Array.isArray(d.top_variants) ? d.top_variants : []);
     } catch (e) {

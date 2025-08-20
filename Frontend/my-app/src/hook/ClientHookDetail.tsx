@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductDetail, getAllProducts } from "../api/ApiProduct";
+import { getAllProducts } from "../api/ApiProduct";
+import { getClientProduct } from "../api/product";
 import type { Product } from "../types/DetailType";
 
 export const useProductDetail = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
-      const result = await getProductDetail(id);
+      const result = await getClientProduct(id);
       return result;
     },
     enabled: !!id,
     staleTime: 0, // Force refetch every time
-    cacheTime: 0, // Don't cache
+    gcTime: 0, // Don't cache
   });
 };
 

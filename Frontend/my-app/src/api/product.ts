@@ -1,7 +1,13 @@
 // src/api/product.ts
 
 import axiosInstance from "../utils/axiosInstance";
-import { Product, ProductVariant, Color, Size } from "../types/ProductType"; 
+import { ApiResponse, Product, ProductVariant, Color, Size } from "../types/ProductType"; 
+
+// ====================================================================
+// API cho Products (Client Routes)
+// ====================================================================
+
+export const getClientProduct = (id: string | number) => axiosInstance.get<ApiResponse<Product>>(`/products/${id}`);
 
 // ====================================================================
 // API cho Products (Admin Routes)
@@ -13,7 +19,7 @@ export const getProducts = (params: { page?: number; search?: string; per_page?:
 };
 
 
-export const getProduct = (id: string | number) => axiosInstance.get<Product>(`/admin/products/${id}`);
+export const getProduct = (id: string | number) => axiosInstance.get<ApiResponse<Product>>(`/admin/products/${id}`);
 
 /**
  * TẠO MỚI sản phẩm.

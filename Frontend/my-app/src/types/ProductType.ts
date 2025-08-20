@@ -1,3 +1,11 @@
+// Định nghĩa một kiểu chung cho tất cả các phản hồi từ API
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  pagination?: any; // Thêm pagination nếu cần
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -6,7 +14,7 @@ export interface Product {
   old_price: number | null;
   status: boolean | number;
   slug: string;
-  category_id: number;
+  category?: Category;
   image: string;
   hover_image: string | null;
   material: string | string[] | null;
@@ -17,6 +25,10 @@ export interface Product {
   hover_image_url?: string;
   created_at?: string;
   updated_at?: string;
+  // Các trường được thêm vào để khớp với API response
+  display_price?: number;
+  final_price?: number;
+  variants?: ProductVariant[];
 }
 
 export interface Color {
@@ -47,6 +59,9 @@ export interface ProductVariant {
   sku: string | null; // Sửa lại cho khớp
   created_at: string;
   updated_at: string;
+  // Các thuộc tính được eager-load từ backend
+  color?: Color;
+  size?: Size;
 }
 
 export interface Category {

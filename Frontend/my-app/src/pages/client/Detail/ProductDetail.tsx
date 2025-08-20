@@ -29,7 +29,7 @@ const ProductDetail = () => {
   const { data: productRaw, isLoading, isError } = useProductDetail(id!);
 
   // ✅ Sửa lại logic: sử dụng product_full từ API response
-  const product: Product | undefined = (productRaw as any)?.data;
+  const product: Product | undefined = (productRaw as any)?.data?.data;
 
   // ✅ Thêm image_url và hover_image_url từ response vào product object
   if (product && productRaw) {
@@ -80,18 +80,6 @@ const ProductDetail = () => {
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-  // Nếu không có variants, tạo một variant mặc định
-  if (!product.variants || product.variants.length === 0) {
-    product.variants = [
-      {
-        id: 1,
-        stock: 10,
-        sku: `SKU-${product.id}`,
-        color: { id: 1, name: "Default", hex_code: "#000000" },
-        size: { id: 1, name: "M" },
-      },
-    ];
-  }
 
   let colorThumbnails: string[] = [];
   const colorSet = new Set();

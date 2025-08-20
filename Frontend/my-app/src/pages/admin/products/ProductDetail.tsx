@@ -27,17 +27,13 @@ const formatPrice = (price: string | number): string => {
   return `${numericPrice.toLocaleString("vi-VN")}₫`;
 };
 
-// Mở rộng interface ProductVariant để bao gồm cả đối tượng color và size từ API
-interface VariantWithDetails extends ProductVariant {
-  color: { name: string };
-  size: { name: string };
-}
+// Kiểu VariantWithDetails không còn cần thiết vì ProductVariant đã bao gồm color và size.
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
-  const [variants, setVariants] = useState<VariantWithDetails[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,8 +42,8 @@ export default function ProductDetail() {
       setLoading(true);
       try {
         const res = await getProduct(Number(id));
-        setProduct(res.data);
-        setVariants(res.data.variants || []);
+        setProduct(res.data.data); // Truy cập vào object data lồng nhau
+        setVariants(res.data.data.variants || []);
       } catch (error) {
         message.error("Không tìm thấy sản phẩm này.");
       } finally {
@@ -76,7 +72,7 @@ export default function ProductDetail() {
   }
 
   // Cấu hình các cột cho bảng biến thể
-  const variantColumns: TableProps<VariantWithDetails>["columns"] = [
+  const variantColumns: TableProps<ProductVariant>["columns"] = [
     { title: "ID", dataIndex: "id", key: "id", width: 60 },
     { title: "Màu sắc", dataIndex: ["color", "name"], key: "color" },
     { title: "Kích thước", dataIndex: ["size", "name"], key: "size" },
@@ -140,7 +136,7 @@ export default function ProductDetail() {
             </Descriptions.Item>
             <Descriptions.Item label="Slug">{product.slug}</Descriptions.Item>
             <Descriptions.Item label="Giá bán">
-              {formatPrice(product.price)}
+              {formatPrice(product.display_price || product.price)}
             </Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
               <Tag color={product.status ? "green" : "red"}>

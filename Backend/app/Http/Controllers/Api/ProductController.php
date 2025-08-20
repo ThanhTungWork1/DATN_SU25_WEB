@@ -4,76 +4,109 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use App\Models\OrderItem;
 
 class ProductController extends Controller
 {
     public function index()
     {
         try {
-            $products = Product::with(['variants.color', 'variants.size'])->get();
+            $products = Product::with(['category', 'variants.color', 'variants.size'])->get();
             
-            $products->each(function ($product) {
-                $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-                $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-                
-                if ($product->variants) {
-                    $product->variants->each(function ($variant) {
-                        if ($variant->image) {
-                            $variant->image_url = asset('storage/' . $variant->image);
-                        }
-                    });
-                }
-            });
-            
-            return response()->json([
-                'success' => true,
-                'data' => $products
-            ]);
+            return response()->json(['success' => true, 'data' => $products]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:products,slug',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
+            'old_price' => 'nullable|numeric',
+            'material' => 'nullable|string',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048',
-            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048'
+            'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048',
+            'variants' => 'nullable|array',
+            'variants.*.color_id' => 'required|exists:colors,id',
+            'variants.*.size_id' => 'required|exists:sizes,id',
+            'variants.*.sku' => 'nullable|string|max:255|unique:product_variants,sku',
+            'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.variant_price' => 'required|numeric|min:0',
         ]);
+
+        Log::info('Validated data for new product:', $validated);
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $filename = 'images/' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public', $filename);
-            $data['image'] = $filename;
+            $imageName = Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
+            $filename = $imageName . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('storage/images'), $filename);
+            $validated['image'] = 'images/' . $filename;
         }
 
         if ($request->hasFile('hover_image')) {
             $hoverImage = $request->file('hover_image');
-            $filename = 'images/' . Str::random(10) . '.' . $hoverImage->getClientOriginalExtension();
-            $hoverImage->storeAs('public', $filename);
-            $data['hover_image'] = $filename;
+            $hoverImageName = Str::slug(pathinfo($hoverImage->getClientOriginalName(), PATHINFO_FILENAME));
+            $filename = $hoverImageName . '-' . uniqid() . '.' . $hoverImage->getClientOriginalExtension();
+            $hoverImage->move(public_path('storage/images'), $filename);
+            $validated['hover_image'] = 'images/' . $filename;
         }
 
-        $product = Product::create($data);
+        // Tự động tạo slug nếu không được cung cấp
+        $slug = $validated['slug'] ?? Str::slug($validated['name']);
+
+        // Xử lý slug bị trùng
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . Str::random(4); // Thêm hậu tố ngẫu nhiên
+        }
+        $validated['slug'] = $slug;
+
+
+        $product = Product::create($validated);
+
+        if (!empty($validated['variants'])) {
+            foreach ($validated['variants'] as $index => $variantData) {
+                // Xử lý ảnh cho từng biến thể
+                if ($request->hasFile("variant_images.{$index}")) {
+                    $variantImage = $request->file("variant_images.{$index}");
+                    $variantImageName = Str::slug(pathinfo($variantImage->getClientOriginalName(), PATHINFO_FILENAME));
+                    $filename = $variantImageName . '-' . uniqid() . '.' . $variantImage->getClientOriginalExtension();
+                    $variantImage->move(public_path('storage/images'), $filename);
+                    $variantData['image'] = 'images/' . $filename;
+                } else {
+                    // Đảm bảo trường image là null nếu không có ảnh được tải lên
+                    $variantData['image'] = null;
+                }
+
+                // Ánh xạ variant_price từ request vào cột price của DB
+                if (isset($variantData['variant_price'])) {
+                    $variantData['price'] = $variantData['variant_price'];
+                    unset($variantData['variant_price']);
+                }
+
+                $product->variants()->create($variantData);
+            }
+        }
+
+        $product->refresh()->load('variants.color', 'variants.size');
 
         return response()->json([
             'message' => 'Thêm sản phẩm thành công',
-            'data' => $product,
-            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
-            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
+            'data' => $product
         ], 201);
     }
 
@@ -93,43 +126,44 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            if ($product->image && Storage::exists('public/' . $product->image)) {
-                Storage::delete('public/' . $product->image);
+            if ($product->image && file_exists(public_path('storage/' . $product->image))) {
+                unlink(public_path('storage/' . $product->image));
             }
             $image = $request->file('image');
-            $filename = 'images/' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public', $filename);
-            $validated['image'] = $filename;
+            $imageName = Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
+            $filename = $imageName . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('storage/images'), $filename);
+            $validated['image'] = 'images/' . $filename;
         }
 
         if ($request->hasFile('hover_image')) {
-            if ($product->hover_image && Storage::exists('public/' . $product->hover_image)) {
-                Storage::delete('public/' . $product->hover_image);
+            if ($product->hover_image && file_exists(public_path('storage/' . $product->hover_image))) {
+                unlink(public_path('storage/' . $product->hover_image));
             }
             $hoverImage = $request->file('hover_image');
-            $filename = 'images/' . Str::random(10) . '.' . $hoverImage->getClientOriginalExtension();
-            $hoverImage->storeAs('public', $filename);
-            $validated['hover_image'] = $filename;
+            $hoverImageName = Str::slug(pathinfo($hoverImage->getClientOriginalName(), PATHINFO_FILENAME));
+            $filename = $hoverImageName . '-' . uniqid() . '.' . $hoverImage->getClientOriginalExtension();
+            $hoverImage->move(public_path('storage/images'), $filename);
+            $validated['hover_image'] = 'images/' . $filename;
         }
 
         $product->update($validated);
+        $product->refresh()->load('variants.color', 'variants.size');
 
         return response()->json([
             'message' => 'Cập nhật sản phẩm thành công',
-            'data' => $product,
-            'image_url' => $product->image ? asset('storage/' . $product->image) : null,
-            'hover_image_url' => $product->hover_image ? asset('storage/' . $product->hover_image) : null
+            'data' => $product
         ]);
     }
 
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
-        if ($product->image && Storage::exists('public/' . $product->image)) {
-            Storage::delete('public/' . $product->image);
+        if ($product->image && file_exists(public_path('storage/' . $product->image))) {
+            unlink(public_path('storage/' . $product->image));
         }
-        if ($product->hover_image && Storage::exists('public/' . $product->hover_image)) {
-            Storage::delete('public/' . $product->hover_image);
+        if ($product->hover_image && file_exists(public_path('storage/' . $product->hover_image))) {
+            unlink(public_path('storage/' . $product->hover_image));
         }
         $product->delete();
         return response()->json(['message' => 'Xóa sản phẩm thành công']);
@@ -181,28 +215,6 @@ class ProductController extends Controller
         $perPage = $request->get('per_page', 10);
         $products = $query->paginate($perPage);
 
-        $products->getCollection()->transform(function ($product) {
-            $minVariantPrice = $product->variants->min('price');
-            $displayPrice = $minVariantPrice ?: $product->price;
-            
-            $product->final_price = $product->discount > 0
-                ? $displayPrice - ($displayPrice * $product->discount / 100)
-                : $displayPrice;
-            
-            $product->price = $displayPrice;
-            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-            
-            if ($product->variants) {
-                $product->variants->each(function ($variant) {
-                    if ($variant->image) {
-                        $variant->image_url = asset('storage/' . $variant->image);
-                    }
-                });
-            }
-            
-            return $product;
-        });
 
         return response()->json([
             'success' => true,
@@ -225,28 +237,6 @@ class ProductController extends Controller
             ->limit($limit)
             ->get();
 
-        $products->transform(function ($product) {
-            $minVariantPrice = $product->variants->min('price');
-            $displayPrice = $minVariantPrice ?: $product->price;
-
-            $product->final_price = $product->discount > 0
-                ? $displayPrice - ($displayPrice * $product->discount / 100)
-                : $displayPrice;
-
-            $product->price = $displayPrice;
-            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-
-            if ($product->variants) {
-                $product->variants->each(function ($variant) {
-                    if ($variant->image) {
-                        $variant->image_url = asset('storage/' . $variant->image);
-                    }
-                });
-            }
-
-            return $product;
-        });
 
         return response()->json([
             'success' => true,
@@ -270,28 +260,6 @@ class ProductController extends Controller
         $perPage = $request->get('per_page', 12);
         $products = $query->paginate($perPage);
 
-        $products->getCollection()->transform(function ($product) {
-            $minVariantPrice = $product->variants->min('price');
-            $displayPrice = $minVariantPrice ?: $product->price;
-
-            $product->final_price = $product->discount > 0
-                ? $displayPrice - ($displayPrice * $product->discount / 100)
-                : $displayPrice;
-
-            $product->price = $displayPrice;
-            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-
-            if ($product->variants) {
-                $product->variants->each(function ($variant) {
-                    if ($variant->image) {
-                        $variant->image_url = asset('storage/' . $variant->image);
-                    }
-                });
-            }
-
-            return $product;
-        });
 
         return response()->json([
             'success' => true,
@@ -318,37 +286,51 @@ class ProductController extends Controller
                 }
             ])->findOrFail($id);
 
-            $minVariantPrice = $product->variants->min('price');
-            $displayPrice = $minVariantPrice ?: $product->price;
 
-            $product->final_price = $product->discount > 0
-                ? $displayPrice - ($displayPrice * $product->discount / 100)
-                : $displayPrice;
-
-            $product->price = $displayPrice;
-            $product->image_url = $product->image ? asset('storage/' . $product->image) : null;
-            $product->hover_image_url = $product->hover_image ? asset('storage/' . $product->hover_image) : null;
-
-            if ($product->variants) {
-                $product->variants->each(function ($variant) {
-                    if ($variant->image) {
-                        $variant->image_url = asset('storage/' . $variant->image);
-                    }
-                });
-            }
-
-            $product->average_rating = $product->comments->avg('rating');
-            $product->total_reviews = $product->comments->count();
-
-            return response()->json([
-                'success' => true,
-                'data' => $product
-            ]);
+            return response()->json(['success' => true, 'data' => $product]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error("Product not found with ID: {$id}");
             return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại.'], 404);
         } catch (\Exception $e) {
             Log::error("Error fetching product ID {$id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi máy chủ nội bộ.'], 500);
+        }
+    }
+
+    public function getStatistics(Request $request, $id)
+    {
+        try {
+            $product = Product::with('variants')->findOrFail($id);
+            $variantIds = $product->variants->pluck('id');
+
+            $stats = OrderItem::whereIn('variant_id', $variantIds)
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.status', 'delivered') // Chỉ tính các đơn hàng đã giao thành công
+                ->selectRaw('
+                    COUNT(DISTINCT order_items.order_id) as total_orders,
+                    SUM(order_items.quantity * order_items.price) as total_revenue,
+                    SUM(order_items.quantity) as total_quantity_sold
+                ')
+                ->first();
+
+            $totalRevenue = $stats->total_revenue ?? 0;
+            $totalQuantitySold = $stats->total_quantity_sold ?? 0;
+
+            $averagePrice = $totalQuantitySold > 0 ? $totalRevenue / $totalQuantitySold : 0;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_orders' => $stats->total_orders ?? 0,
+                    'total_revenue' => (float) $totalRevenue,
+                    'total_quantity_sold' => (int) $totalQuantitySold,
+                    'average_price' => (float) $averagePrice,
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại.'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error fetching statistics for product ID {$id}: " . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Lỗi máy chủ nội bộ.'], 500);
         }
     }

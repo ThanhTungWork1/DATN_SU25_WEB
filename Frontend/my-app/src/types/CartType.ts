@@ -18,6 +18,7 @@ interface ProductInfo {
 
 interface ProductVariant {
   id: number;
+  image_url?: string; // Thêm URL ảnh cho biến thể
   color: Color;
   size: Size;
   product?: ProductInfo;
