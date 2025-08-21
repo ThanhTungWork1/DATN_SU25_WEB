@@ -42,8 +42,12 @@ export default function ProductDetail() {
       setLoading(true);
       try {
         const res = await getProduct(Number(id));
-        setProduct(res.data.data); // Truy cập vào object data lồng nhau
-        setVariants(res.data.data.variants || []);
+        console.log("🔍 ProductDetail - API Response:", res);
+        // API trả về trực tiếp object sản phẩm, không có wrapper data
+        const productData = res.data.data || res.data;
+        console.log("🔍 ProductDetail - Product Data:", productData);
+        setProduct(productData);
+        setVariants(productData.variants || []);
       } catch (error) {
         message.error("Không tìm thấy sản phẩm này.");
       } finally {

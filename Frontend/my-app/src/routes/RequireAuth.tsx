@@ -49,7 +49,7 @@ const RequireAuth = ({ allowedRoles }: Props) => {
 
   // Nếu đang truy cập trang admin (allowedRoles = ["admin"])
   if (allowedRoles.includes("admin")) {
-    if (role === "admin" && (adminToken || userToken || token)) {
+    if (role === "admin" && adminToken) {
       return <Outlet />;
     }
   }

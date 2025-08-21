@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts, deleteProduct } from "../../../api/product";
-import { Product} from "../../../types/ProductType";
+import { Product } from "../../../types/ProductType";
 import {
   Table,
   Button,
@@ -40,7 +40,6 @@ export default function ProductList() {
     total: 0,
   });
 
-
   const fetchData = async (page = 1, search = "") => {
     setLoading(true);
     try {
@@ -52,6 +51,17 @@ export default function ProductList() {
 
       const paginatedData = (productsRes as any)
         .data as PaginatedResponse<Product>;
+
+      console.log("🔍 ProductsList - API Response:", productsRes);
+      console.log("🔍 ProductsList - Paginated Data:", paginatedData);
+
+      // Debug: Kiểm tra category data
+      if (paginatedData.data && paginatedData.data.length > 0) {
+        console.log(
+          "🔍 ProductsList - First product category:",
+          paginatedData.data[0].category
+        );
+      }
 
       setProducts(paginatedData.data);
       setPagination((prev) => ({
@@ -108,7 +118,6 @@ export default function ProductList() {
       currentPage: paginationConfig.current ?? 1,
     }));
   };
-
 
   const columns: TableProps<Product>["columns"] = [
     { title: "ID", dataIndex: "id", key: "id", render: (text) => `#${text}` },

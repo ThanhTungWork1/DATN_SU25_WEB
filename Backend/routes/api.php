@@ -98,7 +98,7 @@ Route::prefix('payments/vnpay')->group(function () {
 // ========== Admin ==========
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
-    Route::apiResource('products', ProductController::class);
+    Route::apiResource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('products/{id}/statistics', [ProductController::class, 'getStatistics']);
     Route::apiResource('orders', OrderController::class);
 

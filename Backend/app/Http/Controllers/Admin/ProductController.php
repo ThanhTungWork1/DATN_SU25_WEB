@@ -20,7 +20,7 @@ class ProductController extends Controller
         \Log::info('🔍 [BACKEND DEBUG] Admin products index called');
         \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
 
-        $query = Product::query();
+        $query = Product::with('category');
 
         // THÊM MỚI: Logic xử lý tìm kiếm
         if ($request->has('search') && $request->input('search') != '') {
@@ -67,15 +67,18 @@ class ProductController extends Controller
         'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
 
              // Validation cho dữ liệu biến thể
-            'variants' => 'required|string', // Vẫn nhận chuỗi JSON
+            'variants' => 'required|array', // Nhận array trực tiếp
             'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
             'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048' // Validate từng file trong mảng
         ]);
 
-        $variantsData = json_decode($validatedData['variants'], true);
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($variantsData) || count($variantsData) < 1) {
+        $variantsData = $validatedData['variants'];
+        if (!is_array($variantsData) || count($variantsData) < 1) {
             return response()->json(['message' => 'Định dạng biến thể không hợp lệ.'], 422);
         }
+
+        // Bỏ validation SKU unique - cho phép SKU trùng lặp giữa các sản phẩm
+        // Mỗi sản phẩm có thể có variants với SKU giống nhau
 
         $product = DB::transaction(function () use ($validatedData, $variantsData, $request) {
             \Log::info('🔍 [BACKEND DEBUG] Starting DB transaction');
@@ -93,7 +96,15 @@ class ProductController extends Controller
             $product->sold = $validatedData['sold'] ?? 0;
 
             // Tự động tạo slug nếu người dùng không nhập
-            $product->slug = $validatedData['slug'] ?? Str::slug($validatedData['name']);
+            $baseSlug = $validatedData['slug'] ?? Str::slug($validatedData['name']);
+            $product->slug = $baseSlug;
+            
+            // Kiểm tra và tạo slug unique
+            $counter = 1;
+            while (Product::where('slug', $product->slug)->exists()) {
+                $product->slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
 
             // Xử lý upload file và gán đường dẫn
             if ($request->hasFile('image')) {
@@ -125,6 +136,19 @@ class ProductController extends Controller
                     \Log::info("🔍 [BACKEND DEBUG] Variant {$index} no new image, using: " . ($variant['image'] ?? 'null'));
                 }
 
+                // Map variant_price thành price
+                if (isset($variant['variant_price'])) {
+                    $variant['price'] = $variant['variant_price'];
+                    unset($variant['variant_price']);
+                }
+                
+                // Tạo SKU unique tự động nếu không có SKU hoặc SKU trùng
+                if (empty($variant['sku'])) {
+                    $color = \App\Models\Color::find($variant['color_id']);
+                    $size = \App\Models\Size::find($variant['size_id']);
+                    $variant['sku'] = "SP-" . ($color ? $color->name : 'Unknown') . "-" . ($size ? $size->name : 'Unknown') . "-" . $product->id . "-" . $index;
+                }
+                
                 \Log::info("🔍 [BACKEND DEBUG] About to create variant with data:", $variant);
                 $product->variants()->create($variant);
                 \Log::info("🔍 [BACKEND DEBUG] Variant {$index} created successfully");
@@ -177,7 +201,7 @@ class ProductController extends Controller
             'material' => 'nullable|string',
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
             'sold' => 'nullable|integer|min:0',
-            'variants' => 'sometimes|required|string',
+            'variants' => 'sometimes|required|array',
             'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
             'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048', // Validate từng file trong mảng
                     'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -199,30 +223,49 @@ class ProductController extends Controller
             $product->update($productDataForUpdate);
 
             if ($request->has('variants')) {
-                $variants = json_decode($request->input('variants'), true);
+                $variants = $request->input('variants');
                 $incomingVariantIds = collect($variants)->pluck('id')->filter();
-             // Xóa các biến thể không còn được gửi lên
+                
+                // Bỏ validation SKU unique cho update method cũng vậy
+                
+                // Xóa các biến thể không còn được gửi lên
                 $product->variants()->whereNotIn('id', $incomingVariantIds)->delete();
 
                 // Cập nhật hoặc Tạo mới các biến thể
                 foreach ($variants as $index => $variantData) {
+                    \Log::info("🔍 [UPDATE DEBUG] Processing variant index {$index}:", $variantData);
+                    
                     // Kiểm tra xem có file ảnh mới cho biến thể này không
                     if ($request->hasFile("variant_images.{$index}")) {
+                        \Log::info("🔍 [UPDATE DEBUG] Found image file for variant index {$index}");
+                        
                         // Tìm biến thể cũ để xóa ảnh cũ (nếu có)
                         if (isset($variantData['id'])) {
                             $oldVariant = $product->variants()->find($variantData['id']);
                             if ($oldVariant && $oldVariant->image) {
                                 Storage::disk('public')->delete($oldVariant->image);
+                                \Log::info("🔍 [UPDATE DEBUG] Deleted old image: {$oldVariant->image}");
                             }
                         }
                         // Lưu ảnh mới và cập nhật đường dẫn
-                        $variantData['image'] = $request->file("variant_images.{$index}")->store('variants', 'public');
+                        $imagePath = $request->file("variant_images.{$index}")->store('variants', 'public');
+                        $variantData['image'] = $imagePath;
+                        \Log::info("🔍 [UPDATE DEBUG] Saved new image to: {$imagePath}");
+                    } else {
+                        \Log::info("🔍 [UPDATE DEBUG] No image file for variant index {$index}");
                     }
 
+                    // Map variant_price thành price cho update method
+                    if (isset($variantData['variant_price'])) {
+                        $variantData['price'] = $variantData['variant_price'];
+                        unset($variantData['variant_price']);
+                    }
+                    
                     $product->variants()->updateOrCreate(
                         ['id' => $variantData['id'] ?? null],
                         $variantData
                     );
+                    \Log::info("🔍 [UPDATE DEBUG] Variant updated/created successfully");
                 }
             }
         });

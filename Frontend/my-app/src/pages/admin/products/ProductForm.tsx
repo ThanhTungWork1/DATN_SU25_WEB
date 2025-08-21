@@ -116,6 +116,9 @@ export default function ProductForm() {
               ? (variantsRes as any).data.data
               : (variantsRes as any).data || [];
 
+            console.log("🔍 ProductForm - Product Data:", productData);
+            console.log("🔍 ProductForm - Variants Data:", variantsData);
+
             formRef.setFieldsValue({
               ...productData,
               material: productData.material
@@ -123,7 +126,10 @@ export default function ProductForm() {
                     .split(",")
                     .map((item) => item.trim())
                 : [],
-              variants: variantsData.map((v) => ({ ...v })),
+              variants: variantsData.map((v) => ({
+                ...v,
+                variant_price: v.price, // Map price thành variant_price cho form
+              })),
             });
 
             if (productData.image_url)
@@ -144,6 +150,23 @@ export default function ProductForm() {
                   url: productData.hover_image_url,
                 },
               ]);
+
+            // Load ảnh variants
+            const variantImages: VariantImageState = {};
+            variantsData.forEach((variant, index) => {
+              if (variant.image_url) {
+                variantImages[index] = [
+                  {
+                    uid: `variant-${index}`,
+                    name: `variant_${index}.png`,
+                    status: "done",
+                    url: variant.image_url,
+                  },
+                ];
+              }
+            });
+            setVariantImageFiles(variantImages);
+            console.log("🔍 ProductForm - Variant Images:", variantImages);
           } else {
             message.error("Không tìm thấy dữ liệu sản phẩm hợp lệ.");
           }
@@ -222,7 +245,7 @@ export default function ProductForm() {
       }
     });
 
-    // Sửa lại cách gửi variants để tương thích với FormData và PHP
+    // Gửi variants dưới dạng array
     if (values.variants && Array.isArray(values.variants)) {
       values.variants.forEach((variant: any, index: number) => {
         Object.keys(variant).forEach((key) => {
