@@ -3,12 +3,15 @@ import { differenceInHours, differenceInMinutes, addMinutes } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { useRepay } from "../../../hook/useRepay";
 import { UseOrder } from "../../../types/UseOrder";
-import { Clock } from 'lucide-react';
+import { Clock } from "lucide-react";
 import OrderDetailModal from "./OrderDetailModal";
 import RefundRequestModal from "./RefundRequestModal";
 
 const statusConfig: { [key: string]: { text: string; className: string } } = {
-  waiting_for_payment: { text: "Chờ thanh toán", className: "bg-orange-100 text-orange-800" },
+  waiting_for_payment: {
+    text: "Chờ thanh toán",
+    className: "bg-orange-100 text-orange-800",
+  },
   pending: { text: "Chờ xác nhận", className: "bg-yellow-100 text-yellow-800" },
   confirmed: { text: "Đã xác nhận", className: "bg-cyan-100 text-cyan-800" },
   processing: { text: "Đang xử lý", className: "bg-blue-100 text-blue-800" },
@@ -34,13 +37,16 @@ type Props = {
 const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
   const { repay, isRepaying } = useRepay();
   const [showDetail, setShowDetail] = useState(false);
-  const [refundInfo, setRefundInfo] = useState<{ type: "cancel" | "return"; } | null>(null);
-  const [remainingTime, setRemainingTime] = useState('');
+  const [refundInfo, setRefundInfo] = useState<{
+    type: "cancel" | "return";
+  } | null>(null);
+  const [remainingTime, setRemainingTime] = useState("");
 
-  const currentStatus = statusConfig[order.status.toLowerCase()] || statusConfig.default;
+  const currentStatus =
+    statusConfig[order.status.toLowerCase()] || statusConfig.default;
 
   useEffect(() => {
-    if (order.status === 'waiting_for_payment') {
+    if (order.status === "waiting_for_payment") {
       const calculateRemainingTime = () => {
         try {
           const createdAt = new Date(order.created_at);
@@ -49,13 +55,13 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           const diff = differenceInMinutes(expirationTime, now);
 
           if (diff <= 0) {
-            setRemainingTime('Đã hết hạn');
+            setRemainingTime("Đã hết hạn");
           } else {
             setRemainingTime(`Hết hạn sau: ${diff} phút`);
           }
         } catch (e) {
-            console.error("Error calculating remaining time:", e);
-            setRemainingTime(''); // Reset if date is invalid
+          console.error("Error calculating remaining time:", e);
+          setRemainingTime(""); // Reset if date is invalid
         }
       };
 
@@ -65,7 +71,6 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       return () => clearInterval(interval);
     }
   }, [order.status, order.created_at]);
-
 
   const formatVNDCompact = (value: unknown) => {
     const num = Number(value);
@@ -85,9 +90,15 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
 
   const actionsState = React.useMemo(() => {
     const status = order.status.toLowerCase();
-    const isPaid = (order as any).is_paid === 1 || (order as any).is_paid === true;
+    const isPaid =
+      (order as any).is_paid === 1 || (order as any).is_paid === true;
 
-    const canCancel = ["pending", "confirmed", "processing", "waiting_for_payment"].includes(status);
+    const canCancel = [
+      "pending",
+      "confirmed",
+      "processing",
+      "waiting_for_payment",
+    ].includes(status);
     const canReorder = ["delivered", "completed", "cancelled"].includes(status);
     const canRequestRefundForCancelledOrder = status === "cancelled" && isPaid;
 
@@ -137,12 +148,12 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
             </p>
           </div>
           <div className="text-right">
-             <span
+            <span
               className={`px-3 py-1 text-sm font-semibold rounded-full ${currentStatus.className}`}
             >
               {currentStatus.text}
             </span>
-            {order.status === 'waiting_for_payment' && remainingTime && (
+            {order.status === "waiting_for_payment" && remainingTime && (
               <div className="flex items-center justify-end text-xs text-orange-600 mt-1">
                 <Clock size={14} className="mr-1" />
                 {remainingTime}
@@ -151,30 +162,25 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           </div>
         </div>
 
-        {/* Sản phẩm preview */}
+        {/* Sản phẩm preview - Vertical Layout */}
         <div className="mb-4">
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {order.items.slice(0, 3).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-2 min-w-0 flex-shrink-0"
-              >
+          <div className="order-items-preview">
+            {order.items.slice(0, 5).map((item) => (
+              <div key={item.id} className="order-item-preview">
                 <img
                   src={item.product_image || "https://via.placeholder.com/50"}
                   alt={item.product_name}
-                  className="w-12 h-12 object-cover rounded"
+                  className="order-item-image"
                 />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {item.product_name}
-                  </p>
-                  <p className="text-xs text-gray-500">SL: {item.quantity}</p>
+                <div className="order-item-content">
+                  <p className="order-item-name">{item.product_name}</p>
+                  <p className="order-item-quantity">SL: {item.quantity}</p>
                 </div>
               </div>
             ))}
-            {order.items.length > 3 && (
-              <div className="flex items-center text-sm text-gray-500">
-                +{order.items.length - 3} sản phẩm khác
+            {order.items.length > 5 && (
+              <div className="more-items-indicator">
+                +{order.items.length - 5} sản phẩm khác
               </div>
             )}
           </div>
@@ -214,15 +220,16 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                 </button>
               )}
 
-              {order.status === 'waiting_for_payment' && remainingTime !== 'Đã hết hạn' && (
+              {order.status === "waiting_for_payment" &&
+                remainingTime !== "Đã hết hạn" && (
                   <button
                     onClick={() => repay({ orderId: order.id })}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                     disabled={isRepaying}
                   >
-                    {isRepaying ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                    {isRepaying ? "Đang xử lý..." : "Thanh toán ngay"}
                   </button>
-              )}
+                )}
 
               {actionsState.canCancel && (
                 <button
