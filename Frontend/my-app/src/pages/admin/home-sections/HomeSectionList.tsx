@@ -179,7 +179,7 @@ const HomeSectionList = () => {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                className="btn btn-danger"
               >
                 Hủy
               </button>
@@ -234,7 +234,7 @@ const HomeSectionList = () => {
               <button
                 type="button"
                 onClick={() => setEditingSection(null)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                className="btn btn-danger"
               >
                 Hủy
               </button>
@@ -276,7 +276,7 @@ const HomeSectionList = () => {
                 </button>
                 <button
                   onClick={() => handleEdit(section)}
-                  className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
+                  className="btn btn-warning btn-sm"
                 >
                   Sửa
                 </button>

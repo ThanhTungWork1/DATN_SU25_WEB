@@ -6,8 +6,7 @@ import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import "./utils/testAuth"; // Import để có thể sử dụng testAuth() trong console
-import "./utils/testAdminLogin"; // Import để có thể sử dụng testAdminLogin() trong console
+import "./assets/styles/toast-custom.css";
 
 function App() {
   useEffect(() => {
@@ -19,13 +18,7 @@ function App() {
         <Route path="/*" element={<ClientRoute />} />
         <Route path="/admin/*" element={<AdminRoute />} />
       </Routes>
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        duration={4000}
-        style={{ zIndex: 9999 }}
-      />
+      <Toaster position="bottom-right" theme="light" richColors closeButton />
     </WishlistProvider>
   );
 }

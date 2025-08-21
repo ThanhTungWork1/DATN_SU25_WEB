@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DesktopOutlined,
   UserOutlined,
@@ -39,10 +39,22 @@ function getItem(
 const items: MenuItem[] = [
   getItem("Dashboard", "/admin/dashboard", <DesktopOutlined />),
   getItem("Thành viên", "/admin/users", <UserOutlined />),
-  getItem("Danh mục", "/admin/categories", <AppstoreOutlined />),
-  getItem("Thống kê DM", "/admin/category-statistics", <BarChartOutlined />),
-  getItem("Sản phẩm", "/admin/products", <DesktopOutlined />),
-  getItem("Thống kê SP", "/admin/product-statistics", <BarChartOutlined />),
+  getItem("Danh mục", "categories", <AppstoreOutlined />, [
+    getItem("Danh sách danh mục", "/admin/categories", <AppstoreOutlined />),
+    getItem(
+      "Thống kê danh mục",
+      "/admin/category-statistics",
+      <BarChartOutlined />
+    ),
+  ]),
+  getItem("Sản phẩm", "products", <DesktopOutlined />, [
+    getItem("Danh sách sản phẩm", "/admin/products", <DesktopOutlined />),
+    getItem(
+      "Thống kê sản phẩm",
+      "/admin/product-statistics",
+      <BarChartOutlined />
+    ),
+  ]),
   getItem("Tồn kho", "/admin/inventory", <InboxOutlined />),
   getItem("Đơn hàng", "/admin/orders", <DesktopOutlined />),
   getItem("Home Sections", "/admin/home-sections", <HomeOutlined />),
@@ -61,13 +73,27 @@ const LayoutAdmin: React.FC = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  // Add admin-page class to body when component mounts
+  useEffect(() => {
+    document.body.classList.add("admin-page");
+
+    // Remove class when component unmounts
+    return () => {
+      document.body.classList.remove("admin-page");
+    };
+  }, []);
+
   const handleLogout = () => {
     TokenManager.clearAdminToken();
     navigate("/login");
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout
+      style={{ minHeight: "100vh" }}
+      data-admin="true"
+      className="admin-layout"
+    >
       <Sider
         collapsible
         collapsed={collapsed}

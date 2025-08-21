@@ -1,51 +1,66 @@
-import React from 'react';
-import { Card, Select, Spin, DatePicker, Space } from 'antd';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { useRevenueByTime } from '../../hook/dashboards/useRevenueByTime';
-import { DollarOutlined } from '@ant-design/icons';
-import dayjs, { Dayjs } from 'dayjs';
+import React from "react";
+import { Card, Select, Spin, DatePicker, Space } from "antd";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
+import { useRevenueByTime } from "../../hook/dashboards/useRevenueByTime";
+import { useRevenueDate } from "../../contexts/RevenueDateContext";
+import { DollarOutlined } from "@ant-design/icons";
+import dayjs, { Dayjs } from "dayjs";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const RevenueChart: React.FC = () => {
   const [days, setDays] = React.useState<number | undefined>(30);
-  const [range, setRange] = React.useState<[Dayjs, Dayjs] | null>(null);
+  const { dateRange, setDateRange } = useRevenueDate();
   const { data, isLoading } = useRevenueByTime(
     days,
-    range ? range[0].format('YYYY-MM-DD') : undefined,
-    range ? range[1].format('YYYY-MM-DD') : undefined
+    dateRange ? dateRange[0].format("YYYY-MM-DD") : undefined,
+    dateRange ? dateRange[1].format("YYYY-MM-DD") : undefined
   );
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
       minimumFractionDigits: 0,
-    }).format(value).replace('₫', ' VND');
+    })
+      .format(value)
+      .replace("₫", " VND");
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const date = new Date(label);
-      const formattedDate = date.toLocaleDateString('vi-VN', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
+      const formattedDate = date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       });
-      
+
       return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '1px solid #ccc',
-          padding: '10px',
-          borderRadius: '4px'
-        }}>
-          <p style={{ margin: 0 }}><strong>Ngày: {formattedDate}</strong></p>
-          <p style={{ margin: 0, color: '#1890ff' }}>
+        <div
+          style={{
+            backgroundColor: "white",
+            border: "1px solid #ccc",
+            padding: "10px",
+            borderRadius: "4px",
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            <strong>Ngày: {formattedDate}</strong>
+          </p>
+          <p style={{ margin: 0, color: "#1890ff" }}>
             Doanh thu: {formatCurrency(payload[0].value)}
           </p>
-          <p style={{ margin: 0, color: '#52c41a' }}>
+          <p style={{ margin: 0, color: "#52c41a" }}>
             Đơn hàng: {payload[1]?.value || 0}
           </p>
         </div>
@@ -56,11 +71,11 @@ const RevenueChart: React.FC = () => {
 
   // Số ngày dùng cho tính toán trục (ưu tiên theo range nếu có)
   const daysForCalc = React.useMemo(() => {
-    if (range) {
-      return range[1].diff(range[0], 'day') + 1;
+    if (dateRange) {
+      return dateRange[1].diff(dateRange[0], "day") + 1;
     }
     return days ?? 30;
-  }, [range, days]);
+  }, [dateRange, days]);
 
   // Tính toán interval cho XAxis dựa trên số ngày
   const getXAxisInterval = () => {
@@ -77,17 +92,26 @@ const RevenueChart: React.FC = () => {
   };
 
   return (
-    <Card 
+    <Card
       title={
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <span>
-            <DollarOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+            <DollarOutlined style={{ marginRight: 8, color: "#1890ff" }} />
             Biểu đồ doanh thu
           </span>
           <Space size={8}>
-            <Select 
+            <Select
               value={days}
-              onChange={(val) => { setDays(val); setRange(null); }}
+              onChange={(val) => {
+                setDays(val);
+                setDateRange(null);
+              }}
               style={{ width: 120 }}
               size="small"
               placeholder="Theo ngày"
@@ -100,74 +124,92 @@ const RevenueChart: React.FC = () => {
             <RangePicker
               allowClear
               size="small"
-              value={range as any}
+              value={dateRange as any}
               onChange={(vals) => {
                 if (vals && vals[0] && vals[1]) {
-                  setRange(vals as [Dayjs, Dayjs]);
+                  setDateRange(vals as [Dayjs, Dayjs]);
                   setDays(undefined);
                 } else {
-                  setRange(null);
+                  setDateRange(null);
                 }
               }}
               format="DD/MM/YYYY"
-              disabledDate={(current) => current && current > dayjs().endOf('day')}
+              disabledDate={(current) =>
+                current && current > dayjs().endOf("day")
+              }
             />
           </Space>
         </div>
       }
-      style={{ height: '100%' }}
+      style={{ height: "100%" }}
     >
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: 300,
+          }}
+        >
           <Spin size="large" />
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                         <XAxis 
-               dataKey="date" 
-               tick={{ fontSize: 12, angle: getTickAngle(), textAnchor: 'end' } as any}
-               tickFormatter={(value) => {
-                 const date = new Date(value);
-                 if (daysForCalc <= 7) {
-                   // Hiển thị ngắn gọn hơn cho 7 ngày
-                   return date.toLocaleDateString('vi-VN', { day: '2-digit' });
-                 }
-                 return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-               }}
-               interval={getXAxisInterval()}
-               minTickGap={30}
-               height={60}
-             />
-            <YAxis 
+            <XAxis
+              dataKey="date"
+              tick={
+                {
+                  fontSize: 12,
+                  angle: getTickAngle(),
+                  textAnchor: "end",
+                } as any
+              }
+              tickFormatter={(value) => {
+                const date = new Date(value);
+                if (daysForCalc <= 7) {
+                  // Hiển thị ngắn gọn hơn cho 7 ngày
+                  return date.toLocaleDateString("vi-VN", { day: "2-digit" });
+                }
+                return date.toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                });
+              }}
+              interval={getXAxisInterval()}
+              minTickGap={30}
+              height={60}
+            />
+            <YAxis
               yAxisId="left"
               tick={{ fontSize: 12 }}
               tickFormatter={formatCurrency}
             />
-            <YAxis 
-              yAxisId="right" 
+            <YAxis
+              yAxisId="right"
               orientation="right"
               tick={{ fontSize: 12 }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Line 
+            <Line
               yAxisId="left"
-              type="monotone" 
-              dataKey="total" 
-              stroke="#1890ff" 
+              type="monotone"
+              dataKey="total"
+              stroke="#1890ff"
               strokeWidth={2}
-              dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#1890ff', strokeWidth: 2 }}
+              dot={{ fill: "#1890ff", strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, stroke: "#1890ff", strokeWidth: 2 }}
             />
-            <Line 
+            <Line
               yAxisId="right"
-              type="monotone" 
-              dataKey="order_count" 
-              stroke="#52c41a" 
+              type="monotone"
+              dataKey="order_count"
+              stroke="#52c41a"
               strokeWidth={2}
-              dot={{ fill: '#52c41a', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#52c41a', strokeWidth: 2 }}
+              dot={{ fill: "#52c41a", strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, stroke: "#52c41a", strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -176,4 +218,4 @@ const RevenueChart: React.FC = () => {
   );
 };
 
-export default RevenueChart; 
+export default RevenueChart;

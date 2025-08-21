@@ -33,7 +33,9 @@ export default function CommentList() {
   const fetchData = async (page = 1) => {
     setLoading(true);
     try {
+      console.log("🔍 CommentList - Bắt đầu fetch comments...");
       const res = await getComments(page);
+      console.log("🔍 CommentList - Response:", res);
       setComments(res.data.data);
       setPagination({
         current: res.data.current_page,
@@ -41,6 +43,7 @@ export default function CommentList() {
         total: res.data.total,
       });
     } catch (error) {
+      console.error("🔍 CommentList - Error:", error);
       message.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);

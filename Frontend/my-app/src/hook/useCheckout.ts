@@ -1,6 +1,6 @@
 // import { useState, useEffect } from "react";
 // import { useLocation, useNavigate } from "react-router-dom";
-// import axiosInstance from "../api/axiosConfig";
+// import axiosInstance from "../utils/axiosInstance";
 // import axios from 'axios'; // Giữ lại cho các API không cần xác thực
 // import { Address, Product, Voucher } from "../types/Checkout";
 
@@ -268,7 +268,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axiosConfig";
+import axiosInstance from "../utils/axiosInstance";
 import axios from "axios"; // Giữ lại cho các API không cần xác thực
 import { Address, Product, Voucher } from "../types/Checkout";
 import { createVNPayPayment } from "../api/ApiUrl";

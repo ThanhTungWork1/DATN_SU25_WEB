@@ -1,5 +1,3 @@
-// d:\DATN_SU25_WEB\DATN_SU25_WEB\Frontend\my-app\src\utils\tokenUtils.ts
-
 export class TokenManager {
   private static USER_TOKEN_KEY = "user_token";
   private static ADMIN_TOKEN_KEY = "admin_token";
@@ -64,6 +62,7 @@ export class TokenManager {
     if (role === "admin") {
       // Chỉ set admin token, GIỮ NGUYÊN user token
       localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
+      localStorage.setItem("role", "1"); // Lưu role admin
       console.log(
         "🔐 TokenManager - Đã lưu admin token vào:",
         this.ADMIN_TOKEN_KEY
@@ -71,6 +70,7 @@ export class TokenManager {
     } else {
       // Chỉ set user token, GIỮ NGUYÊN admin token
       localStorage.setItem(this.USER_TOKEN_KEY, token);
+      localStorage.setItem("role", "0"); // Lưu role user
       console.log(
         "🔐 TokenManager - Đã lưu user token vào:",
         this.USER_TOKEN_KEY

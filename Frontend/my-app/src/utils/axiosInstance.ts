@@ -29,6 +29,15 @@ axiosInstance.interceptors.request.use(
       token = localStorage.getItem("user_token");
     }
 
+    // 🔍 DEBUG: Log token info
+    console.log("🔍 axiosInstance - Request debug:", {
+      url: config.url,
+      role,
+      admin_token: localStorage.getItem("admin_token") ? "Có" : "Không",
+      user_token: localStorage.getItem("user_token") ? "Có" : "Không",
+      selected_token: token ? "Có" : "Không",
+    });
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

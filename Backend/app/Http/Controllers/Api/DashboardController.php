@@ -80,9 +80,22 @@ class DashboardController extends Controller
     public function topSellingProducts(Request $request)
     {
         $limit = $request->input('limit', 5);
-        $topProducts = DB::table('order_items')
+        
+        // Build query với join orders để lọc theo thời gian
+        $query = DB::table('order_items')
             ->join('product_variants', 'order_items.variant_id', '=', 'product_variants.id')
             ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereIn('orders.status', ['delivered', 'completed']); // Chỉ tính đơn đã giao/hoàn thành
+
+        // Lọc theo khoảng thời gian nếu có
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+            $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+        }
+
+        $topProducts = $query
             ->select(
                 'products.id',
                 'products.name',

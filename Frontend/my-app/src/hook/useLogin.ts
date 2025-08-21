@@ -20,13 +20,13 @@ const useLogin = ({
       if (!token) throw new Error("❌ Token không tồn tại");
 
       // BƯỚC 2: Sử dụng TokenManager để lưu token
-      if (forAdmin) {
-        if (user.role !== 1) {
-          throw new Error("❌ Bạn không có quyền truy cập admin");
-        }
-        TokenManager.setToken(token, "admin"); // <-- SỬA Ở ĐÂY
+      // 🔧 FIX: Tự động phát hiện role từ response thay vì dựa vào forAdmin
+      if (user.role === 1) {
+        // Admin
+        TokenManager.setToken(token, "admin");
       } else {
-        TokenManager.setToken(token, "user"); // <-- VÀ SỬA Ở ĐÂY
+        // User thường
+        TokenManager.setToken(token, "user");
       }
 
       const result = { token, user };

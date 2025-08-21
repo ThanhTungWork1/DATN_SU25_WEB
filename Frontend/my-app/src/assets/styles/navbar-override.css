@@ -1,8 +1,19 @@
 /* ========== NAVBAR OVERRIDE - HIGHEST PRIORITY ========== */
 
-/* Add margin-top to body to prevent navbar overlap */
+/* Add margin-top to body to prevent navbar overlap - ONLY for client pages */
+/* Admin pages have their own layout, so we don't apply this globally */
 body {
     margin-top: 60px !important;
+}
+
+/* Admin layout override - Remove margin-top for admin pages */
+.admin-layout {
+    margin-top: 0 !important;
+}
+
+/* Also override body margin when admin class is present */
+body.admin-page {
+    margin-top: 0 !important;
 }
 
 /* Force override all other navbar styles */

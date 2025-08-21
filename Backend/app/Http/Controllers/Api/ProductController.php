@@ -173,7 +173,16 @@ class ProductController extends Controller
     public function search(Request $request)
     {
         Log::info('---[SEARCH PRODUCT] Bắt đầu search', ['request' => $request->all()]);
-        $query = Product::with(['category', 'variants.color', 'variants.size']);
+        Log::info('---[SEARCH PRODUCT] Filter params:', [
+            'category_id' => $request->get('category_id'),
+            'color_id' => $request->get('color_id'),
+            'size_id' => $request->get('size_id'),
+            'materials' => $request->get('materials'),
+            'min_price' => $request->get('min_price'),
+            'max_price' => $request->get('max_price'),
+        ]);
+        $query = Product::with(['category', 'variants.color', 'variants.size'])
+            ->where('status', true); // Chỉ lấy sản phẩm active
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
@@ -188,15 +197,39 @@ class ProductController extends Controller
         }
 
         if ($request->has('min_price') && !empty($request->min_price)) {
-            $query->where('price', '>=', $request->min_price);
+            $minPrice = (int) $request->min_price;
+            Log::info('---[SEARCH PRODUCT] Filter min_price:', ['min_price' => $minPrice, 'type' => gettype($minPrice)]);
+            $query->where('price', '>=', $minPrice);
         }
 
         if ($request->has('max_price') && !empty($request->max_price)) {
-            $query->where('price', '<=', $request->max_price);
+            $maxPrice = (int) $request->max_price;
+            Log::info('---[SEARCH PRODUCT] Filter max_price:', ['max_price' => $maxPrice, 'type' => gettype($maxPrice)]);
+            $query->where('price', '<=', $maxPrice);
         }
 
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
+        }
+
+        // Filter theo màu sắc
+        if ($request->has('color_id') && !empty($request->color_id)) {
+            $query->whereHas('variants', function ($q) use ($request) {
+                $q->where('color_id', $request->color_id);
+            });
+        }
+
+        // Filter theo kích thước
+        if ($request->has('size_id') && !empty($request->size_id)) {
+            $query->whereHas('variants', function ($q) use ($request) {
+                $q->where('size_id', $request->size_id);
+            });
+        }
+
+        // Filter theo chất liệu
+        if ($request->has('materials') && !empty($request->materials)) {
+            $materials = explode(',', $request->materials);
+            $query->whereIn('material', $materials);
         }
 
         $sortBy = $request->get('sort_by', 'created_at');
