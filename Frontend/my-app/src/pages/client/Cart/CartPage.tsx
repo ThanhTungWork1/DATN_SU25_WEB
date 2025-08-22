@@ -191,26 +191,55 @@ const CartPage = () => {
 
                         const transformedProducts = selectedProducts.map(
                           (item) => {
+                            // 🔍 DEBUG: Log chi tiết từng item trước khi transform
+                            console.log("🛒 === ITEM DETAILS ===");
+                            console.log("🛒 item:", item);
+                            console.log(
+                              "🛒 item.product_variant_id:",
+                              item.product_variant_id
+                            );
+                            console.log("🛒 item.variant_id:", item.variant_id);
+                            console.log("🛒 item.variant:", item.variant);
+                            console.log(
+                              "🛒 item.product_variant:",
+                              item.product_variant
+                            );
+                            console.log("🛒 All item keys:", Object.keys(item));
+
                             const transformed = {
                               id: item.id,
                               name: item.name,
                               price: item.price,
                               quantity: item.quantity,
                               image: item.image,
-                              variant_id: item.product_variant_id, // ← Map product_variant_id thành variant_id
+                              variant_id:
+                                item.product_variant?.id ||
+                                item.product_variant_id ||
+                                item.variant_id, // 🔧 FIX: Lấy từ product_variant.id
                             };
                             console.log("🛒 Transform item:", {
                               original: {
                                 id: item.id,
                                 name: item.name,
                                 product_variant_id: item.product_variant_id,
+                                product_variant_id_actual:
+                                  item.product_variant?.id,
                               },
                               transformed: {
                                 id: transformed.id,
                                 name: transformed.name,
                                 variant_id: transformed.variant_id,
+                                price: transformed.price,
+                                quantity: transformed.quantity,
                               },
                             });
+
+                            // 🔍 DEBUG: Log rõ ràng variant_id cuối cùng
+                            console.log(
+                              "🛒 FINAL VARIANT_ID:",
+                              transformed.variant_id
+                            );
+                            console.log("🛒 FINAL PRICE:", transformed.price);
                             return transformed;
                           }
                         );

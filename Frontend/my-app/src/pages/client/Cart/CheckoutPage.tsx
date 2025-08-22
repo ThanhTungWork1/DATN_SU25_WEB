@@ -84,9 +84,9 @@ const CheckoutPage = () => {
                         </div>
                         <div className="col-auto">
                           <div className="fw-bold fs-5 text-dark">
-                            {Math.round(item.price * item.quantity).toLocaleString(
-                              "vi-VN"
-                            )}{" "}
+                            {Math.round(
+                              item.price * item.quantity
+                            ).toLocaleString("vi-VN")}{" "}
                             VND
                           </div>
                         </div>
@@ -306,7 +306,24 @@ const CheckoutPage = () => {
                 </div>
                 <button
                   className="btn btn-success w-100 py-3 fw-bold"
-                  onClick={handleCheckout}
+                  onClick={() => {
+                    // 🔍 DEBUG: Log dữ liệu trước khi đặt hàng
+                    console.log("🎯 === CLICK ĐẶT HÀNG NHAY ===");
+                    console.log("🎯 selectedProducts:", selectedProducts);
+                    console.log(
+                      "🎯 selectedProducts length:",
+                      selectedProducts?.length
+                    );
+                    console.log("🎯 displayTotalAmount:", displayTotalAmount);
+                    console.log("🎯 shippingFee:", shippingFee);
+                    console.log("🎯 discountAmount:", discountAmount);
+                    console.log("🎯 finalAmount:", finalAmount);
+                    console.log("🎯 paymentMethod:", paymentMethod);
+                    console.log("🎯 address:", address);
+
+                    // Gọi hàm handleCheckout
+                    handleCheckout();
+                  }}
                   disabled={(selectedProducts as Product[]).length === 0}
                 >
                   <i className="fas fa-shopping-cart me-2"></i>

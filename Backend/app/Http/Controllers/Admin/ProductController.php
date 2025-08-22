@@ -69,7 +69,7 @@ class ProductController extends Controller
              // Validation cho dữ liệu biến thể
             'variants' => 'required|array', // Nhận array trực tiếp
             'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
-            'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048' // Validate từng file trong mảng
+            'variant_images.*' => 'nullable|mimes:jpeg,png,jpg,gif,webp|max:2048' // Validate từng file trong mảng - KHÔNG BẮT BUỘC - KHÔNG BẮT BUỘC
         ]);
 
         $variantsData = $validatedData['variants'];
@@ -252,7 +252,15 @@ class ProductController extends Controller
                         $variantData['image'] = $imagePath;
                         \Log::info("🔍 [UPDATE DEBUG] Saved new image to: {$imagePath}");
                     } else {
-                        \Log::info("🔍 [UPDATE DEBUG] No image file for variant index {$index}");
+                        \Log::info("🔍 [UPDATE DEBUG] No image file for variant index {$index} - Using existing image or default");
+                        // Nếu không có ảnh mới, giữ nguyên ảnh cũ hoặc để null (sẽ dùng ảnh mặc định)
+                        if (isset($variantData['id'])) {
+                            $oldVariant = $product->variants()->find($variantData['id']);
+                            if ($oldVariant && $oldVariant->image) {
+                                $variantData['image'] = $oldVariant->image;
+                                \Log::info("🔍 [UPDATE DEBUG] Keeping existing image: {$oldVariant->image}");
+                            }
+                        }
                     }
 
                     // Map variant_price thành price cho update method

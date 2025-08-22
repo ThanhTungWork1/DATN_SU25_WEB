@@ -49,7 +49,6 @@ const ProductDetail = () => {
     handleColorSelect,
   } = useProductDetailLogic(product);
 
-
   const [banner2, setBanner2] = useState<BannerType | null>(null);
 
   useEffect(() => {
@@ -75,41 +74,49 @@ const ProductDetail = () => {
   }
 
   const selectedVariant = product.variants?.find(
-    (v: Variant) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
+    (v: Variant) =>
+      v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-
+  // ✅ Logic tạo thumbnails từ variants (tối đa 6 ảnh - 1 ảnh cho mỗi màu)
   let colorThumbnails: string[] = [];
-  const colorSet = new Set();
+  const colorIdSet = new Set(); // Sử dụng color ID thay vì color object
+
   if (product?.variants) {
     for (const variant of product.variants) {
-      if (variant.color && variant.image_url && !colorSet.has(variant.color)) {
-        colorThumbnails.push(variant.image_url); // ✅ Sử dụng image_url thay vì image
-        colorSet.add(variant.color);
-      } else if (
-        variant.color &&
-        variant.image &&
-        !colorSet.has(variant.color)
-      ) {
-        // Fallback nếu không có image_url
-        colorThumbnails.push(variant.image);
-        colorSet.add(variant.color);
+      // Chỉ lấy 1 ảnh cho mỗi màu (dựa trên color ID)
+      if (variant.color?.id && !colorIdSet.has(variant.color.id)) {
+        if (variant.image_url) {
+          colorThumbnails.push(variant.image_url);
+          colorIdSet.add(variant.color.id);
+        } else if (variant.image) {
+          // Fallback nếu không có image_url
+          colorThumbnails.push(variant.image);
+          colorIdSet.add(variant.color.id);
+        }
       }
+
+      // ✅ Giới hạn tối đa 6 ảnh ngay từ đầu
+      if (colorThumbnails.length >= 6) break;
     }
   }
 
-  // ✅ Sửa lại logic: ưu tiên sử dụng image_url từ backend
+  // Debug: Kiểm tra thumbnails được tạo
+  console.log("🔍 ProductDetail - Color thumbnails:", colorThumbnails);
+  console.log("🔍 ProductDetail - Color IDs used:", Array.from(colorIdSet));
+
+  // ✅ Sửa lại logic: ưu tiên sử dụng image_url từ backend và GIỚI HẠN TỐI ĐA 6 ẢNH
   const thumbnailImages: string[] = colorThumbnails.length
-    ? colorThumbnails
+    ? colorThumbnails.slice(0, 6) // Giới hạn tối đa 6 ảnh
     : product?.images && product.images.length
-    ? product.images.map((img) => img.image_url)
-    : product?.image_url
-    ? [product.image_url]
-    : product?.image
-    ? [product.image]
-    : [];
+      ? product.images.map((img) => img.image_url).slice(0, 6) // Giới hạn tối đa 6 ảnh
+      : product?.image_url
+        ? [product.image_url]
+        : product?.image
+          ? [product.image]
+          : [];
 
   // Kiểm tra xem sản phẩm có đủ thông tin cần thiết không
   if (!product.name || !product.price) {

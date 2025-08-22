@@ -14,8 +14,9 @@
   background: #f8f9fa;
   border-radius: 12px;
 
-  /* Giới hạn chiều cao và cuộn */
-  max-height: 500px;
+  /* Giới hạn chiều cao cho tối đa 6 ảnh */
+  max-height: 520px;
+  /* 6 ảnh x 80px + 5 gap x 12px + padding */
   overflow-y: auto;
   scrollbar-width: thin;
   /* Firefox */

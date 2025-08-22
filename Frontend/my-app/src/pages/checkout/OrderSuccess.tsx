@@ -23,6 +23,21 @@ const OrderSuccess = () => {
   const location = useLocation();
   const orderData = location.state?.orderData as OrderState;
 
+  // 🔍 DEBUG: Log dữ liệu nhận được từ location.state
+  console.log("✅ === ORDER SUCCESS COMPONENT ===");
+  console.log("✅ location:", location);
+  console.log("✅ location.state:", location.state);
+  console.log("✅ orderData:", orderData);
+  console.log("✅ orderData?.id:", orderData?.id);
+  console.log("✅ orderData?.total_amount:", orderData?.total_amount);
+  console.log("✅ orderData?.final_amount:", orderData?.final_amount);
+  console.log("✅ orderData?.items:", orderData?.items);
+  console.log("✅ orderData?.items?.length:", orderData?.items?.length);
+  console.log("✅ orderData?.customer_name:", orderData?.customer_name);
+  console.log("✅ orderData?.shipping_address:", orderData?.shipping_address);
+  console.log("✅ orderData?.created_at:", orderData?.created_at);
+  console.log("✅ orderData?.payment_method:", orderData?.payment_method);
+
   // Helper to parse status like '0 pending' -> 'pending'
   const getStatusKey = (status: string) => {
     if (!status) return "";
@@ -190,9 +205,9 @@ const OrderSuccess = () => {
                         </div>
                         <div className="col-auto">
                           <div className="fw-bold text-danger">
-                            {Math.round(item.price * item.quantity).toLocaleString(
-                              "vi-VN"
-                            )}{" "}
+                            {Math.round(
+                              item.price * item.quantity
+                            ).toLocaleString("vi-VN")}{" "}
                             VND
                           </div>
                         </div>
@@ -218,20 +233,29 @@ const OrderSuccess = () => {
                       <div className="d-flex justify-content-between mb-2">
                         <span>Tổng tiền sản phẩm:</span>
                         <span className="fw-semibold">
-                          {Math.round(orderData.total_amount).toLocaleString("vi-VN")} VND
+                          {Math.round(orderData.total_amount).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VND
                         </span>
                       </div>
                       <div className="d-flex justify-content-between mb-2">
                         <span>Phí vận chuyển:</span>
                         <span className="fw-semibold">
-                          {Math.round(orderData.shipping_fee).toLocaleString("vi-VN")} VND
+                          {Math.round(orderData.shipping_fee).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VND
                         </span>
                       </div>
                       {orderData.discount_amount > 0 && (
                         <div className="d-flex justify-content-between mb-2">
                           <span>Giảm giá:</span>
                           <span className="fw-semibold text-success">
-                            -{Math.round(orderData.discount_amount).toLocaleString("vi-VN")}{" "}
+                            -
+                            {Math.round(
+                              orderData.discount_amount
+                            ).toLocaleString("vi-VN")}{" "}
                             VND
                           </span>
                         </div>
@@ -241,7 +265,10 @@ const OrderSuccess = () => {
                       <div className="text-end">
                         <div className="fs-4 fw-bold text-danger">
                           Tổng cộng:{" "}
-                          {Math.round(orderData.final_amount).toLocaleString("vi-VN")} VND
+                          {Math.round(orderData.final_amount).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VND
                         </div>
                       </div>
                     </div>

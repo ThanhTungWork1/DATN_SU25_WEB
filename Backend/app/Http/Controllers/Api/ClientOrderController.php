@@ -170,6 +170,15 @@ class ClientOrderController extends Controller
             foreach ($data['items'] as $item) {
                 $variant = ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
 
+                // 🔍 DEBUG: Log variant để kiểm tra
+                Log::info('🔍 DEBUG VARIANT:', [
+                    'variant_id_requested' => $item['variant_id'],
+                    'variant_found' => $variant ? 'YES' : 'NO',
+                    'variant_data' => $variant,
+                    'item_data' => $item,
+                    'item_keys' => array_keys($item)
+                ]);
+
                 if (!$variant) {
                     throw new \Exception('Không tìm thấy biến thể sản phẩm với ID: ' . $item['variant_id']);
                 }
@@ -177,12 +186,33 @@ class ClientOrderController extends Controller
                     throw new \Exception('Sản phẩm ' . $variant->product->name . ' không đủ tồn kho.');
                 }
 
-                // Logic lấy giá an toàn: Ưu tiên giá từ request -> giá sale -> giá gốc -> giá sản phẩm cha
-                $price = $item['price'] ?? ($variant->sale_price > 0 ? $variant->sale_price : $variant->price) ?? $variant->product->price;
+                // 🔧 FIX: Ưu tiên giá từ frontend, không tính lại từ database
+                $price = $item['price'] ?? null; // Sử dụng null coalescing để tránh lỗi
 
-                if (is_null($price)) {
-                    // Nếu không thể xác định giá, ném ra lỗi rõ ràng
-                    throw new \Exception('Không thể xác định giá cho sản phẩm: ' . $variant->product->name);
+                // 🔍 DEBUG: Log chi tiết giá để debug
+                Log::info('🔍 DEBUG PRICE CALCULATION:', [
+                    'variant_id' => $item['variant_id'],
+                    'product_name' => $variant->product->name,
+                    'price_from_frontend' => $item['price'] ?? 'NOT_FOUND',
+                    'variant_sale_price' => $variant->sale_price,
+                    'variant_price' => $variant->price,
+                    'product_price' => $variant->product->price,
+                    'final_price_used' => $price,
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $price * $item['quantity']
+                ]);
+
+                if (is_null($price) || $price <= 0) {
+                    // Fallback: Chỉ sử dụng giá database nếu frontend không gửi hoặc giá = 0
+                    $price = $variant->sale_price > 0 ? $variant->sale_price : $variant->price;
+                    
+                    if (is_null($price) || $price <= 0) {
+                        $price = $variant->product->price;
+                    }
+                    
+                    if (is_null($price) || $price <= 0) {
+                        throw new \Exception('Không thể xác định giá cho sản phẩm: ' . $variant->product->name);
+                    }
                 }
 
                 $total_amount += $price * $item['quantity'];
