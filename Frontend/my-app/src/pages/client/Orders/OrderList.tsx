@@ -19,12 +19,40 @@ const OrderList = () => {
   const isLoading = activeQuery.isLoading;
   const isError = activeQuery.isError;
 
+  // 🔍 DEBUG: Log dữ liệu orders để debug
+  console.log("📋 === ORDER LIST DEBUG ===");
+  console.log("📋 orders:", orders);
+  console.log("📋 orders length:", orders?.length);
+
+  if (orders && orders.length > 0) {
+    orders.forEach((order, index) => {
+      console.log(`📋 Order ${index + 1} (ID: ${order.id}):`, order);
+      console.log(`📋 Order ${index + 1} items:`, order.items);
+
+      if (order.items && order.items.length > 0) {
+        order.items.forEach((item, itemIndex) => {
+          console.log(`📋 Order ${index + 1} - Item ${itemIndex + 1}:`, {
+            id: item.id,
+            product_name: item.product_name,
+            image_url: item.image_url,
+            variant_image_url: item.variant_image_url,
+            product_image: item.product_image,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+            price: item.price,
+            all_keys: Object.keys(item),
+          });
+        });
+      }
+    });
+  }
+
   const handleCancel = (id: number) => {
     Modal.confirm({
-      title: 'Xác nhận hủy đơn hàng',
-      content: 'Bạn chắc chắn muốn huỷ đơn hàng này?',
-      okText: 'Xác nhận',
-      cancelText: 'Không',
+      title: "Xác nhận hủy đơn hàng",
+      content: "Bạn chắc chắn muốn huỷ đơn hàng này?",
+      okText: "Xác nhận",
+      cancelText: "Không",
       onOk: () => {
         cancelOrder.mutate(id);
       },
@@ -33,10 +61,10 @@ const OrderList = () => {
 
   const handleReorder = (order: UseOrder) => {
     Modal.confirm({
-      title: 'Xác nhận mua lại',
-      content: 'Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?',
-      okText: 'Mua lại',
-      cancelText: 'Không',
+      title: "Xác nhận mua lại",
+      content: "Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?",
+      okText: "Mua lại",
+      cancelText: "Không",
       onOk: () => {
         reorder.mutate(order, {
           onSuccess: () => {
@@ -76,7 +104,7 @@ const OrderList = () => {
       </div>
 
       <div className="order-list-filter">
-                <select
+        <select
           onChange={(e) => setStatus(e.target.value)}
           value={status}
           className="order-list-select"

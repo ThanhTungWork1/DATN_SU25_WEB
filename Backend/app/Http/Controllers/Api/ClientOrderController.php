@@ -25,14 +25,21 @@ class ClientOrderController extends Controller
             $user = Auth::user();
 
             $query = Order::where('user_id', $user->id)
-                ->with(['items.variant.product', 'items.variant.color', 'items.variant.size', 'refund_request'])
+                ->with([
+                    'items' => function($query) {
+                        $query->select('id', 'order_id', 'variant_id', 'quantity', 'price', 'product_name', 'variant_color_name', 'variant_size_name', 'variant_sku', 'variant_image', 'image_url', 'created_at', 'updated_at');
+                    },
+                    'items.variant.product', 
+                    'items.variant.color', 
+                    'items.variant.size', 
+                    'refund_request'
+                ])
                 ->orderBy('created_at', 'desc');
 
             // Lọc theo trạng thái nếu có
             if ($request->has('status') && $request->status !== '') {
                 $query->where('status', $request->status);
             }
-
 
             if ($request->has('date_from')) {
                 $query->whereDate('created_at', '>=', $request->date_from);
@@ -42,6 +49,13 @@ class ClientOrderController extends Controller
             }
 
             $orders = $query->paginate(10);
+
+            // 🔍 DEBUG: Log response để kiểm tra
+            Log::info('🔍 DEBUG ORDERS API RESPONSE:', [
+                'orders_count' => $orders->count(),
+                'first_order_items' => $orders->first() ? $orders->first()->items->toArray() : 'NO_ORDERS',
+                'sample_item' => $orders->first() && $orders->first()->items->first() ? $orders->first()->items->first()->toArray() : 'NO_ITEMS'
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -225,9 +239,23 @@ class ClientOrderController extends Controller
                     'product_name' => $variant->product->name,
                     'variant_color_name' => $variant->color->name ?? null,
                     'variant_size_name' => $variant->size->name ?? null,
-                    // Lưu URL ảnh để hiển thị lại trong lịch sử đơn hàng
-                    'image_url' => $variant->image_url ?? $variant->product->image_url ?? null
+                    // 🔧 FIX: Ưu tiên ảnh variant thay vì ảnh product
+                    'image_url' => $variant->image ? asset('storage/' . $variant->image) : ($variant->product->image_url ?? null)
                 ];
+                
+                // 🔍 DEBUG: Log ảnh được lưu
+                Log::info('🔍 DEBUG ORDER ITEM IMAGE:', [
+                    'variant_id' => $item['variant_id'],
+                    'variant_image' => $variant->image,
+                    'variant_image_url' => $variant->image_url,
+                    'product_image' => $variant->product->image,
+                    'product_image_url' => $variant->product->image_url,
+                    'final_image_url' => $variant->image_url ?? $variant->product->image_url ?? null,
+                    'variant_has_image' => !empty($variant->image),
+                    'product_has_image' => !empty($variant->product->image),
+                    'variant_image_exists' => $variant->image_url ? 'YES' : 'NO',
+                    'product_image_exists' => $variant->product->image_url ? 'YES' : 'NO'
+                ]);
             }
 
             // === Xử lý Voucher an toàn ở Backend ===

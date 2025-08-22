@@ -1,4 +1,4 @@
-import { UseOrder, OrderItem } from '../types/UseOrder';
+import { UseOrder, OrderItem } from "../types/UseOrder";
 
 // Ép kiểu an toàn sang số từ giá trị API (có thể là string như "99.00")
 const safeNumber = (v: unknown): number => {
@@ -6,12 +6,12 @@ const safeNumber = (v: unknown): number => {
   return isFinite(n) ? n : 0;
 };
 
-
 interface BackendOrderItem {
   id: number;
   variant_id: number;
   quantity: number;
   price: number | string;
+  image_url?: string; // Thêm field image_url từ API
   variant: {
     product: {
       id: number;
@@ -43,15 +43,27 @@ interface BackendOrder {
 }
 
 export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
-  const transformedItems: OrderItem[] = backendOrder.items.map(item => {
+  const transformedItems: OrderItem[] = backendOrder.items.map((item) => {
     const price = safeNumber((item as any).price);
     const quantity = safeNumber(item.quantity);
+
+    // 🔍 DEBUG: Log để kiểm tra image_url
+    console.log("🔍 TRANSFORM ITEM:", {
+      item_id: item.id,
+      variant_id: item.variant_id,
+      image_url: (item as any).image_url,
+      variant_product_image: (item as any).variant?.product?.image,
+      final_image:
+        (item as any).image_url || (item as any).variant?.product?.image,
+    });
+
     return {
       id: item.id,
       variant_id: item.variant_id,
       product_id: item.variant.product.id,
       product_name: `${item.variant.product.name} (${item.variant.color.name}, ${item.variant.size.name})`,
-      product_image: (item as any).variant?.product?.image,
+      product_image:
+        (item as any).image_url || (item as any).variant?.product?.image,
       quantity,
       price,
       total: price * quantity,
@@ -70,7 +82,7 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
     updated_at: backendOrder.updated_at,
     items: transformedItems,
     shipping_address: backendOrder.shipping_address,
-    payment_method: 'Thanh toán khi nhận hàng', // Default value
+    payment_method: "Thanh toán khi nhận hàng", // Default value
     note: backendOrder.note,
     is_paid: backendOrder.is_paid, // Thêm trường is_paid
   };

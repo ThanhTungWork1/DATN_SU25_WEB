@@ -39,6 +39,23 @@ const CartPage = () => {
     setSelectedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // Thêm function để bỏ chọn tất cả
+  const deselectAll = () => {
+    setSelectedItems({});
+  };
+
+  // Thêm function để chọn tất cả
+  const selectAll = () => {
+    const allSelected = cartItems.reduce(
+      (acc, item) => {
+        acc[item.id] = true;
+        return acc;
+      },
+      {} as { [key: number]: boolean }
+    );
+    setSelectedItems(allSelected);
+  };
+
   const handleUpdateSelectedQuantities = () => {
     const updates = cartItems
       .filter((item) => selectedItems[item.id])
@@ -103,10 +120,34 @@ const CartPage = () => {
               <div className="col-lg-8">
                 <div className="card shadow-sm border-0">
                   <div className="card-header bg-white border-0 py-3">
-                    <h5 className="mb-0 fw-bold">
-                      <i className="fas fa-list-ul text-primary me-2"></i>
-                      Sản phẩm ({cartItems.length})
-                    </h5>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <h5 className="mb-0 fw-bold">
+                        <i className="fas fa-list-ul text-primary me-2"></i>
+                        Sản phẩm ({cartItems.length})
+                      </h5>
+                      <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={selectAll}
+                          disabled={
+                            selectedProducts.length === cartItems.length
+                          }
+                        >
+                          <i className="fas fa-check-square me-1"></i>
+                          Chọn tất cả
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={deselectAll}
+                          disabled={selectedProducts.length === 0}
+                        >
+                          <i className="fas fa-square me-1"></i>
+                          Bỏ chọn tất cả
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <div className="card-body p-0">
                     {cartItems.map((item, index) => (
@@ -198,24 +239,34 @@ const CartPage = () => {
                               "🛒 item.product_variant_id:",
                               item.product_variant_id
                             );
-                            console.log("🛒 item.variant_id:", item.variant_id);
-                            console.log("🛒 item.variant:", item.variant);
+                            console.log(
+                              "🛒 item.product_variant_id:",
+                              item.product_variant_id
+                            );
                             console.log(
                               "🛒 item.product_variant:",
                               item.product_variant
                             );
                             console.log("🛒 All item keys:", Object.keys(item));
 
+                            // 🔍 DEBUG: Log ảnh để debug
+                            console.log("🛒 === IMAGE DEBUG ===");
+                            console.log("🛒 item.image:", item.image);
+                            console.log(
+                              "🛒 item.product_variant.image_url:",
+                              item.product_variant?.image_url
+                            );
+
                             const transformed = {
                               id: item.id,
                               name: item.name,
                               price: item.price,
                               quantity: item.quantity,
-                              image: item.image,
+                              image:
+                                item.product_variant?.image_url || item.image, // 🔧 FIX: Ưu tiên ảnh từ variant
                               variant_id:
                                 item.product_variant?.id ||
-                                item.product_variant_id ||
-                                item.variant_id, // 🔧 FIX: Lấy từ product_variant.id
+                                item.product_variant_id, // 🔧 FIX: Lấy từ product_variant.id
                             };
                             console.log("🛒 Transform item:", {
                               original: {

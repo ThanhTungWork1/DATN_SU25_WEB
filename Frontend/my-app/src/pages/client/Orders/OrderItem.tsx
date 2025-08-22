@@ -168,7 +168,16 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
             {order.items.slice(0, 5).map((item) => (
               <div key={item.id} className="order-item-preview">
                 <img
-                  src={item.product_image || "https://via.placeholder.com/50"}
+                  src={
+                    (item.product_image && item.product_image.startsWith("http")
+                      ? item.product_image
+                      : item.product_image
+                        ? `http://localhost:8000/storage/${item.product_image}`
+                        : null) ||
+                    item.image_url ||
+                    item.variant_image_url ||
+                    "https://via.placeholder.com/50"
+                  }
                   alt={item.product_name}
                   className="order-item-image"
                 />
