@@ -36,7 +36,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     setIsFormVisible,
     handleSubmitReview,
     canShowForm,
-    isLoggedIn
+    isLoggedIn,
   } = useReviewSystem(product.id);
 
   const renderDescription = () => (
@@ -72,7 +72,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 
   const renderEligibilityMessage = () => {
     if (eligibilityLoading) return null;
-    
+
     if (!isLoggedIn) {
       return (
         <div className="alert alert-info">
@@ -80,21 +80,27 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
         </div>
       );
     }
-    
-    if (!eligibility.can_review && eligibility.reason !== 'already_reviewed') {
+
+    // Chỉ hiển thị thông báo khi có lý do cụ thể và không phải lỗi "Thiếu thông tin đơn hàng"
+    if (
+      !eligibility.can_review &&
+      eligibility.reason !== "already_reviewed" &&
+      eligibility.reason !== "missing_order_id" &&
+      eligibility.message !== "Thiếu thông tin đơn hàng."
+    ) {
       return (
         <div className="alert alert-warning">
           <strong>Thông báo:</strong> {eligibility.message}
         </div>
       );
     }
-    
+
     return null;
   };
 
   const renderReviewForm = () => {
     if (!isFormVisible || !canShowForm) return null;
-    
+
     return (
       <div className="mb-4">
         <ReviewForm
@@ -108,7 +114,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 
   const renderReviewList = () => {
     if (reviewsLoading) return <p>Đang tải đánh giá...</p>;
-    
+
     if (!reviews || reviews.length === 0) {
       return (
         <div className="text-center py-4">

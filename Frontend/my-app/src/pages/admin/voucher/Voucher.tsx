@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import "../../../assets/styles/Voucher.css";
 import axiosInstance from "../../../utils/axiosInstance";
 import { Voucher } from "../../../types/Voucher";

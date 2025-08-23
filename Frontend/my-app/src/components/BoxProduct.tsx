@@ -26,7 +26,6 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
     "";
   const hasHoverImage = !!hoverImage;
 
-
   return (
     <div className="fashion-card" data-aos="zoom-in">
       <div
@@ -89,7 +88,6 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
           {product.old_price && (
             <span className="fashion-oldprice">
               {Number(product.old_price).toLocaleString("vi-VN")} VND
-
             </span>
           )}
         </div>

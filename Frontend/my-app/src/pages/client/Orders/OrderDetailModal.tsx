@@ -1,5 +1,11 @@
+import { useEffect, useState } from "react";
 import { useOrders } from "../../../hook/useOrders";
 import { formatCurrency } from "../../../utils/currencyFormatter";
+import { TokenManager } from "../../../utils/tokenUtils";
+import { checkReviewEligibility } from "../../../api/ApiUrl";
+import { useOrderReviews } from "../../../hook/useOrderReviews";
+import { Star } from "lucide-react";
+import ReviewModal from "./ReviewModal";
 
 const OrderDetailModal = ({
   orderId,
@@ -10,6 +16,10 @@ const OrderDetailModal = ({
 }) => {
   const { getOrderDetail } = useOrders();
   const { data: order, isLoading } = getOrderDetail(orderId);
+
+  // Lấy danh sách đánh giá cho đơn hàng này
+  const { data: reviews = [], isLoading: reviewsLoading } =
+    useOrderReviews(orderId);
 
   // Sử dụng formatCurrency từ utils thay vì formatVND local
 
@@ -46,7 +56,15 @@ const OrderDetailModal = ({
         return status;
     }
   };
-
+  const [reviewedProducts, setReviewedProducts] = useState<Set<number>>(
+    new Set()
+  );
+  const [reviewModal, setReviewModal] = useState<{
+    productId: number;
+    productName: string;
+    productImage?: string;
+    orderId: number;
+  } | null>(null);
   // Hàm hiển thị trạng thái thanh toán
   const getPaymentMethodDisplay = () => {
     if (!order) return "";
@@ -58,6 +76,52 @@ const OrderDetailModal = ({
       return "Chưa thanh toán";
     }
   };
+  useEffect(() => {
+    const checkReviewStatus = async () => {
+      if (
+        !order ||
+        !["delivered", "completed"].includes(order.status.toLowerCase())
+      )
+        return;
+
+      const token = TokenManager.getUserToken();
+      if (!token) return;
+
+      const reviewedSet = new Set<number>();
+
+      for (const item of order.items) {
+        try {
+          const response = await checkReviewEligibility(
+            item.product_id,
+            token,
+            order.id
+          );
+          if (
+            (response.data as any).can_review === false &&
+            (response.data as any).reason === "already_reviewed_for_order"
+          ) {
+            reviewedSet.add(item.product_id);
+          }
+        } catch (error: any) {
+          console.error(
+            `Error checking review status for product ${item.product_id}:`,
+            error
+          );
+          // Nếu có lỗi server, bỏ qua sản phẩm này và tiếp tục
+          if (error.response?.status === 500) {
+            console.warn(
+              `Skipping review status check for product ${item.product_id} due to server error`
+            );
+            continue;
+          }
+        }
+      }
+
+      setReviewedProducts(reviewedSet);
+    };
+
+    checkReviewStatus();
+  }, [order]);
 
   if (isLoading)
     return (
@@ -148,6 +212,37 @@ const OrderDetailModal = ({
                       )}
                     </p>
                   </div>
+                  {/* Nút đánh giá cho từng sản phẩm */}
+                  {["delivered", "completed"].includes(
+                    order.status.toLowerCase()
+                  ) &&
+                    !reviewedProducts.has(item.product_id) && (
+                      <button
+                        onClick={() =>
+                          setReviewModal({
+                            productId: item.product_id,
+                            productName: item.product_name,
+                            productImage: item.product_image,
+                            orderId: order.id,
+                          })
+                        }
+                        className="px-3 py-1.5 bg-orange-500 text-black text-xs rounded hover:bg-orange-600 transition-colors whitespace-nowrap flex items-center gap-1 border-none"
+                        style={{ border: "none" }}
+                        title="Đánh giá sản phẩm này"
+                      >
+                        ⭐ Đánh giá
+                      </button>
+                    )}
+
+                  {/* Hiển thị trạng thái đã đánh giá */}
+                  {["delivered", "completed"].includes(
+                    order.status.toLowerCase()
+                  ) &&
+                    reviewedProducts.has(item.product_id) && (
+                      <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs rounded border border-green-200 whitespace-nowrap flex items-center gap-1">
+                        ✅ Đã đánh giá
+                      </span>
+                    )}
                 </div>
               ))}
             </div>
@@ -179,11 +274,63 @@ const OrderDetailModal = ({
             </div>
           )}
 
+          {/* Phần hiển thị đánh giá - chỉ hiện khi đơn hàng đã hoàn thành */}
+          {reviews.length > 0 &&
+            ["completed", "delivered"].includes(order.status.toLowerCase()) && (
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-4">Đánh giá của bạn</h4>
+                <div className="space-y-4">
+                  {reviewsLoading ? (
+                    <div className="text-center text-gray-500">
+                      Đang tải đánh giá...
+                    </div>
+                  ) : (
+                    reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="bg-gray-50 p-4 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium">
+                            {review.product?.name}
+                          </span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={16}
+                                className={`${
+                                  i < review.rating
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 mb-2">{review.content}</p>
+                        <span className="text-sm text-gray-400">
+                          Đánh giá vào:{" "}
+                          {new Date(review.created_at).toLocaleDateString(
+                            "vi-VN"
+                          )}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
           {/* Tổng tiền */}
           <div className="border-t pt-4">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Tổng cộng:</span>
-              <span>{formatCurrency(order.total_price)}</span>
+              <span>
+                {formatCurrency(
+                  (order as any).final_amount || order.total_price || 0
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -198,6 +345,21 @@ const OrderDetailModal = ({
           </button>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewModal && (
+        <ReviewModal
+          productId={reviewModal.productId}
+          productName={reviewModal.productName}
+          productImage={reviewModal.productImage}
+          orderId={reviewModal.orderId}
+          isOpen={!!reviewModal}
+          onClose={() => setReviewModal(null)}
+          onReviewSubmitted={(productId) => {
+            setReviewedProducts((prev) => new Set(prev).add(productId));
+          }}
+        />
+      )}
     </div>
   );
 };

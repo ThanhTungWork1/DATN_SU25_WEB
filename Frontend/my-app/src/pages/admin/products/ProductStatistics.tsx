@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import {
   Card,
   Col,

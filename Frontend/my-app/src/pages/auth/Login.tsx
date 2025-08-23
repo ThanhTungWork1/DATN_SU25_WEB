@@ -1,4 +1,6 @@
-import { Form, Input, Button, message } from "antd";
+import React, { useState } from 'react';
+import { Form, Input, Button, message, Card } from 'antd';
+import "../../assets/styles/responsive.css";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import useLogin from "../../hook/useLogin";
 import "../../assets/styles/login.css";

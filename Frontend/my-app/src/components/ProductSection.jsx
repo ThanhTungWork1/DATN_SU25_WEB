@@ -22,9 +22,11 @@ const ProductSection = ({ title, apiUrl, showViewAll = true }) => {
       <div className="fashion-row">
         {products.slice(0, 4).map((product) => (
           <div className="fashion-card" key={product.id} data-aos="zoom-in">
-            {product.discount && (
-              <span className="fashion-badge">-{product.discount}%</span>
-            )}
+                         {product.discount && (
+               <span className="fashion-badge">
+                 -{Math.abs(Math.round(product.discount))}%
+               </span>
+             )}
             <img
               className="fashion-img"
               src={product.image || "https://via.placeholder.com/200"}
@@ -32,9 +34,9 @@ const ProductSection = ({ title, apiUrl, showViewAll = true }) => {
             />
             <div className="fashion-name">{product.name}</div>
             <div>
-              <span className="fashion-price">{product.price}đ</span>
+              <span className="fashion-price">{Number(product.price).toLocaleString("vi-VN")}₫</span>
               {product.old_price && (
-                <span className="fashion-oldprice">{product.old_price}đ</span>
+                <span className="fashion-oldprice">{Number(product.old_price).toLocaleString("vi-VN")}₫</span>
               )}
             </div>
             <div className="fashion-rate">

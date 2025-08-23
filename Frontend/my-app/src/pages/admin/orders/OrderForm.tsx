@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createOrder, getOrder, updateOrder } from "../../../api/order";
 import { Order } from "../../../types/ProductType";

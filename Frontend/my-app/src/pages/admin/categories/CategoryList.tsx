@@ -1,5 +1,6 @@
 // src/pages/admin/categories/CategoryList.tsx
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import {
   Table,
   Button,

@@ -87,6 +87,7 @@ Route::get('/home-sections/{id}/products', [HomeSectionProductController::class,
 Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
 
 // ========== Public Product Routes ==========
+
 Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/search', [ProductController::class, 'search']);
@@ -94,6 +95,7 @@ Route::prefix('product')->group(function () {
     Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
     Route::get('/{id}', [ProductController::class, 'show']);
 });
+
 Route::get('/products/{id}', [ProductController::class, 'show']); // Alias for frontend compatibility
 
 // Chatbot API
@@ -170,8 +172,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
 
     Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
-});
 
+    // Banner Management
+    Route::get('/banners', [BannerController::class, 'adminIndex']);
+    Route::post('/banners', [BannerController::class, 'store']);
+    Route::put('/banners/{id}', [BannerController::class, 'update']);
+});
 // ========== Authenticated Users ==========
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -254,6 +260,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Comments and Reviews
     Route::get('/client/review-eligibility/{id}', [CommentController::class, 'checkEligibility']);
+    Route::get('/client/orders/{id}/reviews', [OrderController::class, 'getOrderReviews']);
 
     // Quản lý comment (role = 1)
     Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {

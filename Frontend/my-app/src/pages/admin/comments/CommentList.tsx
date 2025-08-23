@@ -1,6 +1,7 @@
 // src/pages/admin/comments/CommentList.tsx
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import {
   Table,
   Button,
@@ -33,9 +34,7 @@ export default function CommentList() {
   const fetchData = async (page = 1) => {
     setLoading(true);
     try {
-      console.log("🔍 CommentList - Bắt đầu fetch comments...");
       const res = await getComments(page);
-      console.log("🔍 CommentList - Response:", res);
       setComments(res.data.data);
       setPagination({
         current: res.data.current_page,
@@ -43,7 +42,6 @@ export default function CommentList() {
         total: res.data.total,
       });
     } catch (error) {
-      console.error("🔍 CommentList - Error:", error);
       message.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);

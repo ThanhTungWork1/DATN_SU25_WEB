@@ -1,4 +1,5 @@
 import type { CartItem as CartItemType } from "../../types/CartType"; // Sử dụng type chung
+import { toast } from "sonner";
 
 interface CartItemProps {
   item: CartItemType;
@@ -6,19 +7,25 @@ interface CartItemProps {
   onRemove: (id: number) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove }) => {
-
+const CartItem: React.FC<CartItemProps> = ({
+  item,
+  onUpdateQuantity,
+  onRemove,
+}) => {
   // Lấy thông tin màu và size từ product_variant
   const color = item.product_variant?.color;
   const size = item.product_variant?.size;
-  const image = item.product_variant?.image_url || item.product_variant?.product?.image_url || 'https://via.placeholder.com/80';
+  const image =
+    item.product_variant?.image_url ||
+    item.product_variant?.product?.image_url ||
+    "https://via.placeholder.com/80";
 
   return (
     <div className="d-flex align-items-center border-bottom py-2">
       <img src={image} alt={item.name} className="img-thumbnail" width={80} />
       <div className="ms-3 flex-grow-1">
         <h5>{item.name}</h5>
-        
+
         {/* Hiển thị Size và Color */}
         <div className="d-flex align-items-center my-1">
           {size && <span className="me-3">Size: {size.name}</span>}
@@ -39,24 +46,44 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove })
           )}
         </div>
 
-        <p className="mb-0">{Math.round(item.price).toLocaleString('vi-VN')} VND</p>
+        <p className="mb-0">
+          {Math.round(item.price).toLocaleString("vi-VN")} VND
+        </p>
       </div>
       <input
         type="number"
         min="1"
         value={item.quantity}
-        className="form-control mx-2" style={{ width: '70px' }}
+        className="form-control mx-2"
+        style={{ width: "70px" }}
         onChange={(e) => {
           const newQuantity = Number(e.target.value);
           if (newQuantity > 0) {
-            onUpdateQuantity(item.id, newQuantity);
+            toast.promise(onUpdateQuantity(item.id, newQuantity), {
+              loading: "Đang cập nhật số lượng...",
+              success: "Đã cập nhật số lượng thành công!",
+              error: "Có lỗi xảy ra khi cập nhật số lượng",
+            });
           }
         }}
       />
-      <p className="fw-bold mx-3" style={{ minWidth: '120px', textAlign: 'right' }}>
-        {Math.round(item.price * item.quantity).toLocaleString('vi-VN')} VND
+      <p
+        className="fw-bold mx-3"
+        style={{ minWidth: "120px", textAlign: "right" }}
+      >
+        {Math.round(item.price * item.quantity).toLocaleString("vi-VN")} VND
       </p>
-      <button type="button" onClick={() => onRemove(item.id)} className="btn btn-danger ms-3">
+      <button
+        type="button"
+        onClick={() => {
+          toast.promise(onRemove(item.id), {
+            loading: "Đang xóa sản phẩm...",
+            success: "Đã xóa sản phẩm khỏi giỏ hàng!",
+            error: "Có lỗi xảy ra khi xóa sản phẩm",
+          });
+        }}
+        className="btn btn-danger ms-3"
+      >
         Xóa
       </button>
     </div>

@@ -1,12 +1,13 @@
 import { Input, Table, Tag, Switch, message, Modal } from "antd";
 import useList from "../../../hook/users/UseList";
 import type { IUser } from "../../../types/users";
-import { useState } from "react";
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import { config } from "../../../api/axios";
 
 const UserList = () => {
   const { data, isLoading, refetch } = useList({ resource: "users" });
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = React.useState("");
 
   if (isLoading) return <div>Loading...</div>;
 

@@ -1,0 +1,1197 @@
+/* ===== ADMIN RESPONSIVE CSS ===== */
+/* Mobile First Approach for Admin Panel */
+
+/* ===== GENERAL ADMIN RESPONSIVE ===== */
+@media (max-width: 767px) {
+  /* Mobile Admin Layout */
+  .admin-container {
+    padding: 10px !important;
+    margin: 0 !important;
+  }
+
+  .admin-header {
+    padding: 10px 15px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 10px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: white !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+
+  .admin-title {
+    font-size: 16px !important;
+    margin-bottom: 0 !important;
+    flex: 1 !important;
+  }
+
+  .admin-breadcrumb {
+    font-size: 12px !important;
+  }
+
+  /* Mobile Sidebar Toggle */
+  .mobile-sidebar-toggle {
+    display: block !important;
+    background: #1890ff !important;
+    border: none !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    z-index: 101 !important;
+  }
+
+  .mobile-sidebar-toggle:hover {
+    background: #40a9ff !important;
+  }
+
+  /* Admin Sidebar Mobile */
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: -280px !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background: white !important;
+    z-index: 999 !important;
+    transition: left 0.3s ease !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.15) !important;
+    overflow-y: auto !important;
+  }
+
+  .admin-sidebar.open {
+    left: 0 !important;
+  }
+
+  .admin-sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 998 !important;
+    display: none !important;
+  }
+
+  .admin-sidebar-overlay.show {
+    display: block !important;
+  }
+
+  /* Admin Content Mobile */
+  .admin-content {
+    margin-left: 0 !important;
+    padding: 15px 10px !important;
+    min-height: calc(100vh - 60px) !important;
+  }
+
+  /* Admin Cards */
+  .admin-card {
+    margin-bottom: 15px !important;
+    border-radius: 8px !important;
+  }
+
+  .admin-card-header {
+    padding: 12px 15px !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .admin-card-body {
+    padding: 15px !important;
+  }
+
+  /* Admin Buttons */
+  .admin-btn-group {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .admin-btn {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+    padding: 10px 15px !important;
+  }
+
+  .admin-btn-sm {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Admin Tables */
+  .admin-table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 -15px !important;
+    padding: 0 15px !important;
+  }
+
+  .admin-table {
+    min-width: 700px !important;
+    font-size: 12px !important;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 6px !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+  }
+
+  .admin-table-actions {
+    min-width: 120px !important;
+    text-align: center !important;
+  }
+
+  .admin-table-actions .ant-btn {
+    margin: 2px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Hide less important columns on mobile */
+  .admin-table th:nth-child(n+5):not(:last-child),
+  .admin-table td:nth-child(n+5):not(:last-child) {
+    display: none !important;
+  }
+
+  /* Keep actions column visible */
+  .admin-table th:last-child,
+  .admin-table td:last-child {
+    display: table-cell !important;
+    position: sticky !important;
+    right: 0 !important;
+    background: white !important;
+    border-left: 1px solid #f0f0f0 !important;
+  }
+
+  /* Admin Forms */
+  .admin-form-row {
+    flex-direction: column !important;
+  }
+
+  .admin-form-col {
+    width: 100% !important;
+    margin-bottom: 15px !important;
+  }
+
+  .admin-form-group {
+    margin-bottom: 15px !important;
+  }
+
+  .admin-form-label {
+    font-size: 14px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .admin-form-control {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Admin Modals */
+  .admin-modal {
+    margin: 10px !important;
+  }
+
+  .admin-modal-header {
+    padding: 15px !important;
+  }
+
+  .admin-modal-body {
+    padding: 15px !important;
+  }
+
+  .admin-modal-footer {
+    padding: 15px !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
+
+/* ===== DASHBOARD RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  .dashboard-stat-card {
+    padding: 15px !important;
+    text-align: center !important;
+  }
+
+  .dashboard-stat-number {
+    font-size: 24px !important;
+  }
+
+  .dashboard-stat-label {
+    font-size: 12px !important;
+  }
+
+  .dashboard-charts {
+    flex-direction: column !important;
+  }
+
+  .dashboard-chart {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  .dashboard-recent {
+    overflow-x: auto !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .dashboard-charts {
+    flex-direction: column !important;
+  }
+}
+
+/* ===== MEMBERS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .members-header {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .members-search {
+    width: 100% !important;
+  }
+
+  .members-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .members-table th:nth-child(n+4),
+  .members-table td:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .members-actions {
+    flex-direction: column !important;
+    gap: 5px !important;
+  }
+}
+
+/* ===== CATEGORIES RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .categories-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .category-card {
+    padding: 15px !important;
+  }
+
+  .category-image {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .category-stats {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .categories-tree {
+    font-size: 14px !important;
+  }
+
+  .category-form-modal .ant-modal {
+    margin: 10px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ===== PRODUCTS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .products-header {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .products-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .products-table th:nth-child(n+5),
+  .products-table td:nth-child(n+5) {
+    display: none !important;
+  }
+
+  .product-image {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .product-form-tabs {
+    font-size: 12px !important;
+  }
+
+  .product-variants {
+    overflow-x: auto !important;
+  }
+
+  .product-variant-card {
+    min-width: 250px !important;
+    margin-right: 10px !important;
+  }
+}
+
+/* ===== INVENTORY RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .inventory-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .inventory-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inventory-table th:nth-child(n+4),
+  .inventory-table td:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .stock-status {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .inventory-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ===== ORDERS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .orders-header {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .orders-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .orders-table th:nth-child(n+4),
+  .orders-table td:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .order-status {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  .order-detail-modal .ant-modal {
+    margin: 10px !important;
+  }
+
+  .order-products {
+    overflow-x: auto !important;
+  }
+
+  .order-summary {
+    flex-direction: column !important;
+  }
+}
+
+/* ===== HOME SECTIONS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .home-sections-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .section-card {
+    padding: 15px !important;
+  }
+
+  .section-preview {
+    height: 150px !important;
+  }
+
+  .section-controls {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .section-form-modal .ant-modal {
+    margin: 10px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .home-sections-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ===== VOUCHERS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .vouchers-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .voucher-card {
+    padding: 15px !important;
+  }
+
+  .voucher-code {
+    font-size: 14px !important;
+  }
+
+  .voucher-details {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .voucher-form-modal .ant-modal {
+    margin: 10px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .vouchers-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ===== BANNERS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .banners-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .banner-card {
+    padding: 15px !important;
+  }
+
+  .banner-preview {
+    height: 120px !important;
+  }
+
+  .banner-info {
+    padding: 10px !important;
+  }
+
+  .banner-controls {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .banner-form-modal .ant-modal {
+    margin: 10px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .banners-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ===== COMMENTS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .comments-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .comments-list {
+    padding: 0 !important;
+  }
+
+  .comment-card {
+    padding: 15px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .comment-header {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .comment-meta {
+    font-size: 12px !important;
+  }
+
+  .comment-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+}
+
+/* ===== CONTACTS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .contacts-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .contacts-table th:nth-child(n+4),
+  .contacts-table td:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .contact-status {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  .contact-detail-modal .ant-modal {
+    margin: 10px !important;
+  }
+
+  .contact-info {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
+
+/* ===== REFUNDS RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .refunds-filters {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .refunds-table th:nth-child(n+4),
+  .refunds-table td:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .refund-status {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  .refund-detail-modal .ant-modal {
+    margin: 10px !important;
+  }
+
+  .refund-info {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .refund-images {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* ===== PAGINATION RESPONSIVE ===== */
+@media (max-width: 767px) {
+  .admin-pagination {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  .admin-pagination .ant-pagination-item {
+    margin: 2px !important;
+  }
+
+  .admin-pagination .ant-pagination-options {
+    display: none !important;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+@media (max-width: 767px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-text-center {
+    text-align: center !important;
+  }
+
+  .mobile-flex-column {
+    flex-direction: column !important;
+  }
+
+  .mobile-no-padding {
+    padding: 0 !important;
+  }
+
+  .mobile-small-padding {
+    padding: 10px !important;
+  }
+
+  /* Desktop-only sidebar toggle (hide on mobile) */
+  .desktop-sidebar-toggle {
+    display: none !important;
+  }
+
+  /* Mobile-only elements */
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Better spacing for mobile */
+  .mobile-spacing {
+    margin: 8px 0 !important;
+  }
+
+  .mobile-compact {
+    padding: 8px !important;
+    margin: 4px 0 !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-sidebar-toggle {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+
+  .admin-sidebar-overlay {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-hidden {
+    display: none !important;
+  }
+
+  .tablet-full-width {
+    width: 100% !important;
+  }
+
+  .tablet-flex-column {
+    flex-direction: column !important;
+  }
+}
+
+/* ===== ANT DESIGN OVERRIDES FOR ADMIN ===== */
+@media (max-width: 767px) {
+  /* Mobile Vertical Card Layout - Each column becomes a row */
+  .ant-table-wrapper {
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .ant-table {
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .ant-table-thead {
+    display: none !important;
+  }
+
+  .ant-table-tbody > tr {
+    display: block !important;
+    background: white !important;
+    border: 1px solid #e8e8e8 !important;
+    border-radius: 8px !important;
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+
+  .ant-table-tbody > tr > td {
+    display: block !important;
+    border: none !important;
+    padding: 8px 0 !important;
+    font-size: 14px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    position: relative !important;
+    padding-left: 120px !important;
+    min-height: 32px !important;
+    line-height: 1.5 !important;
+  }
+
+  .ant-table-tbody > tr > td:before {
+    content: attr(data-label) !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #666 !important;
+    width: 110px !important;
+    text-align: left !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Column labels in Vietnamese */
+  .ant-table-tbody > tr > td:nth-child(1):before {
+    content: "ID:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(2):before {
+    content: "Tên:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(3):before {
+    content: "Hình ảnh:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(4):before {
+    content: "Trạng thái:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(5):before {
+    content: "Ngày tạo:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(6):before {
+    content: "Cập nhật:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(7):before {
+    content: "Giá:" !important;
+  }
+
+  .ant-table-tbody > tr > td:nth-child(8):before {
+    content: "Số lượng:" !important;
+  }
+
+  /* Actions column - special styling */
+  .ant-table-tbody > tr > td:last-child {
+    padding-left: 0 !important;
+    text-align: left !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 12px !important;
+    padding-top: 16px !important;
+  }
+
+  .ant-table-tbody > tr > td:last-child:before {
+    content: "Thao tác:" !important;
+    position: relative !important;
+    display: block !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #666 !important;
+  }
+
+  /* Table action buttons */
+  .ant-table .ant-btn {
+    margin: 4px 8px 4px 0 !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    height: auto !important;
+    line-height: 1.4 !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+  }
+
+  .ant-table .ant-btn-sm {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Table images */
+  .ant-table img {
+    max-width: 60px !important;
+    max-height: 60px !important;
+    object-fit: cover !important;
+    border-radius: 4px !important;
+    display: block !important;
+    margin: 4px 0 !important;
+  }
+
+  /* Status tags and badges */
+  .ant-table .ant-tag {
+    margin: 2px 0 !important;
+    display: inline-block !important;
+  }
+
+  /* Text content styling */
+  .ant-table-tbody > tr > td > div,
+  .ant-table-tbody > tr > td > span {
+    display: inline-block !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+  }
+
+  /* Custom HTML Tables (like voucher-table) */
+  .voucher-table,
+  table:not(.ant-table) {
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+  }
+
+  .voucher-table thead,
+  table:not(.ant-table) thead {
+    display: none !important;
+  }
+
+  .voucher-table tbody tr,
+  table:not(.ant-table) tbody tr {
+    display: block !important;
+    background: white !important;
+    border: 1px solid #e8e8e8 !important;
+    border-radius: 8px !important;
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+
+  .voucher-table tbody td,
+  table:not(.ant-table) tbody td {
+    display: block !important;
+    border: none !important;
+    padding: 8px 0 !important;
+    font-size: 14px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    position: relative !important;
+    padding-left: 120px !important;
+    min-height: 32px !important;
+    line-height: 1.5 !important;
+  }
+
+  .voucher-table tbody td:before,
+  table:not(.ant-table) tbody td:before {
+    content: attr(data-label) !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #666 !important;
+    width: 110px !important;
+    text-align: left !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Voucher table specific labels */
+  .voucher-table tbody td:nth-child(1):before {
+    content: "Mã:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(2):before {
+    content: "Giảm:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(3):before {
+    content: "Điều kiện:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(4):before {
+    content: "Ngày bắt đầu:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(5):before {
+    content: "Hết hạn:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(6):before {
+    content: "Sử dụng:" !important;
+  }
+
+  .voucher-table tbody td:nth-child(7):before {
+    content: "Trạng thái:" !important;
+  }
+
+  .voucher-table tbody td:last-child,
+  table:not(.ant-table) tbody td:last-child {
+    padding-left: 0 !important;
+    text-align: left !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 12px !important;
+    padding-top: 16px !important;
+  }
+
+  .voucher-table tbody td:last-child:before,
+  table:not(.ant-table) tbody td:last-child:before {
+    content: "Hành động:" !important;
+    position: relative !important;
+    display: block !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #666 !important;
+  }
+
+  /* Action buttons in custom tables */
+  .voucher-table .action-buttons button,
+  table:not(.ant-table) .action-buttons button,
+  .voucher-table button,
+  table:not(.ant-table) button {
+    margin: 4px 8px 4px 0 !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    height: auto !important;
+    line-height: 1.4 !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    border: 1px solid #d9d9d9 !important;
+    background: white !important;
+    color: #333 !important;
+    cursor: pointer !important;
+  }
+
+  .voucher-table .action-buttons button:hover,
+  table:not(.ant-table) .action-buttons button:hover {
+    border-color: #1890ff !important;
+    color: #1890ff !important;
+  }
+
+  /* Status badges */
+  .voucher-table .status-badge,
+  table:not(.ant-table) .status-badge {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+  }
+
+  /* Usage info styling */
+  .voucher-table .usage-info,
+  table:not(.ant-table) .usage-info {
+    font-weight: 600 !important;
+    color: #1890ff !important;
+  }
+
+  .voucher-table .usage-note,
+  table:not(.ant-table) .usage-note {
+    color: #999 !important;
+    font-size: 11px !important;
+  }
+
+  /* Table pagination */
+  .ant-pagination {
+    text-align: center !important;
+    margin-top: 16px !important;
+    padding: 0 20px !important;
+  }
+
+  .ant-pagination-item {
+    margin: 0 1px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    line-height: 26px !important;
+  }
+
+  .ant-pagination-options {
+    display: none !important;
+  }
+
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 28px !important;
+    height: 28px !important;
+    line-height: 26px !important;
+  }
+
+  /* Table loading */
+  .ant-spin-container {
+    overflow-x: auto !important;
+  }
+
+  /* Table empty state */
+  .ant-empty {
+    margin: 20px 0 !important;
+  }
+
+  .ant-empty-description {
+    font-size: 12px !important;
+  }
+
+  /* Ant Design Form Responsive */
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+
+  .ant-form-item-label {
+    padding-bottom: 4px !important;
+  }
+
+  .ant-form-item-label > label {
+    font-size: 14px !important;
+  }
+
+  /* Ant Design Button Responsive */
+  .ant-btn {
+    height: auto !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+
+  .ant-btn-sm {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Ant Design Modal Responsive */
+  .ant-modal {
+    margin: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .ant-modal-content {
+    border-radius: 8px !important;
+  }
+
+  .ant-modal-header {
+    padding: 16px 20px !important;
+  }
+
+  .ant-modal-body {
+    padding: 20px !important;
+  }
+
+  .ant-modal-footer {
+    padding: 16px 20px !important;
+  }
+
+  /* Ant Design Card Responsive */
+  .ant-card {
+    margin-bottom: 16px !important;
+  }
+
+  .ant-card-head {
+    padding: 0 16px !important;
+    min-height: 48px !important;
+  }
+
+  .ant-card-body {
+    padding: 16px !important;
+  }
+
+  /* Ant Design Select Responsive */
+  .ant-select {
+    width: 100% !important;
+  }
+
+  .ant-select-selector {
+    padding: 8px 12px !important;
+  }
+
+  /* Ant Design DatePicker Responsive */
+  .ant-picker {
+    width: 100% !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Ant Design Input Responsive */
+  .ant-input {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+
+  .ant-input-group {
+    width: 100% !important;
+  }
+
+  /* Ant Design Upload Responsive */
+  .ant-upload-list {
+    margin-top: 10px !important;
+  }
+
+  .ant-upload-list-item {
+    margin-bottom: 8px !important;
+  }
+}
+
+/* ===== TABLET RESPONSIVE STYLES ===== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablet Table Responsive */
+  .ant-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .ant-table {
+    min-width: 900px !important;
+    font-size: 13px !important;
+  }
+
+  .ant-table-thead > tr > th {
+    padding: 10px 6px !important;
+    font-size: 12px !important;
+  }
+
+  .ant-table-tbody > tr > td {
+    padding: 10px 6px !important;
+    font-size: 12px !important;
+  }
+
+  /* Hide some columns on tablet */
+  .ant-table th:nth-child(4),
+  .ant-table td:nth-child(4) {
+    display: none !important;
+  }
+
+  /* Table action buttons on tablet */
+  .ant-table .ant-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    margin: 2px !important;
+  }
+
+  /* Table images on tablet */
+  .ant-table img {
+    max-width: 45px !important;
+    max-height: 45px !important;
+  }
+
+  /* Sticky actions column on tablet */
+  .ant-table th:last-child,
+  .ant-table td:last-child {
+    position: sticky !important;
+    right: 0 !important;
+    background: white !important;
+    border-left: 1px solid #f0f0f0 !important;
+    z-index: 1 !important;
+    min-width: 100px !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .admin-sidebar,
+  .admin-header-actions,
+  .admin-btn,
+  .admin-pagination {
+    display: none !important;
+  }
+
+  .admin-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .admin-table {
+    font-size: 12px !important;
+  }
+}

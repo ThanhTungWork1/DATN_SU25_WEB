@@ -1,418 +1,306 @@
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Space,
-  message,
-  Typography,
-  Card,
-  Image,
-  Switch,
-  Upload,
-  Modal,
-  Form,
-  Input,
-  Popconfirm,
-  Tag,
-  Statistic,
-  Row,
-  Col,
-} from "antd";
-import type { TableProps, UploadFile } from "antd";
-import { 
-  PlusOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
-  UploadOutlined,
-  EyeOutlined,
-  FileImageOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
-import { Banner } from "../../../types/BannerType";
+import React, { useState, useEffect } from 'react';
+import "../../../assets/styles/admin-responsive.css";
+import { Table, Image, Switch, Upload, Button, Space, message, Tag, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { UploadOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import axiosInstance from '../../../utils/axiosInstance';
 
-const { Title } = Typography;
+interface BannerItem {
+  id: number;
+  image_url: string;
+  public_id?: string;
+  status: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
 
-export default function BannerList() {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
-  const [form] = Form.useForm();
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [submitting, setSubmitting] = useState(false);
+const BannerList: React.FC = () => {
+  console.log('🎯 BannerList component rendering');
+  const [data, setData] = useState<BannerItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [rowLoading, setRowLoading] = useState<number[]>([]);
+  const [files, setFiles] = useState<Record<number, File | null>>({});
+  const [lastLoadedAt, setLastLoadedAt] = useState<string>("");
 
-  useEffect(() => {
-    fetchBanners();
-  }, []);
-
-  const fetchBanners = async () => {
+  const fetchData = async () => {
+    console.log('🔄 fetchData started');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/banners');
-      const result = await response.json();
-      setBanners(result.data || []);
-    } catch (error) {
-      message.error("Không thể tải danh sách banner");
-      console.error("Fetch banners error:", error);
+      // Thêm timestamp để tránh cache
+      const timestamp = Date.now();
+      console.log('📡 Making API call to /admin/banners');
+      const res = await axiosInstance.get<{ data: BannerItem[] }>(`/admin/banners?t=${timestamp}`);
+      console.log('✅ API response received:', res);
+      console.log('📊 Response data:', res.data);
+      const list = res.data?.data || [];
+      console.log('📋 Banner list:', list);
+      
+      if (list.length === 0) {
+        console.warn('⚠️ No banners found in response');
+      }
+      
+      list.forEach(item => {
+        console.log(`🖼️ Banner ${item.id}:`, {
+          image_url: item.image_url,
+          public_id: item.public_id,
+          status: item.status
+        });
+      });
+      
+      // Đảm bảo dữ liệu có đúng format
+      const formattedList = list.map(item => ({
+        ...item,
+        status: Boolean(item.status), // Đảm bảo status là boolean
+        image_url: item.image_url || '', // Đảm bảo image_url không null
+      }));
+      
+      setData(formattedList);
+      setLastLoadedAt(new Date().toLocaleString());
+    } catch (e: any) {
+      console.error('❌ Error fetching banners:', e);
+      console.error('❌ Error details:', {
+        message: e?.message,
+        response: e?.response?.data,
+        status: e?.response?.status
+      });
+      message.error('Không thể tải danh sách banner');
     } finally {
+      console.log('🏁 fetchData finished');
       setLoading(false);
     }
   };
 
-  const handleAdd = () => {
-    setEditingBanner(null);
-    setFileList([]);
-    form.resetFields();
-    setModalVisible(true);
-  };
+  useEffect(() => {
+    console.log('🚀 BannerList component mounted, calling fetchData');
+    fetchData();
+  }, []);
 
-  const handleEdit = (banner: Banner) => {
-    setEditingBanner(banner);
-    form.setFieldsValue({
-      status: banner.status,
-    });
-    // Set existing image in file list for preview
-    setFileList([{
-      uid: banner.id.toString(),
-      name: `banner-${banner.id}`,
-      status: 'done',
-      url: banner.image_url,
-    }]);
-    setModalVisible(true);
-  };
-
-  const handleDelete = async (id: number) => {
+  const updateRow = async (record: BannerItem) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/banners/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Delete failed');
-      }
-
-      message.success('Xóa banner thành công!');
-      fetchBanners();
-    } catch (error) {
-      message.error('Không thể xóa banner');
-      console.error('Delete banner error:', error);
-    }
-  };
-
-  const handleStatusChange = async (id: number, status: boolean) => {
-    try {
-      const response = await fetch(`http://localhost:8000/api/admin/banners/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Update failed');
-      }
-
-      message.success('Cập nhật trạng thái thành công!');
-      fetchBanners();
-    } catch (error) {
-      message.error('Không thể cập nhật trạng thái');
-      console.error('Update status error:', error);
-    }
-  };
-
-  const handleSubmit = async (values: any) => {
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
+      setRowLoading((s) => [...s, record.id]);
+      const form = new FormData();
+      const file = files[record.id];
       
-      // Add form fields
-      formData.append('status', values.status ? '1' : '0');
+      console.log('🔄 Starting update for banner ID:', record.id);
+      console.log('📊 Current status:', record.status);
+      console.log('📁 Has file:', !!file);
+      console.log('📁 File details:', file ? {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      } : 'No file');
       
-      // Add image file if selected
-      if (fileList.length > 0 && fileList[0].originFileObj) {
-        formData.append('image', fileList[0].originFileObj);
+      if (file) {
+        form.append('image', file);
+        console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
       }
-
-      const url = editingBanner 
-        ? `http://localhost:8000/api/admin/banners/${editingBanner.id}`
-        : 'http://localhost:8000/api/admin/banners';
       
-      const method = editingBanner ? 'PUT' : 'POST';
+      form.append('status', String(record.status ? 1 : 0));
+      form.append('_method', 'PUT');
       
-      // For PUT requests with FormData, use method spoofing
-      if (editingBanner) {
-        formData.append('_method', 'PUT');
+      console.log('📋 FormData contents:');
+      for (let [key, value] of form.entries()) {
+        console.log(`  ${key}:`, value);
       }
-
-      const response = await fetch(url, {
-        method: editingBanner ? 'POST' : 'POST', // Always POST for FormData with Laravel
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
-          'Accept': 'application/json',
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Operation failed');
+      
+      console.log('📡 Sending POST request to:', `/admin/banners/${record.id}`);
+      const res = await axiosInstance.post<{ message?: string }>(`/admin/banners/${record.id}`, form);
+      
+      console.log('✅ Update response status:', res.status);
+      console.log('✅ Update response data:', res.data);
+      
+      if (res.status === 200 || res.status === 201) {
+        message.success(res.data?.message || 'Cập nhật thành công');
+        
+        // Clear file ngay lập tức
+        setFiles((prev) => ({ ...prev, [record.id]: null }));
+        
+        // Force refresh data với cache busting
+        await fetchData();
+        
+        // Đợi thêm một chút rồi fetch lại lần nữa để đảm bảo
+        setTimeout(async () => {
+          await fetchData();
+        }, 1000);
+      } else {
+        throw new Error(`Server returned status ${res.status}`);
       }
-
-      message.success(editingBanner ? 'Cập nhật banner thành công!' : 'Thêm banner thành công!');
-      setModalVisible(false);
-      fetchBanners();
-    } catch (error: any) {
-      message.error(error.message || 'Có lỗi xảy ra');
-      console.error('Submit banner error:', error);
+    } catch (e: any) {
+      console.error('Update error:', e);
+      console.error('Error status:', e?.response?.status);
+      console.error('Error response:', e?.response?.data);
+      
+      let errorMessage = 'Cập nhật thất bại';
+      if (e?.response?.status === 422) {
+        errorMessage = 'Dữ liệu không hợp lệ. Kiểm tra định dạng ảnh và kích thước.';
+      } else if (e?.response?.status === 413) {
+        errorMessage = 'File quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
+      } else if (e?.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      } else if (e?.response?.data?.errors) {
+        const errors = Object.values(e.response.data.errors).flat();
+        errorMessage = errors.join(', ');
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+      
+      message.error(errorMessage);
+      // Không fetch lại data khi có lỗi để giữ nguyên trạng thái
     } finally {
-      setSubmitting(false);
+      setRowLoading((s) => s.filter((x) => x !== record.id));
     }
   };
 
-  const columns: TableProps<Banner>['columns'] = [
+  const columns: ColumnsType<BannerItem> = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
       width: 80,
     },
     {
-      title: "Hình ảnh",
-      dataIndex: "image_url",
-      key: "image_url",
-      width: 150,
-      render: (imageUrl: string) => (
-        <Image
-          width={100}
-          height={60}
-          src={imageUrl}
-          alt="Banner"
-          style={{ objectFit: 'cover', borderRadius: 4 }}
-          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN4MA"
+      title: 'Ảnh',
+      dataIndex: 'image_url',
+      key: 'image_url',
+      render: (_: string, record) => {
+        const file = files[record.id];
+        if (file) {
+          const local = URL.createObjectURL(file);
+          return (
+            <Image
+              src={local}
+              width={200}
+              height={100}
+              style={{ objectFit: 'cover', borderRadius: 6 }}
+              alt={`preview-${record.id}`}
+            />
+          );
+        }
+        const base = record.image_url || '';
+        console.log(`🖼️ Rendering image for banner ${record.id}:`, base);
+        
+        if (!base) {
+          console.log(`⚠️ No image_url for banner ${record.id}`);
+          return <div style={{ width: 200, height: 100, background: '#f5f5f5', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Chưa có ảnh</div>;
+        }
+        
+        // Không thêm timestamp nếu là URL external
+        const src = base.startsWith('http') ? base : `${base}?t=${Date.now()}`;
+        console.log(`🔗 Final image src for banner ${record.id}:`, src);
+        
+        return (
+          <div>
+            <Image
+              src={src}
+              width={200}
+              height={100}
+              style={{ objectFit: 'cover', borderRadius: 6 }}
+              alt={`banner-${record.id}`}
+              onLoad={() => {
+                console.log(`✅ Image loaded successfully for banner ${record.id}:`, src);
+              }}
+              onError={(e) => {
+                console.error(`❌ Failed to load image for banner ${record.id}:`, src, e);
+              }}
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+            />
+            <div style={{ marginTop: 6 }}>
+              <a href={src} target="_blank" rel="noreferrer">Mở ảnh</a>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (_: any, record) => (
+        <Switch
+          checked={record.status}
+          onChange={(checked) =>
+            setData((prev) => prev.map((r) => (r.id === record.id ? { ...r, status: checked } : r)))
+          }
         />
       ),
+      width: 140,
     },
     {
-      title: "URL",
-      dataIndex: "image_url",
-      key: "url",
-      ellipsis: true,
-      render: (url: string) => (
-        <span style={{ fontSize: 12, color: '#666' }}>
-          {url}
-        </span>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      width: 150,
-      render: (status: boolean, record: Banner) => (
-        <Space direction="vertical" size="small">
-          <Tag 
-            color={status ? 'success' : 'error'}
-            icon={status ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-          >
-            {status ? 'Đang hiển thị' : 'Đã ẩn'}
-          </Tag>
-          <Switch
-            size="small"
-            checked={status}
-            onChange={(checked) => handleStatusChange(record.id, checked)}
-            checkedChildren="ON"
-            unCheckedChildren="OFF"
-          />
-        </Space>
-      ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "created_at",
-      key: "created_at",
-      width: 150,
-      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
+      title: 'Cập nhật',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
       width: 180,
-      render: (_, record: Banner) => (
-        <Space size="small">
-          <Button
-            type="default"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              Modal.info({
-                title: `Xem trước Banner #${record.id}`,
-                content: (
-                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <Image
-                      src={record.image_url}
-                      alt={`Banner ${record.id}`}
-                      style={{ maxWidth: '100%', maxHeight: '400px' }}
-                    />
-                  </div>
-                ),
-                width: 600,
-                okText: 'Đóng',
-              });
-            }}
-            title="Xem trước"
-          />
-          <Button
-            type="primary"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            title="Chỉnh sửa"
-          />
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc chắn muốn xóa banner này?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
+      render: (text: string) => {
+        if (!text) return '-';
+        return new Date(text).toLocaleString('vi-VN');
+      }
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (_: any, record) => {
+        const uploading = rowLoading.includes(record.id);
+        return (
+          <Space>
+            <Upload
+              maxCount={1}
+              accept="image/*"
+              beforeUpload={(file) => {
+                console.log('📁 File selected for banner:', record.id, {
+                  name: file.name,
+                  size: file.size,
+                  type: file.type
+                });
+                setFiles((prev) => ({ ...prev, [record.id]: file }));
+                message.success('Đã chọn ảnh, bấm Lưu để cập nhật');
+                return false; // prevent auto upload
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+            {files[record.id] ? (
+              <Tag color="blue">{files[record.id]?.name}</Tag>
+            ) : null}
             <Button
               type="primary"
-              danger
-              size="small"
-              icon={<DeleteOutlined />}
-              title="Xóa"
-            />
-          </Popconfirm>
-        </Space>
-      ),
+              icon={<SaveOutlined />}
+              loading={uploading}
+              onClick={() => {
+                console.log('💾 Save button clicked for banner:', record.id);
+                updateRow(record);
+              }}
+            >
+              Lưu
+            </Button>
+          </Space>
+        );
+      },
+      width: 220,
     },
   ];
 
-  // Tính toán thống kê
-  const totalBanners = banners.length;
-  const activeBanners = banners.filter(banner => banner.status).length;
-  const inactiveBanners = totalBanners - activeBanners;
-
   return (
-    <div style={{ padding: '20px' }}>
-      {/* Card thống kê */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Tổng số Banner"
-              value={totalBanners}
-              prefix={<FileImageOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Banner đang hiển thị"
-              value={activeBanners}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Banner đã ẩn"
-              value={inactiveBanners}
-              prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: '#f5222d' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Title level={3} style={{ margin: 0 }}>
-            Danh sách Banner
-          </Title>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-            size="large"
-          >
-            Thêm Banner
-          </Button>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h2 style={{ margin: 0 }}>Quản lý Banner</h2>
+          <Tooltip title={`Lần tải gần nhất: ${lastLoadedAt || 'chưa'} `}>
+            <Tag color={data.length >= 0 ? 'green' : 'default'}>
+              DB OK • {data.length} bản ghi
+            </Tag>
+          </Tooltip>
         </div>
-
-        <Table
-          columns={columns}
-          dataSource={banners}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} banner`,
-          }}
-        />
-      </Card>
-
-      <Modal
-        title={editingBanner ? "Chỉnh sửa Banner" : "Thêm Banner"}
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onOk={() => form.submit()}
-        confirmLoading={submitting}
-        width={600}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={{ status: true }}
-        >
-          <Form.Item
-            label="Hình ảnh"
-            required
-          >
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={() => false} // Prevent auto upload
-              maxCount={1}
-            >
-              {fileList.length === 0 && (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải lên</div>
-                </div>
-              )}
-            </Upload>
-            <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
-              Chọn ảnh banner (khuyến nghị: 1200x400px)
-            </div>
-          </Form.Item>
-
-          <Form.Item
-            name="status"
-            label="Trạng thái"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="Hiện" unCheckedChildren="Ẩn" />
-          </Form.Item>
-        </Form>
-      </Modal>
+        <Button icon={<ReloadOutlined />} onClick={fetchData}>Tải lại</Button>
+      </div>
+      <Table
+        rowKey="id"
+        loading={loading}
+        columns={columns}
+        dataSource={data}
+        pagination={{ pageSize: 10 }}
+      />
     </div>
   );
-}
+};
+
+export default BannerList;

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import "../../../assets/styles/responsive.css";
 import { useProductDetail } from "../../../hook/ClientHookDetail";
 import Aside from "./Aside";
 import MainImage from "./MainImage";

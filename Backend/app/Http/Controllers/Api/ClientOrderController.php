@@ -107,6 +107,7 @@ class ClientOrderController extends Controller
                 'payment_method' => $order->payment_method,
                 'discount_amount' => $order->discount_amount,
                 'total_amount' => $order->total_amount,
+                'final_amount' => $order->final_amount, // Thêm final_amount
                 'shipping_fee' => $order->shipping_fee,
                 'status' => $order->status,
                 'is_paid' => $order->is_paid,

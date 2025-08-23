@@ -1,4 +1,5 @@
 import React from "react";
+import "../../../assets/styles/admin-responsive.css";
 import { useDashboardOverview } from "../../../hook/dashboards/useDashboardOverview";
 import { Card, Col, Row, Statistic, Spin, Button } from "antd";
 import {
@@ -6,7 +7,6 @@ import {
   ShoppingOutlined,
   UserOutlined,
   ContactsOutlined,
-  DollarOutlined,
   ClockCircleOutlined,
   StarOutlined,
   ReloadOutlined,

@@ -32,6 +32,7 @@ interface BackendOrder {
   status: string;
   is_paid: any; // Thêm trường is_paid
   total_amount: number | string;
+  final_amount: number | string; // Thêm trường final_amount
   shipping_fee: number | string;
   shipping_address: string;
   shipping_phone: string;
@@ -71,13 +72,26 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
   });
 
   const totalAmount = safeNumber((backendOrder as any).total_amount);
+  const finalAmount = safeNumber((backendOrder as any).final_amount);
   const shippingFee = safeNumber((backendOrder as any).shipping_fee);
+
+  // 🔍 DEBUG: Log để kiểm tra giá trị
+  console.log("🔍 TRANSFORM ORDER PRICE:", {
+    order_id: backendOrder.id,
+    total_amount: (backendOrder as any).total_amount,
+    final_amount: (backendOrder as any).final_amount,
+    shipping_fee: (backendOrder as any).shipping_fee,
+    totalAmount_parsed: totalAmount,
+    finalAmount_parsed: finalAmount,
+    shippingFee_parsed: shippingFee,
+  });
 
   return {
     id: backendOrder.id,
     status: backendOrder.status,
-    total_price: totalAmount + shippingFee,
+    total_price: finalAmount, // Sử dụng final_amount để hiển thị tổng tiền cuối cùng
     total: totalAmount,
+    final_amount: finalAmount, // Thêm field final_amount
     created_at: backendOrder.created_at,
     updated_at: backendOrder.updated_at,
     items: transformedItems,

@@ -5,14 +5,29 @@ import type { Banner } from "../types/BannerType";
 export const Section = () => {
   const [bannerUrl, setBannerUrl] = useState<string>("");
 
-  useEffect(() => {
+  const fetchBanners = () => {
     getBanners()
       .then((data: Banner[]) => {
+        console.log('Banner data from API:', data);
         if (Array.isArray(data) && data.length > 0 && data[0].image_url) {
+          console.log('Setting banner URL:', data[0].image_url);
           setBannerUrl(data[0].image_url);
+        } else {
+          console.log('No banner data or empty array');
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error('Error fetching banners:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchBanners();
+    
+    // Refresh banner mỗi 15 giây để nhận cập nhật mới
+    const interval = setInterval(fetchBanners, 15000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   return (

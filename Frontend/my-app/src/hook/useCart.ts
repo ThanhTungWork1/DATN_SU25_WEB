@@ -131,6 +131,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import type { CartItem, CartResponse } from "../types/CartType";
 import { TokenManager } from "../utils/tokenUtils";
+import { toast } from "sonner";
 
 export default function useCart(token: string) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -171,40 +172,64 @@ export default function useCart(token: string) {
 
   const updateQuantity = async (id: number, quantity: number) => {
     try {
+      const currentToken = TokenManager.getUserToken();
+      if (!currentToken) {
+        throw new Error("Vui lòng đăng nhập để thực hiện thao tác này");
+      }
+
       await axios.put(
-        `http://localhost:8000/api/cart/${id}`,
+        `http://localhost:8000/api/cart/items/${id}`,
         { quantity },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${currentToken}` },
         }
       );
 
       fetchCart();
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error("Error updating quantity:", error);
+      throw error;
+    }
   };
 
   const removeItem = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/cart/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const currentToken = TokenManager.getUserToken();
+      if (!currentToken) {
+        throw new Error("Vui lòng đăng nhập để thực hiện thao tác này");
+      }
+
+      await axios.delete(`http://localhost:8000/api/cart/items/${id}`, {
+        headers: { Authorization: `Bearer ${currentToken}` },
       });
 
       fetchCart();
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error("Error removing item:", error);
+      throw error;
+    }
   };
 
   const clearCart = async () => {
     try {
+      const currentToken = TokenManager.getUserToken();
+      if (!currentToken) {
+        throw new Error("Vui lòng đăng nhập để thực hiện thao tác này");
+      }
+
       await axios.post(
-        "http://localhost:8000/api/cart-clear",
+        "http://localhost:8000/api/cart/clear",
         {},
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${currentToken}` },
         }
       );
 
       setCartItems([]);
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error("Error clearing cart:", error);
+      throw error;
+    }
   };
 
   const addToCart = async (item: any) => {
