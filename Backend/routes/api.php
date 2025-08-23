@@ -86,6 +86,16 @@ Route::get('/home-sections', [HomeSectionController::class, 'index']);
 Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
 Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
 
+// ========== Public Product Routes ==========
+Route::prefix('product')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/search', [ProductController::class, 'search']);
+    Route::get('/featured', [ProductController::class, 'featured']);
+    Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
+    Route::get('/{id}', [ProductController::class, 'show']);
+});
+Route::get('/products/{id}', [ProductController::class, 'show']); // Alias for frontend compatibility
+
 // Chatbot API
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
 
@@ -164,16 +174,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
 // ========== Authenticated Users ==========
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::prefix('product')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::get('/search', [ProductController::class, 'search']);
-        Route::get('/featured', [ProductController::class, 'featured']);
-        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
-        Route::get('/{id}', [ProductController::class, 'show']);
-    });
-
-    // Route for /products/{id} to match frontend calls
-    Route::get('/products/{id}', [ProductController::class, 'show']);
 
     Route::prefix('favorites')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
