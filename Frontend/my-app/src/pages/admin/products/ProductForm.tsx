@@ -1,3 +1,5 @@
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // SỬA LẠI: Tách import ra cho rõ ràng và chính xác
@@ -126,6 +128,7 @@ export default function ProductForm() {
               variants: variantsData.map((v) => ({ ...v })),
             });
 
+            // Set main image
             if (productData.image_url)
               setMainImageFileList([
                 {
@@ -135,6 +138,8 @@ export default function ProductForm() {
                   url: productData.image_url,
                 },
               ]);
+            
+            // Set hover image
             if (productData.hover_image_url)
               setHoverImageFileList([
                 {
@@ -144,6 +149,22 @@ export default function ProductForm() {
                   url: productData.hover_image_url,
                 },
               ]);
+
+            // Set variant images
+            const variantImages: VariantImageState = {};
+            variantsData.forEach((variant, index) => {
+              if (variant.image) {
+                variantImages[index] = [
+                  {
+                    uid: `variant-${variant.id}`,
+                    name: `variant_${index}.png`,
+                    status: "done",
+                    url: variant.image,
+                  },
+                ];
+              }
+            });
+            setVariantImageFiles(variantImages);
           } else {
             message.error("Không tìm thấy dữ liệu sản phẩm hợp lệ.");
           }
@@ -191,6 +212,12 @@ export default function ProductForm() {
   };
 
   const onFinish = async (values: any) => {
+    console.log('=== FORM SUBMIT DEBUG ===');
+    console.log('Form values:', values);
+    console.log('Main image files:', mainImageFileList);
+    console.log('Hover image files:', hoverImageFileList);
+    console.log('Variant image files:', variantImageFiles);
+    
     const formData = new FormData();
 
     // Generate slug if not provided or empty
@@ -233,26 +260,69 @@ export default function ProductForm() {
       });
     }
 
-    if (mainImageFileList.length > 0 && mainImageFileList[0].originFileObj) {
-      formData.append("image", mainImageFileList[0].originFileObj);
-    }
-    if (hoverImageFileList.length > 0 && hoverImageFileList[0].originFileObj) {
-      formData.append("hover_image", hoverImageFileList[0].originFileObj);
+    // Handle main image - send new file or indicate removal
+    console.log('=== MAIN IMAGE PROCESSING ===');
+    console.log('mainImageFileList length:', mainImageFileList.length);
+    if (mainImageFileList.length > 0) {
+      console.log('Main image file:', mainImageFileList[0]);
+      console.log('Has originFileObj:', !!mainImageFileList[0].originFileObj);
+      if (mainImageFileList[0].originFileObj) {
+        // New image uploaded
+        console.log('Adding new main image to FormData');
+        formData.append("image", mainImageFileList[0].originFileObj);
+      }
+    } else if (isEditing) {
+      // Image was removed during editing
+      console.log('Adding remove_image flag');
+      formData.append("remove_image", "1");
     }
 
+    // Handle hover image - send new file or indicate removal  
+    if (hoverImageFileList.length > 0) {
+      if (hoverImageFileList[0].originFileObj) {
+        // New hover image uploaded
+        formData.append("hover_image", hoverImageFileList[0].originFileObj);
+      }
+    } else if (isEditing) {
+      // Hover image was removed during editing
+      formData.append("remove_hover_image", "1");
+    }
+
+    // Handle variant images - send new files or indicate removal
     Object.keys(variantImageFiles).forEach((index) => {
       const fileList = variantImageFiles[Number(index)];
-      if (fileList && fileList.length > 0 && fileList[0].originFileObj) {
-        formData.append(`variant_images[${index}]`, fileList[0].originFileObj);
+      if (fileList && fileList.length > 0) {
+        if (fileList[0].originFileObj) {
+          // New variant image uploaded
+          formData.append(`variant_images[${index}]`, fileList[0].originFileObj);
+        }
+      } else if (isEditing) {
+        // Variant image was removed during editing
+        formData.append(`remove_variant_image[${index}]`, "1");
       }
     });
 
+    // Log FormData contents before sending
+    console.log('=== FORMDATA CONTENTS ===');
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
     try {
+      console.log('=== SENDING REQUEST ===');
+      console.log('isEditing:', isEditing);
+      console.log('Product ID:', id);
+      
+      let response;
       if (isEditing) {
-        await updateProduct(Number(id), formData);
+        response = await updateProduct(Number(id), formData);
       } else {
-        await createProduct(formData);
+        response = await createProduct(formData);
       }
+      
+      console.log('=== API RESPONSE ===');
+      console.log('Response:', response);
+      
       message.success(
         `${isEditing ? "Cập nhật" : "Tạo mới"} sản phẩm thành công!`
       );

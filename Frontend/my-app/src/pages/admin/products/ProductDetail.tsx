@@ -1,4 +1,6 @@
 // src/pages/admin/products/ProductDetail.tsx
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProduct } from "../../../api/product";

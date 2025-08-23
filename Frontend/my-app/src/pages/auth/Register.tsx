@@ -3,8 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
 import { TokenManager } from "../../utils/tokenUtils";
-import { useState } from "react";
-import "../../assets/styles/register.css";
+import React, { useState } from 'react';
+import "../../assets/styles/responsive.css";
 
 export const Register = () => {
   const [messageApi, contextHolder] = message.useMessage();

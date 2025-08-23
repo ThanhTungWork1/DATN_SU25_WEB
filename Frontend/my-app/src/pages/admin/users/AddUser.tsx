@@ -1,5 +1,7 @@
 import { Button, Form, Input, Select, Switch, message } from "antd";
+import React from 'react';
 import { useNavigate, Link } from "react-router-dom";
+import "../../../assets/styles/admin-responsive.css";
 import useCreate from "../../../hook/users/UseCreate";
 const { Option } = Select;
 

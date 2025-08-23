@@ -1,6 +1,8 @@
+import React from 'react';
 import { Button, Form, Input, message, Radio, Select } from "antd";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import "../../../assets/styles/admin-responsive.css";
 import type { IUser } from "../../../types/users";
 import { getOne, updateOne } from "../../../provider/dataProvider1";
 

@@ -1,9 +1,14 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import useProductTop from "../../../hook/useProductTop";
 import "../../../assets/styles/TopProductsSection.css"; // Đảm bảo file này tồn tại
 
 const TopProductsSection = () => {
   const { products, loading } = useProductTop();
+  const navigate = useNavigate();
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
 
   if (loading) return <p>Đang tải sản phẩm...</p>;
 
@@ -12,7 +17,12 @@ const TopProductsSection = () => {
       <h2>Top 5 Sản Phẩm Hôm Nay</h2>
       <div className="product-list">
         {products.map((item, index) => (
-          <div className="product-card" key={item.id}>
+          <div 
+            className="product-card" 
+            key={item.id}
+            onClick={() => handleProductClick(item.id)}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="product-rank">{index + 1}</div>
 
             <div

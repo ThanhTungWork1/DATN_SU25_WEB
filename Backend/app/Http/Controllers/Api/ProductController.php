@@ -115,40 +115,121 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
+        // Log request data for debugging
+        Log::info('Product update request data:', [
+            'id' => $id,
+            'request_data' => $request->except(['image', 'hover_image']),
+            'has_image' => $request->hasFile('image'),
+            'has_hover_image' => $request->hasFile('hover_image'),
+            'remove_image' => $request->get('remove_image'),
+            'remove_hover_image' => $request->get('remove_hover_image')
+        ]);
+
         $validated = $request->validate([
             'name' => 'string|nullable',
+            'slug' => 'string|nullable',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'numeric|nullable',
+            'old_price' => 'numeric|nullable',
+            'material' => 'string|nullable',
             'status' => 'boolean|nullable',
             'discount' => 'nullable|numeric',
+            'sold' => 'integer|nullable',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048',
             'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif,svg,bmp|max:2048'
         ]);
 
+        // Handle main image update/removal
         if ($request->hasFile('image')) {
+            // Delete old image if exists
             if ($product->image && file_exists(public_path('storage/' . $product->image))) {
                 unlink(public_path('storage/' . $product->image));
             }
+            // Upload new image
             $image = $request->file('image');
             $imageName = Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
             $filename = $imageName . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('storage/images'), $filename);
             $validated['image'] = 'images/' . $filename;
+        } elseif ($request->has('remove_image') && $request->remove_image == '1') {
+            // Remove existing image
+            if ($product->image && file_exists(public_path('storage/' . $product->image))) {
+                unlink(public_path('storage/' . $product->image));
+            }
+            $validated['image'] = null;
         }
 
+        // Handle hover image update/removal
         if ($request->hasFile('hover_image')) {
+            // Delete old hover image if exists
             if ($product->hover_image && file_exists(public_path('storage/' . $product->hover_image))) {
                 unlink(public_path('storage/' . $product->hover_image));
             }
+            // Upload new hover image
             $hoverImage = $request->file('hover_image');
             $hoverImageName = Str::slug(pathinfo($hoverImage->getClientOriginalName(), PATHINFO_FILENAME));
             $filename = $hoverImageName . '-' . uniqid() . '.' . $hoverImage->getClientOriginalExtension();
             $hoverImage->move(public_path('storage/images'), $filename);
             $validated['hover_image'] = 'images/' . $filename;
+        } elseif ($request->has('remove_hover_image') && $request->remove_hover_image == '1') {
+            // Remove existing hover image
+            if ($product->hover_image && file_exists(public_path('storage/' . $product->hover_image))) {
+                unlink(public_path('storage/' . $product->hover_image));
+            }
+            $validated['hover_image'] = null;
         }
 
         $product->update($validated);
+        
+        // Log successful update
+        Log::info('Product updated successfully:', [
+            'product_id' => $product->id,
+            'image' => $product->image,
+            'hover_image' => $product->hover_image,
+            'image_url' => $product->image_url,
+            'hover_image_url' => $product->hover_image_url
+        ]);
+
+        // Handle variant updates if provided
+        if ($request->has('variants') && is_array($request->variants)) {
+            foreach ($request->variants as $index => $variantData) {
+                if (isset($variantData['id'])) {
+                    // Update existing variant
+                    $variant = $product->variants()->find($variantData['id']);
+                    if ($variant) {
+                        // Handle variant image update/removal
+                        if ($request->hasFile("variant_images.{$index}")) {
+                            // Delete old variant image if exists
+                            if ($variant->image && file_exists(public_path('storage/' . $variant->image))) {
+                                unlink(public_path('storage/' . $variant->image));
+                            }
+                            // Upload new variant image
+                            $variantImage = $request->file("variant_images.{$index}");
+                            $variantImageName = Str::slug(pathinfo($variantImage->getClientOriginalName(), PATHINFO_FILENAME));
+                            $filename = $variantImageName . '-' . uniqid() . '.' . $variantImage->getClientOriginalExtension();
+                            $variantImage->move(public_path('storage/images'), $filename);
+                            $variantData['image'] = 'images/' . $filename;
+                        } elseif ($request->has("remove_variant_image.{$index}") && $request->input("remove_variant_image.{$index}") == '1') {
+                            // Remove existing variant image
+                            if ($variant->image && file_exists(public_path('storage/' . $variant->image))) {
+                                unlink(public_path('storage/' . $variant->image));
+                            }
+                            $variantData['image'] = null;
+                        }
+
+                        // Map variant_price to price if provided
+                        if (isset($variantData['variant_price'])) {
+                            $variantData['price'] = $variantData['variant_price'];
+                            unset($variantData['variant_price']);
+                        }
+
+                        $variant->update($variantData);
+                    }
+                }
+            }
+        }
+
         $product->refresh()->load('variants.color', 'variants.size');
 
         return response()->json([

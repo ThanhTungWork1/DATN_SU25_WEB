@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Enums\OrderStatus;
 
 class OrderController extends Controller
@@ -184,6 +185,54 @@ class OrderController extends Controller
             'message' => 'Xác nhận thanh toán thành công',
             'order' => $order->load('items.variant.product')
         ]);
+    }
+
+    public function getOrderReviews($id)
+    {
+        try {
+            $userId = Auth::id();
+            
+            // Verify order belongs to user
+            $order = Order::where('id', $id)->where('user_id', $userId)->first();
+            
+            if (!$order) {
+                return response()->json(['message' => 'Đơn hàng không tồn tại'], 404);
+            }
+
+            // Get all reviews for products in this order with fallback
+            $reviews = collect();
+            
+            try {
+                // Try to get reviews by order_id if column exists
+                $reviews = \App\Models\Comment::where('order_id', $id)
+                    ->where('user_id', $userId)
+                    ->with(['user', 'product'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } catch (\Exception $e) {
+                // Fallback: get all reviews by user for products in this order
+                $productIds = $order->items()->with('variant.product')->get()
+                    ->pluck('variant.product.id')->unique()->filter();
+                
+                if ($productIds->isNotEmpty()) {
+                    $reviews = \App\Models\Comment::where('user_id', $userId)
+                        ->whereIn('product_id', $productIds)
+                        ->with(['user', 'product'])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                }
+            }
+
+            return response()->json($reviews);
+        } catch (\Exception $e) {
+            \Log::error("Get order reviews error", [
+                'error' => $e->getMessage(),
+                'order_id' => $id,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json(['message' => 'Có lỗi xảy ra khi lấy đánh giá'], 500);
+        }
     }
     }
 

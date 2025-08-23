@@ -1,13 +1,15 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../../../provider/CartProvider";
+import useCart from '../../../hook/useCart';
+import "../../../assets/styles/responsive.css";
 import CartItem from "../../../components/cart/CartItem"; // Import component CartItem
 import { toast } from "sonner";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, removeFromCart, clearCart, fetchCart } =
-    useCart();
+  const { cartItems, updateQuantity, removeItem, clearCart, fetchCart } =
+    useCart("");
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -131,7 +133,7 @@ const CartPage = () => {
                             onUpdateQuantity={(id, quantity) =>
                               updateQuantity(id, quantity)
                             }
-                            onRemove={(id) => removeFromCart(id)}
+                            onRemove={(id) => removeItem(id)}
                           />
                         </div>
                       </div>

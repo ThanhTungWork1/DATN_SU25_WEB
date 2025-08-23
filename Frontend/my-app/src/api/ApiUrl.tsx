@@ -260,21 +260,6 @@ export const submitReview = async (
 };
 
 // ======================= CHECK REVIEW ELIGIBILITY ========================
-export const checkReviewEligibility = async (
-  productId: number,
-  token: string,
-  orderId?: number
-) => {
-  const url = orderId
-    ? `http://localhost:8000/api/client/review-eligibility/${productId}?order_id=${orderId}`
-    : `http://localhost:8000/api/client/review-eligibility/${productId}`;
-
-  return await axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-};
 
 // ======================= VNPAY PAYMENT ========================
 export const createVNPayPayment = async (orderId: number, token: string) => {
@@ -333,7 +318,21 @@ export const addToCart = async (
     }
   );
 };
-
+export const checkReviewEligibility = async (
+  productId: number,
+  token: string,
+  orderId?: number
+) => {
+  const url = orderId 
+    ? `http://localhost:8000/api/client/review-eligibility/${productId}?order_id=${orderId}`
+    : `http://localhost:8000/api/client/review-eligibility/${productId}`;
+    
+  return await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 export const updateCartItem = async (
   id: number,
   quantity: number,

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import {
   Card,
   Table,

@@ -1,11 +1,12 @@
-import { useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, message, Spin } from "antd";
 import useCurrentUser from "../../../hook/useCurrentUser";
-import useProfile from "../../../hook/useProfile";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import "../../../assets/styles/responsive.css";
 import { LogoutOutlined, ShoppingOutlined } from "@ant-design/icons";
 import { TokenManager } from "../../../utils/tokenUtils";
 import "../../../layouts/Client/UserProfile.css";
+import useProfile from "../../../hook/useProfile";
 
 const UserProfile = () => {
   const [form] = Form.useForm();

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
+import { useState, useEffect } from "react";
 import axiosInstance from "../../../utils/axiosInstance";
 import { message } from "antd";
 import "../../../assets/styles/VoucherDetail.css";

@@ -86,6 +86,18 @@ Route::get('/home-sections', [HomeSectionController::class, 'index']);
 Route::get('/home-sections/{id}/products', [HomeSectionProductController::class, 'index']);
 Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
 
+// ========== Public Product Routes (No Auth Required) ==========
+Route::prefix('product')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/search', [ProductController::class, 'search']);
+    Route::get('/featured', [ProductController::class, 'featured']);
+    Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
+    Route::get('/{id}', [ProductController::class, 'show']);
+});
+
+// Route for /products/{id} to match frontend calls
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
 // Chatbot API
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
 
@@ -160,20 +172,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     });
 
     Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
-});
 
+    // Banner Management
+    Route::get('/banners', [BannerController::class, 'adminIndex']);
+    Route::post('/banners', [BannerController::class, 'store']);
+    Route::put('/banners/{id}', [BannerController::class, 'update']);
+});
 // ========== Authenticated Users ==========
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::prefix('product')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::get('/search', [ProductController::class, 'search']);
-        Route::get('/featured', [ProductController::class, 'featured']);
-        Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
-        Route::get('/{id}', [ProductController::class, 'show']);
-    });
-
-    // Route for /products/{id} to match frontend calls
-    Route::get('/products/{id}', [ProductController::class, 'show']);
 
     Route::prefix('favorites')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
@@ -254,6 +260,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Comments and Reviews
     Route::get('/client/review-eligibility/{id}', [CommentController::class, 'checkEligibility']);
+    Route::get('/client/orders/{id}/reviews', [OrderController::class, 'getOrderReviews']);
 
     // Quản lý comment (role = 1)
     Route::prefix('comments')->middleware(CheckRole::class . ':1')->group(function () {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../../utils/axiosInstance";
 
 type Product = {
@@ -21,6 +22,11 @@ type ProductSectionProps = {
 const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = true }: ProductSectionProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const navigate = useNavigate();
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
 
   useEffect(() => {
     // Nếu có products được truyền trực tiếp, sử dụng chúng
@@ -74,7 +80,13 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
           const hasOriginalField = original > 0;
 
           return (
-          <div className="fashion-card" key={product.id} data-aos="zoom-in">
+          <div 
+            className="fashion-card" 
+            key={product.id} 
+            data-aos="zoom-in"
+            onClick={() => handleProductClick(product.id)}
+            style={{ cursor: 'pointer' }}
+          >
             {product.discount && (
               <span className="fashion-badge">-{product.discount}%</span>
             )}
@@ -94,7 +106,15 @@ const ProductSection = ({ title, apiUrl, products: propProducts, showViewAll = t
             <div className="fashion-rate">
               {product.sold || 0} sản phẩm đã bán
             </div>
-            <button className="fashion-buy">Xem Ngay</button>
+            <button 
+              className="fashion-buy"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleProductClick(product.id);
+              }}
+            >
+              Xem Ngay
+            </button>
           </div>
         );})}
       </div>

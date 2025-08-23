@@ -3,9 +3,10 @@ import { differenceInHours, differenceInMinutes, addMinutes } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { useRepay } from "../../../hook/useRepay";
 import { UseOrder } from "../../../types/UseOrder";
-import { Clock } from "lucide-react";
+import { Clock, MessageCircle } from "lucide-react";
 import OrderDetailModal from "./OrderDetailModal";
 import RefundRequestModal from "./RefundRequestModal";
+import { useOrderReviews } from "../../../hook/useOrderReviews";
 
 const statusConfig: { [key: string]: { text: string; className: string } } = {
   waiting_for_payment: {
@@ -41,6 +42,8 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
     type: "cancel" | "return";
   } | null>(null);
   const [remainingTime, setRemainingTime] = useState("");
+  // Lấy danh sách đánh giá cho đơn hàng này
+  const { data: reviews = [] } = useOrderReviews(order.id);
 
   const currentStatus =
     statusConfig[order.status.toLowerCase()] || statusConfig.default;
@@ -125,7 +128,6 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
         canReturn = false;
       }
     }
-
     return {
       canCancel,
       canReorder,
@@ -191,7 +193,15 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           <span className="text-lg font-semibold">
             Tổng: {formatVNDCompact(resolveOrderTotal(order))}
           </span>
+          {/* Hiển thị số lượng đánh giá nếu có và đơn hàng đã hoàn thành */}
+          {reviews.length > 0 && ["completed", "delivered"].includes(order.status.toLowerCase()) && (
+            <div className="flex items-center text-sm text-gray-600">
+              <MessageCircle size={16} className="mr-1" />
+              <span>{reviews.length} đánh giá</span>
+            </div>
+          )}
         </div>
+
 
         {/* Actions */}
         <div className="flex gap-2 flex-wrap items-center">

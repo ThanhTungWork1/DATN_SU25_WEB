@@ -1,3 +1,5 @@
+import React from 'react';
+import "../../../assets/styles/admin-responsive.css";
 import { Table, Input, Button, Modal, Form, message } from "antd";
 import { useState, useEffect } from "react";
 import { getContacts, replyContact } from "../../../api/ApiContact";

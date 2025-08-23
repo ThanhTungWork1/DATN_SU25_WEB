@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "../../../assets/styles/admin-responsive.css";
 import { toast } from "sonner";
 import { ApiHomeSection } from "../../../api/ApiHomeSection";
 import { HomeSection } from "../../../types/HomeSection";

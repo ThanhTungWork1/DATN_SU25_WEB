@@ -14,9 +14,10 @@ interface ReviewEligibility {
 interface ReviewFormData {
   content: string;
   rating: number;
+  orderId: number;
 }
 
-export const useReviewSystem = (productId: number) => {
+export const useReviewSystem = (productId: number, orderId?: number) => {
   const queryClient = useQueryClient();
   const [isFormVisible, setIsFormVisible] = useState(false);
   
@@ -28,16 +29,16 @@ export const useReviewSystem = (productId: number) => {
     queryFn: () => getProductReviews(productId),
   });
   
-  const reviews: Review[] = reviewsResponse?.data || [];
+  const reviews: Review[] = (reviewsResponse?.data as Review[]) || [];
   
   // Query để kiểm tra quyền đánh giá
   const { data: eligibilityResponse, isLoading: eligibilityLoading } = useQuery({
-    queryKey: ['review-eligibility', productId, token],
-    queryFn: () => checkReviewEligibility(productId, token!),
+    queryKey: ['review-eligibility', productId, orderId, token],
+    queryFn: () => checkReviewEligibility(productId, token!, orderId),
     enabled: !!token, // Chỉ gọi khi có token
   });
   
-  const eligibility: ReviewEligibility = eligibilityResponse?.data || {
+  const eligibility: ReviewEligibility = (eligibilityResponse?.data as ReviewEligibility) || {
     can_review: false,
     reason: 'not_logged_in',
     message: 'Bạn cần đăng nhập để đánh giá sản phẩm.'
@@ -47,11 +48,13 @@ export const useReviewSystem = (productId: number) => {
   const submitReviewMutation = useMutation({
     mutationFn: (reviewData: ReviewFormData) => 
       submitReview({ 
-        product_id: productId, 
-        ...reviewData 
+        product_id: productId,
+        order_id: reviewData.orderId,
+        content: reviewData.content,
+        rating: reviewData.rating
       }, token!),
     onSuccess: (response) => {
-      const isApproved = response.data.comment.status === 1;
+      const isApproved = (response.data as any)?.comment?.status === 1;
       
       if (isApproved) {
         toast.success("Đánh giá của bạn đã được đăng thành công!");
