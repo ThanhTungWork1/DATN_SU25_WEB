@@ -196,6 +196,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/calculate-shipping', [ClientOrderController::class, 'calculateShippingFee']); // API tính phí ship
         Route::put('/{id}', [ClientOrderController::class, 'update']);
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
+        Route::post('/{id}/confirm-received', [ClientOrderController::class, 'confirmReceived']); // Xác nhận đã nhận hàng
     });
 
 

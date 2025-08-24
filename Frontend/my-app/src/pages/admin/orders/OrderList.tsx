@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import "../../../assets/styles/admin-responsive.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +66,7 @@ export default function OrderList() {
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    pageSize: 15, // Mặc định khớp với backend
+    pageSize: 20, // Tăng lên để hiển thị nhiều đơn hàng hơn
     total: 0,
   });
 
@@ -185,7 +185,7 @@ export default function OrderList() {
         return (
           <Select
             value={status}
-            style={{ width: 150 }}
+            style={{ width: 200 }}
             onChange={async (newStatus) => {
               // Validate business logic trước khi update
               const validation = canChangeOrderStatus(
@@ -235,7 +235,6 @@ export default function OrderList() {
                 }}
               >
                 {option.label}
-                {!allowedStatuses.includes(option.value) && " (Không khả dụng)"}
               </Option>
             ))}
           </Select>
@@ -257,7 +256,7 @@ export default function OrderList() {
           );
         }
 
-        // Các trạng thái khác: giữ nguyên logic cũ
+        // Chỉ hiển thị dropdown thanh toán khi đã giao hàng
         const allowedPaymentStatuses = getAllowedPaymentStatuses(
           record.status,
           record.payment_method || "COD"
@@ -281,49 +280,72 @@ export default function OrderList() {
             >
               {displayValue}
             </span>
-            <Select
-              value={null}
-              placeholder="Thay đổi"
-              style={{ width: 100 }}
-              size="small"
-              onChange={(newPaymentStatus) => {
-                const validation = canChangePaymentStatus(
-                  record.status,
-                  record.is_paid,
-                  newPaymentStatus,
-                  record.payment_method || "COD"
-                );
-                if (!validation.allowed) {
-                  message.error(validation.reason);
-                  return;
-                }
-                handleUpdateStatus(record.id, "is_paid", newPaymentStatus);
-              }}
-              allowClear
-            >
-              {PAYMENT_STATUS_OPTIONS.map((option) => (
-                <Option
-                  key={option.value}
-                  value={option.value}
-                  disabled={
-                    !allowedPaymentStatuses.includes(option.value) ||
-                    option.value === is_paid
+            {/* Chỉ hiển thị dropdown khi đã giao hàng VÀ chưa thanh toán */}
+            {record.status === "delivered" && !is_paid && (
+              <Select
+                value={null}
+                placeholder="Thay đổi"
+                style={{ width: 100 }}
+                size="small"
+                onChange={async (newPaymentStatus) => {
+                  const validation = canChangePaymentStatus(
+                    record.status,
+                    record.is_paid,
+                    newPaymentStatus,
+                    record.payment_method || "COD"
+                  );
+                  if (!validation.allowed) {
+                    message.error(validation.reason);
+                    return;
                   }
-                  style={{
-                    color:
+
+                  // Cập nhật thanh toán
+                  await handleUpdateStatus(
+                    record.id,
+                    "is_paid",
+                    newPaymentStatus
+                  );
+
+                  // Tự động chuyển trạng thái đơn hàng nếu cần
+                  if (validation.autoUpdateOrderStatus) {
+                    setTimeout(async () => {
+                      await handleUpdateStatus(
+                        record.id,
+                        "status",
+                        validation.autoUpdateOrderStatus
+                      );
+                      message.success(
+                        `Đã thanh toán và tự động chuyển sang '${validation.autoUpdateOrderStatus === "completed" ? "Đã hoàn thành" : validation.autoUpdateOrderStatus}'`
+                      );
+                    }, 500);
+                  }
+                }}
+                allowClear
+              >
+                {PAYMENT_STATUS_OPTIONS.map((option) => (
+                  <Option
+                    key={option.value}
+                    value={option.value}
+                    disabled={
                       !allowedPaymentStatuses.includes(option.value) ||
                       option.value === is_paid
-                        ? "#ccc"
-                        : "inherit",
-                  }}
-                >
-                  {option.label}
-                  {!allowedPaymentStatuses.includes(option.value) &&
-                    " (Không khả dụng)"}
-                  {option.value === is_paid && " (Hiện tại)"}
-                </Option>
-              ))}
-            </Select>
+                    }
+                    style={{
+                      color:
+                        !allowedPaymentStatuses.includes(option.value) ||
+                        option.value === is_paid
+                          ? "#ccc"
+                          : "inherit",
+                    }}
+                  >
+                    {option.label}
+                    {!allowedPaymentStatuses.includes(option.value) &&
+                      " (Không khả dụng)"}
+                    {option.value === is_paid && " (Hiện tại)"}
+                  </Option>
+                ))}
+              </Select>
+            )}
           </div>
         );
       },
@@ -562,7 +584,9 @@ export default function OrderList() {
                     setStatusFilter("");
                     setPaymentFilter("");
                     setDateRange(null);
+                    setPagination((prev) => ({ ...prev, currentPage: 1 }));
                     fetchStatistics();
+                    fetchData(1, "", "", "", "", "");
                   }}
                 />
               </Tooltip>

@@ -61,7 +61,7 @@ class OrderController extends Controller
             $q->where('quantity', '>', 0);
         })->with(['items' => function($query) {
             $query->select('id', 'order_id', 'quantity', 'price');
-        }])->latest()->paginate(15);
+        }])->orderBy('created_at', 'desc')->paginate(20);
         
             \Log::info('🔍 [BACKEND DEBUG] Orders found:', $orders->toArray());
             

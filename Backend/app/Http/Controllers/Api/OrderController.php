@@ -20,7 +20,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        return Order::with('items.variant.product')->paginate();
+        return Order::with('items.variant.product')->orderBy('created_at', 'desc')->paginate(20);
     }
 
     public function add(Request $request)
@@ -128,6 +128,15 @@ class OrderController extends Controller
         ]);
 
         $order = Order::findOrFail($id);
+        
+        // Logic auto update order status khi thanh toán
+        if (isset($data['is_paid']) && $order->status === 'delivered') {
+            // Nếu đã giao hàng và thanh toán → tự động chuyển "Đã hoàn thành"
+            if ($data['is_paid'] === true) {
+                $data['status'] = 'completed';
+            }
+        }
+        
         $order->update($data);
 
         return $order->load('items.variant.product');

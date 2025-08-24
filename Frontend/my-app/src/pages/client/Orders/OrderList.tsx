@@ -126,6 +126,7 @@ const OrderList = () => {
           <option value="delivered">Đã giao</option>
           <option value="completed">Đã hoàn thành</option>
           <option value="cancelled">Đã hủy</option>
+          <option value="refunded">Đã hoàn tiền</option>
         </select>
       </div>
 

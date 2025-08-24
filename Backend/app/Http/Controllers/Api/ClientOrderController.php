@@ -573,7 +573,7 @@ class ClientOrderController extends Controller
         try {
             $user = Auth::user();
 
-            $validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
+            $validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'];
 
             if (!in_array($status, $validStatuses)) {
                 return response()->json([
@@ -600,6 +600,55 @@ class ClientOrderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Xác nhận đã nhận hàng
+     */
+    public function confirmReceived($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $order = Order::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+                
+            if (!$order) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm thấy đơn hàng'
+                ], 404);
+            }
+            
+            // Chỉ cho phép xác nhận đơn hàng đã giao
+            if ($order->status !== 'delivered') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Chỉ có thể xác nhận đơn hàng đã giao'
+                ], 422);
+            }
+            
+            // Cập nhật trạng thái đơn hàng và thanh toán
+            $order->status = 'completed';
+            $order->is_paid = true; // Tự động đánh dấu đã thanh toán
+            $order->save();
+            
+            Log::info('🔍 Order #' . $order->id . ' confirmed received by user #' . $user->id);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Xác nhận đã nhận hàng thành công',
+                'data' => $order->load('items.variant.product')
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error confirming order received: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()

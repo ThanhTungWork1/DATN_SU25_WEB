@@ -45,66 +45,25 @@ const RevenueFilterCard: React.FC = () => {
   };
 
   return (
-    <Card>
-      <div style={{ position: "relative" }}>
-        {/* Header với title và date picker */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <DollarOutlined style={{ color: "#52c41a", fontSize: 16 }} />
-            <span style={{ fontSize: 14, color: "#666", fontWeight: 500 }}>
-              {getTitle()}
-            </span>
-          </div>
-          <RangePicker
-            size="small"
-            onChange={handleRangeChange}
-            value={dateRange}
-            placeholder={["Từ ngày", "Đến ngày"]}
-            format="DD/MM/YYYY"
-            allowClear
-            style={{
-              width: 180,
-              fontSize: 12,
-            }}
-          />
-        </div>
-
-        {/* Revenue value */}
-        <div style={{ textAlign: "center", padding: "8px 0" }}>
-          <div style={{ fontSize: 24, fontWeight: "bold", color: "#52c41a" }}>
-            {formatCurrency(totalRevenue)}
-          </div>
-          <div style={{ fontSize: 12, color: "#999", marginTop: 4 }}>VND</div>
-        </div>
-
-        {/* Loading indicator */}
-        {isLoading && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(255,255,255,0.8)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 6,
-            }}
-          >
-            <Spin size="small" />
-          </div>
-        )}
-      </div>
-    </Card>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <RangePicker
+        size="default"
+        onChange={handleRangeChange}
+        value={dateRange}
+        placeholder={["Từ ngày", "Đến ngày"]}
+        format="DD/MM/YYYY"
+        allowClear
+        style={{
+          width: 250,
+        }}
+      />
+    </div>
   );
 };
 

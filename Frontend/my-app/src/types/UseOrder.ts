@@ -9,11 +9,20 @@ export interface OrderItem {
   total: number;
 }
 
-import { RefundRequest } from './Order';
+import { RefundRequest } from "./Order";
 
 export interface UseOrder {
   id: number;
-  status: string;
+  status:
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "completed"
+    | "cancelled"
+    | "refunded"
+    | "waiting_for_payment";
   total_price: number;
   total: number;
   created_at: string;

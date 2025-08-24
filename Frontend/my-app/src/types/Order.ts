@@ -18,7 +18,8 @@ export interface Order {
     | "shipping"
     | "delivered"
     | "completed"
-    | "cancelled"; // Trạng thái đơn hàng
+    | "cancelled"
+    | "refunded"; // Trạng thái đơn hàng
   payment_method: string;
   is_paid: boolean | number | "unpaid" | "paid" | "refunded" | "part_paid";
   notes: string | null;

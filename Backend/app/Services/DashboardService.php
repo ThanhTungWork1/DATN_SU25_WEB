@@ -171,7 +171,8 @@ class DashboardService
             'shipping',
             'delivered',
             'cancelled',
-            'completed'
+            'completed',
+            'refunded'
         ];
 
         $stats = [];

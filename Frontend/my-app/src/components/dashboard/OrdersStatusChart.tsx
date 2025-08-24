@@ -19,6 +19,7 @@ const COLORS = [
   "#13c2c2", // delivered
   "#f5222d", // cancelled
   "#eb2f96", // completed
+  "#ff7a45", // refunded
 ];
 
 const OrdersStatusChart: React.FC = () => {
@@ -34,6 +35,7 @@ const OrdersStatusChart: React.FC = () => {
         delivered: "Đã giao hàng",
         cancelled: "Đã huỷ",
         completed: "Đã hoàn thành",
+        refunded: "Đã hoàn tiền",
       };
 
       const vietnameseName = statusMap[payload[0].name] || payload[0].name;
@@ -109,6 +111,7 @@ const OrdersStatusChart: React.FC = () => {
       delivered: "Đã giao hàng",
       cancelled: "Đã huỷ",
       completed: "Đã hoàn thành",
+      refunded: "Đã hoàn tiền",
     };
 
     return (

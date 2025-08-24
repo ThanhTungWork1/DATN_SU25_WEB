@@ -30,9 +30,48 @@ public function index()
         return response()->json(['message' => 'Chưa có giỏ hàng nào!'], 404);
     }
 
+    // Format cart items với thông tin sản phẩm đầy đủ
+    $formattedCartItems = $cart->cartItems->map(function ($item) {
+        $variant = $item->productVariant;
+        $product = $variant ? $variant->product : null;
+        
+        return [
+            'id' => $item->id,
+            'product_variant_id' => $item->variant_id,
+            'quantity' => $item->quantity,
+            'price' => $item->price,
+            'name' => $product ? $product->name : 'Sản phẩm không tên',
+            'image' => $product ? $product->image_url : null,
+            'product_variant' => [
+                'id' => $variant ? $variant->id : null,
+                'image_url' => $variant ? $variant->image_url : null,
+                'product' => $product ? [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'image_url' => $product->image_url,
+                ] : null,
+                'color' => $variant && $variant->color ? [
+                    'id' => $variant->color->id,
+                    'name' => $variant->color->name,
+                    'hex_code' => $variant->color->hex_code,
+                ] : null,
+                'size' => $variant && $variant->size ? [
+                    'id' => $variant->size->id,
+                    'name' => $variant->size->name,
+                ] : null,
+            ],
+        ];
+    });
+
     \Log::info('Cart Data at ' . now(), ['cart' => $cart->toArray()]);
 
-    return response()->json($cart);
+    return response()->json([
+        'id' => $cart->id,
+        'user_id' => $cart->user_id,
+        'cart_items' => $formattedCartItems,
+        'created_at' => $cart->created_at,
+        'updated_at' => $cart->updated_at,
+    ]);
 }
 
 public function store(CreateCartRequest $request)

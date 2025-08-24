@@ -21,7 +21,8 @@ class DashboardController extends Controller
         $delivered_orders = Order::whereIn('status', ['delivered', 'completed'])->get();
         $total_revenue = $delivered_orders->sum('final_amount');
         $orders_today = Order::whereDate('created_at', Carbon::today())->count();
-        $new_users_this_month = User::whereMonth('created_at', Carbon::now()->month)
+        $new_users_this_month = User::where('role', 0) // Chỉ user thường, không tính admin
+            ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->count();
         $total_products = Product::count();
@@ -46,11 +47,13 @@ class DashboardController extends Controller
 
     public function userGrowth()
     {
-        $thisMonthCount = User::whereMonth('created_at', Carbon::now()->month)
+        $thisMonthCount = User::where('role', 0) // Chỉ user thường, không tính admin
+            ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->count();
 
-        $lastMonthCount = User::whereMonth('created_at', Carbon::now()->subMonth()->month)
+        $lastMonthCount = User::where('role', 0) // Chỉ user thường, không tính admin
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
             ->whereYear('created_at', Carbon::now()->subMonth()->year)
             ->count();
 

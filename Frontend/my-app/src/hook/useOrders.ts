@@ -215,11 +215,23 @@ export const useOrders = () => {
     },
   });
 
+  // Xác nhận đã nhận hàng
+  const confirmReceived = useMutation({
+    mutationFn: async (orderId: number) => {
+      await axiosInstance.post(`/client/orders/${orderId}/confirm-received`);
+    },
+    onSuccess: () => {
+      // Invalidate orders queries để cập nhật danh sách
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
   return {
     getOrders,
     getOrdersByStatus,
     cancelOrder,
     getOrderDetail,
     reorder,
+    confirmReceived,
   };
 };

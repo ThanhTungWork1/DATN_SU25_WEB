@@ -159,6 +159,16 @@ class AdminRefundRequestController extends Controller
                 }
             }
 
+            // Auto update order status when refund is completed
+            if ($status === 'refunded') {
+                $order = $refundRequest->order;
+                if ($order) {
+                    $order->status = 'refunded';
+                    $order->save();
+                    Log::info("Order #{$order->id} status updated to 'refunded' after refund completion");
+                }
+            }
+
             // Handle refund completion
             if ($status === 'refunded') {
                 Log::info("🔍 === REFUND COMPLETION START ===");

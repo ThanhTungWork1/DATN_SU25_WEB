@@ -10,6 +10,7 @@ import {
   ClockCircleOutlined,
   StarOutlined,
   ReloadOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 
 // Import các components hiện có
@@ -97,10 +98,25 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Bộ lọc khoảng thời gian - TRÊN CÙNG */}
+        <div style={{ marginBottom: "24px" }}>
+          <RevenueFilterCard />
+        </div>
         {/* Thống kê tổng quan */}
         <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
           <Col xs={24} sm={12} lg={6}>
-            <RevenueFilterCard />
+            <Card>
+              <Statistic
+                title="Tổng doanh thu"
+                value={data?.total_revenue || 0}
+                prefix={<DollarOutlined style={{ color: "#52c41a" }} />}
+                valueStyle={{ color: "#52c41a", fontWeight: "bold" }}
+                formatter={(value) =>
+                  new Intl.NumberFormat("vi-VN").format(value as number)
+                }
+                suffix="VND"
+              />
+            </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Card>
