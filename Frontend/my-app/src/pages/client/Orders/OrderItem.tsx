@@ -49,6 +49,14 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
     statusConfig[order.status.toLowerCase()] || statusConfig.default;
 
   useEffect(() => {
+    // Debug log để kiểm tra refund_request (only for order 95)
+    if (order.id === 95) {
+      console.log("🔍 DEBUG Order #95:", {
+        refund_request: order.refund_request,
+        status: order.status,
+      });
+    }
+
     if (order.status === "waiting_for_payment") {
       const calculateRemainingTime = () => {
         try {
@@ -203,24 +211,35 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
             Tổng: {formatVNDCompact(resolveOrderTotal(order))}
           </span>
           {/* Hiển thị số lượng đánh giá nếu có và đơn hàng đã hoàn thành */}
-          {reviews.length > 0 && ["completed", "delivered"].includes(order.status.toLowerCase()) && (
-            <div className="flex items-center text-sm text-gray-600">
-              <MessageCircle size={16} className="mr-1" />
-              <span>{reviews.length} đánh giá</span>
-            </div>
-          )}
+          {reviews.length > 0 &&
+            ["completed", "delivered"].includes(order.status.toLowerCase()) && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MessageCircle size={16} className="mr-1" />
+                <span>{reviews.length} đánh giá</span>
+              </div>
+            )}
         </div>
-
 
         {/* Actions */}
         <div className="flex gap-2 flex-wrap items-center">
           {order.refund_request ? (
-            <button
-              className="px-4 py-2 bg-gray-300 text-gray-600 rounded cursor-not-allowed"
-              disabled
-            >
-              Đang chờ xử lý
-            </button>
+            order.refund_request.status === "refunded" ? (
+              <button className="btn btn-success" disabled>
+                Đã hoàn tiền
+              </button>
+            ) : order.refund_request.status === "approved" ? (
+              <button className="btn btn-warning" disabled>
+                Đã duyệt
+              </button>
+            ) : order.refund_request.status === "rejected" ? (
+              <button className="btn btn-danger" disabled>
+                Đã từ chối
+              </button>
+            ) : (
+              <button className="btn btn-secondary" disabled>
+                Đang chờ xử lý
+              </button>
+            )
           ) : (
             <>
               <button

@@ -81,8 +81,18 @@ export const useReviewSystem = (productId: number, orderId?: number) => {
         queryKey: ["product-reviews", productId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["review-eligibility", productId, token],
+        queryKey: ["review-eligibility", productId, orderId, token],
       });
+      // Refresh order reviews if orderId is provided
+      if (orderId) {
+        queryClient.invalidateQueries({
+          queryKey: ["order-reviews", orderId],
+        });
+        // Refresh orders list to update review count
+        queryClient.invalidateQueries({
+          queryKey: ["orders"],
+        });
+      }
 
       setIsFormVisible(false);
     },

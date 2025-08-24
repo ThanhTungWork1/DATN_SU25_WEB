@@ -41,6 +41,22 @@ interface BackendOrder {
   created_at: string;
   updated_at: string;
   items: BackendOrderItem[];
+  refund_request?: {
+    id: number;
+    order_id: number;
+    user_id: number;
+    amount: string;
+    reason: string;
+    bank_account_name: string;
+    bank_account_number: string;
+    bank_name: string;
+    evidence_image?: string;
+    status: string;
+    note_admin?: string;
+    transaction_code?: string;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
@@ -48,15 +64,17 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
     const price = safeNumber((item as any).price);
     const quantity = safeNumber(item.quantity);
 
-    // 🔍 DEBUG: Log để kiểm tra image_url
-    console.log("🔍 TRANSFORM ITEM:", {
-      item_id: item.id,
-      variant_id: item.variant_id,
-      image_url: (item as any).image_url,
-      variant_product_image: (item as any).variant?.product?.image,
-      final_image:
-        (item as any).image_url || (item as any).variant?.product?.image,
-    });
+    // 🔍 DEBUG: Log để kiểm tra image_url (only for order 95)
+    if (backendOrder.id === 95) {
+      console.log("🔍 TRANSFORM ITEM:", {
+        item_id: item.id,
+        variant_id: item.variant_id,
+        image_url: (item as any).image_url,
+        variant_product_image: (item as any).variant?.product?.image,
+        final_image:
+          (item as any).image_url || (item as any).variant?.product?.image,
+      });
+    }
 
     return {
       id: item.id,
@@ -75,16 +93,16 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
   const finalAmount = safeNumber((backendOrder as any).final_amount);
   const shippingFee = safeNumber((backendOrder as any).shipping_fee);
 
-  // 🔍 DEBUG: Log để kiểm tra giá trị
-  console.log("🔍 TRANSFORM ORDER PRICE:", {
-    order_id: backendOrder.id,
-    total_amount: (backendOrder as any).total_amount,
-    final_amount: (backendOrder as any).final_amount,
-    shipping_fee: (backendOrder as any).shipping_fee,
-    totalAmount_parsed: totalAmount,
-    finalAmount_parsed: finalAmount,
-    shippingFee_parsed: shippingFee,
-  });
+  // 🔍 DEBUG: Log để kiểm tra giá trị (only for order 95)
+  if (backendOrder.id === 95) {
+    console.log("🔍 TRANSFORM ORDER #95:", {
+      order_id: backendOrder.id,
+      has_refund_request: !!backendOrder.refund_request,
+      refund_request_status: backendOrder.refund_request?.status,
+      totalAmount_parsed: totalAmount,
+      finalAmount_parsed: finalAmount,
+    });
+  }
 
   return {
     id: backendOrder.id,
@@ -99,6 +117,24 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
     payment_method: "Thanh toán khi nhận hàng", // Default value
     note: backendOrder.note,
     is_paid: backendOrder.is_paid, // Thêm trường is_paid
+    refund_request: backendOrder.refund_request
+      ? {
+          id: backendOrder.refund_request.id,
+          order_id: backendOrder.refund_request.order_id,
+          user_id: backendOrder.refund_request.user_id,
+          amount: safeNumber(backendOrder.refund_request.amount), // Convert string to number
+          reason: backendOrder.refund_request.reason,
+          status: backendOrder.refund_request.status as
+            | "pending"
+            | "approved"
+            | "rejected", // Type assertion
+          bank_account_name: backendOrder.refund_request.bank_account_name,
+          bank_account_number: backendOrder.refund_request.bank_account_number,
+          bank_name: backendOrder.refund_request.bank_name,
+          created_at: backendOrder.refund_request.created_at,
+          updated_at: backendOrder.refund_request.updated_at,
+        }
+      : undefined, // Thêm trường refund_request
   };
 };
 

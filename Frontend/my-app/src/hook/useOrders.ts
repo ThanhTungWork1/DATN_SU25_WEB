@@ -168,6 +168,8 @@ export const useOrders = () => {
       await axiosInstance.delete(`/client/orders/${orderId}`);
     },
     onSuccess: () => {
+      // Force refresh toàn bộ cache orders
+      queryClient.removeQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });
@@ -197,7 +199,7 @@ export const useOrders = () => {
   // Thêm chức năng mua lại
   const reorder = useMutation({
     mutationFn: async (order: UseOrder) => {
-      const cartItems = order.items.map(item => ({
+      const cartItems = order.items.map((item) => ({
         product_id: item.product_id,
         variant_id: item.variant_id,
         quantity: item.quantity,
@@ -205,7 +207,7 @@ export const useOrders = () => {
       }));
 
       // Gửi một yêu cầu duy nhất với tất cả các sản phẩm
-      await axiosInstance.post('/cart', { cartItems });
+      await axiosInstance.post("/cart", { cartItems });
     },
     onSuccess: () => {
       // Invalidate cart queries để cập nhật giỏ hàng

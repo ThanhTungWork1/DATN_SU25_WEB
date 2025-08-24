@@ -11,9 +11,16 @@ export interface Order {
   shipping_fee: number; // Phí vận chuyển
   discount_amount: number; // Số tiền giảm giá
   final_amount: number; // Tổng tiền cuối cùng = total_amount + shipping_fee - discount_amount
-  status: 'pending_confirmation' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'completed' | 'cancelled'; // Trạng thái đơn hàng
+  status:
+    | "pending_confirmation"
+    | "confirmed"
+    | "processing"
+    | "shipping"
+    | "delivered"
+    | "completed"
+    | "cancelled"; // Trạng thái đơn hàng
   payment_method: string;
-  is_paid: boolean | number | 'unpaid' | 'paid' | 'refunded' | 'part_paid';
+  is_paid: boolean | number | "unpaid" | "paid" | "refunded" | "part_paid";
   notes: string | null;
   // Thông tin giao hàng mới
   delivered_at?: string | null;
@@ -35,7 +42,7 @@ export interface RefundRequest {
   user_id: number;
   amount: number;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected" | "refunded";
   bank_account_name: string;
   bank_account_number: string;
   bank_name: string;
@@ -59,14 +66,11 @@ export interface OrderItem {
   updated_at: string;
 }
 
-
-
 export interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    status: 'active' | 'inactive';
-    created_at: string;
-    updated_at: string;
+  id: number;
+  name: string;
+  slug: string;
+  status: "active" | "inactive";
+  created_at: string;
+  updated_at: string;
 }
-

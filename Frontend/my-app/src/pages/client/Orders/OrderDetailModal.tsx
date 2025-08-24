@@ -121,7 +121,7 @@ const OrderDetailModal = ({
     };
 
     checkReviewStatus();
-  }, [order]);
+  }, [order, reviews, reviewsLoading]); // Thêm reviews và reviewsLoading vào dependency để refresh khi reviews thay đổi
 
   if (isLoading)
     return (
@@ -357,6 +357,8 @@ const OrderDetailModal = ({
           onClose={() => setReviewModal(null)}
           onReviewSubmitted={(productId) => {
             setReviewedProducts((prev) => new Set(prev).add(productId));
+            // Refresh lại trạng thái đánh giá sau khi đánh giá thành công
+            // Logic này sẽ được trigger bởi useEffect khi reviews thay đổi
           }}
         />
       )}

@@ -25,6 +25,12 @@ class RefundRequestController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('🔍 Refund request received:', [
+            'all_data' => $request->all(),
+            'files' => $request->allFiles(),
+            'headers' => $request->headers->all()
+        ]);
+
         $validator = Validator::make($request->all(), [
             'order_id' => 'required|integer|exists:orders,id',
             'amount' => 'required|numeric|min:0',
@@ -32,10 +38,13 @@ class RefundRequestController extends Controller
             'bank_account_name' => 'required|string|max:100',
             'bank_account_number' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
-            'evidence_image' => 'nullable|string', // Assuming base64 string for now
+            'evidence_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
         ]);
 
         if ($validator->fails()) {
+            Log::error('🔍 Validation failed:', [
+                'errors' => $validator->errors()->toArray()
+            ]);
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
@@ -54,6 +63,14 @@ class RefundRequestController extends Controller
             return response()->json(['message' => 'Yêu cầu hoàn tiền cho đơn hàng này đã tồn tại.'], 409); // 409 Conflict
         }
 
+        // Handle image upload
+        $evidenceImagePath = null;
+        if ($request->hasFile('evidence_image')) {
+            $file = $request->file('evidence_image');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $evidenceImagePath = $file->storeAs('refund-evidence', $fileName, 'public');
+        }
+
         // Create the refund request
         $refundRequest = RefundRequest::create([
             'order_id' => $orderId,
@@ -63,7 +80,7 @@ class RefundRequestController extends Controller
             'bank_account_name' => $request->input('bank_account_name'),
             'bank_account_number' => $request->input('bank_account_number'),
             'bank_name' => $request->input('bank_name'),
-            'evidence_image' => $request->input('evidence_image'), // Handle image upload/storage properly later
+            'evidence_image' => $evidenceImagePath,
             'status' => 'pending', // Initial status
         ]);
 

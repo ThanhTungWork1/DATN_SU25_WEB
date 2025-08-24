@@ -1,21 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { UseOrder } from "../../../types/UseOrder";
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRefunds } from '../../../hook/useRefunds';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRefunds } from "../../../hook/useRefunds";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 
 type RefundType = "cancel" | "return";
 
 // Validation Schema
 const refundSchema = z.object({
-  reason: z.string().min(1, 'Vui lòng chọn lý do'),
-  bank_name: z.string().min(1, 'Vui lòng chọn ngân hàng'),
-  bank_account_name: z.string().min(1, 'Tên chủ tài khoản là bắt buộc'),
-  bank_account_number: z.string().min(1, 'Số tài khoản là bắt buộc'),
-  // evidence_images: z.any().optional(), // Tạm thời bỏ qua validation ảnh
+  reason: z.string().optional(),
+  bank_name: z.string().min(1, "Vui lòng chọn ngân hàng"),
+  bank_account_name: z.string().min(1, "Tên chủ tài khoản là bắt buộc"),
+  bank_account_number: z.string().min(1, "Số tài khoản là bắt buộc"),
 });
 
 type RefundFormData = z.infer<typeof refundSchema>;
@@ -26,9 +26,15 @@ interface Props {
   onClose: () => void;
 }
 
-const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => {
+const RefundRequestModal: React.FC<Props> = ({
+  order,
+  refundType,
+  onClose,
+}) => {
   const { createRefund, isPending: isLoading } = useRefunds(); // Rename to match v5
   const queryClient = useQueryClient();
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -36,30 +42,67 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
     reset,
   } = useForm<RefundFormData>({
     resolver: zodResolver(refundSchema),
-    mode: 'onChange', // Validate on change to enable/disable button
+    mode: "onChange", // Validate on change to enable/disable button
   });
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Kiểm tra kích thước file (tối đa 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước ảnh không được vượt quá 5MB");
+        return;
+      }
+
+      // Kiểm tra định dạng file
+      if (!file.type.startsWith("image/")) {
+        toast.error("Vui lòng chọn file ảnh hợp lệ");
+        return;
+      }
+
+      setSelectedImage(file);
+
+      // Tạo preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
 
   const onSubmit = (data: RefundFormData) => {
     if (!order) return;
 
-        const payload = {
+    const payload = {
       ...data,
       order_id: order.id,
       amount: Number(order.total_price || 0),
+      evidence_image: selectedImage || undefined,
     };
 
     createRefund(payload, {
       onSuccess: () => {
-        toast.success('Yêu cầu hoàn tiền đã được gửi thành công!');
-        queryClient.invalidateQueries({ queryKey: ['orders'] });
+        toast.success("Yêu cầu hoàn tiền đã được gửi thành công!");
+        // Force refresh toàn bộ cache orders
+        queryClient.removeQueries({ queryKey: ["orders"] });
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+
         reset();
         onClose();
       },
       onError: (error: any) => {
         if (error.response && error.response.status === 409) {
-          toast.error('Đơn hàng này đã có yêu cầu hoàn tiền trước đó.');
+          toast.error("Đơn hàng này đã có yêu cầu hoàn tiền trước đó.");
         } else {
-          const errorMessage = error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+          const errorMessage =
+            error?.response?.data?.message ||
+            "Đã có lỗi xảy ra. Vui lòng thử lại.";
           toast.error(errorMessage);
         }
       },
@@ -110,10 +153,14 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
               <span className="text-red-500">*</span>
             </label>
             <select
-              {...register('reason')}
-              className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.reason ? 'border-red-500' : 'border-gray-300'}`}
+              {...register("reason")}
+              className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.reason ? "border-red-500" : "border-gray-300"}`}
             >
-              {errors.reason && <p className="text-red-500 text-sm mt-1">{errors.reason.message}</p>}
+              {errors.reason && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.reason.message}
+                </p>
+              )}
               <option value="">Chọn lý do...</option>
               {refundType === "cancel" ? (
                 <>
@@ -148,11 +195,15 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
               </label>
               <input
                 type="text"
-                {...register('bank_account_name')}
-                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_account_name ? 'border-red-500' : 'border-gray-300'}`}
+                {...register("bank_account_name")}
+                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_account_name ? "border-red-500" : "border-gray-300"}`}
                 placeholder="Ví dụ: NGUYEN VAN A"
               />
-              {errors.bank_account_name && <p className="text-red-500 text-sm mt-1">{errors.bank_account_name.message}</p>}
+              {errors.bank_account_name && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.bank_account_name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -161,11 +212,15 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
               </label>
               <input
                 type="text"
-                {...register('bank_account_number')}
-                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_account_number ? 'border-red-500' : 'border-gray-300'}`}
+                {...register("bank_account_number")}
+                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_account_number ? "border-red-500" : "border-gray-300"}`}
                 placeholder="Nhập số tài khoản"
               />
-              {errors.bank_account_number && <p className="text-red-500 text-sm mt-1">{errors.bank_account_number.message}</p>}
+              {errors.bank_account_number && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.bank_account_number.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -173,10 +228,14 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
                 Tên ngân hàng <span className="text-red-500">*</span>
               </label>
               <select
-                {...register('bank_name')}
-                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_name ? 'border-red-500' : 'border-gray-300'}`}
+                {...register("bank_name")}
+                className={`w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${errors.bank_name ? "border-red-500" : "border-gray-300"}`}
               >
-                {errors.bank_name && <p className="text-red-500 text-sm mt-1">{errors.bank_name.message}</p>}
+                {errors.bank_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.bank_name.message}
+                  </p>
+                )}
                 <option value="">Chọn ngân hàng...</option>
                 <option value="Vietcombank">Vietcombank</option>
                 <option value="VietinBank">VietinBank</option>
@@ -225,6 +284,58 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
             </div>
           </div>
 
+          {/* Upload ảnh minh chứng */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Ảnh minh chứng{" "}
+              <span className="text-gray-500">(Không bắt buộc)</span>
+            </label>
+            <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="evidence-image"
+                style={{ display: "none" }}
+              />
+
+              {/* Upload area */}
+              {!imagePreview && (
+                <label
+                  htmlFor="evidence-image"
+                  className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                >
+                  <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-600 mb-1">
+                    Click để chọn ảnh hoặc kéo thả vào đây
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Hỗ trợ: JPG, PNG, GIF (Tối đa 5MB)
+                  </p>
+                </label>
+              )}
+
+              {/* Image preview */}
+              {imagePreview && (
+                <div className="relative max-w-xs mx-auto">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Số tiền hoàn */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="flex justify-between items-center">
@@ -249,7 +360,7 @@ const RefundRequestModal: React.FC<Props> = ({ order, refundType, onClose }) => 
             >
               Hủy bỏ
             </button>
-                       <button
+            <button
               type="submit"
               disabled={!isValid || isLoading}
               className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"

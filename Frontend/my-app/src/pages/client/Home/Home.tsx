@@ -18,7 +18,10 @@ const HomePage = () => {
     "https://deltasport.vn/wp-content/uploads/2025/05/running.png",
   ];
 
-  const onImgError = (e: React.SyntheticEvent<HTMLImageElement>, idx: number) => {
+  const onImgError = (
+    e: React.SyntheticEvent<HTMLImageElement>,
+    idx: number
+  ) => {
     const img = e.currentTarget;
     if (img.dataset.fallbackApplied === "1") return; // tránh loop
     img.dataset.fallbackApplied = "1";
@@ -30,9 +33,9 @@ const HomePage = () => {
     let mounted = true;
     const fetch = async () => {
       try {
-        const res = await publicAxios.get<{ data: { id: number; image_url: string; status: boolean }[] }>(
-          `/banners?t=${Date.now()}`
-        );
+        const res = await publicAxios.get<{
+          data: { id: number; image_url: string; status: boolean }[];
+        }>(`/banners?t=${Date.now()}`);
         const active = (res.data?.data || [])
           .filter((b) => b.status)
           .sort((a, b) => a.id - b.id);
@@ -40,7 +43,10 @@ const HomePage = () => {
         const toUrl = (u?: string) =>
           u ? `${u}${u.includes("?") ? "&" : "?"}t=${Date.now()}` : "";
 
-        const smallUrls = [toUrl(active[0]?.image_url), toUrl(active[1]?.image_url)];
+        const smallUrls = [
+          toUrl(active[0]?.image_url),
+          toUrl(active[1]?.image_url),
+        ];
         const bigUrls = [
           toUrl(active[2]?.image_url),
           toUrl(active[3]?.image_url),
@@ -100,99 +106,63 @@ const HomePage = () => {
           {index === 0 && (
             <section className="double-banner" data-aos="fade-up">
               <img
-                src="https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
+                src={
+                  smallBanners[0] ||
+                  "https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
+                }
                 alt="Banner 1"
                 className="banner-small"
+                onError={(e) =>
+                  ((e.currentTarget as HTMLImageElement).src =
+                    "https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069")
+                }
               />
               <img
-                src="https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
+                src={
+                  smallBanners[1] ||
+                  "https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
+                }
                 alt="Banner 2"
                 className="banner-small"
+                onError={(e) =>
+                  ((e.currentTarget as HTMLImageElement).src =
+                    "https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069")
+                }
               />
             </section>
           )}
 
           {index === 1 && (
             <section className="single-banner" data-aos="fade-up">
-              <img src={fallbackUrls[0]} alt="Banner lớn 1" />
+              <img
+                src={bigBanners[0] || fallbackUrls[0]}
+                alt="Banner lớn 1"
+                onError={(e) => onImgError(e, 0)}
+              />
             </section>
           )}
 
           {index === 2 && (
             <section className="single-banner" data-aos="fade-up">
-              <img src={fallbackUrls[1]} alt="Banner lớn 2" />
+              <img
+                src={bigBanners[1] || fallbackUrls[1]}
+                alt="Banner lớn 2"
+                onError={(e) => onImgError(e, 1)}
+              />
             </section>
           )}
 
           {index === 3 && (
             <section className="single-banner" data-aos="fade-up">
-              <img src={fallbackUrls[2]} alt="Banner lớn 3" />
+              <img
+                src={bigBanners[2] || fallbackUrls[2]}
+                alt="Banner lớn 3"
+                onError={(e) => onImgError(e, 2)}
+              />
             </section>
           )}
         </div>
       ))}
-
-
-      {/* 2 banner nhỏ (DB id=1,2) */}
-      <section className="double-banner" data-aos="fade-up">
-        <img
-          src={
-            smallBanners[0] ||
-            "https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069"
-          }
-          alt="Banner 4"
-          className="banner-small"
-          onError={(e) =>
-            ((e.currentTarget as HTMLImageElement).src =
-              "https://n7media.coolmate.me/uploads/June2025/men_84.jpg?aio=w-1069")
-          }
-        />
-        <img
-          src={
-            smallBanners[1] ||
-            "https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069"
-          }
-          alt="Banner 5"
-          className="banner-small"
-          onError={(e) =>
-            ((e.currentTarget as HTMLImageElement).src =
-              "https://n7media.coolmate.me/uploads/June2025/women.jpg?aio=w-1069")
-          }
-        />
-      </section>
-
-      {/* Banner lớn 1 (DB id=4) */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src={bigBanners[0] || fallbackUrls[0]}
-          alt="Banner 6"
-          onError={(e) => onImgError(e, 0)}
-        />
-      </section>
-
-      {/* BST Xuân Hè */}
-      <ProductSection title="BST xuân hè 2025" apiUrl="/top-selling-products" />
-
-      {/* Banner lớn 2 (DB id=5) */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src={bigBanners[1] || fallbackUrls[1]}
-          alt="Banner 7"
-          onError={(e) => onImgError(e, 1)}
-        />
-      </section>
-
-      {/* Top bán chạy */}
-      <ProductSection title="Top bán chạy" apiUrl="/top-selling-products" />
-
-      {/* Banner lớn 3 (DB id=6) */}
-      <section className="single-banner" data-aos="fade-up">
-        <img
-          src={bigBanners[2] || fallbackUrls[2]}
-          alt="Banner 8"
-          onError={(e) => onImgError(e, 2)}
-        />
-      </section>
 
       {/* Features */}
       <section className="features">

@@ -48,19 +48,32 @@ class ClientOrderController extends Controller
                 $query->whereDate('created_at', '<=', $request->date_to);
             }
 
-            $orders = $query->paginate(10);
+            $orders = $query->paginate(50); // Tăng từ 10 lên 50 để hiển thị nhiều đơn hàng hơn
 
-            // 🔍 DEBUG: Log response để kiểm tra
-            Log::info('🔍 DEBUG ORDERS API RESPONSE:', [
-                'orders_count' => $orders->count(),
-                'first_order_items' => $orders->first() ? $orders->first()->items->toArray() : 'NO_ORDERS',
-                'sample_item' => $orders->first() && $orders->first()->items->first() ? $orders->first()->items->first()->toArray() : 'NO_ITEMS'
-            ]);
+            // 🔍 DEBUG: Log response để kiểm tra (simplified)
+            if ($orders->first()) {
+                Log::info('🔍 API Response Order #' . $orders->first()->id . ' has refund: ' . ($orders->first()->refund_request ? 'YES' : 'NO'));
+            }
+
+            // Convert to array manually to ensure relationships are included
+            $ordersData = $orders->getCollection()->map(function($order) {
+                return $order->toArray();
+            })->toArray();
+
+            // Debug: Check if refund_request is in the response
+            if (!empty($ordersData)) {
+                $firstOrder = $ordersData[0];
+                Log::info('🔍 API Response Data Check:', [
+                    'order_id' => $firstOrder['id'] ?? 'N/A',
+                    'has_refund_request' => isset($firstOrder['refund_request']) ? 'YES' : 'NO',
+                    'refund_request_data' => $firstOrder['refund_request'] ?? 'NULL'
+                ]);
+            }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy danh sách đơn hàng thành công',
-                'data' => $orders->items(),
+                'data' => $ordersData,
                 'pagination' => [
                     'current_page' => $orders->currentPage(),
                     'last_page' => $orders->lastPage(),

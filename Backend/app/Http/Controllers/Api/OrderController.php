@@ -199,29 +199,12 @@ class OrderController extends Controller
                 return response()->json(['message' => 'Đơn hàng không tồn tại'], 404);
             }
 
-            // Get all reviews for products in this order with fallback
-            $reviews = collect();
-            
-            try {
-                // Try to get reviews by order_id if column exists
-                $reviews = \App\Models\Comment::where('order_id', $id)
-                    ->where('user_id', $userId)
-                    ->with(['user', 'product'])
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            } catch (\Exception $e) {
-                // Fallback: get all reviews by user for products in this order
-                $productIds = $order->items()->with('variant.product')->get()
-                    ->pluck('variant.product.id')->unique()->filter();
-                
-                if ($productIds->isNotEmpty()) {
-                    $reviews = \App\Models\Comment::where('user_id', $userId)
-                        ->whereIn('product_id', $productIds)
-                        ->with(['user', 'product'])
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                }
-            }
+            // Chỉ lấy đánh giá cho đơn hàng cụ thể này
+            $reviews = \App\Models\Comment::where('order_id', $id)
+                ->where('user_id', $userId)
+                ->with(['user', 'product'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return response()->json($reviews);
         } catch (\Exception $e) {

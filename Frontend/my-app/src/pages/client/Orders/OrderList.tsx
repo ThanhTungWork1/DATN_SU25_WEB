@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Spin, Empty, message } from 'antd';
+import React, { useState, useEffect } from "react";
+import { Spin, Empty, message, Modal } from "antd";
 import "../../../assets/styles/responsive.css";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,14 @@ const OrderList = () => {
       okText: "Xác nhận",
       cancelText: "Không",
       onOk: () => {
-        cancelOrder.mutate(id);
+        cancelOrder.mutate(id, {
+          onSuccess: () => {
+            toast.success("Đã hủy đơn hàng thành công!");
+          },
+          onError: () => {
+            toast.error("Có lỗi xảy ra khi hủy đơn hàng!");
+          },
+        });
       },
     });
   };

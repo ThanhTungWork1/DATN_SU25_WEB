@@ -18,7 +18,10 @@ class RefundRequest extends Model
         'bank_account_number',
         'bank_name',
         'evidence_image',
+        'bill_image',
         'status',
+        'transaction_code',
+        'note_admin',
     ];
 
     public function order()

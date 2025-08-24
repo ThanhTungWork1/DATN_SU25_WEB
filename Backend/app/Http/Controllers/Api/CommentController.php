@@ -47,13 +47,14 @@ class CommentController extends Controller
 
         $productId = $request->product_id;
 
-        // Kiểm tra đã đánh giá sản phẩm này chưa (1 sản phẩm chỉ được đánh giá 1 lần)
+        // Kiểm tra đã đánh giá sản phẩm này trong đơn hàng này chưa
         $hasCommented = Comment::where('user_id', $userId)
             ->where('product_id', $productId)
+            ->where('order_id', $orderId)
             ->exists();
 
         if ($hasCommented) {
-            return response()->json(['message' => 'Bạn đã đánh giá sản phẩm này rồi.'], 409);
+            return response()->json(['message' => 'Bạn đã đánh giá sản phẩm này trong đơn hàng này rồi.'], 409);
         }
 
         // ✅ Kiểm tra đã mua hàng thành công chưa
@@ -91,24 +92,17 @@ class CommentController extends Controller
             }
         }
 
-        // ✅ Tạo bình luận với fallback cho order_id
+        // ✅ Tạo bình luận với order_id
         $commentData = [
             'user_id' => $userId,
             'product_id' => $productId,
+            'order_id' => $orderId,
             'content' => $content,
             'rating' => $request->rating,
             'status' => $status,
         ];
 
-        // Thêm order_id nếu cột tồn tại
-        try {
-            $commentData['order_id'] = $orderId;
-            $comment = Comment::create($commentData);
-        } catch (\Exception $e) {
-            // Nếu cột order_id chưa tồn tại, tạo comment không có order_id
-            unset($commentData['order_id']);
-            $comment = Comment::create($commentData);
-        }
+        $comment = Comment::create($commentData);
 
         $message = $status === 1
             ? 'Bình luận đã được đăng.'
@@ -189,19 +183,11 @@ class CommentController extends Controller
                 'order_id' => $orderId
             ]);
 
-            // Kiểm tra xem cột order_id có tồn tại không
-            $hasCommentedForOrder = false;
-            try {
-                $hasCommentedForOrder = Comment::where('user_id', $userId)
-                    ->where('product_id', $productId)
-                    ->where('order_id', $orderId)
-                    ->exists();
-            } catch (\Exception $e) {
-                // Nếu cột order_id chưa tồn tại, kiểm tra theo cách cũ
-                $hasCommentedForOrder = Comment::where('user_id', $userId)
-                    ->where('product_id', $productId)
-                    ->exists();
-            }
+            // Kiểm tra đã đánh giá sản phẩm này trong đơn hàng này chưa
+            $hasCommentedForOrder = Comment::where('user_id', $userId)
+                ->where('product_id', $productId)
+                ->where('order_id', $orderId)
+                ->exists();
 
             if ($hasCommentedForOrder) {
                 return response()->json([

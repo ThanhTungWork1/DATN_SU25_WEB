@@ -198,6 +198,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', [ClientOrderController::class, 'destroy']);
     });
 
+
     // User profile update
     Route::put('/users/{id}', [UserController::class, 'update']);
 
