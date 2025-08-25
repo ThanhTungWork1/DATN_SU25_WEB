@@ -120,6 +120,9 @@ const LoginPage = () => {
           <p>
             <Link to="/register">Đăng ký tài khoản mới</Link>
           </p>
+          <p>
+            <Link to="/forgot-password">Quên mật khẩu?</Link>
+          </p>
         </div>
       </div>
     </div>

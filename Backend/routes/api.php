@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\{
     InventoryLogController,
     NotificationController,
     OrderController,
+    PasswordResetController,
     PaymentController,
     ProductController,
     ProductVariantController,
@@ -49,12 +50,9 @@ Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware(
 Route::get('/me', [AuthenticationController::class, 'me'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
-// Forgot Password
-Route::prefix('forgot-password')->group(function () {
-    Route::post('/send-otp', [ForgotPasswordController::class, 'sendOtp']);
-    Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
-    Route::post('/reset', [ForgotPasswordController::class, 'resetPassword']);
-});
+// Forgot Password (Public routes - no auth required)
+Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 // Email Verification
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', function (Request $request) {
@@ -200,6 +198,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // User profile update
     Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::post('/change-password', [AuthenticationController::class, 'changePassword']);
 
     // Orders cho admin
     Route::prefix('order')->group(function () {

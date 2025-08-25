@@ -18,6 +18,7 @@ import OrderSuccess from "../pages/checkout/OrderSuccess";
 import PaymentSuccess from "../pages/client/Payment/PaymentSuccess";
 import PaymentFailed from "../pages/client/Payment/PaymentFailed";
 import LoginPage from "../pages/auth/Login";
+import ForgotPassword from "../pages/auth/ForgotPassword";
 import ChatWidget from "../components/ChatWidget";
 
 const ClientRoute = () => {
@@ -26,6 +27,7 @@ const ClientRoute = () => {
       {/* Các route KHÔNG có Navbar/Footer */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Các route CÓ Navbar/Footer */}
       <Route

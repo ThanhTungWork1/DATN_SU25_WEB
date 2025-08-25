@@ -21,12 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
             // 'verify-register2' => \App\Http\Middleware\Register2Middleware::class,
             'checkAdmin' => CheckAdminMiddleware::class, // 
         ]);
+        // Thêm CORS middleware trước để xử lý preflight requests
+        $middleware->prepend(\App\Http\Middleware\CorsMiddleware::class);
+        
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class, // Thêm Sanctum middleware
         ]);
         
-        // Thêm CORS middleware cho tất cả routes
-        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

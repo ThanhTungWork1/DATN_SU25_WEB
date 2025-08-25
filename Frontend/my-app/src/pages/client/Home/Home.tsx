@@ -170,9 +170,6 @@ const HomePage = () => {
         />
       </section>
 
-      {/* BST Xuân Hè */}
-      <ProductSection title="BST xuân hè 2025" apiUrl="/top-selling-products" />
-
       {/* Banner lớn 2 (DB id=5) */}
       <section className="single-banner" data-aos="fade-up">
         <img
@@ -181,9 +178,6 @@ const HomePage = () => {
           onError={(e) => onImgError(e, 1)}
         />
       </section>
-
-      {/* Top bán chạy */}
-      <ProductSection title="Top bán chạy" apiUrl="/top-selling-products" />
 
       {/* Banner lớn 3 (DB id=6) */}
       <section className="single-banner" data-aos="fade-up">

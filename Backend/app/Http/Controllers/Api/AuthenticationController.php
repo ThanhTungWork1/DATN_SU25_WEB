@@ -213,4 +213,41 @@ class AuthenticationController extends Controller
     {
         return response()->json($request->user());
     }
+    public function changePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|min:6|confirmed', // phải gửi kèm new_password_confirmation
+            ]);
+
+            $user = $request->user(); // Use $request->user() for Sanctum authentication
+
+            if (!$user) {
+                return response()->json(['message' => 'Người dùng chưa được xác thực'], 401);
+            }
+
+            // Kiểm tra mật khẩu cũ
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['message' => 'Mật khẩu hiện tại không đúng'], 400);
+            }
+
+            // Cập nhật mật khẩu mới
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            Log::info('Password changed successfully for user: ' . $user->id);
+
+            return response()->json(['message' => 'Đổi mật khẩu thành công']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error changing password: ' . $e->getMessage());
+            return response()->json(['message' => 'Lỗi khi đổi mật khẩu'], 500);
+        }
+    }
+
 }

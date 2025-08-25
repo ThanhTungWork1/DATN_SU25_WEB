@@ -1,6 +1,4 @@
-// import axios from "axios";
-// import type { Product } from "../types/DetailType";
-// import { processProductDetail } from "../utils/productDetailHelper";
+// This section intentionally left blank - content moved to line 211
 
 // // ======================= GET PRODUCT BY ID ========================
 // export const getProductById = async (id: string): Promise<Product> => {
@@ -198,6 +196,24 @@ import axios from "axios";
 import type { Product } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
 
+// Define response type for API calls
+interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
+interface ForgotPasswordRequest {
+  email: string;
+}
+
+interface ResetPasswordRequest {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
 // ======================= GET PRODUCT BY ID ========================
 export const getProductById = async (id: string): Promise<Product> => {
   try {
@@ -388,4 +404,123 @@ export const getOrderById = async (id: number, token: string) => {
     }
   );
   return data;
+};
+
+// Helper function to get CSRF token from cookies with better error handling
+const getCsrfToken = (): string => {
+  try {
+    // Try to get from cookies first
+    const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=');
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    // Try XSRF-TOKEN first (Laravel default)
+    if (cookies['XSRF-TOKEN']) {
+      return decodeURIComponent(cookies['XSRF-TOKEN']);
+    }
+    
+    // Try lowercase version
+    if (cookies['xsrf-token']) {
+      return cookies['xsrf-token'];
+    }
+    
+    // Try to find in the entire cookie string as fallback
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    if (match) {
+      return decodeURIComponent(match[1]);
+    }
+    
+    console.error('CSRF token not found in cookies. Available cookies:', document.cookie);
+    throw new Error('CSRF token not found in cookies');
+  } catch (error) {
+    console.error('Error getting CSRF token:', error);
+    throw error;
+  }
+};
+
+export const forgotPasswordApi = async (email: string) => {
+  try {
+    // First, ensure we have a session
+    await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+      withCredentials: true
+    });
+
+    // Then make the forgot password request
+    const response = await axios.post(
+      "http://localhost:8000/api/forgot-password",
+      { email },
+      {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Forgot password error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    throw error;
+  }
+};
+
+/**
+ * Đặt lại mật khẩu bằng token
+ */
+export const resetPasswordApi = async (
+  data: ResetPasswordRequest
+): Promise<ApiResponse> => {
+  try {
+    // First, get CSRF cookie
+    await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    // Get CSRF token from cookies
+    const csrfToken = getCsrfToken();
+    
+    if (!csrfToken) {
+      throw new Error('Failed to retrieve CSRF token');
+    }
+
+    const response = await fetch("http://localhost:8000/api/reset-password", {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-XSRF-TOKEN": csrfToken
+      },
+      body: JSON.stringify({
+        email: data.email,
+        token: data.token,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+      }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || "Failed to reset password");
+    }
+
+    return responseData;
+  } catch (error: any) {
+    console.error("Reset password error:", error);
+    throw error;
+  }
 };
