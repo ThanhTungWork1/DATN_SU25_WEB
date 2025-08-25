@@ -61,6 +61,14 @@ axiosInstance.interceptors.response.use(
       error.response &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
+      // 🔧 FIX: Không xử lý lỗi 401/403 cho login request
+      const isLoginRequest = error.config?.url?.includes("/login");
+
+      if (isLoginRequest) {
+        console.log("🔐 Login request failed - letting it handle normally");
+        return Promise.reject(error);
+      }
+
       console.error(
         "❌ Token không hợp lệ hoặc đã hết hạn. Đang chuyển hướng..."
       );

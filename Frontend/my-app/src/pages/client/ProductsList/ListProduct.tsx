@@ -14,7 +14,7 @@ import { SkeletonProduct } from "../../../components/SkeletonProduct";
 import NoData from "../../../components/NoData";
 import "../../../assets/styles/filte.css";
 import "../../../assets/styles/bodyListSP.css";
-import banner4 from "../../../assets/image/banner4.png";
+import banner4 from "../../../assets/image/banner4 (3).png";
 
 const PAGE_SIZE = 15;
 

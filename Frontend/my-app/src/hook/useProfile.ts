@@ -25,9 +25,9 @@ const useProfile = () => {
 
       console.log("User ID để cập nhật:", userId);
 
-      // Gọi API /users/{id} để cập nhật thông tin user
+      // Gọi API /update-profile để cập nhật thông tin user
       const response = await axios.put(
-        `http://localhost:8000/api/users/${userId}`,
+        `http://localhost:8000/api/update-profile`,
         updatedData,
         {
           headers: {

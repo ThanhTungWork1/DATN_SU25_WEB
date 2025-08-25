@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckAdminMiddleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\Api\VNPayController;
-use App\Http\Controllers\Api\ZaloPayController;
 use App\Http\Controllers\Admin\AdminRefundRequestController;
 // Controllers
 use App\Http\Controllers\Api\{
@@ -47,6 +46,8 @@ Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/admin/login', [AuthenticationController::class, 'adminLogin']);
 Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/me', [AuthenticationController::class, 'me'])->middleware('auth:sanctum');
+Route::post('/change-password', [AuthenticationController::class, 'changePassword'])->middleware('auth:sanctum');
+Route::put('/update-profile', [AuthenticationController::class, 'updateProfile'])->middleware('auth:sanctum');
 Route::get('/home-sections/{id}', [HomeSectionController::class, 'show']);
 
 // Forgot Password
@@ -55,6 +56,10 @@ Route::prefix('forgot-password')->group(function () {
     Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
     Route::post('/reset', [ForgotPasswordController::class, 'resetPassword']);
 });
+
+// Forgot Password (Public routes - no auth required)
+Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 // Email Verification
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', function (Request $request) {
@@ -137,6 +142,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
 
     Route::get('contacts', [ContactController::class, 'index']);
     Route::patch('contacts/{id}/status', [ContactController::class, 'updateStatus']);
+    Route::post('contacts/{id}/reply', [ContactController::class, 'reply']);
     
     // Refund Requests Management
     Route::get('refund-requests', [AdminRefundRequestController::class, 'index']);
@@ -231,15 +237,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/validate', [VoucherController::class, 'validateVoucher']); // Route cho user validate voucher
     });
 
-    // Payments (ZaloPay + VNPay)
+    // Payments (VNPay)
     Route::prefix('payments')->group(function () {
         Route::get('/{order_id}', [PaymentController::class, 'show']);
         Route::post('/', [PaymentController::class, 'store']);
-
-        Route::prefix('zalopay')->group(function () {
-            Route::post('/create', [ZaloPayController::class, 'createOrder']);
-            Route::post('/callback', [ZaloPayController::class, 'callback']);
-        });
 
         Route::prefix('vnpay')->group(function () {
             Route::post('/create', [VNPayController::class, 'createPayment']);

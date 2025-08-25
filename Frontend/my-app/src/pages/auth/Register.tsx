@@ -4,7 +4,7 @@ import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
 import { TokenManager } from "../../utils/tokenUtils";
 import React, { useState } from 'react';
-import "../../assets/styles/responsive.css";
+import "../../assets/styles/register.css";
 
 export const Register = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -81,6 +81,7 @@ export const Register = () => {
       {contextHolder}
       <div className="register-form-container">
         <h2 className="register-title">Đăng ký</h2>
+        <p className="register-subtitle">Tạo tài khoản mới để bắt đầu mua sắm</p>
         <Form layout="vertical" onFinish={onFinish} className="register-form">
           <Form.Item
             label="Họ tên"
@@ -89,7 +90,7 @@ export const Register = () => {
             validateStatus={fieldErrors.name ? "error" : undefined}
             help={fieldErrors.name ? fieldErrors.name[0] : undefined}
           >
-            <Input autoComplete="name" />
+            <Input placeholder="Nhập họ tên của bạn" autoComplete="name" />
           </Form.Item>
 
           <Form.Item

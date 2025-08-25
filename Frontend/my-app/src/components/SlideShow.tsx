@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import banner1 from "../assets/image/banner1.png";
-import banner2 from "../assets/image/banner2.png";
-import banner3 from "../assets/image/banner3.png";
+import banner1 from "../assets/image/banner1.jpg";
+import banner2 from "../assets/image/banner2.jpg";
+import banner3 from "../assets/image/banner3.jpg";
 import "../assets/styles/slideShow.css";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const banners = [
   {

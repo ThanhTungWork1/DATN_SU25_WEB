@@ -1,8 +1,5 @@
 import "../../../assets/styles/contact.css";
 import "../../../assets/styles/responsive.css";
-
-import React, { useState } from 'react';
-import { message } from 'antd';
 import { useContactForm } from "../../../hook/contact/useContactForm";
 
 export const ContactClient = () => {

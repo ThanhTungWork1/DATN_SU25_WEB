@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { Product } from "../types/DetailType";
 import { processProductDetail } from "../utils/productDetailHelper";
+import { ApiResponse, ResetPasswordRequest } from "../types/auth";
 
 // ======================= GET PRODUCT BY ID ========================
 export const getProductById = async (id: string): Promise<Product> => {
@@ -192,4 +193,100 @@ export const getOrderById = async (id: number, token: string) => {
     }
   );
   return data;
+};
+export const forgotPasswordApi = async (data: { email: string }) => {
+  console.log('🌐 ApiUrl - Forgot password API call:', {
+    email: data.email,
+    url: 'http://localhost:8000/api/forgot-password',
+    timestamp: new Date().toISOString()
+  });
+
+  try {
+    // First, ensure we have a session
+    console.log('🍪 ApiUrl - Getting CSRF cookie...');
+    await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+      withCredentials: true,
+    });
+    console.log('✅ ApiUrl - CSRF cookie obtained');
+
+    // Then make the forgot password request
+    console.log('📡 ApiUrl - Making forgot password request...');
+    const response = await axios.post(
+      "http://localhost:8000/api/forgot-password",
+      { email: data.email },
+      {
+        withCredentials: true,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log('✅ ApiUrl - Forgot password response:', {
+      status: response.status,
+      data: response.data
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ ApiUrl - Forgot password error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      }
+    });
+    throw error;
+  }
+};
+
+/**
+ * Đặt lại mật khẩu bằng token
+ */
+export const resetPasswordApi = async (
+  data: ResetPasswordRequest
+): Promise<ApiResponse> => {
+  try {
+    // First, get CSRF cookie
+    await fetch("http://localhost:8000/sanctum/csrf-cookie", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    const response = await fetch("http://localhost:8000/api/reset-password", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: JSON.stringify({
+        email: data.email,
+        token: data.token,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+      }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || "Failed to reset password");
+    }
+
+    return responseData;
+  } catch (error: any) {
+    console.error("Reset password error:", error);
+    throw error;
+  }
 };

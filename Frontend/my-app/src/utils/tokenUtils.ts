@@ -58,43 +58,64 @@ export class TokenManager {
       role,
     });
 
-    // **FIX CHÍNH: Chỉ set token cho role hiện tại, KHÔNG xóa token của role khác**
-    if (role === "admin") {
-      // Chỉ set admin token, GIỮ NGUYÊN user token
-      localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
-      localStorage.setItem("role", "1"); // Lưu role admin
+    try {
+      // **FIX CHÍNH: Chỉ set token cho role hiện tại, KHÔNG xóa token của role khác**
+      if (role === "admin") {
+        // Chỉ set admin token, GIỮ NGUYÊN user token
+        localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
+        localStorage.setItem("role", "1"); // Lưu role admin
+        console.log(
+          "🔐 TokenManager - Đã lưu admin token vào:",
+          this.ADMIN_TOKEN_KEY
+        );
+      } else {
+        // Chỉ set user token, GIỮ NGUYÊN admin token
+        localStorage.setItem(this.USER_TOKEN_KEY, token);
+        localStorage.setItem("role", "0"); // Lưu role user
+        console.log(
+          "🔐 TokenManager - Đã lưu user token vào:",
+          this.USER_TOKEN_KEY
+        );
+      }
+
+      // Chỉ xóa legacy token (cũ)
+      localStorage.removeItem(this.LEGACY_TOKEN_KEY);
+      console.log("🔐 TokenManager - Đã xóa legacy token");
+
+      // **DÒNG QUAN TRỌNG NHẤT:** Phát ra sự kiện để CartProvider lắng nghe
+      window.dispatchEvent(new Event("token-changed"));
+      console.log("🔐 TokenManager - Đã phát event token-changed");
+
+      // Log để debug
+      console.log("🔐 TokenManager - Token hiện tại trong localStorage:");
       console.log(
-        "🔐 TokenManager - Đã lưu admin token vào:",
-        this.ADMIN_TOKEN_KEY
+        "   - admin_token:",
+        localStorage.getItem(this.ADMIN_TOKEN_KEY) ? "Có" : "Không"
       );
-    } else {
-      // Chỉ set user token, GIỮ NGUYÊN admin token
-      localStorage.setItem(this.USER_TOKEN_KEY, token);
-      localStorage.setItem("role", "0"); // Lưu role user
       console.log(
-        "🔐 TokenManager - Đã lưu user token vào:",
-        this.USER_TOKEN_KEY
+        "   - user_token:",
+        localStorage.getItem(this.USER_TOKEN_KEY) ? "Có" : "Không"
       );
+
+      // Verify token was actually saved
+      const savedToken =
+        role === "admin"
+          ? localStorage.getItem(this.ADMIN_TOKEN_KEY)
+          : localStorage.getItem(this.USER_TOKEN_KEY);
+
+      if (savedToken === token) {
+        console.log("✅ Token đã được lưu thành công");
+      } else {
+        console.error("❌ Token không được lưu đúng cách!");
+        console.log("Expected:", token.substring(0, 20) + "...");
+        console.log(
+          "Actual:",
+          savedToken ? savedToken.substring(0, 20) + "..." : "NULL"
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error in TokenManager.setToken:", error);
     }
-
-    // Chỉ xóa legacy token (cũ)
-    localStorage.removeItem(this.LEGACY_TOKEN_KEY);
-    console.log("🔐 TokenManager - Đã xóa legacy token");
-
-    // **DÒNG QUAN TRỌNG NHẤT:** Phát ra sự kiện để CartProvider lắng nghe
-    window.dispatchEvent(new Event("token-changed"));
-    console.log("🔐 TokenManager - Đã phát event token-changed");
-
-    // Log để debug
-    console.log("🔐 TokenManager - Token hiện tại trong localStorage:");
-    console.log(
-      "   - admin_token:",
-      localStorage.getItem(this.ADMIN_TOKEN_KEY) ? "Có" : "Không"
-    );
-    console.log(
-      "   - user_token:",
-      localStorage.getItem(this.USER_TOKEN_KEY) ? "Có" : "Không"
-    );
   }
 
   /**

@@ -7,6 +7,9 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "./assets/styles/toast-custom.css";
+import "./utils/debugAuth.js"; // Import debug script
+import "./utils/testLogin.js"; // Import test script
+import "./utils/testFullLogin.js"; // Import full test script
 
 function App() {
   useEffect(() => {

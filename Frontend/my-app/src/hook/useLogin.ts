@@ -21,13 +21,29 @@ const useLogin = ({
 
       // BƯỚC 2: Sử dụng TokenManager để lưu token
       // 🔧 FIX: Tự động phát hiện role từ response thay vì dựa vào forAdmin
+      console.log("🔐 useLogin - Lưu token với role:", user.role);
+
       if (user.role === 1) {
         // Admin
+        console.log("🔐 useLogin - Lưu admin token");
         TokenManager.setToken(token, "admin");
       } else {
         // User thường
+        console.log("🔐 useLogin - Lưu user token");
         TokenManager.setToken(token, "user");
       }
+
+      // Log để debug
+      console.log("🔐 useLogin - Token đã được lưu:");
+      console.log(
+        "  - admin_token:",
+        localStorage.getItem("admin_token") ? "Có" : "Không"
+      );
+      console.log(
+        "  - user_token:",
+        localStorage.getItem("user_token") ? "Có" : "Không"
+      );
+      console.log("  - role:", localStorage.getItem("role"));
 
       const result = { token, user };
 

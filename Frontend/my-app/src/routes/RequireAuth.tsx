@@ -15,7 +15,7 @@ const RequireAuth = ({ allowedRoles }: Props) => {
   const location = useLocation();
   const storedRole = localStorage.getItem("role");
   const userToken = localStorage.getItem("user_token");
-  const token = localStorage.getItem("token");
+  const legacyToken = localStorage.getItem("token");
   const adminToken = localStorage.getItem("admin_token");
   const role = mapRole(storedRole);
 
@@ -24,41 +24,42 @@ const RequireAuth = ({ allowedRoles }: Props) => {
     storedRole,
     role,
     hasUserToken: !!userToken,
-    hasToken: !!token,
+    hasLegacyToken: !!legacyToken,
     hasAdminToken: !!adminToken,
     currentPath: location.pathname,
   });
 
   // Nếu không có role, redirect đến login
   if (!role) {
+    console.log("❌ No role found, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Nếu đang truy cập trang client (allowedRoles = ["user"])
-  if (allowedRoles.includes("user")) {
-    // Admin có thể truy cập trang client nếu có userToken
-    if (role === "admin" && (userToken || token)) {
-      return <Outlet />;
-    }
+  // Kiểm tra token dựa trên context
+  const currentPath = location.pathname;
+  const isAdminContext = currentPath.startsWith("/admin");
 
-    // User có thể truy cập trang client
-    if (role === "user" && (userToken || token)) {
-      return <Outlet />;
-    }
-  }
-
-  // Nếu đang truy cập trang admin (allowedRoles = ["admin"])
-  if (allowedRoles.includes("admin")) {
+  if (isAdminContext) {
+    // Admin context - cần admin token
     if (role === "admin" && adminToken) {
+      console.log("✅ Admin access granted");
       return <Outlet />;
+    } else {
+      console.log("❌ Admin access denied, redirecting to admin login");
+      return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    }
+  } else {
+    // Client context - cần user token hoặc legacy token
+    const hasValidToken = userToken || legacyToken;
+
+    if (hasValidToken) {
+      console.log("✅ Client access granted");
+      return <Outlet />;
+    } else {
+      console.log("❌ Client access denied, redirecting to login");
+      return <Navigate to="/login" state={{ from: location }} replace />;
     }
   }
-
-  // Nếu không có quyền, redirect về admin login nếu đang truy cập admin route
-  if (location.pathname.startsWith("/admin")) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
-  }
-  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default RequireAuth;

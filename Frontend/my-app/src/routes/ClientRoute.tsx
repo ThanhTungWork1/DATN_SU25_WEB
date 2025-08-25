@@ -19,6 +19,8 @@ import PaymentSuccess from "../pages/client/Payment/PaymentSuccess";
 import PaymentFailed from "../pages/client/Payment/PaymentFailed";
 import LoginPage from "../pages/auth/Login";
 import ChatWidget from "../components/ChatWidget";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 
 const ClientRoute = () => {
   return (
@@ -26,7 +28,8 @@ const ClientRoute = () => {
       {/* Các route KHÔNG có Navbar/Footer */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<Register />} />
-
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* Các route CÓ Navbar/Footer */}
       <Route
         path="*"
