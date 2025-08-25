@@ -17,6 +17,7 @@ import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import { TokenManager } from "../utils/tokenUtils";
+import { RevenueDateProvider } from "../contexts/RevenueDateContext";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -133,7 +134,9 @@ const LayoutAdmin: React.FC = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            <Outlet />
+            <RevenueDateProvider>
+              <Outlet />
+            </RevenueDateProvider>
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}></Footer>

@@ -15,27 +15,67 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Lấy các đơn hàng đã giao và tính tổng doanh thu từ accessor
-        $delivered_orders = Order::whereIn('status', ['delivered', 'completed'])->get();
-        $total_revenue = $delivered_orders->sum('final_amount');
-        $orders_today = Order::whereDate('created_at', Carbon::today())->count();
-        $new_users_this_month = User::where('role', 0) // Chỉ user thường, không tính admin
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
-            ->count();
+        // Lấy tham số khoảng thời gian
+        $startDate = null;
+        $endDate = null;
+        
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+        }
+
+        // Tổng doanh thu - lọc theo thời gian nếu có
+        $revenueQuery = Order::whereIn('status', ['delivered', 'completed']);
+        if ($startDate && $endDate) {
+            $revenueQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        $total_revenue = $revenueQuery->sum('final_amount');
+
+        // Đơn hàng trong khoảng thời gian (thay vì chỉ hôm nay)
+        $ordersQuery = Order::query();
+        if ($startDate && $endDate) {
+            $ordersQuery->whereBetween('created_at', [$startDate, $endDate]);
+        } else {
+            $ordersQuery->whereDate('created_at', Carbon::today());
+        }
+        $orders_in_period = $ordersQuery->count();
+
+        // Người dùng mới trong khoảng thời gian (thay vì chỉ tháng này)
+        $usersQuery = User::where('role', 0); // Chỉ user thường, không tính admin
+        if ($startDate && $endDate) {
+            $usersQuery->whereBetween('created_at', [$startDate, $endDate]);
+        } else {
+            $usersQuery->whereMonth('created_at', Carbon::now()->month)
+                      ->whereYear('created_at', Carbon::now()->year);
+        }
+        $new_users_in_period = $usersQuery->count();
+
+        // Dữ liệu tĩnh - không phụ thuộc thời gian
         $total_products = Product::count();
         $total_categories = Category::count();
         $total_contacts = Contact::count();
-        $pending_orders = Order::where('status', 'pending')->count();
-        $total_reviews = Comment::count();
-        $average_rating = Comment::avg('rating');
+
+        // Đơn hàng chờ xác nhận - lọc theo thời gian nếu có
+        $pendingQuery = Order::where('status', 'pending');
+        if ($startDate && $endDate) {
+            $pendingQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        $pending_orders = $pendingQuery->count();
+
+        // Đánh giá - lọc theo thời gian nếu có
+        $reviewsQuery = Comment::query();
+        if ($startDate && $endDate) {
+            $reviewsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        $total_reviews = $reviewsQuery->count();
+        $average_rating = $reviewsQuery->avg('rating');
 
         return response()->json([
             'total_revenue' => $total_revenue,
-            'orders_today' => $orders_today,
-            'new_users_this_month' => $new_users_this_month,
+            'orders_in_period' => $orders_in_period,
+            'new_users_in_period' => $new_users_in_period,
             'total_products' => $total_products,
             'total_categories' => $total_categories,
             'total_contacts' => $total_contacts,
@@ -45,35 +85,68 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function userGrowth()
+    public function userGrowth(Request $request)
     {
-        $thisMonthCount = User::where('role', 0) // Chỉ user thường, không tính admin
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
-            ->count();
+        $startDate = null;
+        $endDate = null;
+        
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+        }
 
-        $lastMonthCount = User::where('role', 0) // Chỉ user thường, không tính admin
-            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
-            ->whereYear('created_at', Carbon::now()->subMonth()->year)
-            ->count();
+        // Nếu có khoảng thời gian, tính toán dựa trên khoảng đó
+        if ($startDate && $endDate) {
+            $periodDays = $endDate->diffInDays($startDate);
+            $previousStartDate = $startDate->copy()->subDays($periodDays);
+            $previousEndDate = $startDate->copy()->subDay();
+            
+            $thisPeriodCount = User::where('role', 0)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+
+            $previousPeriodCount = User::where('role', 0)
+                ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+                ->count();
+        } else {
+            // Mặc định so sánh tháng này với tháng trước
+            $thisPeriodCount = User::where('role', 0)
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->count();
+
+            $previousPeriodCount = User::where('role', 0)
+                ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+                ->whereYear('created_at', Carbon::now()->subMonth()->year)
+                ->count();
+        }
 
         $growthPercent = 0;
-        if ($lastMonthCount > 0) {
-            $growthPercent = (($thisMonthCount - $lastMonthCount) / $lastMonthCount) * 100;
-        } elseif ($thisMonthCount > 0) {
+        if ($previousPeriodCount > 0) {
+            $growthPercent = (($thisPeriodCount - $previousPeriodCount) / $previousPeriodCount) * 100;
+        } elseif ($thisPeriodCount > 0) {
             $growthPercent = 100;
         }
 
         return response()->json([
-            'thisCount' => $thisMonthCount,
-            'lastCount' => $lastMonthCount,
+            'thisCount' => $thisPeriodCount,
+            'lastCount' => $previousPeriodCount,
             'growthPercent' => round($growthPercent, 2),
         ]);
     }
 
-    public function ordersByStatus()
+    public function ordersByStatus(Request $request)
     {
-        $stats = Order::select('status', DB::raw('count(*) as count'))
+        $query = Order::query();
+        
+        // Lọc theo khoảng thời gian nếu có
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        
+        $stats = $query->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get();
 
@@ -150,9 +223,18 @@ class DashboardController extends Controller
         return response()->json($revenue);
     }
 
-    public function ratingStats()
+    public function ratingStats(Request $request)
     {
-        $stats = Comment::select('rating', DB::raw('count(*) as count'))
+        $query = Comment::query();
+        
+        // Lọc theo khoảng thời gian nếu có
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        
+        $stats = $query->select('rating', DB::raw('count(*) as count'))
             ->groupBy('rating')
             ->orderBy('rating')
             ->get();

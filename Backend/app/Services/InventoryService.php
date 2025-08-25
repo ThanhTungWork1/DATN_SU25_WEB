@@ -18,17 +18,17 @@ class InventoryService
     {
         $totalProducts = Product::count();
         
-        $lowStockProducts = ProductVariant::where('stock_available', '<', 10)
-            ->where('stock_available', '>', 0)
+        $lowStockProducts = ProductVariant::where('stock', '<', 10)
+            ->where('stock', '>', 0)
             ->distinct('product_id')
             ->count('product_id');
             
-        $outOfStockProducts = ProductVariant::where('stock_available', '<=', 0)
+        $outOfStockProducts = ProductVariant::where('stock', '<=', 0)
             ->distinct('product_id')
             ->count('product_id');
             
         $totalValueResult = ProductVariant::join('products', 'product_variants.product_id', '=', 'products.id')
-            ->selectRaw('SUM(product_variants.stock_available * products.price) as total_value')
+            ->selectRaw('SUM(product_variants.stock * products.price) as total_value')
             ->first();
         $totalValue = $totalValueResult ? $totalValueResult->total_value : 0;
 
@@ -51,8 +51,8 @@ class InventoryService
             ->groupBy('products.id')
             ->selectRaw('
                 products.*,
-                SUM(product_variants.stock_available) as total_available_stock,
-                MIN(product_variants.stock_available) as min_available_stock,
+                SUM(product_variants.stock) as total_available_stock,
+                MIN(product_variants.stock) as min_available_stock,
                 COUNT(product_variants.id) as total_variants
             ');
 
@@ -180,34 +180,34 @@ class InventoryService
         $lowStockProducts = Product::with(['variants.color', 'variants.size'])
             ->select('products.*')
             ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-            ->where('product_variants.stock_available', '<', 10)
+            ->where('product_variants.stock', '<', 10)
             ->groupBy('products.id')
             ->selectRaw('
                 products.*,
-                MIN(product_variants.stock_available) as min_stock,
+                MIN(product_variants.stock) as min_stock,
                 COUNT(product_variants.id) as total_low_stock_variants
             ')
             ->orderBy('min_stock', 'asc')
             ->limit($limit)
             ->get();
 
-        $totalLowStock = ProductVariant::where('stock_available', '<', 10)
-            ->where('stock_available', '>', 0)
+        $totalLowStock = ProductVariant::where('stock', '<', 10)
+            ->where('stock', '>', 0)
             ->distinct('product_id')
             ->count('product_id');
             
-        $outOfStock = ProductVariant::where('stock_available', '<=', 0)
+        $outOfStock = ProductVariant::where('stock', '<=', 0)
             ->distinct('product_id')
             ->count('product_id');
 
         $formattedProducts = $lowStockProducts->map(function ($product) {
             $lowStockVariants = $product->variants
-                ->where('stock_available', '<', 10)
+                ->where('stock', '<', 10)
                 ->map(function ($variant) use ($product) {
                     return [
                         'size_name' => $variant->size->name ?? 'N/A',
                         'color_name' => $variant->color->name ?? 'N/A',
-                        'stock' => $variant->stock_available,
+                        'stock' => $variant->stock,
                         'price' => ($product->price ?? 0), // Price in VND
                     ];
                 })

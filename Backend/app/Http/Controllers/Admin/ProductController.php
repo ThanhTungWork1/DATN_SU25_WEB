@@ -149,6 +149,14 @@ class ProductController extends Controller
                     $variant['sku'] = "SP-" . ($color ? $color->name : 'Unknown') . "-" . ($size ? $size->name : 'Unknown') . "-" . $product->id . "-" . $index;
                 }
                 
+                // 🔧 FIX: Set stock_available = stock khi tạo mới variant
+                if (!isset($variant['stock_available'])) {
+                    $variant['stock_available'] = $variant['stock'] ?? 0;
+                }
+                if (!isset($variant['stock_reserved'])) {
+                    $variant['stock_reserved'] = 0;
+                }
+                
                 \Log::info("🔍 [BACKEND DEBUG] About to create variant with data:", $variant);
                 $product->variants()->create($variant);
                 \Log::info("🔍 [BACKEND DEBUG] Variant {$index} created successfully");
@@ -267,6 +275,14 @@ class ProductController extends Controller
                     if (isset($variantData['variant_price'])) {
                         $variantData['price'] = $variantData['variant_price'];
                         unset($variantData['variant_price']);
+                    }
+                    
+                    // 🔧 FIX: Set stock_available = stock khi update variant (nếu không có)
+                    if (!isset($variantData['stock_available']) && isset($variantData['stock'])) {
+                        $variantData['stock_available'] = $variantData['stock'];
+                    }
+                    if (!isset($variantData['stock_reserved'])) {
+                        $variantData['stock_reserved'] = 0;
                     }
                     
                     $product->variants()->updateOrCreate(

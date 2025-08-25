@@ -164,20 +164,26 @@ const RefundRequestModal: React.FC<Props> = ({
               <option value="">Chọn lý do...</option>
               {refundType === "cancel" ? (
                 <>
-                  <option value="changed_mind">Đổi ý không muốn mua nữa</option>
-                  <option value="found_better_price">
+                  <option value="Đổi ý không muốn mua nữa">
+                    Đổi ý không muốn mua nữa
+                  </option>
+                  <option value="Tìm được giá tốt hơn">
                     Tìm được giá tốt hơn
                   </option>
-                  <option value="wrong_order">Đặt nhầm sản phẩm</option>
-                  <option value="other">Lý do khác</option>
+                  <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                  <option value="Lý do khác">Lý do khác</option>
                 </>
               ) : (
                 <>
-                  <option value="defective">Sản phẩm bị lỗi/hỏng</option>
-                  <option value="wrong_item">Giao sai sản phẩm</option>
-                  <option value="not_as_described">Không đúng mô tả</option>
-                  <option value="quality_issue">Chất lượng không tốt</option>
-                  <option value="other">Lý do khác</option>
+                  <option value="Sản phẩm bị lỗi/hỏng">
+                    Sản phẩm bị lỗi/hỏng
+                  </option>
+                  <option value="Giao sai sản phẩm">Giao sai sản phẩm</option>
+                  <option value="Không đúng mô tả">Không đúng mô tả</option>
+                  <option value="Chất lượng không tốt">
+                    Chất lượng không tốt
+                  </option>
+                  <option value="Lý do khác">Lý do khác</option>
                 </>
               )}
             </select>

@@ -239,9 +239,16 @@ const RefundRequestList: React.FC = () => {
       dataIndex: "reason",
       key: "reason",
       render: (reason: string) => {
+        // Nếu reason đã là tiếng Việt thì hiển thị trực tiếp
+        // Nếu vẫn là tiếng Anh (dữ liệu cũ) thì map sang tiếng Việt
         const reasonMap: { [key: string]: string } = {
-          quality_issue: "Chất lượng sản phẩm",
+          quality_issue: "Chất lượng không tốt",
           not_as_described: "Không đúng mô tả",
+          wrong_item: "Giao sai sản phẩm",
+          defective: "Sản phẩm bị lỗi/hỏng",
+          changed_mind: "Đổi ý không muốn mua nữa",
+          found_better_price: "Tìm được giá tốt hơn",
+          wrong_order: "Đặt nhầm sản phẩm",
           damaged: "Sản phẩm bị hỏng",
           wrong_size: "Sai kích thước",
           delivery_issue: "Vấn đề giao hàng",

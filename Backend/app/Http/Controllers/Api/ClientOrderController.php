@@ -210,7 +210,8 @@ class ClientOrderController extends Controller
                 if (!$variant) {
                     throw new \Exception('Không tìm thấy biến thể sản phẩm với ID: ' . $item['variant_id']);
                 }
-                if ($variant->stock < $item['quantity']) {
+                // Kiểm tra stock_available ban đầu (sẽ kiểm tra lại trong transaction)
+                if ($variant->stock_available < $item['quantity']) {
                     throw new \Exception('Sản phẩm ' . $variant->product->name . ' không đủ tồn kho.');
                 }
 
@@ -359,13 +360,36 @@ class ClientOrderController extends Controller
 
             $order->items()->createMany($orderItemsData);
 
-            // Update stock and sold count
+            // Update stock and sold count - FIX RACE CONDITION
             foreach ($data['items'] as $item) {
-                $variant = ProductVariant::find($item['variant_id']);
-                $variant->stock -= $item['quantity'];
-                $variant->product->sold += $item['quantity'];
-                $variant->save();
-                $variant->product->save();
+                // Lock row và kiểm tra stock trong 1 query
+                $variant = ProductVariant::where('id', $item['variant_id'])
+                    ->lockForUpdate() // Lock row để tránh race condition
+                    ->first();
+                
+                if (!$variant) {
+                    throw new \Exception('Không tìm thấy sản phẩm.');
+                }
+                
+                // Kiểm tra stock_available sau khi lock
+                if ($variant->stock_available < $item['quantity']) {
+                    throw new \Exception('Sản phẩm ' . $variant->product->name . ' chỉ còn ' . $variant->stock_available . ' có thể bán.');
+                }
+                
+                // Atomic update stock và stock_available
+                $updatedRows = ProductVariant::where('id', $item['variant_id'])
+                    ->where('stock_available', '>=', $item['quantity'])
+                    ->update([
+                        'stock' => DB::raw("stock - {$item['quantity']}"),
+                        'stock_available' => DB::raw("stock_available - {$item['quantity']}")
+                    ]);
+                
+                if ($updatedRows === 0) {
+                    throw new \Exception('Sản phẩm không đủ tồn kho hoặc đã bị thay đổi.');
+                }
+                
+                // Update sold count
+                $variant->product->increment('sold', $item['quantity']);
             }
 
             DB::commit();
