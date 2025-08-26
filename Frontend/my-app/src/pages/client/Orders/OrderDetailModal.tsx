@@ -25,33 +25,49 @@ const OrderDetailModal = ({
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
+      case "waiting_for_payment":
+        return "status-badge status-waiting-payment";
       case "pending":
-        return "text-yellow-600 bg-yellow-100";
+        return "status-badge status-pending";
+      case "confirmed":
+        return "status-badge status-confirmed";
       case "processing":
-        return "text-blue-600 bg-blue-100";
+        return "status-badge status-processing";
       case "shipping":
-        return "text-purple-600 bg-purple-100";
+        return "status-badge status-shipping";
       case "delivered":
-        return "text-green-600 bg-green-100";
+        return "status-badge status-delivered";
+      case "completed":
+        return "status-badge status-completed";
       case "cancelled":
-        return "text-red-600 bg-red-100";
+        return "status-badge status-cancelled";
+      case "refunded":
+        return "status-badge status-refunded";
       default:
-        return "text-gray-600 bg-gray-100";
+        return "status-badge bg-gray-100 text-gray-800 border border-gray-200";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
+      case "waiting_for_payment":
+        return "Chờ thanh toán";
       case "pending":
         return "Chờ xác nhận";
+      case "confirmed":
+        return "Đã xác nhận";
       case "processing":
         return "Đang xử lý";
       case "shipping":
-        return "Đang giao";
+        return "Đang giao hàng";
       case "delivered":
-        return "Đã nhận";
+        return "Đã giao";
+      case "completed":
+        return "Đã hoàn thành";
       case "cancelled":
         return "Đã huỷ";
+      case "refunded":
+        return "Đã hoàn tiền";
       default:
         return status;
     }

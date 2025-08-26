@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import useRegister from "../../hook/useRegister";
 import useLogin from "../../hook/useLogin";
 import { TokenManager } from "../../utils/tokenUtils";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import "../../assets/styles/register.css";
 
 export const Register = () => {
@@ -81,7 +81,9 @@ export const Register = () => {
       {contextHolder}
       <div className="register-form-container">
         <h2 className="register-title">Đăng ký</h2>
-        <p className="register-subtitle">Tạo tài khoản mới để bắt đầu mua sắm</p>
+        <p className="register-subtitle">
+          Tạo tài khoản mới để bắt đầu mua sắm
+        </p>
         <Form layout="vertical" onFinish={onFinish} className="register-form">
           <Form.Item
             label="Họ tên"
@@ -103,7 +105,7 @@ export const Register = () => {
             validateStatus={fieldErrors.email ? "error" : undefined}
             help={fieldErrors.email ? fieldErrors.email[0] : undefined}
           >
-            <Input autoComplete="email" />
+            <Input placeholder="Nhập email của bạn" autoComplete="email" />
           </Form.Item>
 
           <Form.Item
@@ -115,7 +117,7 @@ export const Register = () => {
             validateStatus={fieldErrors.phone ? "error" : undefined}
             help={fieldErrors.phone ? fieldErrors.phone[0] : undefined}
           >
-            <Input autoComplete="tel" />
+            <Input placeholder="Nhập số điện thoại" autoComplete="tel" />
           </Form.Item>
 
           <Form.Item
@@ -125,7 +127,10 @@ export const Register = () => {
             validateStatus={fieldErrors.address ? "error" : undefined}
             help={fieldErrors.address ? fieldErrors.address[0] : undefined}
           >
-            <Input autoComplete="street-address" />
+            <Input
+              placeholder="Nhập địa chỉ của bạn"
+              autoComplete="street-address"
+            />
           </Form.Item>
 
           <Form.Item
@@ -146,7 +151,10 @@ export const Register = () => {
             name="password"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
           >
-            <Input.Password autoComplete="new-password" />
+            <Input.Password
+              placeholder="Nhập mật khẩu"
+              autoComplete="new-password"
+            />
           </Form.Item>
 
           <Form.Item
@@ -166,7 +174,10 @@ export const Register = () => {
               }),
             ]}
           >
-            <Input.Password autoComplete="new-password" />
+            <Input.Password
+              placeholder="Nhập lại mật khẩu"
+              autoComplete="new-password"
+            />
           </Form.Item>
 
           <Form.Item>

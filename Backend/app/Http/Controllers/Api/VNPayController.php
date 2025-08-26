@@ -236,14 +236,9 @@ class VNPayController extends Controller
                     'status' => 'pending'
                 ]);
 
-                // Xóa giỏ hàng sau khi thanh toán thành công
+                // Chỉ xóa những sản phẩm đã được thanh toán khỏi giỏ hàng
                 if ($order->user) {
-                    $cart = Cart::where('user_id', $order->user_id)->where('status', 1)->first();
-                    if ($cart) {
-                        $cart->cartItems()->delete();
-                        $cart->delete();
-                        Log::info('Cart cleared for user after successful VNPay payment.', ['user_id' => $order->user_id, 'cart_id' => $cart->id]);
-                    }
+                    $this->removeOrderedItemsFromCart($order);
                 }
 
                 Log::info('VNPay payment successful', [
@@ -356,14 +351,9 @@ class VNPayController extends Controller
                         'status' => 'paid'
                     ]);
 
-                    // Xóa giỏ hàng sau khi thanh toán thành công
+                    // Chỉ xóa những sản phẩm đã được thanh toán khỏi giỏ hàng
                     if ($order->user) {
-                        $cart = Cart::where('user_id', $order->user_id)->where('status', 1)->first();
-                        if ($cart) {
-                            $cart->cartItems()->delete();
-                            $cart->delete();
-                            Log::info('Cart cleared for user via IPN.', ['user_id' => $order->user_id, 'cart_id' => $cart->id]);
-                        }
+                        $this->removeOrderedItemsFromCart($order);
                     }
 
                     Log::info('VNPay IPN payment successful', [
@@ -413,6 +403,68 @@ class VNPayController extends Controller
         } catch (\Exception $e) {
             Log::error('VNPay checkStatus error: ' . $e->getMessage());
             return response()->json(['error' => 'Có lỗi xảy ra khi kiểm tra trạng thái'], 500);
+        }
+    }
+
+    /**
+     * Chỉ xóa những sản phẩm đã được thanh toán khỏi giỏ hàng
+     */
+    private function removeOrderedItemsFromCart(Order $order)
+    {
+        try {
+            $cart = Cart::where('user_id', $order->user_id)->where('status', 1)->first();
+            
+            if (!$cart) {
+                Log::info('No active cart found for user', ['user_id' => $order->user_id]);
+                return;
+            }
+
+            // Lấy danh sách variant_ids đã được thanh toán
+            $orderedVariantIds = $order->items->pluck('variant_id')->toArray();
+            
+            if (empty($orderedVariantIds)) {
+                Log::warning('No order items found for order', ['order_id' => $order->id]);
+                return;
+            }
+
+            // Xóa chỉ những cart items có variant_id đã được thanh toán
+            $deletedItems = $cart->cartItems()
+                ->whereIn('variant_id', $orderedVariantIds)
+                ->delete();
+
+            Log::info('Removed ordered items from cart', [
+                'user_id' => $order->user_id,
+                'cart_id' => $cart->id,
+                'order_id' => $order->id,
+                'ordered_variant_ids' => $orderedVariantIds,
+                'deleted_items_count' => $deletedItems
+            ]);
+
+            // Kiểm tra xem cart còn items nào không
+            $remainingItems = $cart->cartItems()->count();
+            
+            if ($remainingItems === 0) {
+                // Nếu không còn items nào, xóa luôn cart
+                $cart->delete();
+                Log::info('Cart deleted because no items remaining', [
+                    'user_id' => $order->user_id,
+                    'cart_id' => $cart->id
+                ]);
+            } else {
+                Log::info('Cart still has remaining items', [
+                    'user_id' => $order->user_id,
+                    'cart_id' => $cart->id,
+                    'remaining_items_count' => $remainingItems
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error removing ordered items from cart', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }

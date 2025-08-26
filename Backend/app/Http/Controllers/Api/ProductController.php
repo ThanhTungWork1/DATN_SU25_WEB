@@ -401,6 +401,19 @@ class ProductController extends Controller
                 }
             ])->findOrFail($id);
 
+            // Tính toán số lượng đã bán real-time từ order_items
+            $variantIds = $product->variants->pluck('id');
+            $soldQuantity = 0;
+            
+            if ($variantIds->count() > 0) {
+                $soldQuantity = \App\Models\OrderItem::whereIn('variant_id', $variantIds)
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->whereIn('orders.status', ['delivered', 'completed'])
+                    ->sum('order_items.quantity');
+            }
+            
+            // Ghi đè field sold với giá trị tính toán real-time
+            $product->sold = (int) $soldQuantity;
 
             return response()->json(['success' => true, 'data' => $product]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

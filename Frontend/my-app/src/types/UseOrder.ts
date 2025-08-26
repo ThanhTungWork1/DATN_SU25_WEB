@@ -17,7 +17,7 @@ export interface UseOrder {
     | "pending"
     | "confirmed"
     | "processing"
-    | "shipped"
+    | "shipping"
     | "delivered"
     | "completed"
     | "cancelled"

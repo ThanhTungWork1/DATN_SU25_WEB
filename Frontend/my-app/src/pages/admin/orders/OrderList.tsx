@@ -62,6 +62,9 @@ export default function OrderList() {
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [statistics, setStatistics] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
@@ -81,15 +84,60 @@ export default function OrderList() {
     };
   }, [searchTerm]);
 
+  // Auto-refresh để cập nhật đơn hàng mới
+  useEffect(() => {
+    // Lần đầu load
+    fetchData();
+    fetchStatistics();
+
+    // Auto-refresh mỗi 10 giây (chỉ khi được bật)
+    const interval = setInterval(() => {
+      if (autoRefreshEnabled) {
+        fetchData(
+          pagination.currentPage,
+          debouncedSearchTerm,
+          statusFilter,
+          paymentFilter,
+          dateRange ? dateRange[0] : "",
+          dateRange ? dateRange[1] : "",
+          true // isAutoRefresh = true
+        );
+        fetchStatistics();
+      }
+    }, 10000); // 10 giây
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [autoRefreshEnabled]); // Chạy lại khi autoRefreshEnabled thay đổi
+
+  // Refetch khi có thay đổi filter
+  useEffect(() => {
+    fetchData(
+      1,
+      debouncedSearchTerm,
+      statusFilter,
+      paymentFilter,
+      dateRange ? dateRange[0] : "",
+      dateRange ? dateRange[1] : ""
+    );
+  }, [debouncedSearchTerm, statusFilter, paymentFilter, dateRange]);
+
   const fetchData = async (
     page = 1,
     search = "",
     status = "",
     isPaid = "",
     dateFrom = "",
-    dateTo = ""
+    dateTo = "",
+    isAutoRefresh = false
   ) => {
-    setLoading(true);
+    if (isAutoRefresh) {
+      setIsAutoRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const params: any = { page, search };
       if (status) params.status = status;
@@ -107,11 +155,23 @@ export default function OrderList() {
         pageSize: paginatedData.per_page,
         total: paginatedData.total,
       });
+
+      // Cập nhật thời gian cuối cùng
+      setLastUpdate(new Date());
+
+      // Hiển thị thông báo nếu có đơn hàng mới (chỉ khi auto-refresh)
+      if (isAutoRefresh && paginatedData.data.length > orders.length) {
+        const newOrdersCount = paginatedData.data.length - orders.length;
+        message.success(`Có ${newOrdersCount} đơn hàng mới!`);
+      }
     } catch (error) {
-      message.error("Không thể tải danh sách đơn hàng.");
+      if (!isAutoRefresh) {
+        message.error("Không thể tải danh sách đơn hàng.");
+      }
       console.error("Fetch orders error:", error);
     } finally {
       setLoading(false);
+      setIsAutoRefreshing(false);
     }
   };
 
@@ -590,6 +650,21 @@ export default function OrderList() {
                   }}
                 />
               </Tooltip>
+              <div style={{ fontSize: "12px", color: "#666" }}>
+                <div style={{ marginBottom: "4px" }}>
+                  <Button
+                    size="small"
+                    type={autoRefreshEnabled ? "primary" : "default"}
+                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                  >
+                    {autoRefreshEnabled ? "🔄 Tắt tự động" : "⏸️ Bật tự động"}
+                  </Button>
+                </div>
+                {isAutoRefreshing && (
+                  <span style={{ color: "#1890ff" }}>🔄 Đang cập nhật...</span>
+                )}
+                <div>Cập nhật: {lastUpdate.toLocaleTimeString("vi-VN")}</div>
+              </div>
             </Space>
           </div>
         </Col>

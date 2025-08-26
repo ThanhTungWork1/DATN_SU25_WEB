@@ -17,8 +17,11 @@ const ProductActions = ({
 }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
 
+  // Giới hạn tối đa 10 sản phẩm cho bán lẻ
+  const maxAllowedQuantity = Math.min(maxQuantity, 10);
+
   const increase = () =>
-    setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
+    setQuantity((q) => (q < maxAllowedQuantity ? q + 1 : maxAllowedQuantity));
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
   const handleAddToCart = () => {
@@ -38,12 +41,12 @@ const ProductActions = ({
         <input
           type="number"
           min={1}
-          max={maxQuantity}
+          max={maxAllowedQuantity}
           value={quantity}
           onChange={(e) => {
             const val = parseInt(e.target.value, 10);
             if (!isNaN(val)) {
-              setQuantity(Math.min(Math.max(val, 1), maxQuantity));
+              setQuantity(Math.min(Math.max(val, 1), maxAllowedQuantity));
             }
           }}
           className="quantity-input"
@@ -57,6 +60,7 @@ const ProductActions = ({
         className={`btn-add-cart d-flex align-items-center${disabled ? " disabled" : ""}`}
         onClick={handleAddToCart}
         disabled={disabled}
+        title="Tối đa 10 sản phẩm cho mỗi mẫu"
       >
         <FaShoppingCart className="me-1" /> Thêm
       </button>

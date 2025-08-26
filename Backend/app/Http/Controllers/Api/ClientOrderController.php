@@ -178,7 +178,7 @@ class ClientOrderController extends Controller
             'voucher_code' => 'nullable|string|exists:vouchers,code',
             'items' => 'required|array|min:1',
             'items.*.variant_id' => 'required|exists:product_variants,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:1|max:10', // Giới hạn tối đa 10 sản phẩm cho bán lẻ
         ]);
 
         if ($validator->fails()) {
@@ -388,8 +388,9 @@ class ClientOrderController extends Controller
                     throw new \Exception('Sản phẩm không đủ tồn kho hoặc đã bị thay đổi.');
                 }
                 
-                // Update sold count
-                $variant->product->increment('sold', $item['quantity']);
+                // KHÔNG cập nhật sold count ở đây nữa
+                // Sold count sẽ được tính toán real-time từ order_items
+                // $variant->product->increment('sold', $item['quantity']);
             }
 
             DB::commit();
@@ -438,11 +439,18 @@ class ClientOrderController extends Controller
                 ], 404);
             }
 
-            // Chỉ cho phép hủy đơn hàng ở trạng thái pending hoặc processing
-            if (!in_array($order->status, ['pending', 'processing'])) {
+            // Cho phép hủy đơn hàng ở các trạng thái sớm (trước khi giao hàng)
+            $cancellableStatuses = ['pending', 'confirmed', 'processing'];
+            
+            // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
+            if ($order->payment_method === 'COD') {
+                $cancellableStatuses[] = 'shipping';
+            }
+            
+            if (!in_array($order->status, $cancellableStatuses)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Không thể hủy đơn hàng ở trạng thái này'
+                    'message' => 'Không thể hủy đơn hàng ở trạng thái này. Chỉ có thể hủy khi đơn hàng chưa được giao.'
                 ], 422);
             }
 
@@ -513,11 +521,18 @@ class ClientOrderController extends Controller
                 ], 404);
             }
 
-            // Chỉ cho phép hủy đơn hàng ở trạng thái pending hoặc processing
-            if (!in_array($order->status, ['pending', 'processing'])) {
+            // Cho phép hủy đơn hàng ở các trạng thái sớm (trước khi giao hàng)
+            $cancellableStatuses = ['pending', 'confirmed', 'processing'];
+            
+            // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
+            if ($order->payment_method === 'COD') {
+                $cancellableStatuses[] = 'shipping';
+            }
+            
+            if (!in_array($order->status, $cancellableStatuses)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Không thể hủy đơn hàng ở trạng thái này'
+                    'message' => 'Không thể hủy đơn hàng ở trạng thái này. Chỉ có thể hủy khi đơn hàng chưa được giao.'
                 ], 422);
             }
 

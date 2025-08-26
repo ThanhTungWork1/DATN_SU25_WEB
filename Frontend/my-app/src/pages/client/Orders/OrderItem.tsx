@@ -12,23 +12,44 @@ import { useOrderReviews } from "../../../hook/useOrderReviews";
 const statusConfig: { [key: string]: { text: string; className: string } } = {
   waiting_for_payment: {
     text: "Chờ thanh toán",
-    className: "bg-orange-100 text-orange-800",
+    className: "status-badge status-waiting-payment",
   },
-  pending: { text: "Chờ xác nhận", className: "bg-yellow-100 text-yellow-800" },
-  confirmed: { text: "Đã xác nhận", className: "bg-cyan-100 text-cyan-800" },
-  processing: { text: "Đang xử lý", className: "bg-blue-100 text-blue-800" },
-  shipped: {
+  pending: {
+    text: "Chờ xác nhận",
+    className: "status-badge status-pending",
+  },
+  confirmed: {
+    text: "Đã xác nhận",
+    className: "status-badge status-confirmed",
+  },
+  processing: {
+    text: "Đang xử lý",
+    className: "status-badge status-processing",
+  },
+  shipping: {
     text: "Đang giao hàng",
-    className: "bg-indigo-100 text-indigo-800",
+    className: "status-badge status-shipping",
   },
-  delivered: { text: "Đã giao", className: "bg-purple-100 text-purple-800" },
+  delivered: {
+    text: "Đã giao",
+    className: "status-badge status-delivered",
+  },
   completed: {
     text: "Đã hoàn thành",
-    className: "bg-green-100 text-green-800",
+    className: "status-badge status-completed",
   },
-  cancelled: { text: "Đã hủy", className: "bg-red-100 text-red-800" },
-  refunded: { text: "Đã hoàn tiền", className: "bg-green-100 text-green-800" },
-  default: { text: "Không xác định", className: "bg-gray-100 text-gray-800" },
+  cancelled: {
+    text: "Đã hủy",
+    className: "status-badge status-cancelled",
+  },
+  refunded: {
+    text: "Đã hoàn tiền",
+    className: "status-badge status-refunded",
+  },
+  default: {
+    text: "Không xác định",
+    className: "status-badge bg-gray-100 text-gray-800 border border-gray-200",
+  },
 };
 
 type Props = {
@@ -47,6 +68,9 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
   const [remainingTime, setRemainingTime] = useState("");
   const [shouldShowConfirmButton, setShouldShowConfirmButton] = useState(true);
   const [hasAutoConfirmed, setHasAutoConfirmed] = useState(false);
+  const [localRefundStatus, setLocalRefundStatus] = useState<string | null>(
+    null
+  );
   // Lấy danh sách đánh giá cho đơn hàng này
   const { data: reviews = [] } = useOrderReviews(order.id);
 
@@ -54,12 +78,16 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
     statusConfig[order.status.toLowerCase()] || statusConfig.default;
 
   useEffect(() => {
-    // Debug log để kiểm tra refund_request (only for order 95)
-    if (order.id === 95) {
-      console.log("🔍 DEBUG Order #95:", {
-        refund_request: order.refund_request,
-        status: order.status,
-      });
+    // Debug log để kiểm tra refund_request cho tất cả orders
+    console.log("🔍 DEBUG Order #" + order.id + ":", {
+      refund_request: order.refund_request,
+      status: order.status,
+      has_refund_request: !!order.refund_request,
+    });
+
+    // Reset local refund status khi order data thay đổi
+    if (order.refund_request) {
+      setLocalRefundStatus(null);
     }
 
     if (order.status === "waiting_for_payment") {
@@ -117,7 +145,20 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       "confirmed",
       "processing",
       "waiting_for_payment",
+      // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
+      ...(order.payment_method === "COD" ? ["shipping"] : []),
     ].includes(status);
+
+    // Thông báo về khả năng hủy đơn hàng
+    const getCancelMessage = () => {
+      if (canCancel) {
+        if (order.payment_method === "COD") {
+          return "Có thể hủy cho đến khi đơn hàng được giao";
+        }
+        return "Có thể hủy đơn hàng";
+      }
+      return "Không thể hủy đơn hàng đã được giao";
+    };
     const canReorder = [
       "delivered",
       "completed",
@@ -155,6 +196,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       canReturn,
       canRequestRefundForCancelledOrder,
       isPaid,
+      getCancelMessage,
     };
   }, [order]);
 
@@ -250,22 +292,25 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           )}
 
           {/* Hiển thị trạng thái refund nếu có */}
-          {order.refund_request &&
-            (order.refund_request.status === "refunded" ? (
+          {(order.refund_request || localRefundStatus) &&
+            ((order.refund_request?.status || localRefundStatus) ===
+            "refunded" ? (
               <button className="btn btn-success" disabled>
                 Đã hoàn tiền
               </button>
-            ) : order.refund_request.status === "approved" ? (
-              <button className="btn btn-warning" disabled>
+            ) : (order.refund_request?.status || localRefundStatus) ===
+              "approved" ? (
+              <button className="btn btn-primary" disabled>
                 Đã duyệt
               </button>
-            ) : order.refund_request.status === "rejected" ? (
+            ) : (order.refund_request?.status || localRefundStatus) ===
+              "rejected" ? (
               <button className="btn btn-danger" disabled>
                 Đã từ chối
               </button>
             ) : (
-              <button className="btn btn-secondary" disabled>
-                Đang chờ xử lý
+              <button className="btn btn-warning" disabled>
+                Đang chờ duyệt
               </button>
             ))}
 
@@ -284,7 +329,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           )}
 
           {/* Các nút khác chỉ hiển thị khi KHÔNG có refund_request */}
-          {!order.refund_request && (
+          {!order.refund_request && !localRefundStatus && (
             <>
               {order.status === "waiting_for_payment" &&
                 remainingTime !== "Đã hết hạn" && (
@@ -307,6 +352,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                     }
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  title={actionsState.getCancelMessage()}
                 >
                   Hủy đơn
                 </button>
@@ -348,6 +394,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           order={order}
           refundType={refundInfo.type}
           onClose={() => setRefundInfo(null)}
+          onRefundSuccess={() => setLocalRefundStatus("pending")}
         />
       )}
     </>

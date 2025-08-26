@@ -58,3 +58,4 @@ try {
 echo "\n---\n";
 echo "Now checking Laravel logs for detailed information:\n";
 echo "Check: storage/logs/laravel.log\n";
+

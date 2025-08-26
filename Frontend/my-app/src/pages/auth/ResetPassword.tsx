@@ -58,7 +58,16 @@ const ResetPassword = () => {
       message.success(
         "Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới."
       );
-      navigate("/login");
+      
+      // Đóng tab hiện tại và chuyển về tab gốc
+      if (window.opener) {
+        // Nếu có tab gốc, chuyển focus về tab gốc và đóng tab hiện tại
+        window.opener.focus();
+        window.close();
+      } else {
+        // Nếu không có tab gốc (mở trực tiếp), chuyển về trang login
+        navigate("/login");
+      }
     } catch (error: any) {
       console.error("❌ Reset Password error:", error);
       message.error(
@@ -161,3 +170,4 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+

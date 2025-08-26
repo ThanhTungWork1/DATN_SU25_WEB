@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import "../../../assets/styles/admin-responsive.css";
 import {
   Card,
@@ -71,35 +71,30 @@ const ProductStatistics: React.FC = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      console.log("🔍 Fetching products list...");
 
       const res = await getProducts({ page: 1, per_page: 1000 });
-      console.log("📥 Products API response:", res);
 
-      // Admin products index trả về paginator Laravel thô
-      const data: any = (res as any).data;
-      console.log("📊 Products data:", data);
+      // Admin products index trả về response với wrapper success/data
+      const responseData: any = (res as any).data;
 
-      const items: any[] = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-          ? data
+      // Kiểm tra structure: responseData.data.data (wrapper + paginator)
+      const paginatorData = responseData?.data;
+
+      const items: any[] = Array.isArray(paginatorData?.data)
+        ? paginatorData.data
+        : Array.isArray(paginatorData)
+          ? paginatorData
           : [];
-      console.log("📦 Products items:", items);
 
       const mapped: ProductLite[] = items.map((p: any) => ({
         id: p.id,
         name: p.name,
       }));
-      console.log("🗺️ Mapped products:", mapped);
 
       setProducts(mapped);
       if (mapped.length > 0) {
         const firstProductId = mapped[0].id;
-        console.log("🎯 Setting first product as selected:", firstProductId);
         setSelectedProduct((prev) => prev ?? firstProductId);
-      } else {
-        console.log("⚠️ No products found!");
       }
     } catch (e) {
       console.error("❌ Error fetching products:", e);
@@ -112,7 +107,6 @@ const ProductStatistics: React.FC = () => {
   const fetchProductStatistics = async (productId: number) => {
     try {
       setLoading(true);
-      console.log("🔍 Fetching statistics for product ID:", productId);
 
       let params: any = {};
       if (timePeriod !== "custom") {
@@ -123,25 +117,15 @@ const ProductStatistics: React.FC = () => {
         params.end_date = dateRange[1].format("YYYY-MM-DD");
       }
 
-      console.log("📤 API params:", params);
-
       const res = await getProductStatistics(productId, params);
-      console.log("📥 Raw API response:", res);
 
       // API trả về dữ liệu trong `res.data.data` (có wrapper success)
       const d = (res as any).data.data as ProductStatisticsResponse;
-      console.log("📊 Parsed data:", d);
 
       const orders = d.total_orders || 0;
       const revenue = d.total_revenue || 0;
       const items = d.total_quantity_sold || 0; // Backend trả về total_quantity_sold
       const avgPrice = d.average_price || 0; // Backend trả về average_price
-
-      console.log("📈 Setting state values:");
-      console.log("  - Total Orders:", orders);
-      console.log("  - Total Revenue:", revenue);
-      console.log("  - Total Items:", items);
-      console.log("  - Average Price:", avgPrice);
 
       setTotalOrders(orders);
       setTotalRevenue(revenue);
@@ -154,13 +138,8 @@ const ProductStatistics: React.FC = () => {
         ? d.top_variants
         : [];
 
-      console.log("📅 Time data:", timeDataArray);
-      console.log("🏆 Top variants:", topVariantsArray);
-
       setTimeData(timeDataArray);
       setTopVariants(topVariantsArray);
-
-      console.log("✅ Statistics loaded successfully!");
     } catch (e: any) {
       console.error("❌ Error fetching statistics:", e);
       console.error("❌ Error details:", e.response?.data);
@@ -171,21 +150,12 @@ const ProductStatistics: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log("🚀 ProductStatistics component mounted");
     fetchProducts();
   }, []);
 
   useEffect(() => {
-    console.log(
-      "🔄 useEffect triggered - selectedProduct:",
-      selectedProduct,
-      "timePeriod:",
-      timePeriod
-    );
     if (selectedProduct) {
       fetchProductStatistics(selectedProduct);
-    } else {
-      console.log("⚠️ No product selected, skipping statistics fetch");
     }
   }, [selectedProduct, timePeriod, dateRange]);
 
@@ -239,18 +209,6 @@ const ProductStatistics: React.FC = () => {
     },
   ];
 
-  console.log("🎨 Rendering ProductStatistics component");
-  console.log("📊 Current state:");
-  console.log("  - loading:", loading);
-  console.log("  - selectedProduct:", selectedProduct);
-  console.log("  - products count:", products.length);
-  console.log("  - totalOrders:", totalOrders);
-  console.log("  - totalRevenue:", totalRevenue);
-  console.log("  - totalItems:", totalItems);
-  console.log("  - averagePerItem:", averagePerItem);
-  console.log("  - timeData count:", timeData.length);
-  console.log("  - topVariants count:", topVariants?.length || 0);
-
   if (loading) {
     return (
       <div
@@ -288,43 +246,73 @@ const ProductStatistics: React.FC = () => {
             Phân tích chi tiết hiệu suất theo từng sản phẩm
           </Text>
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <Select
-            style={{ width: 280 }}
-            placeholder="Chọn sản phẩm"
-            showSearch
-            optionFilterProp="label"
-            value={selectedProduct}
-            onChange={setSelectedProduct}
-            options={products.map((p) => ({ value: p.id, label: p.name }))}
-          />
-
-          <Select
-            style={{ width: 160 }}
-            value={timePeriod}
-            onChange={(val: TimePeriod) => {
-              setTimePeriod(val);
-              if (val !== "custom") setDateRange(null);
-            }}
-            options={[
-              { value: "week", label: "Tuần này" },
-              { value: "month", label: "Tháng này" },
-              { value: "quarter", label: "Quý này" },
-              { value: "custom", label: "Tùy chọn" },
-            ]}
-          />
-
-          {timePeriod === "custom" && (
-            <RangePicker
-              value={dateRange as any}
-              onChange={(val) => setDateRange(val as any)}
-              disabledDate={(current) =>
-                current && current > dayjs().endOf("day")
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
+          {/* Product Dropdown with Search */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: "12px", color: "#666" }}>
+              Tìm kiếm & Chọn sản phẩm
+            </div>
+            <Select
+              style={{ width: 280 }}
+              placeholder={`Tìm kiếm sản phẩm (${products.length} sản phẩm)`}
+              value={selectedProduct}
+              onChange={setSelectedProduct}
+              showSearch
+              optionFilterProp="label"
+              listHeight={600}
+              maxTagCount={1}
+              virtual={false}
+              dropdownMatchSelectWidth={false}
+              allowClear
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
-              format="YYYY-MM-DD"
+              options={products.map((p) => ({
+                value: p.id,
+                label: p.name,
+              }))}
             />
+          </div>
+
+          {/* Time Period Select */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: "12px", color: "#666" }}>Thời gian</div>
+            <Select
+              style={{ width: 160 }}
+              value={timePeriod}
+              onChange={(val: TimePeriod) => {
+                setTimePeriod(val);
+                if (val !== "custom") setDateRange(null);
+              }}
+              options={[
+                { value: "week", label: "Tuần này" },
+                { value: "month", label: "Tháng này" },
+                { value: "quarter", label: "Quý này" },
+                { value: "custom", label: "Tùy chọn" },
+              ]}
+            />
+          </div>
+
+          {/* Custom Date Range */}
+          {timePeriod === "custom" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ fontSize: "12px", color: "#666" }}>
+                Khoảng thời gian
+              </div>
+              <RangePicker
+                value={dateRange as any}
+                onChange={(val) => setDateRange(val as any)}
+                disabledDate={(current) =>
+                  current && current > dayjs().endOf("day")
+                }
+                format="YYYY-MM-DD"
+              />
+            </div>
           )}
 
+          {/* Refresh Button */}
           <Button
             icon={<ReloadOutlined />}
             onClick={() =>

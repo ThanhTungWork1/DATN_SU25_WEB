@@ -121,3 +121,4 @@ window.testAxiosLogin = testAxiosLogin;
 console.log("🧪 Full login test functions available:");
 console.log("  - testFullLogin() - Test complete login flow");
 console.log("  - testAxiosLogin() - Test axios login");
+

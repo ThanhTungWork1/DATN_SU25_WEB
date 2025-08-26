@@ -113,14 +113,36 @@ public function store(CreateCartRequest $request)
                 continue; // Bỏ qua, không thêm vào giỏ hàng
             }
 
+            // 🔹 VALIDATION: Kiểm tra stock_available
+            if ($variant->stock_available < $item['quantity']) {
+                \Log::warning('Sản phẩm không đủ tồn kho.', [
+                    'variant_id' => $variant->id,
+                    'product_name' => $variant->product->name,
+                    'requested_quantity' => $item['quantity'],
+                    'available_stock' => $variant->stock_available
+                ]);
+                continue; // Bỏ qua, không thêm vào giỏ hàng
+            }
+
             $existingCartItem = $cart->cartItems()
                 // Chỉ cần tìm theo variant_id là đủ vì nó là duy nhất
                 ->where('variant_id', $item['variant_id'])
                 ->first();
 
             if ($existingCartItem) {
-                // Nếu sản phẩm đã có, chỉ cập nhật số lượng
-                $existingCartItem->quantity += (int) $item['quantity'];
+                // Nếu sản phẩm đã có, chỉ cập nhật số lượng (giới hạn tối đa 10)
+                $newQuantity = $existingCartItem->quantity + (int) $item['quantity'];
+                if ($newQuantity > 10) {
+                    \Log::warning('Số lượng vượt quá giới hạn 10 sản phẩm.', [
+                        'variant_id' => $variant->id,
+                        'product_name' => $variant->product->name,
+                        'current_quantity' => $existingCartItem->quantity,
+                        'adding_quantity' => $item['quantity'],
+                        'total_would_be' => $newQuantity
+                    ]);
+                    continue; // Bỏ qua, không thêm vào giỏ hàng
+                }
+                $existingCartItem->quantity = $newQuantity;
                 $existingCartItem->save();
             } else {
                 // Nếu chưa có, tạo mới và LẤY GIÁ TỪ DATABASE
@@ -138,7 +160,8 @@ public function store(CreateCartRequest $request)
 
         return response()->json([
             'message' => 'Thêm giỏ hàng thành công!',
-            'cart'    => $cart
+            'cart'    => $cart,
+            'note'    => 'Giới hạn tối đa 10 sản phẩm cho mỗi mẫu'
         ], 200);
     });
 }
@@ -186,7 +209,17 @@ public function store(CreateCartRequest $request)
         }
 
         // Logic to update quantity
-        $validated = $request->validate(['quantity' => 'required|integer|min:1']);
+        $validated = $request->validate(['quantity' => 'required|integer|min:1|max:10']); // Giới hạn tối đa 10 sản phẩm cho bán lẻ
+        
+        // 🔹 VALIDATION: Kiểm tra stock_available trước khi cập nhật
+        $variant = $cartItem->productVariant;
+        if ($variant && $variant->stock_available < $validated['quantity']) {
+            return response()->json([
+                'message' => "Sản phẩm chỉ còn {$variant->stock_available} có thể bán.",
+                'available_stock' => $variant->stock_available
+            ], 422);
+        }
+        
         $cartItem->update(['quantity' => $validated['quantity']]);
 
         // Return the updated cart item along with the entire cart for a better frontend experience
@@ -238,5 +271,59 @@ public function store(CreateCartRequest $request)
         $cart->cartItems()->delete();
         $cart->delete();
         return response()->json(['message' => 'Đã xóa giỏ hàng!']);
+    }
+
+    /**
+     * Xóa những sản phẩm đã được thanh toán khỏi giỏ hàng
+     */
+    public function removeOrderedItems(Request $request)
+    {
+        try {
+            $userId = Auth::id();
+            $variantIds = $request->input('variant_ids', []);
+
+            if (empty($variantIds)) {
+                return response()->json(['message' => 'Không có sản phẩm nào để xóa'], 400);
+            }
+
+            $cart = Cart::where('user_id', $userId)->where('status', 1)->first();
+            
+            if (!$cart) {
+                return response()->json(['message' => 'Không tìm thấy giỏ hàng'], 404);
+            }
+
+            // Xóa chỉ những cart items có variant_id đã được thanh toán
+            $deletedItems = $cart->cartItems()
+                ->whereIn('variant_id', $variantIds)
+                ->delete();
+
+            // Kiểm tra xem cart còn items nào không
+            $remainingItems = $cart->cartItems()->count();
+            
+            if ($remainingItems === 0) {
+                // Nếu không còn items nào, xóa luôn cart
+                $cart->delete();
+                \Log::info('Cart deleted because no items remaining after removing ordered items', [
+                    'user_id' => $userId,
+                    'cart_id' => $cart->id,
+                    'deleted_variant_ids' => $variantIds
+                ]);
+            }
+
+            return response()->json([
+                'message' => "Đã xóa {$deletedItems} sản phẩm đã thanh toán khỏi giỏ hàng",
+                'deleted_count' => $deletedItems,
+                'remaining_items' => $remainingItems
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error removing ordered items from cart', [
+                'user_id' => Auth::id(),
+                'variant_ids' => $request->input('variant_ids'),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json(['message' => 'Có lỗi xảy ra khi xóa sản phẩm'], 500);
+        }
     }
 }

@@ -51,16 +51,21 @@ const OrderList = () => {
   const handleCancel = (id: number) => {
     Modal.confirm({
       title: "Xác nhận hủy đơn hàng",
-      content: "Bạn chắc chắn muốn huỷ đơn hàng này?",
-      okText: "Xác nhận",
+      content:
+        "Bạn chắc chắn muốn huỷ đơn hàng này? Hành động này không thể hoàn tác.",
+      okText: "Xác nhận hủy",
       cancelText: "Không",
+      okButtonProps: { danger: true },
       onOk: () => {
         cancelOrder.mutate(id, {
           onSuccess: () => {
             toast.success("Đã hủy đơn hàng thành công!");
           },
-          onError: () => {
-            toast.error("Có lỗi xảy ra khi hủy đơn hàng!");
+          onError: (error: any) => {
+            const errorMessage =
+              error?.response?.data?.message ||
+              "Có lỗi xảy ra khi hủy đơn hàng!";
+            toast.error(errorMessage);
           },
         });
       },
@@ -122,7 +127,7 @@ const OrderList = () => {
           <option value="pending">Chờ xác nhận</option>
           <option value="confirmed">Đã xác nhận</option>
           <option value="processing">Đang xử lý</option>
-          <option value="shipped">Đang giao hàng</option>
+          <option value="shipping">Đang giao hàng</option>
           <option value="delivered">Đã giao</option>
           <option value="completed">Đã hoàn thành</option>
           <option value="cancelled">Đã hủy</option>

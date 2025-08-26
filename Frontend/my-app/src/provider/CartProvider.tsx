@@ -52,7 +52,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [handleTokenChange]);
 
-    const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async () => {
     // Không fetch giỏ hàng nếu đang ở trang admin
     if (location.pathname.startsWith("/admin")) {
       setCartItems([]);
@@ -70,28 +70,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       // Lấy mảng cart_items từ response. Nếu không có hoặc không phải là mảng, dùng mảng rỗng.
-      
-      const rawCartItems = Array.isArray(response.data?.cart_items) 
-        ? response.data.cart_items 
+
+      const rawCartItems = Array.isArray(response.data?.cart_items)
+        ? response.data.cart_items
         : [];
 
       // Transform data to match the CartItem type, preserving the nested structure
-      const transformedCartItems: CartItem[] = rawCartItems.map((item: any) => ({
-        id: item.id,
-        product_variant_id: item.product_variant_id,
-        quantity: item.quantity,
-        price: item.price,
-        // Provide fallback name and image from the variant's product info
-        name: item.product_variant?.product?.name || "Sản phẩm không tên",
-        image: item.product_variant?.product?.image_url,
-        // CRITICAL: Pass the entire nested product_variant object as expected by the type
-        product_variant: item.product_variant,
-      }));
+      const transformedCartItems: CartItem[] = rawCartItems.map(
+        (item: any) => ({
+          id: item.id,
+          product_variant_id: item.product_variant_id,
+          quantity: item.quantity,
+          price: item.price,
+          // Provide fallback name and image from the variant's product info
+          name: item.product_variant?.product?.name || "Sản phẩm không tên",
+          image: item.product_variant?.product?.image_url,
+          // CRITICAL: Pass the entire nested product_variant object as expected by the type
+          product_variant: item.product_variant,
+        })
+      );
 
       setCartItems(transformedCartItems);
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as { response?: { status: number }, message: string };
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as {
+          response?: { status: number };
+          message: string;
+        };
         if (axiosError.response && axiosError.response.status !== 404) {
           console.error("Lỗi khi lấy giỏ hàng:", axiosError.message);
         }
@@ -118,7 +123,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const variantId = item.product_variant_id || item.product_variant?.id;
 
     if (!productId || !variantId) {
-      toast.error("Thông tin sản phẩm không đầy đủ, không thể thêm vào giỏ hàng.");
+      toast.error(
+        "Thông tin sản phẩm không đầy đủ, không thể thêm vào giỏ hàng."
+      );
       console.error("Missing product_id or variant_id in item:", item);
       return;
     }
@@ -140,17 +147,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           headers: { Authorization: `Bearer ${currentToken}` },
         }
       );
-      toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+      toast.success("Đã thêm sản phẩm vào giỏ hàng! (Tối đa 10 sản phẩm/mẫu)");
       fetchCart(); // Refresh cart from server
     } catch (error) {
       let message = "Thêm sản phẩm thất bại!";
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
         if (axiosError.response?.data?.message) {
           message = axiosError.response.data.message;
         }
+        // Hiển thị thông báo lỗi cụ thể về stock
+        if (axiosError.response?.status === 422) {
+          toast.error(message);
+        } else {
+          toast.error(message);
+        }
+      } else {
+        toast.error(message);
       }
-      toast.error(message);
       console.error("Lỗi thêm sản phẩm:", error);
     }
   };
@@ -203,8 +219,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       fetchCart();
     } catch (error) {
       let message = "Cập nhật số lượng thất bại!";
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
         if (axiosError.response?.data?.message) {
           message = axiosError.response.data.message;
         }

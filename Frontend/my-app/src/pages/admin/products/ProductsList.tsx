@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import "../../../assets/styles/admin-responsive.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -51,29 +51,47 @@ export default function ProductList() {
         per_page: pagination.pageSize,
       });
 
-      const paginatedData = (productsRes as any)
-        .data as PaginatedResponse<Product>;
-
+      // Backend trả về { success: true, data: paginator }
+      const responseData = (productsRes as any).data;
       console.log("🔍 ProductsList - API Response:", productsRes);
+      console.log("🔍 ProductsList - Response Data:", responseData);
+
+      // Kiểm tra structure mới: responseData.data (wrapper + paginator)
+      const paginatedData = responseData?.data;
       console.log("🔍 ProductsList - Paginated Data:", paginatedData);
 
       // Debug: Kiểm tra category data
-      if (paginatedData.data && paginatedData.data.length > 0) {
+      if (paginatedData?.data && paginatedData.data.length > 0) {
         console.log(
           "🔍 ProductsList - First product category:",
           paginatedData.data[0].category
         );
       }
 
-      setProducts(paginatedData.data);
+      // Đảm bảo data là array
+      const productsArray = Array.isArray(paginatedData?.data)
+        ? paginatedData.data
+        : [];
+      console.log("🔍 ProductsList - Products Array:", productsArray);
+      console.log("🔍 ProductsList - Products Count:", productsArray.length);
+
+      setProducts(productsArray);
       setPagination((prev) => ({
         ...prev,
-        currentPage: paginatedData.current_page,
-        pageSize: paginatedData.per_page || prev.pageSize,
-        total: paginatedData.total,
+        currentPage: paginatedData?.current_page || 1,
+        pageSize: paginatedData?.per_page || prev.pageSize,
+        total: paginatedData?.total || 0,
       }));
     } catch (error) {
+      console.error("❌ ProductsList - Error:", error);
       message.error("Không thể tải danh sách sản phẩm.");
+      // Set empty array để tránh crash
+      setProducts([]);
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: 1,
+        total: 0,
+      }));
     } finally {
       setLoading(false);
     }
@@ -221,7 +239,7 @@ export default function ProductList() {
       </Space>
       <Table
         columns={columns}
-        dataSource={products}
+        dataSource={Array.isArray(products) ? products : []}
         rowKey="id"
         loading={loading}
         pagination={{

@@ -33,14 +33,15 @@ class DashboardController extends Controller
         }
         $total_revenue = $revenueQuery->sum('final_amount');
 
-        // Đơn hàng trong khoảng thời gian (thay vì chỉ hôm nay)
-        $ordersQuery = Order::query();
+        // Tổng đơn hàng (Đã giao hàng + Đã hoàn thành) trong khoảng thời gian
+        $totalOrdersQuery = Order::whereIn('status', ['delivered', 'completed']);
         if ($startDate && $endDate) {
-            $ordersQuery->whereBetween('created_at', [$startDate, $endDate]);
+            $totalOrdersQuery->whereBetween('created_at', [$startDate, $endDate]);
         } else {
-            $ordersQuery->whereDate('created_at', Carbon::today());
+            // Nếu không có filter, hiển thị tất cả đơn hàng delivered/completed
+            // Không filter theo ngày hôm nay
         }
-        $orders_in_period = $ordersQuery->count();
+        $orders_in_period = $totalOrdersQuery->count();
 
         // Người dùng mới trong khoảng thời gian (thay vì chỉ tháng này)
         $usersQuery = User::where('role', 0); // Chỉ user thường, không tính admin

@@ -96,6 +96,80 @@
   margin-left: 8px;
 }
 
+/* Status Badge Styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Specific status colors */
+.status-waiting-payment {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-confirmed {
+  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+  color: #134e4a;
+  border: 1px solid #14b8a6;
+}
+
+.status-processing {
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  color: #1e40af;
+  border: 1px solid #3b82f6;
+}
+
+.status-shipping {
+  background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%);
+  color: #581c87;
+  border: 1px solid #8b5cf6;
+}
+
+.status-delivered {
+  background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%);
+  color: #3730a3;
+  border: 1px solid #6366f1;
+}
+
+.status-completed {
+  background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+  color: #166534;
+  border: 1px solid #22c55e;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.status-refunded {
+  background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
 .error-message {
   text-align: center;
   padding: 32px 0;

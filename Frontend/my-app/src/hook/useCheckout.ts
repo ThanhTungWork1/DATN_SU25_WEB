@@ -227,11 +227,24 @@ export const useCheckout = () => {
 
   const clearOrderedItems = async () => {
     try {
-      for (const product of selectedProducts as Product[]) {
-        await axiosInstance.delete(`/cart/items/${product.id}`);
+      // Lấy danh sách variant_ids đã được thanh toán
+      const orderedVariantIds = (selectedProducts as Product[])
+        .map((product) => product.variant_id || product.product_variant_id)
+        .filter((id) => id); // Lọc bỏ các giá trị null/undefined
+
+      if (orderedVariantIds.length === 0) {
+        console.log("No variant IDs to clear from cart");
+        return;
       }
+
+      // Gọi API để xóa những sản phẩm đã được thanh toán
+      await axiosInstance.post("/cart/remove-ordered-items", {
+        variant_ids: orderedVariantIds,
+      });
+
+      console.log("Cleared ordered items from cart:", orderedVariantIds);
     } catch (error) {
-      console.error("Lỗi xóa sản phẩm trong giỏ hàng:", error);
+      console.error("Lỗi xóa sản phẩm đã thanh toán khỏi giỏ hàng:", error);
     }
   };
 

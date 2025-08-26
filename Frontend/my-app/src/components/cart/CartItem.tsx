@@ -53,17 +53,20 @@ const CartItem: React.FC<CartItemProps> = ({
       <input
         type="number"
         min="1"
+        max="10"
         value={item.quantity}
         className="form-control mx-2"
         style={{ width: "70px" }}
         onChange={(e) => {
           const newQuantity = Number(e.target.value);
-          if (newQuantity > 0) {
+          if (newQuantity > 0 && newQuantity <= 10) {
             toast.promise(onUpdateQuantity(item.id, newQuantity), {
               loading: "Đang cập nhật số lượng...",
               success: "Đã cập nhật số lượng thành công!",
               error: "Có lỗi xảy ra khi cập nhật số lượng",
             });
+          } else if (newQuantity > 10) {
+            toast.error("Số lượng tối đa là 10 sản phẩm cho mỗi mẫu!");
           }
         }}
       />

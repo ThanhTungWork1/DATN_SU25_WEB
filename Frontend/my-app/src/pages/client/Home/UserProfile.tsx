@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Form, Input, message, Spin } from "antd";
+import { Button, Form, Input, message, Spin, Modal } from "antd";
 import useCurrentUser from "../../../hook/useCurrentUser";
 import { useNavigate } from "react-router-dom";
 import "../../../assets/styles/responsive.css";
@@ -7,6 +7,7 @@ import {
   LogoutOutlined,
   ShoppingOutlined,
   KeyOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { TokenManager } from "../../../utils/tokenUtils";
 import "../../../layouts/Client/UserProfile.css";
@@ -58,16 +59,23 @@ const UserProfile = () => {
     );
     if (success) {
       passwordForm.resetFields();
-      setShowChangePasswordForm(false); // Ẩn form sau khi đổi mật khẩu thành công
+      setShowChangePasswordForm(false); // Đóng modal sau khi đổi mật khẩu thành công
+      message.success("Đổi mật khẩu thành công!");
     }
   };
 
-  // ✅ toggle hiển thị form đổi mật khẩu
+  // ✅ toggle hiển thị modal đổi mật khẩu
   const handleTogglePasswordForm = () => {
     setShowChangePasswordForm(!showChangePasswordForm);
     if (!showChangePasswordForm) {
       passwordForm.resetFields(); // Reset form khi mở
     }
+  };
+
+  // ✅ đóng modal đổi mật khẩu
+  const handleClosePasswordModal = () => {
+    setShowChangePasswordForm(false);
+    passwordForm.resetFields();
   };
 
   if (isLoading || !user?.id)
@@ -138,7 +146,7 @@ const UserProfile = () => {
               onClick={handleTogglePasswordForm}
               style={{ marginBottom: "16px" }}
             >
-              {showChangePasswordForm ? "Đóng đổi mật khẩu" : "Đổi mật khẩu"}
+              Đổi mật khẩu
             </Button>
           </Form.Item>
 
@@ -160,75 +168,96 @@ const UserProfile = () => {
         </Form>
       </div>
 
-      {/* Change Password Section - Chỉ hiện khi showChangePasswordForm = true */}
-      {showChangePasswordForm && (
-        <div className="profile-form-section">
-          <h3 className="profile-form-title">Đổi mật khẩu</h3>
-          <Form
-            form={passwordForm}
-            onFinish={onFinishPassword}
-            layout="vertical"
-            className="profile-form"
+      {/* Change Password Modal */}
+      <Modal
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <KeyOutlined style={{ color: "#1890ff" }} />
+            <span>Đổi mật khẩu</span>
+          </div>
+        }
+        open={showChangePasswordForm}
+        onCancel={handleClosePasswordModal}
+        footer={null}
+        width={500}
+        centered
+        destroyOnClose
+        maskClosable={false}
+      >
+        <Form
+          form={passwordForm}
+          onFinish={onFinishPassword}
+          layout="vertical"
+          className="profile-form"
+        >
+          <Form.Item
+            label="Mật khẩu hiện tại"
+            name="current_password"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
+            ]}
           >
-            <Form.Item
-              label="Mật khẩu hiện tại"
-              name="current_password"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
+            <Input.Password placeholder="Nhập mật khẩu hiện tại" />
+          </Form.Item>
 
-            <Form.Item
-              label="Mật khẩu mới"
-              name="new_password"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu mới" },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
+          <Form.Item
+            label="Mật khẩu mới"
+            name="new_password"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+            ]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu mới" />
+          </Form.Item>
 
-            <Form.Item
-              label="Xác nhận mật khẩu mới"
-              name="new_password_confirmation"
-              dependencies={["new_password"]}
-              rules={[
-                { required: true, message: "Vui lòng nhập lại mật khẩu mới" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("new_password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("Mật khẩu xác nhận không khớp")
-                    );
-                  },
-                }),
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
+          <Form.Item
+            label="Xác nhận mật khẩu mới"
+            name="new_password_confirmation"
+            dependencies={["new_password"]}
+            rules={[
+              { required: true, message: "Vui lòng nhập lại mật khẩu mới" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("new_password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp")
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Nhập lại mật khẩu mới" />
+          </Form.Item>
 
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={changingPassword}
-              >
-                Đổi mật khẩu
-              </Button>
-              <Button
-                type="default"
-                onClick={() => setShowChangePasswordForm(false)}
-              >
-                Hủy
-              </Button>
-            </div>
-          </Form>
-        </div>
-      )}
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-end",
+              marginTop: "24px",
+            }}
+          >
+            <Button
+              type="default"
+              onClick={handleClosePasswordModal}
+              icon={<CloseOutlined />}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={changingPassword}
+              icon={<KeyOutlined />}
+            >
+              Đổi mật khẩu
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };

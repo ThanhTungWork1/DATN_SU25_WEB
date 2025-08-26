@@ -28,7 +28,9 @@ class RefundRequestController extends Controller
         Log::info('🔍 Refund request received:', [
             'all_data' => $request->all(),
             'files' => $request->allFiles(),
-            'headers' => $request->headers->all()
+            'headers' => $request->headers->all(),
+            'content_type' => $request->header('Content-Type'),
+            'method' => $request->method()
         ]);
 
         $validator = Validator::make($request->all(), [
@@ -38,7 +40,22 @@ class RefundRequestController extends Controller
             'bank_account_name' => 'required|string|max:100',
             'bank_account_number' => 'required|string|max:50',
             'bank_name' => 'required|string|max:100',
-            'evidence_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'evidence_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,bmp,tiff,svg|max:10240', // 10MB max, nhiều định dạng hơn
+        ], [
+            'order_id.required' => 'ID đơn hàng là bắt buộc',
+            'order_id.exists' => 'Đơn hàng không tồn tại',
+            'amount.required' => 'Số tiền là bắt buộc',
+            'amount.numeric' => 'Số tiền phải là số',
+            'amount.min' => 'Số tiền phải lớn hơn 0',
+            'bank_account_name.required' => 'Tên chủ tài khoản là bắt buộc',
+            'bank_account_name.max' => 'Tên chủ tài khoản không được quá 100 ký tự',
+            'bank_account_number.required' => 'Số tài khoản là bắt buộc',
+            'bank_account_number.max' => 'Số tài khoản không được quá 50 ký tự',
+            'bank_name.required' => 'Tên ngân hàng là bắt buộc',
+            'bank_name.max' => 'Tên ngân hàng không được quá 100 ký tự',
+            'evidence_image.image' => 'File phải là hình ảnh',
+            'evidence_image.mimes' => 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP, BMP, TIFF, SVG)',
+            'evidence_image.max' => 'Kích thước file không được quá 10MB'
         ]);
 
         if ($validator->fails()) {
@@ -55,6 +72,21 @@ class RefundRequestController extends Controller
 
         if (!$order) {
             return response()->json(['message' => 'Bạn không có quyền thực hiện hành động này trên đơn hàng này.'], 403);
+        }
+
+        // Kiểm tra trạng thái đơn hàng có cho phép hoàn tiền không
+        $allowedStatuses = ['delivered', 'completed'];
+        if (!in_array($order->status, $allowedStatuses)) {
+            return response()->json([
+                'message' => 'Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã được giao hoặc hoàn thành.'
+            ], 422);
+        }
+
+        // Kiểm tra đơn hàng đã thanh toán chưa
+        if (!$order->is_paid) {
+            return response()->json([
+                'message' => 'Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã thanh toán.'
+            ], 422);
         }
 
         // Check if a refund request for this order already exists

@@ -25,7 +25,7 @@ class CreateCartRequest extends FormRequest
             'cartItems'              => 'required|array',
             'cartItems.*.product_id' => 'required|exists:products,id', // Luôn yêu cầu product_id
             'cartItems.*.variant_id' => 'required|exists:product_variants,id', // Luôn yêu cầu variant_id
-            'cartItems.*.quantity'   => 'required|integer|min:1',
+            'cartItems.*.quantity'   => 'required|integer|min:1|max:10', // Giới hạn tối đa 10 sản phẩm cho bán lẻ
             'cartItems.*.price'      => 'required|numeric|min:0',
         ];
     }

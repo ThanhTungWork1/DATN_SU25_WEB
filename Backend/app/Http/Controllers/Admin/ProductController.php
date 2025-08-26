@@ -44,7 +44,10 @@ class ProductController extends Controller
 
         \Log::info('🔍 [BACKEND DEBUG] Products found:', $products->toArray());
 
-        return $products;
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
     }
     public function store(Request $request)
     {
@@ -448,8 +451,22 @@ class ProductController extends Controller
             $period = $request->get('period', 'month');
 
             if (!$startDate || !$endDate) {
+                // Nếu không có start_date/end_date, sử dụng logic theo period
                 $endDate = Carbon::now();
-                $startDate = Carbon::parse('2020-01-01');
+                switch ($period) {
+                    case 'week':
+                        $startDate = Carbon::now()->startOfWeek();
+                        break;
+                    case 'month':
+                        $startDate = Carbon::now()->startOfMonth();
+                        break;
+                    case 'quarter':
+                        $startDate = Carbon::now()->firstOfQuarter();
+                        break;
+                    default:
+                        $startDate = Carbon::now()->startOfMonth();
+                        break;
+                }
             } else {
                 $startDate = Carbon::parse($startDate);
                 $endDate = Carbon::parse($endDate);
@@ -461,26 +478,30 @@ class ProductController extends Controller
 
             if ($variantIds->isEmpty()) {
                 return response()->json([
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'total_orders' => 0,
-                    'total_revenue' => 0,
-                    'total_items' => 0,
-                    'average_per_item' => 0,
-                    'top_variants' => [],
-                    'time_data' => [],
-                    'period' => $period,
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
+                    'success' => true,
+                    'data' => [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'total_orders' => 0,
+                        'total_revenue' => 0,
+                        'total_quantity_sold' => 0,
+                        'average_price' => 0,
+                        'top_variants' => [],
+                        'time_data' => [],
+                        'period' => $period,
+                        'start_date' => $startDate->format('Y-m-d'),
+                        'end_date' => $endDate->format('Y-m-d'),
+                    ]
                 ]);
             }
 
             $orderItemsQuery = OrderItem::whereIn('variant_id', $variantIds)
                 ->with(['order', 'variant.color', 'variant.size']);
 
-            // BẬT lọc theo thời gian theo orders.created_at
+            // BẬT lọc theo thời gian và status theo orders.created_at
             $orderItemsQuery->whereHas('order', function($q) use ($startDate, $endDate) {
-                $q->whereBetween('created_at', [$startDate, $endDate]);
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->whereIn('status', ['delivered', 'completed']); // Chỉ tính đơn đã giao/hoàn thành
             });
 
             $orderItems = $orderItemsQuery->get();
@@ -490,8 +511,8 @@ class ProductController extends Controller
             $totalOrders = $orderItems->groupBy('order_id')->count();
             $totalItems = $orderItems->sum('quantity');
             $totalRevenue = $orderItems->sum(function($item) {
-                // Giá trong DB là đơn vị nghìn
-                return $item->quantity * $item->price * 1000;
+                // Giá trong DB đã là VND
+                return $item->quantity * $item->price;
             });
             $averagePerItem = $totalItems > 0 ? $totalRevenue / $totalItems : 0;
 
@@ -503,7 +524,7 @@ class ProductController extends Controller
                     ->map(function($items, $variantId) {
                         $variant = optional($items->first()->variant);
                         $soldQty = $items->sum('quantity');
-                        $revenue = $items->sum(function($i){ return $i->quantity * $i->price * 1000; });
+                        $revenue = $items->sum(function($i){ return $i->quantity * $i->price; });
                         return [
                             'id' => (int) $variantId,
                             'color' => optional($variant->color)->name,
@@ -519,20 +540,30 @@ class ProductController extends Controller
             }
 
             // Time series
+            \Log::info('📅 Generating time data...');
+            \Log::info('📅 Start Date: ' . $startDate->format('Y-m-d H:i:s'));
+            \Log::info('📅 End Date: ' . $endDate->format('Y-m-d H:i:s'));
+            \Log::info('📅 Period: ' . $period);
+            \Log::info('📅 Order items count: ' . $orderItems->count());
+            
             $timeData = $this->generateTimeDataForProduct($orderItems, $startDate, $endDate, $period);
+            \Log::info('📅 Time data result: ' . json_encode($timeData));
 
             return response()->json([
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'total_orders' => $totalOrders,
-                'total_revenue' => $totalRevenue,
-                'total_items' => $totalItems,
-                'average_per_item' => $averagePerItem,
-                'top_variants' => $topVariants,
-                'time_data' => $timeData,
-                'period' => $period,
-                'start_date' => $startDate->format('Y-m-d'),
-                'end_date' => $endDate->format('Y-m-d'),
+                'success' => true,
+                'data' => [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'total_orders' => $totalOrders,
+                    'total_revenue' => $totalRevenue,
+                    'total_quantity_sold' => $totalItems, // Đổi tên để match frontend
+                    'average_price' => $averagePerItem, // Đổi tên để match frontend
+                    'top_variants' => $topVariants,
+                    'time_data' => $timeData,
+                    'period' => $period,
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                ]
             ]);
         } catch (\Exception $e) {
             \Log::error('❌ Error in Product Statistics API: ' . $e->getMessage());
@@ -560,7 +591,7 @@ class ProductController extends Controller
                 $timeData[] = [
                     'period' => $current->format('d/m'),
                     'orders' => $itemsForDay->groupBy('order_id')->count(),
-                    'revenue' => $itemsForDay->sum(function($i){ return $i->quantity * $i->price * 1000; }),
+                    'revenue' => $itemsForDay->sum(function($i){ return $i->quantity * $i->price; }),
                 ];
                 $current->addDay();
             }
@@ -595,7 +626,7 @@ class ProductController extends Controller
         $timeData[] = [
             'period' => $label,
             'orders' => $itemsForRange->groupBy('order_id')->count(),
-            'revenue' => $itemsForRange->sum(function($i){ return $i->quantity * $i->price * 1000; }),
+            'revenue' => $itemsForRange->sum(function($i){ return $i->quantity * $i->price; }),
         ];
 
         return $timeData;

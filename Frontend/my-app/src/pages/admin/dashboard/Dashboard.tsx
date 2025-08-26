@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Đơn hàng"
+              title="Tổng đơn hàng"
               value={data?.orders_in_period || data?.orders_today || 0}
               prefix={<ClockCircleOutlined style={{ color: "#1890ff" }} />}
               valueStyle={{ color: "#1890ff", fontWeight: "bold" }}
@@ -133,8 +133,8 @@ const Dashboard: React.FC = () => {
               value={
                 data?.new_users_in_period || data?.new_users_this_month || 0
               }
-              prefix={<UserOutlined style={{ color: "#722ed1" }} />}
-              valueStyle={{ color: "#722ed1", fontWeight: "bold" }}
+              prefix={<UserOutlined style={{ color: "#13c2c2" }} />}
+              valueStyle={{ color: "#13c2c2", fontWeight: "bold" }}
             />
           </Card>
         </Col>
@@ -153,8 +153,8 @@ const Dashboard: React.FC = () => {
             <Statistic
               title="Tổng sản phẩm"
               value={data?.total_products || 0}
-              prefix={<AppstoreOutlined style={{ color: "#13c2c2" }} />}
-              valueStyle={{ color: "#13c2c2", fontWeight: "bold" }}
+              prefix={<AppstoreOutlined style={{ color: "#eb2f96" }} />}
+              valueStyle={{ color: "#eb2f96", fontWeight: "bold" }}
             />
           </Card>
         </Col>
@@ -163,8 +163,8 @@ const Dashboard: React.FC = () => {
             <Statistic
               title="Tổng danh mục"
               value={data?.total_categories || 0}
-              prefix={<AppstoreOutlined style={{ color: "#eb2f96" }} />}
-              valueStyle={{ color: "#eb2f96", fontWeight: "bold" }}
+              prefix={<AppstoreOutlined style={{ color: "#fa8c16" }} />}
+              valueStyle={{ color: "#fa8c16", fontWeight: "bold" }}
             />
           </Card>
         </Col>

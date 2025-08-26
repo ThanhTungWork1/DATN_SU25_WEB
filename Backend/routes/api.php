@@ -116,7 +116,7 @@ Route::prefix('payments/vnpay')->group(function () {
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
     Route::apiResource('users', UserController::class);
     Route::apiResource('products', \App\Http\Controllers\Admin\ProductController::class);
-    Route::get('products/{id}/statistics', [ProductController::class, 'getStatistics']);
+    Route::get('products/{id}/statistics', [\App\Http\Controllers\Admin\ProductController::class, 'statistics']);
     Route::apiResource('orders', OrderController::class);
 
     // Category Statistics
@@ -251,7 +251,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/cart', CartController::class);
         Route::put('/cart/items/{cartItem}', [CartController::class, 'updateItem']); // Route để cập nhật một item cụ thể
         Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroyItem']); // Route để xóa một item cụ thể
-                Route::post('/cart/clear', [CartController::class, 'clear']); // Route để xóa toàn bộ giỏ hàng (sử dụng POST do hạn chế của môi trường dev)
+        Route::post('/cart/clear', [CartController::class, 'clear']); // Route để xóa toàn bộ giỏ hàng (sử dụng POST do hạn chế của môi trường dev)
+        Route::post('/cart/remove-ordered-items', [CartController::class, 'removeOrderedItems']); // Route để xóa những sản phẩm đã được thanh toán
     Route::post('/comments', [CommentController::class, 'store']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
 
