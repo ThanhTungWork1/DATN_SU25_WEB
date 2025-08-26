@@ -58,15 +58,19 @@ const ResetPassword = () => {
       message.success(
         "Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới."
       );
-      
+
       // Đóng tab hiện tại và chuyển về tab gốc
       if (window.opener) {
         // Nếu có tab gốc, chuyển focus về tab gốc và đóng tab hiện tại
-        window.opener.focus();
-        window.close();
+        setTimeout(() => {
+          window.opener.focus();
+          window.close();
+        }, 1500); // Delay 1.5 giây để user đọc thông báo
       } else {
         // Nếu không có tab gốc (mở trực tiếp), chuyển về trang login
-        navigate("/login");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
       }
     } catch (error: any) {
       console.error("❌ Reset Password error:", error);
@@ -170,4 +174,3 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
-

@@ -159,16 +159,23 @@ class CategoryController extends Controller
                 $orderItemsQuery = OrderItem::whereIn('variant_id', $variantIds)
                     ->with(['order', 'variant.product']);
 
-                // Với mục đích debug, tạm thời KHÔNG filter theo thời gian hoặc trạng thái
-                // Nếu muốn bật lại filter theo thời gian:
-                // $orderItemsQuery->whereHas('order', function($q) use ($startDate, $endDate) {
-                //     $q->whereBetween('created_at', [$startDate, $endDate]);
-                // });
+                // Chỉ tính đơn đã giao hàng hoặc đã hoàn thành
+                $orderItemsQuery->whereHas('order', function($q) {
+                    $q->whereIn('status', ['delivered', 'completed']);
+                });
+
+                // Nếu có filter theo thời gian
+                if ($startDate && $endDate) {
+                    $orderItemsQuery->whereHas('order', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('created_at', [$startDate, $endDate]);
+                    });
+                }
 
                 $orderItems = $orderItemsQuery->get();
             }
 
             \Log::info('🎯 Order items cho variants [' . ($variantIds->count() ? $variantIds->join(',') : '') . ']: ' . $orderItems->count());
+            \Log::info('✅ Filter: Chỉ tính đơn có status = delivered hoặc completed');
             // Không log full toJson nếu nhiều, chỉ log 3 mẫu đầu
             \Log::info('📊 Order items sample (tối đa 3): ' . $orderItems->take(3)->toJson());
 
@@ -183,7 +190,7 @@ class CategoryController extends Controller
             
             $averagePerItem = $totalItems > 0 ? $totalRevenue / $totalItems : 0;
 
-            \Log::info('📈 KẾT QUẢ TÍNH TOÁN:');
+            \Log::info('📈 KẾT QUẢ TÍNH TOÁN (Chỉ đơn delivered/completed):');
             \Log::info('  - Tổng đơn hàng: ' . $totalOrders);
             \Log::info('  - Tổng doanh thu: ' . $totalRevenue);
             \Log::info('  - Tổng số lượng SP: ' . $totalItems);
@@ -230,7 +237,8 @@ class CategoryController extends Controller
                 'time_data' => $timeData,
                 'period' => $period,
                 'start_date' => $startDate->format('Y-m-d'),
-                'end_date' => $endDate->format('Y-m-d')
+                'end_date' => $endDate->format('Y-m-d'),
+                'filter_note' => 'Chỉ tính đơn hàng có trạng thái delivered hoặc completed'
             ]);
             
         } catch (\Exception $e) {

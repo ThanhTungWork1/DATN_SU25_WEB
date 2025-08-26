@@ -81,6 +81,7 @@ Route::middleware(['auth:sanctum', 'signed'])->get('/email/verify/{id}/{hash}', 
 // ========== Public Resources ==========
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('/categories/{id}/statistics', [CategoryController::class, 'getStatistics']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
@@ -114,13 +115,12 @@ Route::prefix('payments/vnpay')->group(function () {
 
 // ========== Admin ==========
 Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class])->group(function () {
-    Route::apiResource('users', UserController::class);
+    // Route::apiResource('users', UserController::class); // COMMENTED OUT - CONFLICT WITH ADMIN ROUTES
     Route::apiResource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('products/{id}/statistics', [\App\Http\Controllers\Admin\ProductController::class, 'statistics']);
     Route::apiResource('orders', OrderController::class);
 
-    // Category Statistics
-    Route::get('categories/{id}/statistics', [CategoryController::class, 'getStatistics']);
+    // Category Statistics - moved to public section
 
     // Dashboard Routes
     Route::prefix('dashboard')->group(function () {
@@ -208,6 +208,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // User profile update
     Route::put('/users/{id}', [UserController::class, 'update']);
+    
+    // Admin user management
+    Route::prefix('admin/users')->middleware(CheckRole::class . ':1')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\UserController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
+        Route::post('/', [\App\Http\Controllers\Admin\UserController::class, 'store']);
+        Route::put('/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update']);
+        Route::put('/lock/{id}', [\App\Http\Controllers\Admin\UserController::class, 'lock']);
+        Route::put('/unlock/{id}', [\App\Http\Controllers\Admin\UserController::class, 'unlock']);
+    });
 
     // Orders cho admin
     Route::prefix('order')->group(function () {
@@ -220,15 +230,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/payment-webhook', [OrderController::class, 'paymentWebhook']);
     });
 
-    // User management (role = 1)
-    Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
-        Route::get('/', [UserController::class, 'index']);
-        Route::get('/{id}', [UserController::class, 'show']);
-        Route::post('/add', [UserController::class, 'store']);
-        Route::put('/update/{id}', [UserController::class, 'update']);
-        Route::put('/lock/{id}', [UserController::class, 'lock']);
-        Route::put('/unlock/{id}', [UserController::class, 'unlock']);
-    });
+    // User management (role = 1) - OLD ROUTES, REMOVED
+    // Route::prefix('user')->middleware(CheckRole::class . ':1')->group(function () {
+    //     Route::get('/', [UserController::class, 'index']);
+    //     Route::get('/{id}', [UserController::class, 'show']);
+    //     Route::post('/add', [UserController::class, 'store']);
+    //     Route::put('/update/{id}', [UserController::class, 'update']);
+    //     Route::put('/lock/{id}', [UserController::class, 'lock']);
+    //     Route::put('/unlock/{id}', [UserController::class, 'unlock']);
+    // });
 
     // Vouchers
     Route::prefix('vouchers')->group(function () {

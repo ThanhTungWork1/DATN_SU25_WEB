@@ -18,7 +18,9 @@ class CategoryController extends Controller
         // Sửa key cache để phản ánh đúng nội dung (có đếm sản phẩm)
         $categories = Cache::remember('categories_with_product_count', 3600, function () {
             // Sử dụng withCount để đếm số sản phẩm trong mỗi danh mục
-            return Category::withCount('products')->get();
+            $result = Category::withCount('products')->get();
+            \Log::info('📊 Categories API - Total loaded: ' . $result->count());
+            return $result;
         });
         return response()->json(['data' => $categories]);
     }
@@ -130,7 +132,8 @@ class CategoryController extends Controller
         $baseQuery = OrderItem::whereHas('variant.product', function ($q) use ($id) {
             $q->where('category_id', $id);
         })->whereHas('order', function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('created_at', [$startDate, $endDate]);
+            $q->whereBetween('created_at', [$startDate, $endDate])
+              ->whereIn('status', ['delivered', 'completed']); // Chỉ tính đơn delivered/completed
         });
 
         $revenueStats = (clone $baseQuery)
@@ -149,7 +152,8 @@ class CategoryController extends Controller
                 $q->where('category_id', $id);
             })
             ->whereHas('order', function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('created_at', [$startDate, $endDate]);
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->whereIn('status', ['delivered', 'completed']); // Chỉ tính đơn delivered/completed
             })
             ->selectRaw('variant_id, SUM(quantity) as sold_quantity, SUM(quantity * price) as revenue')
             ->groupBy('variant_id')
@@ -175,6 +179,7 @@ class CategoryController extends Controller
             'total_orders' => $totalOrders,
             'total_revenue' => $totalRevenue,
             'total_items' => $totalItems,
+            'filter_note' => 'Chỉ tính đơn hàng có trạng thái delivered hoặc completed',
             'average_per_item' => $averagePerItem,
             'top_products' => $topProducts,
             'time_data' => $timeData,

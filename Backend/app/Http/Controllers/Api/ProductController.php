@@ -122,12 +122,16 @@ class ProductController extends Controller
             'has_image' => $request->hasFile('image'),
             'has_hover_image' => $request->hasFile('hover_image'),
             'remove_image' => $request->get('remove_image'),
-            'remove_hover_image' => $request->get('remove_hover_image')
+            'remove_hover_image' => $request->get('remove_hover_image'),
+            'all_files' => $request->allFiles(),
+            'file_count' => count($request->allFiles()),
+            'slug_from_request' => $request->get('slug'),
+            'name_from_request' => $request->get('name')
         ]);
 
         $validated = $request->validate([
             'name' => 'string|nullable',
-            'slug' => 'string|nullable',
+            'slug' => 'string|nullable', // Bỏ unique validation, sẽ xử lý thủ công
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'numeric|nullable',
@@ -180,6 +184,64 @@ class ProductController extends Controller
             $validated['hover_image'] = null;
         }
 
+        // Xử lý slug tự động nếu không được cung cấp hoặc bị trùng
+        Log::info('=== SLUG PROCESSING START ===', [
+            'validated_name' => $validated['name'] ?? 'NOT_SET',
+            'validated_slug' => $validated['slug'] ?? 'NOT_SET',
+            'product_id' => $id
+        ]);
+
+        if (isset($validated['name'])) {
+            if (!isset($validated['slug']) || empty($validated['slug'])) {
+                // Tạo slug từ name nếu không có slug
+                $slug = Str::slug($validated['name']);
+                Log::info('Creating slug from name', ['name' => $validated['name'], 'generated_slug' => $slug]);
+            } else {
+                // Sử dụng slug được cung cấp
+                $slug = $validated['slug'];
+                Log::info('Using provided slug', ['slug' => $slug]);
+            }
+            
+            // Kiểm tra và tạo slug unique
+            $originalSlug = $slug;
+            $counter = 1;
+            while (Product::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                $slug = $originalSlug . '-' . Str::random(4);
+                Log::info('Slug exists, generating new one', ['attempt' => $counter, 'new_slug' => $slug]);
+                $counter++;
+            }
+            $validated['slug'] = $slug;
+            Log::info('Final slug set', ['final_slug' => $slug]);
+        } elseif (isset($validated['slug']) && !empty($validated['slug'])) {
+            // Nếu chỉ có slug mà không có name, vẫn kiểm tra unique
+            $slug = $validated['slug'];
+            Log::info('Processing slug without name', ['slug' => $slug]);
+            $originalSlug = $slug;
+            $counter = 1;
+            while (Product::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                $slug = $originalSlug . '-' . Str::random(4);
+                Log::info('Slug exists, generating new one', ['attempt' => $counter, 'new_slug' => $slug]);
+                $counter++;
+            }
+            $validated['slug'] = $slug;
+            Log::info('Final slug set', ['final_slug' => $slug]);
+        } else {
+            Log::info('No name or slug provided, skipping slug processing');
+        }
+
+        Log::info('=== SLUG PROCESSING END ===', ['final_validated_slug' => $validated['slug'] ?? 'NOT_SET']);
+
+        // Validation thủ công cho slug sau khi đã xử lý
+        if (isset($validated['slug']) && !empty($validated['slug'])) {
+            $existingProduct = Product::where('slug', $validated['slug'])->where('id', '!=', $id)->first();
+            if ($existingProduct) {
+                return response()->json([
+                    'message' => 'Slug đã tồn tại trong hệ thống',
+                    'errors' => ['slug' => ['Slug đã tồn tại trong hệ thống']]
+                ], 422);
+            }
+        }
+
         $product->update($validated);
         
         // Log successful update
@@ -200,16 +262,20 @@ class ProductController extends Controller
                     if ($variant) {
                         // Handle variant image update/removal
                         if ($request->hasFile("variant_images.{$index}")) {
-                            // Delete old variant image if exists
-                            if ($variant->image && file_exists(public_path('storage/' . $variant->image))) {
-                                unlink(public_path('storage/' . $variant->image));
-                            }
-                            // Upload new variant image
                             $variantImage = $request->file("variant_images.{$index}");
-                            $variantImageName = Str::slug(pathinfo($variantImage->getClientOriginalName(), PATHINFO_FILENAME));
-                            $filename = $variantImageName . '-' . uniqid() . '.' . $variantImage->getClientOriginalExtension();
-                            $variantImage->move(public_path('storage/images'), $filename);
-                            $variantData['image'] = 'images/' . $filename;
+                            
+                            // Kiểm tra xem file có thực sự thay đổi không
+                            if ($variantImage->isValid() && $variantImage->getSize() > 0) {
+                                // Delete old variant image if exists
+                                if ($variant->image && file_exists(public_path('storage/' . $variant->image))) {
+                                    unlink(public_path('storage/' . $variant->image));
+                                }
+                                // Upload new variant image
+                                $variantImageName = Str::slug(pathinfo($variantImage->getClientOriginalName(), PATHINFO_FILENAME));
+                                $filename = $variantImageName . '-' . uniqid() . '.' . $variantImage->getClientOriginalExtension();
+                                $variantImage->move(public_path('storage/images'), $filename);
+                                $variantData['image'] = 'images/' . $filename;
+                            }
                         } elseif ($request->has("remove_variant_image.{$index}") && $request->input("remove_variant_image.{$index}") == '1') {
                             // Remove existing variant image
                             if ($variant->image && file_exists(public_path('storage/' . $variant->image))) {
@@ -226,6 +292,31 @@ class ProductController extends Controller
 
                         $variant->update($variantData);
                     }
+                } else {
+                    // Create new variant
+                    $newVariantData = [
+                        'product_id' => $product->id,
+                        'color_id' => $variantData['color_id'],
+                        'size_id' => $variantData['size_id'],
+                        'stock' => $variantData['stock'],
+                        'price' => $variantData['variant_price'] ?? $variantData['price'] ?? 0,
+                        'sku' => $variantData['sku'] ?? null,
+                    ];
+
+                    // Handle variant image upload for new variant
+                    if ($request->hasFile("variant_images.{$index}")) {
+                        $variantImage = $request->file("variant_images.{$index}");
+                        
+                        // Chỉ upload nếu file hợp lệ
+                        if ($variantImage->isValid() && $variantImage->getSize() > 0) {
+                            $variantImageName = Str::slug(pathinfo($variantImage->getClientOriginalName(), PATHINFO_FILENAME));
+                            $filename = $variantImageName . '-' . uniqid() . '.' . $variantImage->getClientOriginalExtension();
+                            $variantImage->move(public_path('storage/images'), $filename);
+                            $newVariantData['image'] = 'images/' . $filename;
+                        }
+                    }
+
+                    $product->variants()->create($newVariantData);
                 }
             }
         }

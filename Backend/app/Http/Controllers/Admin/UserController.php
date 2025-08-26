@@ -115,18 +115,49 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Validate the request data
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
-            'password' => 'sometimes|string|min:6',
-            'phone' => 'sometimes|string|max:20',
-            'address' => 'sometimes|string|max:255',
-            'role' => 'sometimes|integer|in:0,1,2',
-            'status' => 'sometimes|boolean',
+        // Log request data for debugging
+        \Log::info('User update request:', [
+            'user_id' => $id,
+            'request_data' => $request->all(),
+            'status_value' => $request->get('status'),
+            'status_type' => gettype($request->get('status'))
         ]);
 
+
+
+        // Validate the request data
+        try {
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $id,
+                'password' => 'sometimes|string|min:6',
+                'phone' => 'sometimes|string|max:20',
+                'address' => 'sometimes|string|max:255',
+                'role' => 'sometimes|integer|in:0,1,2',
+                'status' => 'sometimes|boolean',
+            ]);
+            
+            \Log::info('Validation passed:', [
+                'user_id' => $id,
+                'validated_data' => $validated
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed:', [
+                'user_id' => $id,
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            throw $e;
+        }
+
         $data = $request->only(['name', 'email', 'password', 'phone', 'address', 'role', 'status']);
+
+        \Log::info('User update data:', [
+            'user_id' => $id,
+            'data_to_update' => $data,
+            'current_user_status' => $user->status,
+            'new_status' => $data['status'] ?? 'NOT_SET'
+        ]);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
@@ -138,6 +169,11 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        \Log::info('User updated successfully:', [
+            'user_id' => $id,
+            'new_status' => $user->fresh()->status
+        ]);
 
         return response()->json([
             'message' => 'Cập nhật thành công',

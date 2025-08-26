@@ -210,7 +210,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'old_price' => 'nullable|numeric|min:0',
             'material' => 'nullable|string',
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
+            'slug' => 'nullable|string|max:255', // Bỏ unique validation, sẽ xử lý thủ công
             'sold' => 'nullable|integer|min:0',
             'variants' => 'sometimes|required|array',
             'variant_images' => 'nullable|array', // Mảng chứa các file ảnh của biến thể
@@ -220,6 +220,36 @@ class ProductController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $product, $validatedData) {
+            // Xử lý slug tự động nếu không được cung cấp hoặc bị trùng
+            if (isset($validatedData['name'])) {
+                if (!isset($validatedData['slug']) || empty($validatedData['slug'])) {
+                    // Tạo slug từ name nếu không có slug
+                    $slug = Str::slug($validatedData['name']);
+                } else {
+                    // Sử dụng slug được cung cấp
+                    $slug = $validatedData['slug'];
+                }
+                
+                // Kiểm tra và tạo slug unique
+                $originalSlug = $slug;
+                $counter = 1;
+                while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                    $slug = $originalSlug . '-' . Str::random(4);
+                    $counter++;
+                }
+                $validatedData['slug'] = $slug;
+            } elseif (isset($validatedData['slug']) && !empty($validatedData['slug'])) {
+                // Nếu chỉ có slug mà không có name, vẫn kiểm tra unique
+                $slug = $validatedData['slug'];
+                $originalSlug = $slug;
+                $counter = 1;
+                while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                    $slug = $originalSlug . '-' . Str::random(4);
+                    $counter++;
+                }
+                $validatedData['slug'] = $slug;
+            }
+
             $productDataForUpdate = collect($validatedData)->except(['variants', 'image', 'hover_image'])->toArray();
 
             if ($request->hasFile('image')) {

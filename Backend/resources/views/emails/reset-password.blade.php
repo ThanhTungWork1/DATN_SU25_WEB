@@ -68,7 +68,7 @@
         <p>Hoặc bạn có thể click vào link bên dưới để khôi phục mật khẩu:</p>
         
         <div style="text-align: center;">
-            <a href="{{ $resetUrl }}" class="button">Khôi phục mật khẩu</a>
+            <a href="{{ $resetUrl }}" class="button" target="_blank" onclick="window.open('{{ $resetUrl }}', '_blank'); return false;">Khôi phục mật khẩu</a>
         </div>
         
         <p><strong>Lưu ý:</strong></p>

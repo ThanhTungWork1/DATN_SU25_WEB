@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import "../../../assets/styles/admin-responsive.css";
 import {
   Card,
@@ -23,7 +23,10 @@ import {
   LineChartOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getCategories, getCategoryDetailStatistics } from "../../../api/category";
+import {
+  getCategories,
+  getCategoryDetailStatistics,
+} from "../../../api/category";
 import { Category } from "../../../types/ProductType";
 
 const { Title, Text } = Typography;
@@ -64,42 +67,59 @@ const CategoryStatistics: React.FC = () => {
   // Lấy dữ liệu thống kê từ API
   const fetchCategoryStatistics = async (categoryId: number) => {
     try {
-      console.log('🔄 BẮT ĐẦU fetchCategoryStatistics');
-      console.log('📊 Category ID:', categoryId);
-      console.log('⏰ Time Period:', timePeriod);
-      console.log('📅 Date Range:', dateRange);
-      
+      console.log("🔄 BẮT ĐẦU fetchCategoryStatistics");
+      console.log("📊 Category ID:", categoryId);
+      console.log("⏰ Time Period:", timePeriod);
+      console.log("📅 Date Range:", dateRange);
+
       setLoading(true);
-      
+
       // Chuẩn bị params cho API
       const params: any = {
-        period: timePeriod === 'custom' ? 'custom' : timePeriod
+        period: timePeriod === "custom" ? "custom" : timePeriod,
       };
 
       // Nếu là custom period và có dateRange
-      if (timePeriod === 'custom' && dateRange && dateRange[0] && dateRange[1]) {
-        params.start_date = dateRange[0].format('YYYY-MM-DD');
-        params.end_date = dateRange[1].format('YYYY-MM-DD');
-        console.log('📅 Custom date range:', params.start_date, 'to', params.end_date);
+      if (
+        timePeriod === "custom" &&
+        dateRange &&
+        dateRange[0] &&
+        dateRange[1]
+      ) {
+        params.start_date = dateRange[0].format("YYYY-MM-DD");
+        params.end_date = dateRange[1].format("YYYY-MM-DD");
+        console.log(
+          "📅 Custom date range:",
+          params.start_date,
+          "to",
+          params.end_date
+        );
       }
 
-      console.log('🚀 Gọi API với params:', { categoryId, params });
-      console.log('🌐 API URL sẽ gọi:', `http://127.0.0.1:8000/api/admin/categories/${categoryId}/statistics`);
-      
-      const response = await getCategoryDetailStatistics(categoryId, params);
-      
-      console.log('✅ API Response Status:', response.status);
-      console.log('📦 API Response Headers:', response.headers);
-      console.log('📄 API Response Data:', response.data);
-      
+      console.log("🚀 Gọi API với params:", { categoryId, params });
+      console.log(
+        "🌐 API URL sẽ gọi:",
+        `http://127.0.0.1:8000/api/admin/categories/${categoryId}/statistics`
+      );
+
+      // Thêm timestamp để tránh cache
+      const response = await getCategoryDetailStatistics(categoryId, {
+        ...params,
+        _t: Date.now(), // Force refresh
+      });
+
+      console.log("✅ API Response Status:", response.status);
+      console.log("📦 API Response Headers:", response.headers);
+      console.log("📄 API Response Data:", response.data);
+
       const data = response.data as any;
 
-      console.log('🔍 Parsing data:');
-      console.log('  - total_orders:', data.total_orders);
-      console.log('  - total_revenue:', data.total_revenue);
-      console.log('  - top_products:', data.top_products);
-      console.log('  - time_data:', data.time_data);
-      console.log('  - debug info:', data.debug);
+      console.log("🔍 Parsing data:");
+      console.log("  - total_orders:", data.total_orders);
+      console.log("  - total_revenue:", data.total_revenue);
+      console.log("  - top_products:", data.top_products);
+      console.log("  - time_data:", data.time_data);
+      console.log("  - debug info:", data.debug);
 
       // Cập nhật state với dữ liệu thực từ API
       setTotalOrders(data.total_orders || 0);
@@ -109,23 +129,30 @@ const CategoryStatistics: React.FC = () => {
       setTopProducts(data.top_products || []);
       setTimeData(data.time_data || []);
 
-      console.log('✅ State updated successfully');
+      console.log("✅ State updated successfully");
+      console.log("🔍 FINAL VALUES:");
+      console.log("  - Total Orders:", data.total_orders || 0);
+      console.log("  - Total Revenue:", data.total_revenue || 0);
+      console.log("  - Filter Note:", data.filter_note || "N/A");
 
       // Hiển thị thông báo nếu không có dữ liệu
-      if (!data.total_orders && !data.total_revenue && (!data.top_products || data.top_products.length === 0)) {
-        console.warn('⚠️ Không có dữ liệu thống kê cho danh mục này');
+      if (
+        !data.total_orders &&
+        !data.total_revenue &&
+        (!data.top_products || data.top_products.length === 0)
+      ) {
+        console.warn("⚠️ Không có dữ liệu thống kê cho danh mục này");
       } else {
-        console.log('🎉 Có dữ liệu thống kê!');
+        console.log("🎉 Có dữ liệu thống kê!");
       }
-
     } catch (error: any) {
-      console.error('❌ LỖI khi tải thống kê danh mục:');
-      console.error('  - Error object:', error);
-      console.error('  - Error message:', error.message);
-      console.error('  - Error response:', error.response);
-      console.error('  - Error response data:', error.response?.data);
-      console.error('  - Error response status:', error.response?.status);
-      
+      console.error("❌ LỖI khi tải thống kê danh mục:");
+      console.error("  - Error object:", error);
+      console.error("  - Error message:", error.message);
+      console.error("  - Error response:", error.response);
+      console.error("  - Error response data:", error.response?.data);
+      console.error("  - Error response status:", error.response?.status);
+
       // Fallback về dữ liệu rỗng nếu có lỗi
       setTotalOrders(0);
       setTotalRevenue(0);
@@ -133,7 +160,7 @@ const CategoryStatistics: React.FC = () => {
       setTimeData([]);
     } finally {
       setLoading(false);
-      console.log('🏁 fetchCategoryStatistics HOÀN THÀNH');
+      console.log("🏁 fetchCategoryStatistics HOÀN THÀNH");
     }
   };
 
@@ -141,12 +168,16 @@ const CategoryStatistics: React.FC = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
+      // Thêm timestamp để tránh cache
       const res = await getCategories();
       const categoriesData = Array.isArray(res.data.data)
         ? res.data.data
         : Array.isArray(res.data)
           ? res.data
           : [];
+
+      console.log("📊 Categories loaded:", categoriesData.length);
+      console.log("📋 Categories data:", categoriesData);
 
       setCategories(categoriesData);
 
@@ -276,7 +307,7 @@ const CategoryStatistics: React.FC = () => {
       <Card style={{ marginBottom: "24px" }}>
         <Row gutter={16} align="middle">
           <Col>
-            <Text strong>Chọn danh mục:</Text>
+            <Text strong>Chọn danh mục ({categories.length}):</Text>
           </Col>
           <Col flex="auto">
             <Select
@@ -284,6 +315,14 @@ const CategoryStatistics: React.FC = () => {
               value={selectedCategory}
               onChange={setSelectedCategory}
               style={{ width: 200 }}
+              listHeight={400}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.children as string)
+                  ?.toLowerCase()
+                  .includes(input.toLowerCase())
+              }
             >
               {categories.map((category) => (
                 <Option key={category.id} value={category.id}>
@@ -415,7 +454,10 @@ const CategoryStatistics: React.FC = () => {
                         </Text>
                       </div>
                       <Progress
-                        percent={safePercent(item.orders, timeData.map((d) => d.orders))}
+                        percent={safePercent(
+                          item.orders,
+                          timeData.map((d) => d.orders)
+                        )}
                         strokeColor="#1890ff"
                         showInfo={false}
                       />
@@ -456,7 +498,10 @@ const CategoryStatistics: React.FC = () => {
                         </Text>
                       </div>
                       <Progress
-                        percent={safePercent(item.revenue, timeData.map((d) => d.revenue))}
+                        percent={safePercent(
+                          item.revenue,
+                          timeData.map((d) => d.revenue)
+                        )}
                         strokeColor="#52c41a"
                         showInfo={false}
                       />
@@ -479,7 +524,7 @@ const CategoryStatistics: React.FC = () => {
             <Table
               columns={topProductsColumns}
               dataSource={topProducts}
-              rowKey="id"
+              rowKey={(record, index) => `${record.id}-${index}`}
               pagination={false}
               size="middle"
             />
