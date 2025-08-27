@@ -63,6 +63,7 @@ const HomeSectionList = () => {
       setEditingSection(null);
       setFormData({ name: "", title: "", description: "" });
       fetchSections();
+
       toast.success("Cập nhật section thành công!");
     } catch (err) {
       console.error("Error updating section:", err);

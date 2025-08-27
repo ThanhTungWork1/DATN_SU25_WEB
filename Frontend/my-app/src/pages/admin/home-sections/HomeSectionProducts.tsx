@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import "../../../assets/styles/admin-responsive.css";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -7,6 +7,7 @@ import { ApiHomeSection } from "../../../api/ApiHomeSection";
 import { getAllProducts } from "../../../api/ApiProduct";
 import { HomeSection, Product } from "../../../types/HomeSection";
 import { formatCurrency } from "../../../utils/currencyFormatter";
+import { getProductMainImage } from "../../../utils/imageUtils";
 import "../../../layouts/Admin/HomeSectionProducts.css";
 
 const HomeSectionProducts = () => {
@@ -36,15 +37,15 @@ const HomeSectionProducts = () => {
   const fetchSectionData = async () => {
     try {
       const response = await ApiHomeSection.getSectionProducts(parseInt(id!));
-      // Tạo section object từ response
+      // Sử dụng dữ liệu section đầy đủ từ API
       const sectionData: HomeSection = {
-        id: parseInt(id!),
-        name: response.section,
-        title: response.section,
-        description: "",
-        status: true,
-        created_at: "",
-        updated_at: "",
+        id: response.section.id,
+        name: response.section.name,
+        title: response.section.title,
+        description: response.section.description || "",
+        status: response.section.status,
+        created_at: response.section.created_at,
+        updated_at: response.section.updated_at,
         products: response.products || [],
       };
       setSection(sectionData);
@@ -195,7 +196,7 @@ const HomeSectionProducts = () => {
             {section.products.map((product) => (
               <div key={product.id} className="current-product-card">
                 <img
-                  src={product.image || "https://via.placeholder.com/150"}
+                  src={getProductMainImage(product)}
                   alt={product.name}
                   className="current-product-image"
                 />
@@ -281,7 +282,7 @@ const HomeSectionProducts = () => {
                   }
                 >
                   <img
-                    src={product.image || "https://via.placeholder.com/150"}
+                    src={getProductMainImage(product)}
                     alt={product.name}
                     className="product-image"
                   />

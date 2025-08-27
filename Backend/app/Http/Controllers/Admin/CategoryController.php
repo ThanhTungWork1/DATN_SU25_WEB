@@ -22,7 +22,12 @@ class CategoryController extends Controller
     {
         // Dùng withCount('products') để đếm số sản phẩm trong mỗi danh mục.
         // Laravel sẽ tự động thêm một trường 'products_count' vào kết quả trả về.
-        return Category::withCount('products')->orderBy('name', 'asc')->get();
+        $categories = Category::withCount('products')->orderBy('name', 'asc')->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
     }
 
     /**

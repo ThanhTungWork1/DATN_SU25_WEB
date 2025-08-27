@@ -85,10 +85,10 @@ class VoucherController extends Controller
                 'code' => 'required|string|unique:vouchers,code|max:50',
                 'value' => 'required|numeric|min:0',
                 'start_date' => 'required|date|after_or_equal:today',
-                'expiry_date' => 'required|date|after:start_date',
+                'end_date' => 'required|date|after:start_date',
                 'min_order_amount' => 'nullable|numeric|min:0',
                 'max_usage' => 'required|integer|min:1',
-                'discount_type' => 'required|in:fixed,percent',
+                'discount_type' => 'required|in:amount,percentage',
                 'description' => 'nullable|string|max:500',
             ]);
 
@@ -107,11 +107,11 @@ class VoucherController extends Controller
                 'title' => 'Voucher ' . $request->code,
                 'code' => $request->code,
                 'value' => $request->value,
-                'max_value' => $request->value,
+                'max_value' => $request->max_value ?? $request->value,
                 'quantity' => $request->max_usage,
                 'description' => $request->description ?? 'Voucher giảm giá ' . $request->value . ' VND',
                 'start_date' => $request->start_date,
-                'end_date' => $request->expiry_date,
+                'end_date' => $request->end_date,
                 'min_order_amount' => $request->min_order_amount ?? 0,
                 'max_usage' => $request->max_usage,
                 'used_count' => 0,
@@ -119,15 +119,18 @@ class VoucherController extends Controller
                 'status' => true,
             ]);
 
+            // Đảm bảo max_value luôn có giá trị
+            $maxValue = $request->max_value ?? $request->value;
+            
             $voucher = Voucher::create([
                 'title' => 'Voucher ' . $request->code,
                 'code' => $request->code,
                 'value' => $request->value,
-                'max_value' => $request->value,
+                'max_value' => $maxValue,
                 'quantity' => $request->max_usage,
                 'description' => $request->description ?? 'Voucher giảm giá ' . $request->value . ' VND',
                 'start_date' => $request->start_date,
-                'end_date' => $request->expiry_date,
+                'end_date' => $request->end_date,
                 'min_order_amount' => $request->min_order_amount ?? 0,
                 'max_usage' => $request->max_usage,
                 'used_count' => 0,
@@ -214,10 +217,10 @@ class VoucherController extends Controller
                 'code' => 'required|string|max:50|unique:vouchers,code,' . $id,
                 'value' => 'required|numeric|min:0',
                 'start_date' => 'required|date',
-                'expiry_date' => 'required|date|after:start_date',
+                'end_date' => 'required|date|after:start_date',
                 'min_order_amount' => 'nullable|numeric|min:0',
                 'max_usage' => 'required|integer|min:1',
-                'discount_type' => 'required|in:fixed,percent',
+                'discount_type' => 'required|in:amount,percentage',
                 'description' => 'nullable|string|max:500',
             ]);
 
@@ -229,15 +232,18 @@ class VoucherController extends Controller
                 ], 422);
             }
 
+            // Đảm bảo max_value luôn có giá trị
+            $maxValue = $request->max_value ?? $request->value;
+            
             $voucher->update([
                 'title' => 'Voucher ' . $request->code,
                 'code' => $request->code,
                 'value' => $request->value,
-                'max_value' => $request->value,
+                'max_value' => $maxValue,
                 'quantity' => $request->max_usage,
                 'description' => $request->description ?? 'Voucher giảm giá ' . $request->value . ' VND',
                 'start_date' => $request->start_date,
-                'end_date' => $request->expiry_date,
+                'end_date' => $request->end_date,
                 'min_order_amount' => $request->min_order_amount ?? 0,
                 'max_usage' => $request->max_usage,
                 'discount_type' => $request->discount_type,

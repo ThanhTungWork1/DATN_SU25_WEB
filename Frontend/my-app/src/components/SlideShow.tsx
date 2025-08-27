@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import banner1 from "../assets/image/banner1.jpg";
-import banner2 from "../assets/image/banner2.jpg";
-import banner3 from "../assets/image/banner3.jpg";
+import banner1 from "../assets/image/banner1 (2).jpg";
+import banner2 from "../assets/image/banner2 (3).jpg";
+import banner3 from "../assets/image/banner3 (3).jpg";
+import banner4 from "../assets/image/banner4 (3).png";
 import "../assets/styles/slideShow.css";
 
 const banners = [
@@ -20,6 +21,11 @@ const banners = [
     id: 3,
     image: banner3,
     alt: "Banner Thời Trang 3",
+  },
+  {
+    id: 4,
+    image: banner4,
+    alt: "Banner Thời Trang 4",
   },
 ];
 

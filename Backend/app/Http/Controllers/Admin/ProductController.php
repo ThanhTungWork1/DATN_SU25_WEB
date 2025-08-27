@@ -64,7 +64,7 @@ class ProductController extends Controller
             'old_price' => 'nullable|numeric|min:0',
             'material' => 'nullable|string',
             // 'discount' => 'nullable|numeric|min:0',
-            'slug' => 'nullable|string|max:255|unique:products,slug',
+            'slug' => 'nullable|string|max:255',
             'sold' => 'nullable|integer|min:0',
                     'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -100,14 +100,21 @@ class ProductController extends Controller
 
             // Tự động tạo slug nếu người dùng không nhập
             $baseSlug = $validatedData['slug'] ?? Str::slug($validatedData['name']);
-            $product->slug = $baseSlug;
             
             // Kiểm tra và tạo slug unique
+            $finalSlug = $baseSlug;
             $counter = 1;
-            while (Product::where('slug', $product->slug)->exists()) {
-                $product->slug = $baseSlug . '-' . $counter;
+            while (Product::where('slug', $finalSlug)->exists()) {
+                $finalSlug = $baseSlug . '-' . $counter;
                 $counter++;
+                // Tránh vòng lặp vô hạn
+                if ($counter > 100) {
+                    $finalSlug = $baseSlug . '-' . Str::random(8);
+                    break;
+                }
             }
+            
+            $product->slug = $finalSlug;
 
             // Xử lý upload file và gán đường dẫn
             if ($request->hasFile('image')) {

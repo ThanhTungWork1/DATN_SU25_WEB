@@ -1,10 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import useProductTop from "../../../hook/useProductTop";
+import { getProductMainImage } from "../../../utils/imageUtils";
 import "../../../assets/styles/TopProductsSection.css"; // Đảm bảo file này tồn tại
 
 const TopProductsSection = () => {
   const { products, loading } = useProductTop();
   const navigate = useNavigate();
+
+  // Debug: Log products để kiểm tra dữ liệu
+  console.log("🔍 TopProductsSection - Products:", products);
 
   const handleProductClick = (productId: number) => {
     navigate(`/products/${productId}`);
@@ -28,7 +32,7 @@ const TopProductsSection = () => {
             <div
               className="product-image"
               style={{
-                backgroundImage: `url(${item.image})`,
+                backgroundImage: `url(${getProductMainImage(item)})`,
               }}
             />
 

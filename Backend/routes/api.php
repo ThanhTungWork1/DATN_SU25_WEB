@@ -119,6 +119,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', CheckAdminMiddleware::class]
     Route::apiResource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('products/{id}/statistics', [\App\Http\Controllers\Admin\ProductController::class, 'statistics']);
     Route::apiResource('orders', OrderController::class);
+    
+    // Category Management
+    Route::apiResource('categories', \App\Http\Controllers\Admin\CategoryController::class);
 
     // Category Statistics - moved to public section
 

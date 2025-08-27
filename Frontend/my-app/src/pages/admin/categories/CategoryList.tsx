@@ -1,5 +1,5 @@
 // src/pages/admin/categories/CategoryList.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import "../../../assets/styles/admin-responsive.css";
 import {
   Table,
@@ -36,7 +36,10 @@ export default function CategoryList() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      console.log("🔄 Fetching categories...");
       const res = await getCategories();
+      console.log("📥 API Response:", res);
+
       // SỬA LỖI: Xử lý dữ liệu trả về một cách an toàn
       // Kiểm tra xem res.data.data có phải là mảng không, nếu không thì kiểm tra res.data
       const categoriesData = Array.isArray(res.data.data)
@@ -44,6 +47,8 @@ export default function CategoryList() {
         : Array.isArray(res.data)
           ? res.data
           : [];
+
+      console.log("📋 Parsed categories data:", categoriesData);
       setCategories(categoriesData);
     } catch (error) {
       message.error("Không thể tải danh sách danh mục.");

@@ -16,7 +16,7 @@ class HomeSectionProductController extends Controller
             $section = HomeSection::with('products')->findOrFail($id);
 
             return response()->json([
-                'section' => $section->name,
+                'section' => $section,
                 'products' => $section->products ?? [],
             ]);
         } catch (\Exception $e) {

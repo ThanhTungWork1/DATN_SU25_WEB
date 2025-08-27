@@ -175,7 +175,7 @@ const VoucherPage = () => {
         max_value:
           form.discount_type === "percentage"
             ? Number(form.max_discount_amount) || 0
-            : undefined, // Sửa thành `max_value`
+            : Number(form.discount_amount), // Khi là amount, max_value = value
         description: form.description || "",
       };
 

@@ -305,9 +305,9 @@ class ClientOrderController extends Controller
                 // }
 
                 // Tính toán số tiền giảm giá
-                if ($voucher->discount_type === 'fixed') {
-                    $discount_amount = $voucher->value;
-                } elseif ($voucher->discount_type === 'percentage') {
+                        if ($voucher->discount_type === 'amount') {
+            $discount_amount = $voucher->value;
+        } elseif ($voucher->discount_type === 'percentage') {
                     $calculated_discount = ($total_amount * $voucher->value) / 100;
                     $discount_amount = isset($voucher->max_value) ? min($calculated_discount, $voucher->max_value) : $calculated_discount;
                 }
