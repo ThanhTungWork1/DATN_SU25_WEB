@@ -83,6 +83,22 @@
   flex-direction: column;
 }
 
+/* Dark mode support for fashion card */
+@media (prefers-color-scheme: dark) {
+  .fashion-card {
+    background: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Light mode support for fashion card */
+@media (prefers-color-scheme: light) {
+  .fashion-card {
+    background: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
 .fashion-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -117,10 +133,38 @@
   min-height: 2.8em;
 }
 
+/* Dark mode support for fashion name */
+@media (prefers-color-scheme: dark) {
+  .fashion-name {
+    color: #222222;
+  }
+}
+
+/* Light mode support for fashion name */
+@media (prefers-color-scheme: light) {
+  .fashion-name {
+    color: #222222;
+  }
+}
+
 .fashion-meta {
   font-size: 0.85rem;
   color: #777;
   margin-bottom: 8px;
+}
+
+/* Dark mode support for fashion meta */
+@media (prefers-color-scheme: dark) {
+  .fashion-meta {
+    color: #bbbbbb;
+  }
+}
+
+/* Light mode support for fashion meta */
+@media (prefers-color-scheme: light) {
+  .fashion-meta {
+    color: #777777;
+  }
 }
 
 .fashion-price {
@@ -141,6 +185,28 @@
   color: #444;
   margin-top: 6px;
   margin-bottom: 12px;
+}
+
+/* Dark mode support for fashion text elements */
+@media (prefers-color-scheme: dark) {
+  .fashion-oldprice {
+    color: #cccccc;
+  }
+
+  .fashion-rate {
+    color: #bbbbbb;
+  }
+}
+
+/* Light mode support for fashion text elements */
+@media (prefers-color-scheme: light) {
+  .fashion-oldprice {
+    color: #999999;
+  }
+
+  .fashion-rate {
+    color: #444444;
+  }
 }
 
 .fashion-buy {
@@ -280,7 +346,8 @@
 }
 
 .feature-item .icon {
-  background-color: #2563eb; /* xanh chủ đạo */
+  background-color: #2563eb;
+  /* xanh chủ đạo */
   color: #fff;
   font-size: 24px;
   width: 60px;

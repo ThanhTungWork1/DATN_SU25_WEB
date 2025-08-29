@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Models\OrderItem;
+use App\Services\CacheService;
 use Carbon\Carbon;
 
 class ProductController extends Controller
@@ -344,57 +346,143 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        Log::info('---[SEARCH PRODUCT] Bắt đầu search', ['request' => $request->all()]);
-        Log::info('---[SEARCH PRODUCT] Filter params:', [
-            'category_id' => $request->get('category_id'),
-            'color_id' => $request->get('color_id'),
-            'size_id' => $request->get('size_id'),
-            'materials' => $request->get('materials'),
-            'min_price' => $request->get('min_price'),
-            'max_price' => $request->get('max_price'),
-        ]);
-        $query = Product::with(['category', 'variants.color', 'variants.size'])
-            ->where('status', true); // Chỉ lấy sản phẩm active
-
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('description', 'LIKE', "%{$search}%");
-            });
+        $startTime = microtime(true);
+        
+        // Tạo cache key từ request params
+        $cacheKey = 'product_search_' . md5(json_encode($request->all()));
+        
+        // Thử lấy từ cache trước
+        if (Cache::has($cacheKey)) {
+            $cachedResult = Cache::get($cacheKey);
+            Log::info('---[SEARCH PRODUCT] Cache hit, response time: ' . (microtime(true) - $startTime) * 1000 . 'ms');
+            return response()->json($cachedResult);
         }
 
+        // Tối ưu query - chỉ select fields cần thiết
+        $query = Product::select([
+            'id', 'name', 'price', 'old_price', 'image', 'hover_image', 
+            'category_id', 'status', 'material', 'slug', 'created_at', 'sold'
+        ])
+        ->with([
+            'category:id,name', // Chỉ load id và name của category
+            'variants:id,product_id', // Load variants để tính sold count
+        ])
+        ->where('status', true);
+
+        // Tối ưu search với smart logic
+        if ($request->has('search') && !empty($request->search)) {
+            $search = trim($request->search);
+            
+            // Tách từ khóa thành các từ riêng biệt
+            $keywords = array_filter(explode(' ', $search));
+            
+            if (count($keywords) > 1) {
+                // Nhiều từ khóa - tìm kiếm thông minh hơn
+                // Ưu tiên tìm trong tên sản phẩm trước
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        if (strlen($keyword) > 1) {
+                            $q->where('name', 'LIKE', "%{$keyword}%");
+                        }
+                    }
+                });
+                
+                // Nếu không đủ kết quả, tìm trong category
+                $count = $query->count();
+                if ($count < 3) {
+                    $query->orWhere(function ($q) use ($keywords) {
+                        foreach ($keywords as $keyword) {
+                            if (strlen($keyword) > 1) {
+                                $q->whereHas('category', function ($catQ) use ($keyword) {
+                                    $catQ->where('name', 'LIKE', "%{$keyword}%");
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                // Nếu vẫn không đủ, mở rộng tìm trong description
+                $count = $query->count();
+                if ($count < 5) {
+                    $query->orWhere(function ($q) use ($keywords) {
+                        foreach ($keywords as $keyword) {
+                            if (strlen($keyword) > 1) {
+                                $q->where('description', 'LIKE', "%{$keyword}%");
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Một từ khóa - ưu tiên tìm trong tên và category
+                if (strlen($search) > 2) {
+                    try {
+                        // Ưu tiên tìm trong tên sản phẩm trước (chính xác nhất)
+                        $query->where(function ($q) use ($search) {
+                            $q->where('name', 'LIKE', "%{$search}%");
+                        });
+                        
+                        // Nếu không tìm thấy đủ kết quả, tìm trong category
+                        $count = $query->count();
+                        if ($count < 3) {
+                            $query->orWhereHas('category', function ($catQ) use ($search) {
+                                $catQ->where('name', 'LIKE', "%{$search}%");
+                            });
+                        }
+                        
+                        // Nếu vẫn không đủ, mở rộng tìm trong description
+                        $count = $query->count();
+                        if ($count < 5) {
+                            $query->orWhere('description', 'LIKE', "%{$search}%");
+                        }
+                    } catch (\Exception $e) {
+                        // Fallback về LIKE nếu full-text search lỗi
+                        $query->where(function ($q) use ($search) {
+                            $q->where('name', 'LIKE', "%{$search}%");
+                        });
+                        
+                        // Nếu không đủ kết quả, tìm trong category
+                        $count = $query->count();
+                        if ($count < 3) {
+                            $query->orWhereHas('category', function ($catQ) use ($search) {
+                                $catQ->where('name', 'LIKE', "%{$search}%");
+                            });
+                        }
+                    }
+                } else {
+                    // Từ khóa ngắn - chỉ tìm trong tên sản phẩm
+                    $query->where('name', 'LIKE', "%{$search}%");
+                }
+            }
+            
+            // Track search analytics
+            CacheService::incrementSearchCount($search);
+        }
+
+        // Filter theo category
         if ($request->has('category_id') && !empty($request->category_id)) {
             $query->where('category_id', $request->category_id);
         }
 
+        // Filter theo giá
         if ($request->has('min_price') && !empty($request->min_price)) {
-            $minPrice = (int) $request->min_price;
-            Log::info('---[SEARCH PRODUCT] Filter min_price:', ['min_price' => $minPrice, 'type' => gettype($minPrice)]);
-            $query->where('price', '>=', $minPrice);
+            $query->where('price', '>=', (int) $request->min_price);
         }
 
         if ($request->has('max_price') && !empty($request->max_price)) {
-            $maxPrice = (int) $request->max_price;
-            Log::info('---[SEARCH PRODUCT] Filter max_price:', ['max_price' => $maxPrice, 'type' => gettype($maxPrice)]);
-            $query->where('price', '<=', $maxPrice);
+            $query->where('price', '<=', (int) $request->max_price);
         }
 
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
-        }
-
-        // Filter theo màu sắc
+        // Filter theo màu sắc - chỉ khi cần thiết
         if ($request->has('color_id') && !empty($request->color_id)) {
             $query->whereHas('variants', function ($q) use ($request) {
-                $q->where('color_id', $request->color_id);
+                $q->select('product_id')->where('color_id', $request->color_id);
             });
         }
 
-        // Filter theo kích thước
+        // Filter theo kích thước - chỉ khi cần thiết
         if ($request->has('size_id') && !empty($request->size_id)) {
             $query->whereHas('variants', function ($q) use ($request) {
-                $q->where('size_id', $request->size_id);
+                $q->select('product_id')->where('size_id', $request->size_id);
             });
         }
 
@@ -404,10 +492,66 @@ class ProductController extends Controller
             $query->whereIn('material', $materials);
         }
 
+        // Filter theo stock (còn hàng/hết hàng)
+        if ($request->has('in_stock')) {
+            if ($request->in_stock === 'true' || $request->in_stock === true) {
+                // Chỉ hiển thị sản phẩm còn hàng
+                $query->whereHas('variants', function($q) {
+                    $q->where('stock', '>', 0);
+                });
+            } elseif ($request->in_stock === 'false' || $request->in_stock === false) {
+                // Chỉ hiển thị sản phẩm hết hàng
+                $query->whereDoesntHave('variants', function($q) {
+                    $q->where('stock', '>', 0);
+                });
+            }
+        }
+
+        // Filter theo rating
+        if ($request->has('min_rating') && is_numeric($request->min_rating)) {
+            $minRating = floatval($request->min_rating);
+            $query->where('average_rating', '>=', $minRating);
+        }
+
+        // Sắp xếp
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        $allowedSortFields = ['name', 'price', 'discount', 'created_at', 'updated_at'];
+        // Quick filter presets
+        $preset = $request->get('preset');
+        if ($preset) {
+            switch ($preset) {
+                case 'new_arrivals':
+                    $sortBy = 'created_at';
+                    $sortOrder = 'desc';
+                    break;
+                case 'best_sellers':
+                    $sortBy = 'sold';
+                    $sortOrder = 'desc';
+                    break;
+                case 'price_low_to_high':
+                    $sortBy = 'price';
+                    $sortOrder = 'asc';
+                    break;
+                case 'price_high_to_low':
+                    $sortBy = 'price';
+                    $sortOrder = 'desc';
+                    break;
+                case 'name_a_to_z':
+                    $sortBy = 'name';
+                    $sortOrder = 'asc';
+                    break;
+                case 'name_z_to_a':
+                    $sortBy = 'name';
+                    $sortOrder = 'desc';
+                    break;
+                default:
+                    $sortBy = 'created_at';
+                    $sortOrder = 'desc';
+            }
+        }
+
+        $allowedSortFields = ['name', 'price', 'created_at', 'sold'];
         if (!in_array($sortBy, $allowedSortFields)) {
             $sortBy = 'created_at';
         }
@@ -418,11 +562,29 @@ class ProductController extends Controller
 
         $query->orderBy($sortBy, $sortOrder);
 
-        $perPage = $request->get('per_page', 10);
+        // Phân trang
+        $perPage = min($request->get('per_page', 15), 50); // Giới hạn max 50 items
         $products = $query->paginate($perPage);
 
+        // Tính toán sold count real-time cho từng sản phẩm
+        $products->getCollection()->transform(function ($product) {
+            $variantIds = $product->variants->pluck('id');
+            $soldQuantity = 0;
+            
+            if ($variantIds->count() > 0) {
+                $soldQuantity = \App\Models\OrderItem::whereIn('variant_id', $variantIds)
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->whereIn('orders.status', ['delivered', 'completed'])
+                    ->sum('order_items.quantity');
+            }
+            
+            // Ghi đè field sold với giá trị tính toán real-time
+            $product->sold = (int) $soldQuantity;
+            return $product;
+        });
 
-        return response()->json([
+        // Format response
+        $result = [
             'success' => true,
             'data' => $products->items(),
             'pagination' => [
@@ -431,7 +593,91 @@ class ProductController extends Controller
                 'total' => $products->total(),
                 'total_pages' => $products->lastPage(),
             ]
-        ]);
+        ];
+
+        // Cache kết quả trong 5 phút
+        Cache::put($cacheKey, $result, 300);
+
+        $executionTime = (microtime(true) - $startTime) * 1000;
+        Log::info('---[SEARCH PRODUCT] Query executed in: ' . $executionTime . 'ms');
+
+        return response()->json($result);
+    }
+
+    /**
+     * Get search suggestions for auto-complete
+     */
+    public function getSearchSuggestions(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json(['suggestions' => []]);
+        }
+
+        // Cache suggestions
+        $cacheKey = 'search_suggestions_' . md5($query);
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached) {
+            return response()->json(['suggestions' => $cached]);
+        }
+
+        // Get product suggestions - ưu tiên tìm trong tên sản phẩm trước
+        $productSuggestions = Product::select('id', 'name', 'slug')
+            ->where('status', true)
+            ->where('name', 'LIKE', "%{$query}%")
+            ->limit(5)
+            ->get()
+            ->map(function($product) {
+                return [
+                    'id' => $product->id,
+                    'text' => $product->name,
+                    'type' => 'product',
+                    'url' => "/products/{$product->id}"
+                ];
+            });
+
+        // Get category suggestions
+        $categorySuggestions = \App\Models\Category::select('id', 'name')
+            ->where('status', 'active')
+            ->where('name', 'LIKE', "%{$query}%")
+            ->limit(3)
+            ->get()
+            ->map(function($category) {
+                return [
+                    'id' => $category->id,
+                    'text' => $category->name,
+                    'type' => 'category',
+                    'url' => "/products?category={$category->id}"
+                ];
+            });
+
+        // Get popular searches
+        $popularSearches = CacheService::getCachedPopularSearches();
+        $popularSuggestions = [];
+        
+        foreach ($popularSearches as $search => $count) {
+            if (stripos($search, $query) !== false) {
+                $popularSuggestions[] = [
+                    'id' => 'popular_' . md5($search),
+                    'text' => $search,
+                    'type' => 'popular',
+                    'url' => "/search?query=" . urlencode($search)
+                ];
+            }
+        }
+
+        $suggestions = array_merge(
+            $productSuggestions->toArray(),
+            $categorySuggestions->toArray(),
+            array_slice($popularSuggestions, 0, 2)
+        );
+
+        // Cache suggestions for 5 minutes
+        Cache::put($cacheKey, $suggestions, 300);
+
+        return response()->json(['suggestions' => $suggestions]);
     }
 
     public function featured(Request $request)

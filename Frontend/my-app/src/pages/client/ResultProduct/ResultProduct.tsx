@@ -33,11 +33,12 @@ const ResultProduct = () => {
   const PAGE_SIZE = 15;
 
   // Gọi API backend để tìm kiếm sản phẩm
-  const { products, pagination, loading, error } = useProductPagination({
-    page: currentPage,
-    per_page: PAGE_SIZE,
-    search: queryForApi,
-  });
+  const { products, pagination, loading, error, isInitialLoad } =
+    useProductPagination({
+      page: currentPage,
+      per_page: PAGE_SIZE,
+      search: queryForApi,
+    });
 
   const navigate = useNavigate();
 
@@ -70,8 +71,13 @@ const ResultProduct = () => {
         </div>
         {/* Hiển thị lỗi hoặc loading nếu có */}
         {error && <div className="alert alert-danger">{error}</div>}
-        {loading ? (
-          <div>Đang tải sản phẩm...</div>
+        {loading && isInitialLoad ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Đang tải...</span>
+            </div>
+            <div className="mt-3">Đang tìm kiếm sản phẩm...</div>
+          </div>
         ) : !query ? (
           <div>Vui lòng nhập từ khóa tìm kiếm.</div>
         ) : products.length === 0 ? (

@@ -1,6 +1,7 @@
 import type { ProductFilter } from "../../../types/ProductFilterType";
 import Color from "../../../components/Color";
 import "../../../assets/styles/filter-effects.css";
+import { useState } from "react";
 
 type Props = {
   filter: any;
@@ -28,6 +29,97 @@ export const FilterProducts = ({
   loadingSizes,
 }: Props) => {
   const materialList = ["Cotton", "Polyester", "Plastic", "Spandex", "Fleece"];
+
+  // Cấu trúc menu danh mục
+  const categoryMenu = {
+    Nam: {
+      Áo: [
+        "Áo thun nam",
+        "Áo tanktop nam",
+        "Áo sơ mi nam",
+        "Áo polo nam",
+        "Áo thể thao nam",
+      ],
+      Quần: [
+        "Quần jeans nam",
+        "Quần short nam",
+        "Quần thể thao nam",
+        "Quần dài nam",
+        "Quần jogger nam",
+      ],
+    },
+    Nữ: {
+      Áo: [
+        "Áo thun nữ",
+        "Áo sơ mi nữ",
+        "Áo Croptop nữ",
+        "Áo polo nữ",
+        "Áo Tanktop nữ",
+      ],
+      Quần: [
+        "Quần legging nữ",
+        "Quần jeans nữ",
+        "Quần short nữ",
+        "Quần jogger nữ",
+        "Váy đầm thể thao nữ",
+      ],
+    },
+    "Phụ kiện": {
+      "Phụ kiện khác": ["Mũ nón", "Tất vớ", "Túi xách", "Thắt lưng"],
+    },
+  };
+
+  // State để quản lý menu mở/đóng
+  const [expandedMenus, setExpandedMenus] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [expandedSubMenus, setExpandedSubMenus] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // Toggle menu chính
+  const toggleMainMenu = (menuKey: string) => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [menuKey]: !prev[menuKey],
+    }));
+  };
+
+  // Toggle sub menu
+  const toggleSubMenu = (subMenuKey: string) => {
+    setExpandedSubMenus((prev) => ({
+      ...prev,
+      [subMenuKey]: !prev[subMenuKey],
+    }));
+  };
+
+  // Lưu filter history
+  const saveFilterHistory = (filters: any) => {
+    try {
+      const history = JSON.parse(
+        localStorage.getItem("filter_history") || "[]"
+      );
+      const newHistory = [
+        filters,
+        ...history.filter(
+          (h: any) => JSON.stringify(h) !== JSON.stringify(filters)
+        ),
+      ].slice(0, 5); // Giữ tối đa 5 filter gần nhất
+      localStorage.setItem("filter_history", JSON.stringify(newHistory));
+    } catch (error) {
+      console.error("Error saving filter history:", error);
+    }
+  };
+
+  // Lấy filter history
+  const getFilterHistory = () => {
+    try {
+      return JSON.parse(localStorage.getItem("filter_history") || "[]");
+    } catch (error) {
+      console.error("Error getting filter history:", error);
+      return [];
+    }
+  };
 
   // Chuyển đổi filter FE sang filter BE
   const handleChange = (key: string, value: any) => {
@@ -92,25 +184,105 @@ export const FilterProducts = ({
           <div className="filter-loading">Đang tải danh mục...</div>
         ) : (
           <>
-            {/* Danh mục */}
+            {/* Danh mục - Menu phân cấp */}
             <div className="filter-section">
-              <div className="filter-section-title">Danh mục</div>
-              {categories.map((cat) => (
-                <div key={cat.id} className="filter-checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={filter.category_id === cat.id}
-                      onChange={() =>
-                        filter.category_id === cat.id
-                          ? handleChange("categories", [])
-                          : handleChange("categories", [cat.id])
-                      }
-                    />
-                    {cat.name}
-                  </label>
-                </div>
-              ))}
+              <div className="filter-section-title">📁 Danh mục</div>
+              {Object.entries(categoryMenu).map(
+                ([mainCategory, subCategories]) => (
+                  <div key={mainCategory} className="category-menu-item">
+                    {/* Menu chính */}
+                    <div
+                      className="category-main-menu"
+                      onClick={() => toggleMainMenu(mainCategory)}
+                    >
+                      <span className="category-icon">
+                        {expandedMenus[mainCategory] ? "📂" : "📁"}
+                      </span>
+                      <span className="category-name">{mainCategory}</span>
+                      <span className="category-arrow">
+                        {expandedMenus[mainCategory] ? "▼" : "▶"}
+                      </span>
+                    </div>
+
+                    {/* Sub menu */}
+                    {expandedMenus[mainCategory] && (
+                      <div className="category-sub-menu">
+                        {Object.entries(subCategories).map(
+                          ([subCategory, items]) => (
+                            <div key={subCategory} className="sub-menu-item">
+                              {/* Sub menu header */}
+                              <div
+                                className="sub-menu-header"
+                                onClick={() =>
+                                  toggleSubMenu(
+                                    `${mainCategory}-${subCategory}`
+                                  )
+                                }
+                              >
+                                <span className="sub-category-icon">
+                                  {expandedSubMenus[
+                                    `${mainCategory}-${subCategory}`
+                                  ]
+                                    ? "📂"
+                                    : "📁"}
+                                </span>
+                                <span className="sub-category-name">
+                                  {subCategory}
+                                </span>
+                                <span className="sub-category-arrow">
+                                  {expandedSubMenus[
+                                    `${mainCategory}-${subCategory}`
+                                  ]
+                                    ? "▼"
+                                    : "▶"}
+                                </span>
+                              </div>
+
+                              {/* Items trong sub menu */}
+                              {expandedSubMenus[
+                                `${mainCategory}-${subCategory}`
+                              ] && (
+                                <div className="sub-menu-items">
+                                  {items.map((item) => {
+                                    const category = categories.find(
+                                      (cat) => cat.name === item
+                                    );
+                                    if (!category) return null;
+
+                                    return (
+                                      <div
+                                        key={category.id}
+                                        className="filter-checkbox sub-item"
+                                      >
+                                        <label>
+                                          <input
+                                            type="checkbox"
+                                            checked={
+                                              filter.category_id === category.id
+                                            }
+                                            onChange={() =>
+                                              filter.category_id === category.id
+                                                ? handleChange("categories", [])
+                                                : handleChange("categories", [
+                                                    category.id,
+                                                  ])
+                                            }
+                                          />
+                                          {category.name}
+                                        </label>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
             </div>
           </>
         )}
@@ -214,13 +386,81 @@ export const FilterProducts = ({
                 </div>
               ))}
             </div>
+
+            {/* Quick Filter Presets */}
+            <div className="filter-section">
+              <div className="filter-section-title">⚡ Sắp xếp nhanh</div>
+              <div className="filter-presets">
+                <button
+                  className={`preset-btn ${filter.preset === "new_arrivals" ? "active" : ""}`}
+                  onClick={() => handleChange("preset", "new_arrivals")}
+                >
+                  🆕 Mới nhất
+                </button>
+                <button
+                  className={`preset-btn ${filter.preset === "best_sellers" ? "active" : ""}`}
+                  onClick={() => handleChange("preset", "best_sellers")}
+                >
+                  🔥 Bán chạy
+                </button>
+                <button
+                  className={`preset-btn ${filter.preset === "price_low_to_high" ? "active" : ""}`}
+                  onClick={() => handleChange("preset", "price_low_to_high")}
+                >
+                  💰 Giá tăng dần
+                </button>
+                <button
+                  className={`preset-btn ${filter.preset === "price_high_to_low" ? "active" : ""}`}
+                  onClick={() => handleChange("preset", "price_high_to_low")}
+                >
+                  💰 Giá giảm dần
+                </button>
+                <button
+                  className={`preset-btn ${filter.preset === "name_a_to_z" ? "active" : ""}`}
+                  onClick={() => handleChange("preset", "name_a_to_z")}
+                >
+                  📝 A → Z
+                </button>
+              </div>
+            </div>
           </>
         )}
+
+        {/* Filter History */}
+        <div className="filter-section">
+          <div className="filter-section-title">📚 Lịch sử bộ lọc</div>
+          {getFilterHistory().length > 0 ? (
+            <div className="filter-history">
+              {getFilterHistory()
+                .slice(0, 3)
+                .map((historyFilter: any, index: number) => (
+                  <button
+                    key={index}
+                    className="history-btn"
+                    onClick={() => {
+                      setFilter(historyFilter);
+                      saveFilterHistory(historyFilter);
+                    }}
+                  >
+                    🔄 {Object.keys(historyFilter).length} bộ lọc
+                  </button>
+                ))}
+            </div>
+          ) : (
+            <div className="no-history">Chưa có lịch sử bộ lọc</div>
+          )}
+        </div>
 
         {/* Nút thao tác */}
         <div className="filter-section" style={{ borderBottom: "none" }}>
           <div className="d-flex justify-content-center gap-3">
-            <button className="filter-button btn-filter" onClick={onApply}>
+            <button
+              className="filter-button btn-filter"
+              onClick={() => {
+                saveFilterHistory(filter);
+                onApply();
+              }}
+            >
               ⚡ Lọc sản phẩm
             </button>
             <button className="filter-button btn-clear" onClick={onClear}>

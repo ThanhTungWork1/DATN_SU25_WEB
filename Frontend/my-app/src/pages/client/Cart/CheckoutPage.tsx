@@ -293,7 +293,7 @@ const CheckoutPage = () => {
                   <div className="d-flex justify-content-between mb-2">
                     <span>Giảm giá:</span>
                     <span className="fw-semibold text-success">
-                      -{discountAmount.toLocaleString("vi-VN")} VND
+                      -{Math.round(discountAmount).toLocaleString("vi-VN")} VND
                     </span>
                   </div>
                 )}
@@ -301,7 +301,7 @@ const CheckoutPage = () => {
                 <div className="d-flex justify-content-between mb-4">
                   <span className="fs-5 fw-bold">Tổng cộng:</span>
                   <span className="fs-4 fw-bold text-danger">
-                    {finalAmount.toLocaleString("vi-VN")} VND
+                    {Math.round(finalAmount).toLocaleString("vi-VN")} VND
                   </span>
                 </div>
                 <button

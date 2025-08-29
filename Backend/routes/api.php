@@ -97,6 +97,7 @@ Route::get('/payments/vnpay/return', [VNPayController::class, 'callback']);
 Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/search', [ProductController::class, 'search']);
+    Route::get('/search/suggestions', [ProductController::class, 'getSearchSuggestions']);
     Route::get('/featured', [ProductController::class, 'featured']);
     Route::get('/category/{categoryId}', [ProductController::class, 'byCategory']);
     Route::get('/{id}', [ProductController::class, 'show']);

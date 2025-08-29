@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Tổng đơn hàng"
+              title="Tổng đơn hàng thành công"
               value={data?.orders_in_period || data?.orders_today || 0}
               prefix={<ClockCircleOutlined style={{ color: "#1890ff" }} />}
               valueStyle={{ color: "#1890ff", fontWeight: "bold" }}
@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Người dùng mới"
+              title="Tổng người dùng"
               value={
                 data?.new_users_in_period || data?.new_users_this_month || 0
               }

@@ -174,7 +174,7 @@ const OrderSuccess = () => {
                     <div className="col-md-6">
                       <div className="d-flex justify-content-between mb-2">
                         <span>Tạm tính:</span>
-                        <span className="fw-semibold">{(orderData.totalAmount - (orderData.shippingFee || 30000) + (orderData.discountAmount || 0)).toLocaleString('vi-VN')} VND</span>
+                        <span className="fw-semibold">{Math.round(orderData.totalAmount - (orderData.shippingFee || 30000) + (orderData.discountAmount || 0)).toLocaleString('vi-VN')} VND</span>
                       </div>
                       <div className="d-flex justify-content-between mb-2">
                         <span>Phí vận chuyển:</span>
@@ -183,7 +183,7 @@ const OrderSuccess = () => {
                       {orderData.discountAmount > 0 && (
                         <div className="d-flex justify-content-between mb-2">
                           <span>Giảm giá:</span>
-                          <span className="fw-semibold text-success">-{orderData.discountAmount.toLocaleString('vi-VN')} VND</span>
+                          <span className="fw-semibold text-success">-{Math.round(orderData.discountAmount).toLocaleString('vi-VN')} VND</span>
                         </div>
                       )}
                     </div>

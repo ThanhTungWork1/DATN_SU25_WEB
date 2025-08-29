@@ -255,6 +255,8 @@ export const ListProduct = () => {
               currentPage={pagination.current_page}
               totalPages={pagination.total_pages}
               onPageChange={setCurrentPage}
+              totalItems={pagination.total}
+              itemsPerPage={pagination.per_page}
             />
           </>
         )}

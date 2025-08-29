@@ -81,9 +81,19 @@ export const getProductsPaginatedAndFiltered = async (params: any) => {
 };
 
 /**
+ * Lấy search suggestions từ backend
+ */
+export const getSearchSuggestions = async (query: string) => {
+  const response = await config.get("/product/search/suggestions", {
+    params: { q: query },
+  });
+  return response.data;
+};
+
+/**
  * Lấy chi tiết sản phẩm từ backend
  */
 export const getProductDetail = async (id: string | number) => {
-    const response = await config.get(`/product/${id}`);
+  const response = await config.get(`/product/${id}`);
   return response.data;
 };
