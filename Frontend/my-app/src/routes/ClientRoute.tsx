@@ -47,7 +47,9 @@ const ClientRoute = () => {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/orders" element={<OrderList />} />
               </Route>
-              <Route path="/wishlist" element={<LikeProduct />} />
+              <Route element={<RequireAuth allowedRoles={["user"]} />}>
+                <Route path="/wishlist" element={<LikeProduct />} />
+              </Route>
               <Route path="/contact" element={<ContactClient />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/payment/success" element={<PaymentSuccess />} />

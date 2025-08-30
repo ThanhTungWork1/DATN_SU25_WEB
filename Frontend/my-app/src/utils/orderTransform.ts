@@ -64,17 +64,23 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
     const price = safeNumber((item as any).price);
     const quantity = safeNumber(item.quantity);
 
-    // 🔍 DEBUG: Log để kiểm tra image_url (only for order 95)
-    if (backendOrder.id === 95) {
-      console.log("🔍 TRANSFORM ITEM:", {
-        item_id: item.id,
-        variant_id: item.variant_id,
-        image_url: (item as any).image_url,
-        variant_product_image: (item as any).variant?.product?.image,
-        final_image:
-          (item as any).image_url || (item as any).variant?.product?.image,
-      });
-    }
+    // 🔍 DEBUG: Log để kiểm tra image_url cho tất cả items
+    console.log("🔍 TRANSFORM ITEM:", {
+      order_id: backendOrder.id,
+      item_id: item.id,
+      variant_id: item.variant_id,
+      image_url: (item as any).image_url,
+      variant_image_url: (item as any).variant_image_url,
+      variant_image_url_accessor: (item as any).variant?.image_url,
+      product_image_url: (item as any).variant?.product?.image_url,
+      product_image: (item as any).variant?.product?.image,
+      final_image:
+        (item as any).image_url ||
+        (item as any).variant_image_url ||
+        (item as any).variant?.image_url ||
+        (item as any).variant?.product?.image_url ||
+        (item as any).variant?.product?.image,
+    });
 
     return {
       id: item.id,
@@ -82,7 +88,13 @@ export const transformOrder = (backendOrder: BackendOrder): UseOrder => {
       product_id: item.variant.product.id,
       product_name: `${item.variant.product.name} (${item.variant.color.name}, ${item.variant.size.name})`,
       product_image:
-        (item as any).image_url || (item as any).variant?.product?.image,
+        // Ưu tiên ảnh mới nhất từ sản phẩm hiện tại
+        (item as any).variant?.image_url ||
+        (item as any).variant?.product?.image_url ||
+        (item as any).variant?.product?.image ||
+        // Fallback về snapshot nếu không có ảnh mới
+        (item as any).image_url ||
+        (item as any).variant_image_url,
       quantity,
       price,
       total: price * quantity,

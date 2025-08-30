@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
 use App\Models\Voucher;
+use App\Models\VoucherUsage;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,36 @@ class ClientOrderController extends Controller
 
             // Convert to array manually to ensure relationships are included
             $ordersData = $orders->getCollection()->map(function($order) {
+                // 🔍 DEBUG: Log ảnh của từng item trong order
+                if ($order->items && count($order->items) > 0) {
+                    foreach ($order->items as $item) {
+                        // 🔧 FIX: Đảm bảo có ảnh bằng cách sử dụng fallback logic
+                        $finalImageUrl = $item->image_url ?? 
+                                       $item->variant_image_url ?? 
+                                       ($item->variant && $item->variant->product ? $item->variant->product->image_url : null) ??
+                                       ($item->variant && $item->variant->product ? asset('storage/' . $item->variant->product->image) : null);
+                        
+                        // Cập nhật image_url nếu chưa có
+                        if (!$item->image_url && $finalImageUrl) {
+                            $item->image_url = $finalImageUrl;
+                        }
+                        
+                        Log::info('🔍 ORDER ITEM IMAGE DEBUG:', [
+                            'order_id' => $order->id,
+                            'item_id' => $item->id,
+                            'variant_id' => $item->variant_id,
+                            'variant_image' => $item->variant_image,
+                            'image_url' => $item->image_url,
+                            'variant_image_url' => $item->variant_image_url,
+                            'variant_product_image' => $item->variant && $item->variant->product ? $item->variant->product->image : 'N/A',
+                            'variant_product_image_url' => $item->variant && $item->variant->product ? $item->variant->product->image_url : 'N/A',
+                            'final_image_url' => $finalImageUrl,
+                            'has_variant_image' => !empty($item->variant_image),
+                            'has_image_url' => !empty($item->image_url),
+                            'has_variant_product_image' => $item->variant && $item->variant->product && !empty($item->variant->product->image)
+                        ]);
+                    }
+                }
                 return $order->toArray();
             })->toArray();
 
@@ -254,8 +285,10 @@ class ClientOrderController extends Controller
                     'product_name' => $variant->product->name,
                     'variant_color_name' => $variant->color->name ?? null,
                     'variant_size_name' => $variant->size->name ?? null,
-                    // 🔧 FIX: Ưu tiên ảnh variant thay vì ảnh product
-                    'image_url' => $variant->image ? asset('storage/' . $variant->image) : ($variant->product->image_url ?? null)
+                    'variant_sku' => $variant->sku ?? null,
+                    // 🔧 FIX: Lưu cả variant_image và image_url để đảm bảo có ảnh
+                    'variant_image' => $variant->image ?? null,
+                    'image_url' => $variant->image_url ?? $variant->product->image_url ?? null
                 ];
                 
                 // 🔍 DEBUG: Log ảnh được lưu
@@ -299,6 +332,11 @@ class ClientOrderController extends Controller
                     throw new \Exception('Mã giảm giá không hợp lệ.');
                 }
 
+                // Kiểm tra user đã sử dụng voucher này chưa
+                if ($voucher->isUsedByUser($user->id)) {
+                    throw new \Exception('Bạn đã sử dụng voucher này rồi.');
+                }
+
                 // Chỉ kiểm tra điều kiện về giá trị đơn hàng vì các điều kiện khác đã được lọc
                 // if ($total_amount < $voucher->min_order_amount) {
                 //     throw new \Exception('Đơn hàng chưa đạt giá trị tối thiểu là ' . number_format($voucher->min_order_amount) . 'đ để áp dụng mã này.');
@@ -331,7 +369,7 @@ class ClientOrderController extends Controller
                 }
             }
 
-            // Miễn phí vận chuyển cho đơn hàng trên 500k
+            // Miễn phí vận chuyển cho đơn hàng trên 500k (chỉ áp dụng khi đặt hàng)
             if ($total_amount >= 500000) {
                 $shipping_fee = 0;
             }
@@ -411,6 +449,15 @@ class ClientOrderController extends Controller
 
             // Cập nhật lượt sử dụng voucher sau khi đơn hàng thành công
             if (isset($voucher) && $voucher) {
+                // Lưu thông tin sử dụng voucher vào bảng voucher_usage
+                $voucher->usage()->create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'discount_amount' => $discount_amount,
+                    'used_at' => now()
+                ]);
+                
+                // Tăng số lượt đã sử dụng
                 $voucher->increment('used_count');
             }
 
@@ -612,7 +659,7 @@ class ClientOrderController extends Controller
         try {
             $user = Auth::user();
 
-            $validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'];
+            $validStatuses = ['pending', 'confirmed', 'processing', 'shipping', 'delivered', 'completed', 'cancelled', 'refunded', 'waiting_for_payment'];
 
             if (!in_array($status, $validStatuses)) {
                 return response()->json([
@@ -627,10 +674,15 @@ class ClientOrderController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
 
+            // Convert to array manually to ensure relationships are included
+            $ordersData = $orders->getCollection()->map(function($order) {
+                return $order->toArray();
+            })->toArray();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lấy đơn hàng theo trạng thái thành công',
-                'data' => $orders->items(),
+                'data' => $ordersData,
                 'pagination' => [
                     'current_page' => $orders->currentPage(),
                     'last_page' => $orders->lastPage(),

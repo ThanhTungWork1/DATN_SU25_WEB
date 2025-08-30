@@ -335,7 +335,14 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                 remainingTime !== "Đã hết hạn" && (
                   <button
                     onClick={() => repay({ orderId: order.id })}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 text-white rounded transition-colors font-semibold"
+                    style={{ backgroundColor: "#f59e0b", border: "none" }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#d97706")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#f59e0b")
+                    }
                     disabled={isRepaying}
                   >
                     {isRepaying ? "Đang xử lý..." : "Thanh toán ngay"}

@@ -39,4 +39,43 @@ class FavoriteController extends Controller
 
         return response()->json(['message' => 'Đã xoá khỏi yêu thích']);
     }
+
+    // Toggle yêu thích (thêm nếu chưa có, xóa nếu đã có)
+    public function toggle(Request $request, $productId)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id'
+        ]);
+
+        $user = $request->user();
+        $isFavorited = $user->favorites()->where('product_id', $productId)->exists();
+
+        if ($isFavorited) {
+            $user->favorites()->detach($productId);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xoá khỏi yêu thích',
+                'is_favorited' => false
+            ]);
+        } else {
+            $user->favorites()->attach($productId);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm vào yêu thích',
+                'is_favorited' => true
+            ]);
+        }
+    }
+
+    // Kiểm tra sản phẩm có trong yêu thích không
+    public function check(Request $request, $productId)
+    {
+        $user = $request->user();
+        $isFavorited = $user->favorites()->where('product_id', $productId)->exists();
+
+        return response()->json([
+            'success' => true,
+            'is_favorited' => $isFavorited
+        ]);
+    }
 }

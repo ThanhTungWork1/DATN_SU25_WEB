@@ -1,18 +1,36 @@
 import { Breadcrumb } from "../../../components/Breadcrumb";
-import { useWishlistContext } from "../../../provider/WishlistContext";
+import { useFavoriteContext } from "../../../provider/FavoriteProvider";
 import { getAllProducts } from "../../../api/ApiProduct";
 import { BoxProduct } from "../../../components/BoxProduct";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { TokenManager } from "../../../utils/tokenUtils";
+import { toast } from "sonner";
 import "../../../assets/styles/likeSP.css";
 import "../../../assets/styles/mess-fb-phone.css";
 
 const LikeProduct = () => {
-  const { wishlist, removeFromWishlist } = useWishlistContext();
+  const navigate = useNavigate();
+  const {
+    favorites,
+    removeFromFavorite,
+    loading: favoritesLoading,
+  } = useFavoriteContext();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Kiểm tra đăng nhập
+  useEffect(() => {
+    const token = TokenManager.getUserToken();
+    if (!token) {
+      toast.error("Vui lòng đăng nhập để xem danh sách yêu thích");
+      navigate("/login");
+      return;
+    }
+  }, [navigate]);
 
   // Lấy toàn bộ sản phẩm khi vào trang
   useEffect(() => {
@@ -28,10 +46,8 @@ const LikeProduct = () => {
       });
   }, []);
 
-  // Lọc sản phẩm yêu thích
-  const likedProducts = allProducts.filter((p) =>
-    wishlist.includes(String(p.id))
-  );
+  // Lọc sản phẩm yêu thích từ favorites
+  const likedProducts = favorites;
   // Phân trang client
   const totalPages = Math.ceil(likedProducts.length / PAGE_SIZE) || 1;
   const paginatedProducts = likedProducts.slice(
@@ -39,17 +55,16 @@ const LikeProduct = () => {
     currentPage * PAGE_SIZE
   );
 
-  // Nếu có id wishlist không còn trong products, tự động xóa khỏi wishlist
-  useEffect(() => {
-    if (!loading && allProducts.length > 0 && wishlist.length > 0) {
-      const productIds = allProducts.map((p) => String(p.id));
-      wishlist.forEach((id) => {
-        if (!productIds.includes(id)) {
-          removeFromWishlist(id);
-        }
-      });
-    }
-  }, [loading, allProducts, wishlist, removeFromWishlist]);
+  // Nếu chưa đăng nhập, hiển thị loading
+  if (favoritesLoading) {
+    return (
+      <div className="product-list-container">
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <p>Đang tải danh sách yêu thích...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="product-list-container">
@@ -91,7 +106,9 @@ const LikeProduct = () => {
             {totalPages > 1 && (
               <nav className="pagination-nav">
                 <ul className="pagination justify-content-center">
-                  <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
+                  <li
+                    className={`page-item${currentPage === 1 ? " disabled" : ""}`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => setCurrentPage(currentPage - 1)}
@@ -100,20 +117,24 @@ const LikeProduct = () => {
                       &laquo;
                     </button>
                   </li>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <li
-                      key={page}
-                      className={`page-item${page === currentPage ? " active" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(page)}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <li
+                        key={page}
+                        className={`page-item${page === currentPage ? " active" : ""}`}
                       >
-                        {page}
-                      </button>
-                    </li>
-                  ))}
-                  <li className={`page-item${currentPage === totalPages ? " disabled" : ""}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    )
+                  )}
+                  <li
+                    className={`page-item${currentPage === totalPages ? " disabled" : ""}`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => setCurrentPage(currentPage + 1)}

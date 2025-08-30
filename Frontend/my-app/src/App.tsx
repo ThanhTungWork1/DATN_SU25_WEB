@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
-import { WishlistProvider } from "./provider/WishlistContext";
+import { FavoriteProvider } from "./provider/FavoriteProvider";
 import ClientRoute from "./routes/ClientRoute";
 import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
@@ -16,13 +16,19 @@ function App() {
     AOS.init({ once: true });
   }, []);
   return (
-    <WishlistProvider>
+    <FavoriteProvider>
       <Routes>
         <Route path="/*" element={<ClientRoute />} />
         <Route path="/admin/*" element={<AdminRoute />} />
       </Routes>
-      <Toaster position="top-right" theme="light" richColors closeButton />
-    </WishlistProvider>
+      <Toaster
+        position="top-right"
+        theme="light"
+        richColors
+        closeButton
+        duration={1000}
+      />
+    </FavoriteProvider>
   );
 }
 

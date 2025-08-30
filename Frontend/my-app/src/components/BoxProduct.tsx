@@ -1,6 +1,6 @@
 import type { Product } from "../types/ProductType";
 import { Link } from "react-router-dom";
-import { useWishlistContext } from "../provider/WishlistContext";
+import { useFavoriteContext } from "../provider/FavoriteProvider";
 import "../assets/styles/boxSP.css";
 
 interface BoxProductProps {
@@ -8,9 +8,8 @@ interface BoxProductProps {
 }
 
 export const BoxProduct = ({ product }: BoxProductProps) => {
-  const { isInWishlist, addToWishlist, removeFromWishlist } =
-    useWishlistContext();
-  const liked = isInWishlist(product.id);
+  const { isInFavorite, toggleFavorite } = useFavoriteContext();
+  const liked = isInFavorite(product.id);
 
   // ✅ Sửa lại logic: ưu tiên image_url từ backend
   const mainImage =
@@ -32,7 +31,7 @@ export const BoxProduct = ({ product }: BoxProductProps) => {
         className="wishlist-icon"
         onClick={(e) => {
           e.stopPropagation();
-          liked ? removeFromWishlist(product.id) : addToWishlist(product.id);
+          toggleFavorite(product.id);
         }}
         title={liked ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"}
       >

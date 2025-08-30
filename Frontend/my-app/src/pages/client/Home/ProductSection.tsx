@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../utils/axiosInstance";
-import { useWishlistContext } from "../../../provider/WishlistContext";
+import { useFavoriteContext } from "../../../provider/FavoriteProvider";
 
 type Product = {
   id: number;
@@ -33,8 +33,7 @@ const ProductSection = ({
   const [products, setProducts] = useState<Product[]>([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const navigate = useNavigate();
-  const { isInWishlist, addToWishlist, removeFromWishlist } =
-    useWishlistContext();
+  const { isInFavorite, toggleFavorite } = useFavoriteContext();
 
   const handleProductClick = (productId: number) => {
     navigate(`/products/${productId}`);
@@ -117,18 +116,15 @@ const ProductSection = ({
                 className="wishlist-icon"
                 onClick={(e) => {
                   e.stopPropagation();
-                  const liked = isInWishlist(product.id);
-                  liked
-                    ? removeFromWishlist(product.id)
-                    : addToWishlist(product.id);
+                  toggleFavorite(product.id);
                 }}
                 title={
-                  isInWishlist(product.id)
+                  isInFavorite(product.id)
                     ? "Bỏ khỏi yêu thích"
                     : "Thêm vào yêu thích"
                 }
               >
-                {isInWishlist(product.id) ? (
+                {isInFavorite(product.id) ? (
                   <svg
                     width="18"
                     height="18"

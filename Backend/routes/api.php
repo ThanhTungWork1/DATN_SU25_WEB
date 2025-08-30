@@ -193,7 +193,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('favorites')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
-        Route::post('/{product_id}', [FavoriteController::class, 'toggle']);
+        Route::post('/add', [FavoriteController::class, 'add']);
+        Route::delete('/{product_id}', [FavoriteController::class, 'remove']);
+        Route::post('/{product_id}/toggle', [FavoriteController::class, 'toggle']);
+        Route::get('/{product_id}/check', [FavoriteController::class, 'check']);
     });
 
     // Orders cho user
@@ -245,11 +248,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // });
 
     // Vouchers
-    Route::prefix('vouchers')->group(function () {
+    Route::prefix('vouchers')->middleware('auth:sanctum')->group(function () {
         Route::get('/', [VoucherController::class, 'index']);
         Route::get('/{code}', [VoucherController::class, 'show']);
         Route::post('/validate', [VoucherController::class, 'validateVoucher']); // Route cho user validate voucher
     });
+
+
 
     // Payments (VNPay)
     Route::prefix('payments')->group(function () {

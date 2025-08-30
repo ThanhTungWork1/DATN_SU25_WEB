@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Voucher;
 use App\Models\Order;
+use App\Models\VoucherUsage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -33,17 +34,17 @@ class VoucherController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'Voucher not found'], 404);
             }
 
-            // Lấy lịch sử sử dụng từ các đơn hàng
-            $usage_history = Order::where('voucher_id', $id)
-                ->with('user') // Eager load thông tin user
+            // Lấy lịch sử sử dụng từ bảng voucher_usage
+            $usage_history = VoucherUsage::where('voucher_id', $id)
+                ->with(['user', 'order']) // Eager load thông tin user và order
                 ->get()
-                ->map(function ($order) {
+                ->map(function ($usage) {
                     return [
-                        'user_name' => $order->user ? $order->user->name : 'N/A',
-                        'user_email' => $order->user ? $order->user->email : 'N/A',
-                        'order_code' => $order->code,
-                        'discount_amount' => $order->discount_amount,
-                        'used_at' => $order->created_at->toDateTimeString(),
+                        'user_name' => $usage->user ? $usage->user->name : 'N/A',
+                        'user_email' => $usage->user ? $usage->user->email : 'N/A',
+                        'order_code' => $usage->order ? $usage->order->order_code : 'N/A',
+                        'discount_amount' => $usage->discount_amount,
+                        'used_at' => $usage->used_at->toDateTimeString(),
                     ];
                 });
 
@@ -77,6 +78,17 @@ class VoucherController extends Controller
 
         if (!$voucher) {
             return response()->json(['message' => 'Voucher không tồn tại'], 404);
+        }
+
+        // Lấy user ID từ request (cần đăng nhập)
+        $userId = $request->user() ? $request->user()->id : null;
+        if (!$userId) {
+            return response()->json(['message' => 'Vui lòng đăng nhập để sử dụng voucher'], 401);
+        }
+
+        // Kiểm tra user đã sử dụng voucher này chưa
+        if ($voucher->isUsedByUser($userId)) {
+            return response()->json(['message' => 'Bạn đã sử dụng voucher này rồi'], 400);
         }
 
         if ($voucher->start_date && now()->lt(Carbon::parse($voucher->start_date))) {
