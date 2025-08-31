@@ -62,9 +62,6 @@ export default function OrderList() {
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [statistics, setStatistics] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
@@ -84,32 +81,11 @@ export default function OrderList() {
     };
   }, [searchTerm]);
 
-  // Auto-refresh để cập nhật đơn hàng mới
+  // Load dữ liệu lần đầu
   useEffect(() => {
-    // Lần đầu load
     fetchData();
     fetchStatistics();
-
-    // Auto-refresh mỗi 10 giây (chỉ khi được bật)
-    const interval = setInterval(() => {
-      if (autoRefreshEnabled) {
-        fetchData(
-          pagination.currentPage,
-          debouncedSearchTerm,
-          statusFilter,
-          paymentFilter,
-          dateRange ? dateRange[0] : "",
-          dateRange ? dateRange[1] : "",
-          true // isAutoRefresh = true
-        );
-        fetchStatistics();
-      }
-    }, 10000); // 10 giây
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [autoRefreshEnabled]); // Chạy lại khi autoRefreshEnabled thay đổi
+  }, []); // Chỉ chạy một lần khi component mount
 
   // Refetch khi có thay đổi filter
   useEffect(() => {
@@ -129,14 +105,9 @@ export default function OrderList() {
     status = "",
     isPaid = "",
     dateFrom = "",
-    dateTo = "",
-    isAutoRefresh = false
+    dateTo = ""
   ) => {
-    if (isAutoRefresh) {
-      setIsAutoRefreshing(true);
-    } else {
-      setLoading(true);
-    }
+    setLoading(true);
 
     try {
       const params: any = { page, search };
@@ -155,23 +126,11 @@ export default function OrderList() {
         pageSize: paginatedData.per_page,
         total: paginatedData.total,
       });
-
-      // Cập nhật thời gian cuối cùng
-      setLastUpdate(new Date());
-
-      // Hiển thị thông báo nếu có đơn hàng mới (chỉ khi auto-refresh)
-      if (isAutoRefresh && paginatedData.data.length > orders.length) {
-        const newOrdersCount = paginatedData.data.length - orders.length;
-        message.success(`Có ${newOrdersCount} đơn hàng mới!`);
-      }
     } catch (error) {
-      if (!isAutoRefresh) {
-        message.error("Không thể tải danh sách đơn hàng.");
-      }
+      message.error("Không thể tải danh sách đơn hàng.");
       console.error("Fetch orders error:", error);
     } finally {
       setLoading(false);
-      setIsAutoRefreshing(false);
     }
   };
 
@@ -316,12 +275,36 @@ export default function OrderList() {
           );
         }
 
+        // 🔧 FIX: Xử lý trạng thái refunded
+        if (record.status === "refunded") {
+          return (
+            <span
+              style={{
+                padding: "4px 8px",
+                borderRadius: 4,
+                backgroundColor: "#fff7e6",
+                color: "#fa8c16",
+                border: "1px solid #ffd591",
+                fontSize: 12,
+                fontWeight: 500,
+                minWidth: 100,
+                textAlign: "center",
+              }}
+            >
+              Đã hoàn tiền
+            </span>
+          );
+        }
+
         // Chỉ hiển thị dropdown thanh toán khi đã giao hàng
         const allowedPaymentStatuses = getAllowedPaymentStatuses(
           record.status,
           record.payment_method || "COD"
         );
-        const displayValue = getPaymentStatusDisplayText(is_paid);
+        const displayValue = getPaymentStatusDisplayText(
+          is_paid,
+          record.status
+        );
 
         return (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -340,72 +323,9 @@ export default function OrderList() {
             >
               {displayValue}
             </span>
-            {/* Chỉ hiển thị dropdown khi đã giao hàng VÀ chưa thanh toán */}
-            {record.status === "delivered" && !is_paid && (
-              <Select
-                value={null}
-                placeholder="Thay đổi"
-                style={{ width: 100 }}
-                size="small"
-                onChange={async (newPaymentStatus) => {
-                  const validation = canChangePaymentStatus(
-                    record.status,
-                    record.is_paid,
-                    newPaymentStatus,
-                    record.payment_method || "COD"
-                  );
-                  if (!validation.allowed) {
-                    message.error(validation.reason);
-                    return;
-                  }
-
-                  // Cập nhật thanh toán
-                  await handleUpdateStatus(
-                    record.id,
-                    "is_paid",
-                    newPaymentStatus
-                  );
-
-                  // Tự động chuyển trạng thái đơn hàng nếu cần
-                  if (validation.autoUpdateOrderStatus) {
-                    setTimeout(async () => {
-                      await handleUpdateStatus(
-                        record.id,
-                        "status",
-                        validation.autoUpdateOrderStatus
-                      );
-                      message.success(
-                        `Đã thanh toán và tự động chuyển sang '${validation.autoUpdateOrderStatus === "completed" ? "Đã hoàn thành" : validation.autoUpdateOrderStatus}'`
-                      );
-                    }, 500);
-                  }
-                }}
-                allowClear
-              >
-                {PAYMENT_STATUS_OPTIONS.map((option) => (
-                  <Option
-                    key={option.value}
-                    value={option.value}
-                    disabled={
-                      !allowedPaymentStatuses.includes(option.value) ||
-                      option.value === is_paid
-                    }
-                    style={{
-                      color:
-                        !allowedPaymentStatuses.includes(option.value) ||
-                        option.value === is_paid
-                          ? "#ccc"
-                          : "inherit",
-                    }}
-                  >
-                    {option.label}
-                    {!allowedPaymentStatuses.includes(option.value) &&
-                      " (Không khả dụng)"}
-                    {option.value === is_paid && " (Hiện tại)"}
-                  </Option>
-                ))}
-              </Select>
-            )}
+            {/* 🔧 FIX: Bỏ dropdown thay đổi cho đơn hàng đã giao hàng */}
+            {/* Lý do: Đã giao hàng = đã nhận hàng = đã thanh toán xong */}
+            {/* Nếu có vấn đề, khách có thể yêu cầu hoàn tiền/trả hàng */}
           </div>
         );
       },
@@ -446,11 +366,6 @@ export default function OrderList() {
     paymentFilter,
     dateRange,
   ]);
-
-  // Load statistics khi component mount
-  useEffect(() => {
-    fetchStatistics();
-  }, []);
 
   const handleUpdateStatus = async (
     orderId: number,
@@ -650,21 +565,6 @@ export default function OrderList() {
                   }}
                 />
               </Tooltip>
-              <div style={{ fontSize: "12px", color: "#666" }}>
-                <div style={{ marginBottom: "4px" }}>
-                  <Button
-                    size="small"
-                    type={autoRefreshEnabled ? "primary" : "default"}
-                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                  >
-                    {autoRefreshEnabled ? "🔄 Tắt tự động" : "⏸️ Bật tự động"}
-                  </Button>
-                </div>
-                {isAutoRefreshing && (
-                  <span style={{ color: "#1890ff" }}>🔄 Đang cập nhật...</span>
-                )}
-                <div>Cập nhật: {lastUpdate.toLocaleTimeString("vi-VN")}</div>
-              </div>
             </Space>
           </div>
         </Col>

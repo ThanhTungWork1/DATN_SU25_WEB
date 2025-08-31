@@ -6,6 +6,28 @@ import { TokenManager } from "../../utils/tokenUtils";
 import React, { useState } from "react";
 import "../../assets/styles/register.css";
 
+// CSS để fix notification positioning
+const notificationStyles = `
+  .ant-message {
+    top: 80px !important;
+    right: 0px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+  }
+  .ant-message-notice {
+    margin-bottom: 8px !important;
+    max-width: 400px !important;
+    width: auto !important;
+  }
+`;
+
+// Inject CSS vào head
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = notificationStyles;
+  document.head.appendChild(style);
+}
+
 export const Register = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();

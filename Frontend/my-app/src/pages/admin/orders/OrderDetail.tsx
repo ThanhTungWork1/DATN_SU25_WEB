@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import "../../../assets/styles/admin-responsive.css";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -306,8 +306,20 @@ export default function OrderDetail() {
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Thanh toán">
-                <Tag color={order.is_paid ? "green" : "red"}>
-                  {order.is_paid ? "Đã thanh toán" : "Chưa thanh toán"}
+                <Tag
+                  color={
+                    order.status === "refunded"
+                      ? "orange"
+                      : order.is_paid
+                        ? "green"
+                        : "red"
+                  }
+                >
+                  {order.status === "refunded"
+                    ? "Đã hoàn tiền"
+                    : order.is_paid
+                      ? "Đã thanh toán"
+                      : "Chưa thanh toán"}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán">
@@ -459,8 +471,20 @@ export default function OrderDetail() {
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Thanh toán">
-                <Tag color={order.is_paid ? "green" : "red"}>
-                  {order.is_paid ? "Đã thanh toán" : "Chưa thanh toán"}
+                <Tag
+                  color={
+                    order.status === "refunded"
+                      ? "orange"
+                      : order.is_paid
+                        ? "green"
+                        : "red"
+                  }
+                >
+                  {order.status === "refunded"
+                    ? "Đã hoàn tiền"
+                    : order.is_paid
+                      ? "Đã thanh toán"
+                      : "Chưa thanh toán"}
                 </Tag>
               </Descriptions.Item>
             </Descriptions>

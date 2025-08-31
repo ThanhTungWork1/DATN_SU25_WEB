@@ -3,6 +3,28 @@ import { Link } from "react-router-dom";
 import { useForgotPassword } from "../../hook/useForgotPassword";
 import "../../assets/styles/login.css";
 
+// CSS để fix notification positioning
+const notificationStyles = `
+  .ant-message {
+    top: 80px !important;
+    right: 0px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+  }
+  .ant-message-notice {
+    margin-bottom: 8px !important;
+    max-width: 400px !important;
+    width: auto !important;
+  }
+`;
+
+// Inject CSS vào head
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = notificationStyles;
+  document.head.appendChild(style);
+}
+
 const ForgotPassword = () => {
   const { forgotPassword, loading } = useForgotPassword();
   const [form] = Form.useForm();

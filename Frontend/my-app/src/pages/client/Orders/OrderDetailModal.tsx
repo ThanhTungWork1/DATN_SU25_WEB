@@ -116,6 +116,11 @@ const OrderDetailModal = ({
   const getPaymentMethodDisplay = () => {
     if (!order) return "";
 
+    // 🔧 FIX: Kiểm tra trạng thái refunded trước
+    if (order.status === "refunded") {
+      return "Đã hoàn tiền";
+    }
+
     // Hiển thị trạng thái thanh toán dựa trên is_paid
     if (order.is_paid) {
       return "Đã thanh toán";

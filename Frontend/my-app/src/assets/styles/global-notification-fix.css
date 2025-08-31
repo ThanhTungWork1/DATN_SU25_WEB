@@ -1,0 +1,53 @@
+/* ===== GLOBAL NOTIFICATION FIX - SIMPLE & ISOLATED ===== */
+
+/* Sonner Toaster - ONLY notifications */
+[data-sonner-toaster] {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+}
+
+/* Ant Design Message - ONLY notifications */
+.ant-message:not(.ant-modal .ant-message) {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+}
+
+.ant-message-notice:not(.ant-modal .ant-message-notice) {
+    margin-bottom: 8px !important;
+    max-width: 350px !important;
+    width: auto !important;
+}
+
+/* Ant Design Notification - ONLY notifications */
+.ant-notification:not(.ant-modal .ant-notification) {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+}
+
+.ant-notification-notice:not(.ant-modal .ant-notification-notice) {
+    margin-bottom: 8px !important;
+    max-width: 350px !important;
+    width: auto !important;
+}
+
+/* Mobile responsive - ONLY notifications */
+@media (max-width: 768px) {
+
+    [data-sonner-toaster],
+    .ant-message:not(.ant-modal .ant-message),
+    .ant-notification:not(.ant-modal .ant-notification) {
+        top: 70px !important;
+        right: 10px !important;
+        left: 10px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+}

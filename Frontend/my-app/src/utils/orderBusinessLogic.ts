@@ -54,11 +54,12 @@ export function canChangePaymentStatus(
     return { allowed: false, reason: "Trạng thái thanh toán không thay đổi" };
   }
 
-  // Chỉ cho phép thay đổi thanh toán khi đã giao hàng
-  if (currentOrderStatus !== "delivered") {
+  // 🔧 FIX: Không cho phép thay đổi thanh toán cho đơn hàng đã giao hàng
+  if (currentOrderStatus === "delivered") {
     return {
       allowed: false,
-      reason: "Chỉ được thay đổi thanh toán khi đơn hàng đã giao hàng",
+      reason:
+        "Không thể thay đổi thanh toán cho đơn hàng đã giao hàng. Nếu có vấn đề, khách có thể yêu cầu hoàn tiền/trả hàng",
     };
   }
 
@@ -122,6 +123,21 @@ export function canChangeOrderStatus(
     }
   }
 
+  // 🔧 FIX: Không cho phép hủy đơn hàng đang giao, đã giao hoặc đã hoàn thành
+  if (newOrderStatus === "cancelled") {
+    if (
+      currentOrderStatus === "shipping" ||
+      currentOrderStatus === "delivered" ||
+      currentOrderStatus === "completed"
+    ) {
+      return {
+        allowed: false,
+        reason:
+          "Không thể hủy đơn hàng đang giao, đã giao hoặc đã hoàn thành. Nếu cần xử lý vấn đề, hãy chuyển sang 'Đã hoàn tiền'",
+      };
+    }
+  }
+
   // Quy tắc chung - không được quay lại trạng thái trước (trừ cancelled)
   const statusFlow = [
     "pending",
@@ -151,20 +167,27 @@ export function getAllowedPaymentStatuses(
   orderStatus: string,
   paymentMethod: string
 ): boolean[] {
-  // Chỉ cho phép thay đổi thanh toán khi đã giao hàng
-  if (orderStatus !== "delivered") {
+  // 🔧 FIX: Không cho phép thay đổi thanh toán cho đơn hàng đã giao hàng
+  // Lý do: Đã giao hàng = đã nhận hàng = đã thanh toán xong
+  // Nếu có vấn đề, khách có thể yêu cầu hoàn tiền/trả hàng
+  if (orderStatus === "delivered") {
     return []; // Không cho phép thay đổi
   }
 
-  if (paymentMethod === "COD") {
-    return [true, false]; // Cho phép cả paid và unpaid khi đã giao hàng
+  // Chỉ cho phép thay đổi thanh toán ở các trạng thái khác (nếu cần)
+  if (orderStatus !== "delivered") {
+    if (paymentMethod === "COD") {
+      return [true, false]; // Cho phép cả paid và unpaid
+    }
+
+    if (paymentMethod === "BANK_TRANSFER" || paymentMethod === "CREDIT_CARD") {
+      return [true]; // Online đã thanh toán trước, chỉ cho phép giữ nguyên
+    }
+
+    return [true, false]; // Mặc định cho phép cả hai
   }
 
-  if (paymentMethod === "BANK_TRANSFER" || paymentMethod === "CREDIT_CARD") {
-    return [true]; // Online đã thanh toán trước, chỉ cho phép giữ nguyên
-  }
-
-  return [true, false]; // Mặc định cho phép cả hai
+  return []; // Không cho phép thay đổi
 }
 
 /**
@@ -218,7 +241,17 @@ export function getAllowedOrderStatuses(
   // Disable previous statuses in workflow (trừ cancelled)
   if (currentIndex >= 0) {
     allowedStatuses = allowedStatuses.filter((status) => {
-      if (status === "cancelled") return true; // Luôn cho phép cancel
+      if (status === "cancelled") {
+        // 🔧 FIX: Không cho phép hủy đơn hàng đang giao, đã giao hoặc đã hoàn thành
+        if (
+          currentStatus === "shipping" ||
+          currentStatus === "delivered" ||
+          currentStatus === "completed"
+        ) {
+          return false; // Không cho phép hủy
+        }
+        return true; // Cho phép hủy các trạng thái khác
+      }
 
       const statusIndex = statusFlow.indexOf(status);
       if (statusIndex === -1) return true; // Status không trong flow thì cho phép

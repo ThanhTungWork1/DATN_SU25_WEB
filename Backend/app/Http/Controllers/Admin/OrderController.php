@@ -175,6 +175,35 @@ class OrderController extends Controller
             'delivered_at' => 'nullable|date',
         ]);
 
+        // 🔧 FIX: Validation logic nghiệp vụ
+        if (isset($validatedData['status']) && isset($validatedData['is_paid'])) {
+            // Không cho phép completed mà chưa thanh toán
+            if ($validatedData['status'] === 'completed' && !$validatedData['is_paid']) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không thể chuyển đơn hàng sang "Đã hoàn thành" khi chưa thanh toán!'
+                ], 400);
+            }
+            
+            // Không cho phép đã thanh toán mà vẫn ở trạng thái pending
+            if ($validatedData['is_paid'] && in_array($validatedData['status'], ['pending_confirmation', 'pending'])) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'Đơn hàng đã thanh toán không thể ở trạng thái "Chờ xác nhận"!'
+                ], 400);
+            }
+
+            // 🔧 FIX: Không cho phép hủy đơn hàng đang giao, đã giao hoặc đã hoàn thành
+            if ($validatedData['status'] === 'cancelled') {
+                if ($order->status === 'shipping' || $order->status === 'delivered' || $order->status === 'completed') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Không thể hủy đơn hàng đang giao, đã giao hoặc đã hoàn thành. Nếu cần xử lý vấn đề, hãy chuyển sang "Đã hoàn tiền"!'
+                    ], 400);
+                }
+            }
+        }
+
         // Kịch bản 1: Cập nhật trạng thái đơn hàng
         if (isset($validatedData['status'])) {
             // Tự động set ngày xác nhận khi chuyển từ pending_confirmation sang confirmed
@@ -185,11 +214,21 @@ class OrderController extends Controller
             // Tự động set ngày giao hàng khi chuyển sang delivered
             if ($validatedData['status'] === 'delivered' && $order->status !== 'delivered') {
                 $validatedData['delivered_at'] = now();
+                
+                // 🔧 FIX: COD tự động đánh dấu đã thanh toán khi giao hàng thành công
+                if ($order->payment_method === 'COD' || $order->payment_method === 'Thanh toán khi nhận hàng (COD)') {
+                    $validatedData['is_paid'] = true;
+                }
             }
             
             // Tự động set ngày vận chuyển khi chuyển sang shipping
             if ($validatedData['status'] === 'shipping' && $order->status !== 'shipping') {
                 $validatedData['shipping_date'] = now();
+            }
+
+            // 🔧 FIX: Tự động đánh dấu đã thanh toán khi chuyển sang completed
+            if ($validatedData['status'] === 'completed' && $order->status !== 'completed') {
+                $validatedData['is_paid'] = true;
             }
         }
 
@@ -201,6 +240,11 @@ class OrderController extends Controller
                     $validatedData['status'] = 'completed';
                 }
                 // Không tự động chuyển từ pending_confirmation sang confirmed
+            } else {
+                // 🔧 FIX: Nếu đánh dấu chưa thanh toán và đang ở completed, chuyển về delivered
+                if ($order->status === 'completed') {
+                    $validatedData['status'] = 'delivered';
+                }
             }
         }
 

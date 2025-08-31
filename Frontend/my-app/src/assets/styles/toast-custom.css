@@ -19,9 +19,27 @@
     --warning-text: #212529 !important;
 }
 
-/* Toast container styling */
-[data-sonner-toaster] {
+/* Toast container styling - STRONG SELECTORS */
+body [data-sonner-toaster],
+html [data-sonner-toaster],
+#root [data-sonner-toaster],
+.App [data-sonner-toaster] {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    top: 80px !important;
+    right: 0px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+}
+
+/* Ensure toasts are not cut off - STRONG SELECTORS */
+body [data-sonner-toaster][data-position="top-right"],
+html [data-sonner-toaster][data-position="top-right"],
+#root [data-sonner-toaster][data-position="top-right"],
+.App [data-sonner-toaster][data-position="top-right"] {
+    top: 80px !important;
+    right: 0px !important;
+    max-width: 400px !important;
+    width: auto !important;
 }
 
 /* Individual toast styling */

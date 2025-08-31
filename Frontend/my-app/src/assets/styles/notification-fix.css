@@ -1,0 +1,71 @@
+/* ===== NOTIFICATION POSITIONING FIX - ISOLATED ===== */
+
+/* ONLY target notification containers, NEVER touch modals */
+[data-sonner-toaster],
+body [data-sonner-toaster],
+html [data-sonner-toaster],
+#root [data-sonner-toaster] {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+
+/* Ant Design Message - ONLY notifications */
+.ant-message:not(.ant-modal .ant-message),
+body .ant-message:not(.ant-modal .ant-message),
+html .ant-message:not(.ant-modal .ant-message),
+#root .ant-message:not(.ant-modal .ant-message) {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+
+.ant-message-notice:not(.ant-modal .ant-message-notice) {
+    margin-bottom: 8px !important;
+    max-width: 350px !important;
+    width: auto !important;
+}
+
+/* Ant Design Notification - ONLY notifications */
+.ant-notification:not(.ant-modal .ant-notification),
+body .ant-notification:not(.ant-modal .ant-notification),
+html .ant-notification:not(.ant-modal .ant-notification),
+#root .ant-notification:not(.ant-modal .ant-notification) {
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    max-width: 350px !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+
+.ant-notification-notice:not(.ant-modal .ant-notification-notice) {
+    margin-bottom: 8px !important;
+    max-width: 350px !important;
+    width: auto !important;
+}
+
+/* Mobile responsive - ONLY notifications */
+@media (max-width: 768px) {
+
+    [data-sonner-toaster],
+    .ant-message:not(.ant-modal .ant-message),
+    .ant-notification:not(.ant-modal .ant-notification) {
+        top: 70px !important;
+        right: 10px !important;
+        left: 10px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+}

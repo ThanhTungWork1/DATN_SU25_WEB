@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "./assets/styles/toast-custom.css";
+import "./assets/styles/notification-fix.css";
+import "./assets/styles/global-notification-fix.css";
 import "./utils/debugAuth.js"; // Import debug script
 import "./utils/testLogin.js"; // Import test script
 import "./utils/testFullLogin.js"; // Import full test script
@@ -26,7 +28,13 @@ function App() {
         theme="light"
         richColors
         closeButton
-        duration={1000}
+        duration={3000}
+        offset={80}
+        style={{
+          top: "80px",
+          right: "20px",
+          zIndex: 9999,
+        }}
       />
     </FavoriteProvider>
   );

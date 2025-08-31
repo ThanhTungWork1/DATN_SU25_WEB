@@ -82,8 +82,14 @@ export const PAYMENT_STATUS_OPTIONS = [
 
 // Hàm hiển thị text cho payment status
 export const getPaymentStatusDisplayText = (
-  isPaid: boolean | number
+  isPaid: boolean | number,
+  orderStatus?: string
 ): string => {
+  // 🔧 FIX: Kiểm tra trạng thái refunded trước
+  if (orderStatus === "refunded") {
+    return "Đã hoàn tiền";
+  }
+
   if (isPaid === true || isPaid === 1) {
     return "Đã thanh toán";
   }
