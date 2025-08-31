@@ -6,6 +6,7 @@ import { checkReviewEligibility } from "../../../api/ApiUrl";
 import { useOrderReviews } from "../../../hook/useOrderReviews";
 import { Star } from "lucide-react";
 import ReviewModal from "./ReviewModal";
+import { differenceInMinutes, addMinutes } from "date-fns";
 
 const OrderDetailModal = ({
   orderId,
@@ -24,6 +25,21 @@ const OrderDetailModal = ({
   // Sử dụng formatCurrency từ utils thay vì formatVND local
 
   const getStatusColor = (status: string) => {
+    // Kiểm tra xem đơn hàng waiting_for_payment có hết hạn chưa
+    if (status === "waiting_for_payment" && order) {
+      try {
+        const createdAt = new Date(order.created_at);
+        const expirationTime = addMinutes(createdAt, 60); // 60 minutes expiration
+        const now = new Date();
+        const diff = differenceInMinutes(expirationTime, now);
+        if (diff <= 0) {
+          return "status-badge status-cancelled";
+        }
+      } catch (e) {
+        // Nếu có lỗi tính toán, giữ nguyên trạng thái gốc
+      }
+    }
+
     switch (status.toLowerCase()) {
       case "waiting_for_payment":
         return "status-badge status-waiting-payment";
@@ -49,6 +65,21 @@ const OrderDetailModal = ({
   };
 
   const getStatusText = (status: string) => {
+    // Kiểm tra xem đơn hàng waiting_for_payment có hết hạn chưa
+    if (status === "waiting_for_payment" && order) {
+      try {
+        const createdAt = new Date(order.created_at);
+        const expirationTime = addMinutes(createdAt, 60); // 60 minutes expiration
+        const now = new Date();
+        const diff = differenceInMinutes(expirationTime, now);
+        if (diff <= 0) {
+          return "Đã huỷ";
+        }
+      } catch (e) {
+        // Nếu có lỗi tính toán, giữ nguyên trạng thái gốc
+      }
+    }
+
     switch (status.toLowerCase()) {
       case "waiting_for_payment":
         return "Chờ thanh toán";

@@ -74,8 +74,28 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
   // Lấy danh sách đánh giá cho đơn hàng này
   const { data: reviews = [] } = useOrderReviews(order.id);
 
-  const currentStatus =
-    statusConfig[order.status.toLowerCase()] || statusConfig.default;
+  // Kiểm tra xem đơn hàng waiting_for_payment có hết hạn chưa
+  const isExpired = React.useMemo(() => {
+    if (order.status === "waiting_for_payment") {
+      try {
+        const createdAt = new Date(order.created_at);
+        const expirationTime = addMinutes(createdAt, 60); // 60 minutes expiration
+        const now = new Date();
+        return differenceInMinutes(expirationTime, now) <= 0;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }, [order.status, order.created_at]);
+
+  // Xác định trạng thái hiển thị - nếu hết hạn thì hiển thị như cancelled
+  const currentStatus = React.useMemo(() => {
+    if (order.status === "waiting_for_payment" && isExpired) {
+      return statusConfig.cancelled;
+    }
+    return statusConfig[order.status.toLowerCase()] || statusConfig.default;
+  }, [order.status, isExpired]);
 
   useEffect(() => {
     // Debug log để kiểm tra refund_request cho tất cả orders
@@ -140,14 +160,21 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
     const isPaid =
       (order as any).is_paid === 1 || (order as any).is_paid === true;
 
-    const canCancel = [
-      "pending",
-      "confirmed",
-      "processing",
-      "waiting_for_payment",
-      // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
-      ...(order.payment_method === "COD" ? ["shipping"] : []),
-    ].includes(status);
+    // Nếu đơn hàng waiting_for_payment đã hết hạn, xử lý như cancelled
+    const effectiveStatus =
+      order.status === "waiting_for_payment" && isExpired
+        ? "cancelled"
+        : status;
+
+    const canCancel =
+      [
+        "pending",
+        "confirmed",
+        "processing",
+        // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
+        ...(order.payment_method === "COD" ? ["shipping"] : []),
+      ].includes(effectiveStatus) &&
+      !(order.status === "waiting_for_payment" && isExpired);
 
     // Thông báo về khả năng hủy đơn hàng
     const getCancelMessage = () => {
@@ -159,16 +186,20 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       }
       return "Không thể hủy đơn hàng đã được giao";
     };
-    const canReorder = [
-      "delivered",
-      "completed",
-      "cancelled",
-      "refunded",
-    ].includes(status);
-    const canRequestRefundForCancelledOrder = status === "cancelled" && isPaid;
+    const canReorder =
+      ["delivered", "completed", "cancelled", "refunded"].includes(
+        effectiveStatus
+      ) ||
+      (order.status === "waiting_for_payment" && isExpired);
+    const canRequestRefundForCancelledOrder =
+      (effectiveStatus === "cancelled" ||
+        (order.status === "waiting_for_payment" && isExpired)) &&
+      isPaid;
 
     let canReturn = false;
-    const isReturnableStatus = ["delivered", "completed"].includes(status);
+    const isReturnableStatus = ["delivered", "completed"].includes(
+      effectiveStatus
+    );
     if (isReturnableStatus && order.updated_at) {
       try {
         const timeZone = "Asia/Ho_Chi_Minh";
@@ -197,8 +228,9 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       canRequestRefundForCancelledOrder,
       isPaid,
       getCancelMessage,
+      effectiveStatus, // Thêm effectiveStatus để sử dụng ở nơi khác
     };
-  }, [order]);
+  }, [order, isExpired]);
 
   return (
     <>
@@ -218,10 +250,18 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
             >
               {currentStatus.text}
             </span>
-            {order.status === "waiting_for_payment" && remainingTime && (
-              <div className="flex items-center justify-end text-xs text-orange-600 mt-1">
+            {order.status === "waiting_for_payment" &&
+              remainingTime &&
+              !isExpired && (
+                <div className="flex items-center justify-end text-xs text-orange-600 mt-1">
+                  <Clock size={14} className="mr-1" />
+                  {remainingTime}
+                </div>
+              )}
+            {order.status === "waiting_for_payment" && isExpired && (
+              <div className="flex items-center justify-end text-xs text-red-600 mt-1">
                 <Clock size={14} className="mr-1" />
-                {remainingTime}
+                Đã hết hạn thanh toán
               </div>
             )}
           </div>
@@ -331,23 +371,22 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
           {/* Các nút khác chỉ hiển thị khi KHÔNG có refund_request */}
           {!order.refund_request && !localRefundStatus && (
             <>
-              {order.status === "waiting_for_payment" &&
-                remainingTime !== "Đã hết hạn" && (
-                  <button
-                    onClick={() => repay({ orderId: order.id })}
-                    className="px-4 py-2 text-white rounded transition-colors font-semibold"
-                    style={{ backgroundColor: "#f59e0b", border: "none" }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#d97706")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#f59e0b")
-                    }
-                    disabled={isRepaying}
-                  >
-                    {isRepaying ? "Đang xử lý..." : "Thanh toán ngay"}
-                  </button>
-                )}
+              {order.status === "waiting_for_payment" && !isExpired && (
+                <button
+                  onClick={() => repay({ orderId: order.id })}
+                  className="px-4 py-2 text-white rounded transition-colors font-semibold"
+                  style={{ backgroundColor: "#f59e0b", border: "none" }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#d97706")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f59e0b")
+                  }
+                  disabled={isRepaying}
+                >
+                  {isRepaying ? "Đang xử lý..." : "Thanh toán ngay"}
+                </button>
+              )}
 
               {actionsState.canCancel && (
                 <button
@@ -377,7 +416,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
               {actionsState.canRequestRefundForCancelledOrder && (
                 <button
                   onClick={() => setRefundInfo({ type: "cancel" })}
-                  className="btn btn-warning"
+                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
                 >
                   Yêu cầu hoàn tiền
                 </button>
