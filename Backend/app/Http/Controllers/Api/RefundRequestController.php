@@ -74,15 +74,20 @@ class RefundRequestController extends Controller
             return response()->json(['message' => 'Bạn không có quyền thực hiện hành động này trên đơn hàng này.'], 403);
         }
 
-        // Kiểm tra trạng thái đơn hàng có cho phép hoàn tiền không
-        $allowedStatuses = ['delivered', 'completed'];
+        // 🔧 FIX: Logic nghiệp vụ đúng cho phép hoàn tiền
+        // Cho phép hoàn tiền khi:
+        // 1. Đơn hàng đã giao (delivered) - có vấn đề khi giao hàng
+        // 2. Đơn hàng đã hủy (cancelled) - đã thanh toán nhưng hủy đơn
+        // 3. KHÔNG cho phép khi đã hoàn thành (completed) - đã hoàn tất bình thường
+        $allowedStatuses = ['delivered', 'cancelled'];
         if (!in_array($order->status, $allowedStatuses)) {
             return response()->json([
-                'message' => 'Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã được giao hoặc hoàn thành.'
+                'message' => 'Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã giao hoặc đã hủy.'
             ], 422);
         }
 
-        // Kiểm tra đơn hàng đã thanh toán chưa
+        // 🔧 FIX: Kiểm tra đơn hàng đã thanh toán chưa
+        // Lý do: Chỉ hoàn tiền cho đơn hàng đã thanh toán
         if (!$order->is_paid) {
             return response()->json([
                 'message' => 'Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã thanh toán.'

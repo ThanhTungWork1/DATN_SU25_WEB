@@ -32,7 +32,14 @@ class CancelUnpaidOrders extends Command
         // Tìm các đơn hàng chờ thanh toán đã quá hạn
         $ordersToCancel = \App\Models\Order::where('status', 'waiting_for_payment')
                                            ->where('created_at', '<=', $expirationTime)
+                                           ->with('items.variant') // Eager load để tránh N+1 query
                                            ->get();
+
+        // Log để debug
+        \Log::info("🔍 [CancelUnpaidOrders] Found {$ordersToCancel->count()} expired orders");
+        foreach ($ordersToCancel as $order) {
+            \Log::info("🔍 [CancelUnpaidOrders] Order #{$order->id} created at {$order->created_at} is expired");
+        }
 
         if ($ordersToCancel->isEmpty()) {
             $this->info('No unpaid orders to cancel.');
@@ -42,6 +49,8 @@ class CancelUnpaidOrders extends Command
         $this->info($ordersToCancel->count() . ' unpaid orders found. Starting cancellation process...');
 
         foreach ($ordersToCancel as $order) {
+            $this->info('Processing order #' . $order->id . ' (created at: ' . $order->created_at . ')');
+            
             // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
                 // Cập nhật trạng thái đơn hàng
@@ -54,6 +63,7 @@ class CancelUnpaidOrders extends Command
                     if ($variant) {
                         $variant->quantity += $item->quantity;
                         $variant->save();
+                        $this->info('  - Restocked variant #' . $variant->id . ' (+' . $item->quantity . ')');
                     }
                 }
             });

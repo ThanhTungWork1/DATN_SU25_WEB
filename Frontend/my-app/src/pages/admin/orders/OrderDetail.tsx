@@ -58,8 +58,6 @@ export default function OrderDetail() {
       const orderData = response.data.data || response.data;
       setOrder(orderData);
       form.setFieldsValue({
-        status: orderData.status,
-        is_paid: orderData.is_paid,
         notes: orderData.notes,
         shipping_company: orderData.shipping_company || "",
         tracking_number: orderData.tracking_number || "",
@@ -80,10 +78,36 @@ export default function OrderDetail() {
   const handleUpdateOrder = async (values: any) => {
     setUpdating(true);
     try {
-      await updateOrder(parseInt(id!), values);
+      console.log("🔍 [DEBUG] Form values:", values);
+      console.log("🔍 [DEBUG] Order ID:", id);
+
+      // Kiểm tra data trước khi gửi
+      const updateData = {
+        notes: values.notes,
+        shipping_company: values.shipping_company,
+        tracking_number: values.tracking_number,
+        estimated_delivery_date: values.estimated_delivery_date,
+      };
+
+      console.log("🔍 [DEBUG] Sending update data:", updateData);
+
+      const response = await updateOrder(parseInt(id!), updateData);
+      console.log("🔍 [DEBUG] Update response:", response);
+
       message.success("Cập nhật đơn hàng thành công!");
       setEditModalVisible(false);
-      fetchOrderDetail(); // Refresh data
+
+      // Refresh data và log
+      await fetchOrderDetail();
+      console.log("🔍 [DEBUG] Data refreshed, current order:", order);
+      console.log("🔍 [DEBUG] Order fields after refresh:");
+      console.log("  - shipping_company:", order?.shipping_company);
+      console.log("  - tracking_number:", order?.tracking_number);
+      console.log(
+        "  - estimated_delivery_date:",
+        order?.estimated_delivery_date
+      );
+      console.log("  - notes:", order?.notes);
     } catch (error) {
       message.error("Không thể cập nhật đơn hàng");
       console.error("Update order error:", error);
@@ -209,60 +233,6 @@ export default function OrderDetail() {
   return (
     <div>
       <Title level={3}>Chi tiết đơn hàng #{order.id}</Title>
-      <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
-        <Descriptions.Item label="Mã đơn hàng">{order.id}</Descriptions.Item>
-        <Descriptions.Item label="Ngày đặt">
-          {new Date(order.created_at).toLocaleString()}
-        </Descriptions.Item>
-        <Descriptions.Item label="Tên khách hàng">
-          {order.customer_name}
-        </Descriptions.Item>
-        <Descriptions.Item label="Email khách hàng">
-          {order.customer_email}
-        </Descriptions.Item>
-        <Descriptions.Item label="Số điện thoại">
-          {order.customer_phone}
-        </Descriptions.Item>
-        <Descriptions.Item label="Địa chỉ giao hàng">
-          {order.shipping_address}
-        </Descriptions.Item>
-        <Descriptions.Item label="Tổng tiền sản phẩm">
-          {formatCurrency(order.total_amount || 0)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Phí vận chuyển">
-          {formatCurrency(order.shipping_fee || 0)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Giảm giá">
-          {formatCurrency(order.discount_amount || 0)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Tổng cộng">
-          <Tag color="blue" style={{ fontSize: 16, padding: "4px 8px" }}>
-            {formatCurrency(
-              order.final_amount ||
-                order.total_amount +
-                  order.shipping_fee -
-                  (order.discount_amount || 0) ||
-                0
-            )}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Trạng thái đơn hàng">
-          <Tag color={getStatusColor(order.status)}>
-            {getStatusLabel(order.status)}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Phương thức thanh toán">
-          {order.payment_method}
-        </Descriptions.Item>
-        <Descriptions.Item label="Trạng thái thanh toán">
-          <Tag color={order.is_paid ? "green" : "red"}>
-            {order.is_paid ? "Đã thanh toán" : "Chưa thanh toán"}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Ghi chú của khách">
-          {order.notes || "Không có"}
-        </Descriptions.Item>
-      </Descriptions>
 
       <div style={{ marginBottom: 16 }}>
         <Button
@@ -280,8 +250,6 @@ export default function OrderDetail() {
           Chỉnh sửa
         </Button>
       </div>
-
-      <Title level={2}>Chi tiết đơn hàng #{order.id}</Title>
 
       <Row gutter={16}>
         <Col span={16}>
@@ -456,15 +424,6 @@ export default function OrderDetail() {
           {/* Thống kê nhanh */}
           <Card title="Thống kê nhanh" style={{ marginTop: 16 }}>
             <Descriptions column={1}>
-              <Descriptions.Item label="Thời gian xử lý">
-                <Text>
-                  {order.status === "delivered" &&
-                  order.delivered_at &&
-                  order.created_at
-                    ? `${Math.ceil((new Date(order.delivered_at).getTime() - new Date(order.created_at).getTime()) / (1000 * 60 * 60 * 24))} ngày`
-                    : "Đang xử lý"}
-                </Text>
-              </Descriptions.Item>
               <Descriptions.Item label="Trạng thái hiện tại">
                 <Tag color={getStatusColor(order.status)}>
                   {getStatusLabel(order.status)}
@@ -501,46 +460,6 @@ export default function OrderDetail() {
         width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleUpdateOrder}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="status"
-                label="Trạng thái đơn hàng"
-                rules={[
-                  { required: true, message: "Vui lòng chọn trạng thái" },
-                ]}
-              >
-                <Select placeholder="Chọn trạng thái">
-                  {ORDER_STATUS_OPTIONS.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="is_paid"
-                label="Trạng thái thanh toán"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng chọn trạng thái thanh toán",
-                  },
-                ]}
-              >
-                <Select placeholder="Chọn trạng thái thanh toán">
-                  {PAYMENT_STATUS_OPTIONS.map((option) => (
-                    <Option key={String(option.value)} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="shipping_company" label="Đơn vị vận chuyển">

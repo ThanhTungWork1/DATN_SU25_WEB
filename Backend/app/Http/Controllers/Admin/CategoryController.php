@@ -202,11 +202,16 @@ class CategoryController extends Controller
             \Log::info('  - Giá trung bình/SP: ' . $averagePerItem);
             \Log::info('  - Order items count: ' . $orderItems->count());
 
-            // Top sản phẩm (qua variant -> product)
+            // 🎯 SẢN PHẨM BÁN CHẠY NHẤT
+            // Logic: Group theo product_id, loại bỏ trùng lặp, chỉ lấy sản phẩm có bán
             $topProducts = [];
             if ($orderItems->count() > 0) {
+                // 🔧 FIX: Sử dụng unique để loại bỏ sản phẩm trùng lặp
                 $topProducts = $orderItems
-                    ->groupBy(function($item) { return optional($item->variant->product)->id; })
+                    ->groupBy(function($item) { 
+                        // Group theo product_id để gộp tất cả variants của cùng 1 sản phẩm
+                        return optional($item->variant->product)->id; 
+                    })
                     ->filter(function($items, $productId) { return !is_null($productId); })
                     ->map(function($items) {
                         $product = optional($items->first()->variant->product);
@@ -219,9 +224,10 @@ class CategoryController extends Controller
                             })
                         ];
                     })
-                    ->sortByDesc('sold_quantity')
-                    ->take(5)
-                    ->values()
+                    ->unique('id')  // 🔧 FIX: Loại bỏ sản phẩm trùng lặp
+                    ->sortByDesc('sold_quantity')  // Sắp xếp theo số lượng bán giảm dần
+                    ->take(5)                      // Lấy tối đa 5 sản phẩm
+                    ->values()                     // Chuyển về array
                     ->toArray();
             }
 
@@ -229,6 +235,14 @@ class CategoryController extends Controller
             $timeData = $orderItems->count() > 0
                 ? $this->generateTimeData($orderItems, $startDate, $endDate, $period)
                 : [];
+            
+            // 🔍 DEBUG: Log kết quả top products sau khi group và sắp xếp
+            \Log::info("🔍 TOP PRODUCTS AFTER GROUPING & SORTING:");
+            \Log::info("  - Total products found: " . count($topProducts));
+            \Log::info("  - Showing top 5 best-selling products:");
+            foreach ($topProducts as $index => $product) {
+                \Log::info("  - [{$index}] ID: {$product['id']}, Name: '{$product['name']}', Qty: {$product['sold_quantity']}, Revenue: {$product['revenue']}");
+            }
             
             return response()->json([
                 'category_id' => $category->id,

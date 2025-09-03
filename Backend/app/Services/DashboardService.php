@@ -213,10 +213,22 @@ class DashboardService
             ->limit($limit)
             ->get()
             ->map(function ($item) {
+                // Xử lý đường dẫn ảnh
+                $imageUrl = null;
+                if ($item->image && !empty($item->image)) {
+                    // Nếu image bắt đầu bằng http, giữ nguyên
+                    if (str_starts_with($item->image, 'http')) {
+                        $imageUrl = $item->image;
+                    } else {
+                        // Đảm bảo có /storage/ prefix
+                        $imageUrl = '/storage/' . ltrim($item->image, '/');
+                    }
+                }
+                
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'image' => $item->image,
+                    'image' => $imageUrl,
                     'total_sold' => (int) $item->total_sold,
                     'total_revenue' => (float) $item->total_revenue * 1000, // Chuyển đổi sang VND
                 ];

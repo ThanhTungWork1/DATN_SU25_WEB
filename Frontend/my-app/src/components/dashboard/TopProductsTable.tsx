@@ -13,6 +13,20 @@ const TopProductsTable: React.FC = () => {
     dateRange ? dateRange[1].format("YYYY-MM-DD") : undefined
   );
 
+  // CSS để ổn định ảnh
+  const imageStyles = `
+    .ant-image-img {
+      object-fit: cover !important;
+      transition: none !important;
+    }
+    .ant-image-placeholder {
+      display: none !important;
+    }
+    .ant-image-error {
+      display: none !important;
+    }
+  `;
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -52,19 +66,34 @@ const TopProductsTable: React.FC = () => {
       title: "Sản phẩm",
       dataIndex: "name",
       key: "name",
-      render: (name: string, record: any) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Image
-            src={record.image || "/logo.png"}
-            alt={name}
-            width={40}
-            height={40}
-            style={{ objectFit: "cover", borderRadius: "4px" }}
-            fallback="/logo.png"
-          />
-          <span style={{ fontWeight: 500 }}>{name}</span>
-        </div>
-      ),
+      render: (name: string, record: any) => {
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Image
+              src={
+                record.image
+                  ? record.image.startsWith("/storage/")
+                    ? `http://localhost:8000${record.image}`
+                    : record.image.startsWith("products/")
+                      ? `http://localhost:8000/storage/${record.image}`
+                      : record.image
+                  : "/logo.png"
+              }
+              alt={name}
+              width={40}
+              height={40}
+              style={{ objectFit: "cover", borderRadius: "4px" }}
+              fallback="/logo.png"
+              preview={false}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/logo.png";
+              }}
+            />
+            <span style={{ fontWeight: 500 }}>{name}</span>
+          </div>
+        );
+      },
     },
     {
       title: "Đã bán",
@@ -91,46 +120,49 @@ const TopProductsTable: React.FC = () => {
   ];
 
   return (
-    <Card
-      title={
-        <span>
-          <TrophyOutlined style={{ marginRight: 8, color: "#faad14" }} />
-          Top sản phẩm bán chạy
-        </span>
-      }
-      style={{ height: "100%" }}
-    >
-      {isLoading ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: 300,
-          }}
-        >
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={data?.map((item: any, index: number) => ({
-            ...item,
-            key: item.id,
-            index,
-          }))}
-          pagination={false}
-          size="small"
-          scroll={{ y: 300 }}
-          rowClassName={(record, index) => {
-            if (index === 0) return "top-product-gold";
-            if (index === 1) return "top-product-silver";
-            if (index === 2) return "top-product-bronze";
-            return "";
-          }}
-        />
-      )}
-    </Card>
+    <>
+      <style>{imageStyles}</style>
+      <Card
+        title={
+          <span>
+            <TrophyOutlined style={{ marginRight: 8, color: "#faad14" }} />
+            Top sản phẩm bán chạy
+          </span>
+        }
+        style={{ height: "100%" }}
+      >
+        {isLoading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 300,
+            }}
+          >
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data?.map((item: any, index: number) => ({
+              ...item,
+              key: item.id,
+              index,
+            }))}
+            pagination={false}
+            size="small"
+            scroll={{ y: 300 }}
+            rowClassName={(index) => {
+              if (index === 0) return "top-product-gold";
+              if (index === 1) return "top-product-silver";
+              if (index === 2) return "top-product-bronze";
+              return "";
+            }}
+          />
+        )}
+      </Card>
+    </>
   );
 };
 

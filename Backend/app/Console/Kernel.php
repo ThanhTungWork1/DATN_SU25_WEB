@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('orders:cancel-unpaid')->everyThirtyMinutes();
+        // Chạy mỗi 5 phút để cập nhật nhanh hơn
+        $schedule->command('orders:cancel-unpaid')->everyFiveMinutes();
+        
+        // Chạy mỗi phút trong giờ cao điểm (9h-22h)
+        $schedule->command('orders:cancel-unpaid')->everyMinute()->between('09:00', '22:00');
     }
 
     /**

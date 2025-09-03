@@ -60,6 +60,24 @@ class Order extends Model
                 $order->order_code = self::generateOrderCode($orderDate);
             }
         });
+
+        // 🔧 FIX: Tự động cập nhật trạng thái đơn hàng hết hạn
+        static::retrieved(function ($order) {
+            if ($order->status === 'waiting_for_payment') {
+                $createdAt = \Carbon\Carbon::parse($order->created_at);
+                $expirationTime = $createdAt->addMinutes(60);
+                $now = \Carbon\Carbon::now();
+                
+                if ($now->gt($expirationTime)) {
+                    // Đơn hàng đã hết hạn, cập nhật trạng thái
+                    $order->status = 'cancelled';
+                    $order->save();
+                    
+                    // Log để debug
+                    \Log::info("🔍 [Order Model] Auto cancelled expired order #{$order->id}");
+                }
+            }
+        });
     }
 
     /**

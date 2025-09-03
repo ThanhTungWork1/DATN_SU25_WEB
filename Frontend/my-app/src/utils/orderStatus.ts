@@ -1,6 +1,6 @@
 // src/utils/orderStatus.ts
 
-import { Order } from "../types/ProductType";
+import { UseOrder } from "../types/UseOrder";
 import { TagProps } from "antd";
 
 // Danh sách trạng thái đơn hàng
@@ -13,11 +13,12 @@ export const ORDER_STATUS_OPTIONS = [
   { value: "cancelled", label: "Đã huỷ" },
   { value: "completed", label: "Đã hoàn thành" }, // Thêm trạng thái 'completed'
   { value: "refunded", label: "Đã hoàn tiền" }, // Thêm trạng thái 'refunded'
+  { value: "waiting_for_payment", label: "Chờ thanh toán" }, // Thêm trạng thái 'waiting_for_payment'
 ];
 
 // Hàm lấy màu cho Tag trạng thái đơn hàng
 export const getOrderStatusColor = (
-  status: Order["status"] | string
+  status: UseOrder["status"] | string
 ): TagProps["color"] => {
   switch (status) {
     case "pending":
@@ -36,6 +37,8 @@ export const getOrderStatusColor = (
       return "error"; // Màu đỏ
     case "refunded":
       return "green"; // Màu xanh lá cây (cho 'refunded')
+    case "waiting_for_payment":
+      return "orange"; // Màu cam cho 'waiting_for_payment'
     default:
       return "default";
   }
@@ -43,7 +46,7 @@ export const getOrderStatusColor = (
 
 // Hàm hiển thị văn bản cho trạng thái đơn hàng
 export const getOrderStatusText = (
-  status: Order["status"] | string
+  status: UseOrder["status"] | string
 ): string => {
   switch (status) {
     case "pending":
@@ -62,6 +65,8 @@ export const getOrderStatusText = (
       return "Đã huỷ";
     case "refunded":
       return "Đã hoàn tiền";
+    case "waiting_for_payment":
+      return "Chờ thanh toán";
     default:
       return "Không rõ";
   }

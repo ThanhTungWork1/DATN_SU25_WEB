@@ -413,13 +413,27 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                 </button>
               )}
 
+              {/* 🔧 DEBUG: Log để kiểm tra tại sao nút hiển thị */}
               {actionsState.canRequestRefundForCancelledOrder && (
-                <button
-                  onClick={() => setRefundInfo({ type: "cancel" })}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
-                >
-                  Yêu cầu hoàn tiền
-                </button>
+                <>
+                  {console.log(
+                    "🔍 DEBUG Order #" +
+                      order.id +
+                      " canRequestRefundForCancelledOrder:",
+                    {
+                      status: order.status,
+                      effectiveStatus: actionsState.effectiveStatus,
+                      isPaid: actionsState.isPaid,
+                      isExpired: isExpired,
+                    }
+                  )}
+                  <button
+                    onClick={() => setRefundInfo({ type: "cancel" })}
+                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
+                  >
+                    Yêu cầu hoàn tiền
+                  </button>
+                </>
               )}
             </>
           )}

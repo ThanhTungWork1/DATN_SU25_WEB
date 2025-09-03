@@ -121,6 +121,16 @@ const CategoryStatistics: React.FC = () => {
       console.log("  - time_data:", data.time_data);
       console.log("  - debug info:", data.debug);
 
+      // 🔍 DEBUG: Kiểm tra chi tiết top_products
+      if (data.top_products && Array.isArray(data.top_products)) {
+        console.log("🔍 TOP PRODUCTS DETAILS:");
+        data.top_products.forEach((product: any, index: number) => {
+          console.log(
+            `  [${index}] ID: ${product.id}, Name: "${product.name}", Qty: ${product.sold_quantity}, Revenue: ${product.revenue}`
+          );
+        });
+      }
+
       // Cập nhật state với dữ liệu thực từ API
       setTotalOrders(data.total_orders || 0);
       setTotalRevenue(data.total_revenue || 0);
@@ -134,6 +144,11 @@ const CategoryStatistics: React.FC = () => {
       console.log("  - Total Orders:", data.total_orders || 0);
       console.log("  - Total Revenue:", data.total_revenue || 0);
       console.log("  - Filter Note:", data.filter_note || "N/A");
+
+      // 🔍 DEBUG: Kiểm tra state topProducts sau khi update
+      console.log("🔍 STATE TOP PRODUCTS AFTER UPDATE:");
+      console.log("  - Array length:", (data.top_products || []).length);
+      console.log("  - State value:", data.top_products);
 
       // Hiển thị thông báo nếu không có dữ liệu
       if (
@@ -516,8 +531,8 @@ const CategoryStatistics: React.FC = () => {
           <Card
             title={
               <>
-                <TrophyOutlined /> Top 5 Sản Phẩm Bán Chạy -{" "}
-                {selectedCategoryName}
+                <TrophyOutlined /> Sản Phẩm Bán Chạy - {selectedCategoryName} (
+                {topProducts.length} sản phẩm)
               </>
             }
           >

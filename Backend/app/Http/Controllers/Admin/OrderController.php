@@ -19,6 +19,9 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         try {
+            // 🔧 FIX: Tự động cập nhật đơn hàng hết hạn trước khi hiển thị
+            $this->autoCancelExpiredOrders();
+            
             \Log::info('🔍 [BACKEND DEBUG] Admin orders index called');
             \Log::info('🔍 [BACKEND DEBUG] Request parameters:', $request->all());
             
@@ -162,6 +165,11 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id)
     {
+        \Log::info("🔍 [BACKEND DEBUG] Admin update order called", [
+            'order_id' => $id,
+            'request_data' => $request->all()
+        ]);
+        
         $order = Order::findOrFail($id);
 
         $validatedData = $request->validate([
@@ -248,7 +256,26 @@ class OrderController extends Controller
             }
         }
 
-        $order->update($validatedData);
+        // 🔧 FIX: Xử lý trường hợp chỉ cập nhật thông tin logistics (không có status/is_paid)
+        if (!isset($validatedData['status']) && !isset($validatedData['is_paid'])) {
+            // Chỉ cập nhật các field logistics và ghi chú
+            $updateData = [];
+            if (isset($validatedData['notes'])) $updateData['notes'] = $validatedData['notes'];
+            if (isset($validatedData['shipping_company'])) $updateData['shipping_company'] = $validatedData['shipping_company'];
+            if (isset($validatedData['tracking_number'])) $updateData['tracking_number'] = $validatedData['tracking_number'];
+            if (isset($validatedData['estimated_delivery_date'])) $updateData['estimated_delivery_date'] = $validatedData['estimated_delivery_date'];
+            
+            \Log::info("🔍 [BACKEND DEBUG] Updating logistics info", [
+                'update_data' => $updateData,
+                'order_id' => $id
+            ]);
+            
+            $order->update($updateData);
+        } else {
+            // Cập nhật tất cả data (bao gồm status/is_paid)
+            $order->update($validatedData);
+        }
+        
         $order->refresh();
 
         return response()->json([
@@ -408,5 +435,47 @@ class OrderController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * 🔧 FIX: Tự động cập nhật đơn hàng hết hạn
+     */
+    private function autoCancelExpiredOrders()
+    {
+        try {
+            $expirationTime = now()->subMinutes(60);
+            
+            // Tìm các đơn hàng chờ thanh toán đã quá hạn
+            $expiredOrders = Order::where('status', 'waiting_for_payment')
+                                 ->where('created_at', '<=', $expirationTime)
+                                 ->get();
+
+            if ($expiredOrders->isEmpty()) {
+                return;
+            }
+
+            \Log::info("🔍 [Admin Controller] Found {$expiredOrders->count()} expired orders to auto-cancel");
+
+            foreach ($expiredOrders as $order) {
+                DB::transaction(function () use ($order) {
+                    // Cập nhật trạng thái đơn hàng
+                    $order->status = 'cancelled';
+                    $order->save();
+
+                    // Hoàn trả số lượng cho từng sản phẩm trong đơn hàng
+                    foreach ($order->items as $item) {
+                        $variant = $item->variant;
+                        if ($variant) {
+                            $variant->stock += $item->quantity;
+                            $variant->save();
+                        }
+                    }
+                });
+
+                \Log::info("🔍 [Admin Controller] Auto cancelled expired order #{$order->id}");
+            }
+        } catch (\Exception $e) {
+            \Log::error("🔍 [Admin Controller] Error auto-cancelling orders: " . $e->getMessage());
+        }
     }
 }

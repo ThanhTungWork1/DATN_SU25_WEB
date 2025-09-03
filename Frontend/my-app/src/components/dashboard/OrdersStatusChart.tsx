@@ -20,6 +20,7 @@ const COLORS = [
   "#f5222d", // cancelled
   "#eb2f96", // completed
   "#ff7a45", // refunded
+  "#fa8c16", // waiting_for_payment
 ];
 
 const OrdersStatusChart: React.FC = () => {
@@ -36,6 +37,7 @@ const OrdersStatusChart: React.FC = () => {
         cancelled: "Đã huỷ",
         completed: "Đã hoàn thành",
         refunded: "Đã hoàn tiền",
+        waiting_for_payment: "Chờ thanh toán",
       };
 
       const vietnameseName = statusMap[payload[0].name] || payload[0].name;
@@ -112,6 +114,7 @@ const OrdersStatusChart: React.FC = () => {
       cancelled: "Đã huỷ",
       completed: "Đã hoàn thành",
       refunded: "Đã hoàn tiền",
+      waiting_for_payment: "Chờ thanh toán",
     };
 
     return (
