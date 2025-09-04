@@ -423,7 +423,7 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                 </button>
               )}
 
-              {/* 🔧 DEBUG: Log để kiểm tra tại sao nút hiển thị */}
+              {/* 🔧 ADD: Nút yêu cầu hoàn tiền với màu sắc theo trạng thái */}
               {actionsState.canRequestRefundForCancelledOrder && (
                 <>
                   {console.log(
@@ -439,7 +439,56 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                   )}
                   <button
                     onClick={() => setRefundInfo({ type: "cancel" })}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                    style={{
+                      // 🔧 ADD: Màu sắc theo trạng thái (sử dụng inline style để đảm bảo hoạt động)
+                      backgroundColor:
+                        order.status === "cancelled"
+                          ? "#ef4444" // Đã hủy: Đỏ
+                          : order.status === "waiting_for_payment" && isExpired
+                            ? "#6b7280" // Hết hạn: Xám
+                            : "#8b5cf6", // Mặc định: Tím
+                      color: "white",
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "none",
+                      fontWeight: "500",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseOver={(e) => {
+                      // 🔧 ADD: Hiệu ứng hover
+                      if (order.status === "cancelled") {
+                        e.currentTarget.style.backgroundColor = "#dc2626"; // Đỏ tối
+                      } else if (
+                        order.status === "waiting_for_payment" &&
+                        isExpired
+                      ) {
+                        e.currentTarget.style.backgroundColor = "#4b5563"; // Xám tối
+                      } else {
+                        e.currentTarget.style.backgroundColor = "#7c3aed"; // Tím tối
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      // 🔧 ADD: Khôi phục màu gốc
+                      if (order.status === "cancelled") {
+                        e.currentTarget.style.backgroundColor = "#ef4444"; // Đỏ
+                      } else if (
+                        order.status === "waiting_for_payment" &&
+                        isExpired
+                      ) {
+                        e.currentTarget.style.backgroundColor = "#6b7280"; // Xám
+                      } else {
+                        e.currentTarget.style.backgroundColor = "#8b5cf6"; // Tím
+                      }
+                    }}
+                    title={
+                      order.status === "cancelled"
+                        ? "Yêu cầu hoàn tiền cho đơn hàng đã hủy"
+                        : order.status === "waiting_for_payment" && isExpired
+                          ? "Yêu cầu hoàn tiền cho đơn hàng hết hạn thanh toán"
+                          : "Yêu cầu hoàn tiền"
+                    }
                   >
                     💰 Yêu cầu hoàn tiền
                   </button>
