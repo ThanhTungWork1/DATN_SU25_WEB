@@ -166,25 +166,26 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
         ? "cancelled"
         : status;
 
+    // 🔧 FIX: Logic hủy đơn hàng mới - chỉ cho phép hủy ở trạng thái đầu chuỗi xử lý
+    // Lý do: Đơn hàng đã thanh toán (shipping, delivered, completed) không thể hủy
     const canCancel =
       [
-        "pending",
-        "confirmed",
-        "processing",
-        // Đặc biệt cho COD: có thể hủy cho đến khi đang giao hàng
-        ...(order.payment_method === "COD" ? ["shipping"] : []),
+        "pending", // Chờ xác nhận
+        "confirmed", // Đã xác nhận
+        "processing", // Đang xử lý
+        "waiting_for_payment", // Chờ thanh toán
       ].includes(effectiveStatus) &&
       !(order.status === "waiting_for_payment" && isExpired);
 
     // Thông báo về khả năng hủy đơn hàng
     const getCancelMessage = () => {
       if (canCancel) {
-        if (order.payment_method === "COD") {
-          return "Có thể hủy cho đến khi đơn hàng được giao";
+        if (isPaid) {
+          return "Có thể hủy đơn hàng, sau đó yêu cầu hoàn tiền";
         }
         return "Có thể hủy đơn hàng";
       }
-      return "Không thể hủy đơn hàng đã được giao";
+      return "Không thể hủy đơn hàng đã được giao hoặc đang giao";
     };
     const canReorder =
       ["delivered", "completed", "cancelled", "refunded"].includes(
@@ -197,9 +198,9 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
       isPaid;
 
     let canReturn = false;
-    const isReturnableStatus = ["delivered", "completed"].includes(
-      effectiveStatus
-    );
+    // 🔧 FIX: Chỉ cho phép trả hàng với đơn hàng đã giao (delivered), không phải đã hoàn thành (completed)
+    // Lý do: Đơn hàng completed = đã hoàn thành hoàn toàn, không thể trả hàng
+    const isReturnableStatus = ["delivered"].includes(effectiveStatus);
     if (isReturnableStatus && order.updated_at) {
       try {
         const timeZone = "Asia/Ho_Chi_Minh";
@@ -331,6 +332,17 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
             </button>
           )}
 
+          {/* 🔧 ADD: Nút đánh giá cho đơn hàng đã hoàn thành */}
+          {order.status === "completed" && (
+            <button
+              onClick={() => setShowDetail(true)}
+              className="px-4 py-2 bg-warning text-white rounded hover:bg-warning-dark transition-colors"
+              title="Đánh giá sản phẩm"
+            >
+              Đánh giá
+            </button>
+          )}
+
           {/* Hiển thị trạng thái refund nếu có */}
           {(order.refund_request || localRefundStatus) &&
             ((order.refund_request?.status || localRefundStatus) ===
@@ -391,11 +403,9 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
               {actionsState.canCancel && (
                 <button
                   onClick={() => {
-                    if (actionsState.isPaid) {
-                      setRefundInfo({ type: "cancel" });
-                    } else {
-                      onCancel(order.id);
-                    }
+                    // 🔧 FIX: Logic hủy đơn hàng mới - LUÔN hủy trực tiếp trước
+                    // Sau khi hủy, nếu đã thanh toán sẽ hiển thị nút "Yêu cầu hoàn tiền"
+                    onCancel(order.id);
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                   title={actionsState.getCancelMessage()}
@@ -429,9 +439,9 @@ const OrderItem: React.FC<Props> = ({ order, onCancel, onReorder }) => {
                   )}
                   <button
                     onClick={() => setRefundInfo({ type: "cancel" })}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
                   >
-                    Yêu cầu hoàn tiền
+                    💰 Yêu cầu hoàn tiền
                   </button>
                 </>
               )}

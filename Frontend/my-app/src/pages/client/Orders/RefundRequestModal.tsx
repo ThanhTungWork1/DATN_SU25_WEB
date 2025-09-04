@@ -54,6 +54,24 @@ const RefundRequestModal: React.FC<Props> = ({
   const queryClient = useQueryClient();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // 🔧 ADD: Kiểm tra điều kiện hoàn tiền
+  const canRequestRefund = () => {
+    if (!order) return false;
+
+    // Kiểm tra xem đơn hàng có thể hoàn tiền không
+    const isPaid =
+      (order as any).is_paid === 1 || (order as any).is_paid === true;
+
+    if (refundType === "cancel") {
+      // Hủy đơn: Chỉ cho phép với đơn hàng đã hủy và đã thanh toán
+      if (!isPaid) return false;
+      return order.status.toLowerCase() === "cancelled";
+    } else {
+      // Trả hàng: Chỉ cho phép với đơn hàng đã giao
+      return order.status.toLowerCase() === "delivered";
+    }
+  };
   const {
     register,
     handleSubmit,
@@ -110,6 +128,12 @@ const RefundRequestModal: React.FC<Props> = ({
 
   const onSubmit = (data: RefundFormData) => {
     if (!order) return;
+
+    // 🔧 ADD: Kiểm tra điều kiện hoàn tiền trước khi gửi
+    if (!canRequestRefund()) {
+      toast.error("Không thể yêu cầu hoàn tiền cho đơn hàng này");
+      return;
+    }
 
     const payload = {
       ...data,
@@ -186,6 +210,21 @@ const RefundRequestModal: React.FC<Props> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          {/* 🔧 ADD: Kiểm tra điều kiện hoàn tiền */}
+          {!canRequestRefund() && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-red-800">
+                <X className="w-5 h-5 text-red-600" />
+                <span className="font-medium">Không thể yêu cầu hoàn tiền</span>
+              </div>
+              <p className="text-red-700 text-sm mt-2">
+                {refundType === "cancel"
+                  ? "Chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã hủy và đã thanh toán"
+                  : "Chỉ có thể trả hàng và hoàn tiền cho đơn hàng đã giao"}
+              </p>
+            </div>
+          )}
+
           {/* Thông tin đơn hàng */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium mb-2">Thông tin đơn hàng</h3>
@@ -429,7 +468,7 @@ const RefundRequestModal: React.FC<Props> = ({
             </button>
             <button
               type="submit"
-              disabled={!isValid || isLoading}
+              disabled={!isValid || isLoading || !canRequestRefund()}
               className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? "Đang gửi..." : "Gửi yêu cầu"}

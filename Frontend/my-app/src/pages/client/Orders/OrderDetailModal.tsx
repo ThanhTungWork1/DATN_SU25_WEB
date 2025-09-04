@@ -112,7 +112,7 @@ const OrderDetailModal = ({
     productImage?: string;
     orderId: number;
   } | null>(null);
-  // Hàm hiển thị trạng thái thanh toán
+  // Hàm hiển thị phương thức thanh toán
   const getPaymentMethodDisplay = () => {
     if (!order) return "";
 
@@ -121,7 +121,24 @@ const OrderDetailModal = ({
       return "Đã hoàn tiền";
     }
 
-    // Hiển thị trạng thái thanh toán dựa trên is_paid
+    // Hiển thị phương thức thanh toán dựa trên trạng thái thanh toán
+    if (order.is_paid) {
+      return "Thanh toán ngân hàng";
+    } else {
+      return "Thanh toán khi nhận hàng";
+    }
+  };
+
+  // Hàm hiển thị trạng thái thanh toán
+  const getPaymentStatusDisplay = () => {
+    if (!order) return "";
+
+    // 🔧 FIX: Kiểm tra trạng thái refunded trước
+    if (order.status === "refunded") {
+      return "Đã hoàn tiền";
+    }
+
+    // Hiển thị trạng thái thanh toán
     if (order.is_paid) {
       return "Đã thanh toán";
     } else {
@@ -309,14 +326,20 @@ const OrderDetailModal = ({
           )}
 
           {/* Phương thức thanh toán */}
-          {order.payment_method && (
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold mb-2">
-                Phương thức thanh toán
-              </h4>
-              <p className="text-gray-600">{getPaymentMethodDisplay()}</p>
-            </div>
-          )}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold mb-2">
+              Phương thức thanh toán
+            </h4>
+            <p className="text-gray-600">{getPaymentMethodDisplay()}</p>
+          </div>
+
+          {/* Trạng thái thanh toán */}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold mb-2">
+              Trạng thái thanh toán
+            </h4>
+            <p className="text-gray-600">{getPaymentStatusDisplay()}</p>
+          </div>
 
           {/* Ghi chú */}
           {order.note && (
