@@ -1,6 +1,7 @@
 import { Button, Form, Input, message, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
-import useRegister from "../../hook/useRegisster";
+import useRegister from "../../hook/useRegister";
+import useLogin from "../../hook/useLogin";
 
 const formItemLayout = {
   labelCol: {
@@ -16,13 +17,29 @@ const formItemLayout = {
 export const Register = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const { mutate } = useRegister({ resource: "users" });
+  const { mutate: registerMutate } = useRegister({ resource: "register" });
+  const { mutate: loginMutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: any) => {
-    mutate(formData, {
+    registerMutate(formData, {
       onSuccess: () => {
-        messageApi.success("Đăng ký thành công");
-        navigate("/login");
+        loginMutate(
+          { email: formData.email, password: formData.password },
+          {
+            onSuccess: (data) => {
+              const res: any = data;
+              if (res && res.token) {
+                localStorage.setItem("token", res.token);
+              }
+              messageApi.success("Đăng ký & đăng nhập thành công!");
+              navigate("/");
+            },
+            onError: () => {
+              messageApi.error("Đăng ký thành công, nhưng đăng nhập thất bại!");
+              navigate("/login");
+            },
+          }
+        );
       },
       onError: (error: any) => {
         messageApi.error(error?.response?.data || "Đăng ký thất bại");

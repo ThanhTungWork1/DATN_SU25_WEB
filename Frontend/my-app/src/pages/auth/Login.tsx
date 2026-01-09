@@ -10,7 +10,7 @@ const formItemLayout = {
 export const Login = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const { mutate } = useLogin({ resource: "users" });
+  const { mutate } = useLogin({ resource: "login" });
 
   const onFinish = (formData: any) => {
     const { email, password } = formData;

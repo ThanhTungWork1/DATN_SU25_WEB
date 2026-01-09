@@ -10,11 +10,14 @@ class ColorController extends Controller
 {
     public function index()
     {
-        $colors = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])->get();
+        $colors = Color::withCount([
+            'productVariants' => function ($query) {
+
+                $query->whereHas('product', function ($q) {
+                    $q->where('status', true);
+                });
+            }
+        ])->get();
 
         return response()->json([
             'success' => true,
@@ -28,11 +31,15 @@ class ColorController extends Controller
      */
     public function show($id)
     {
-        $color = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])->findOrFail($id);
+        $color = Color::withCount([
+            'productVariants' => function ($query) {
+
+                $query->whereHas('product', function ($q) {
+                    $q->where('status', true);
+                });
+            }
+        ])->findOrFail($id);
+
 
         return response()->json([
             'success' => true,
@@ -46,11 +53,14 @@ class ColorController extends Controller
      */
     public function withProducts()
     {
-        $colors = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])
+        $colors = Color::withCount([
+            'productVariants' => function ($query) {
+
+                $query->whereHas('product', function ($q) {
+                    $q->where('status', true);
+                });
+            }
+        ])
             ->having('variants_count', '>', 0)
             ->get();
 

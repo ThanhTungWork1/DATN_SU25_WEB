@@ -12,11 +12,11 @@ export const getProductById = async (id: string): Promise<Product> => {
       sizesResponse,
       categoriesResponse,
     ] = await Promise.all([
-      axios.get(`http://localhost:3000/products/${id}`),
-      axios.get(`http://localhost:3000/productVariants?product_id=${id}`),
-      axios.get(`http://localhost:3000/colors`),
-      axios.get(`http://localhost:3000/sizes`),
-      axios.get(`http://localhost:3000/categories`),
+      axios.get(`http://localhost:8000/api/products/${id}`),
+      axios.get(`http://localhost:8000/api/product-variants?product_id=${id}`),
+      axios.get(`http://localhost:8000/api/colors`),
+      axios.get(`http://localhost:8000/api/sizes`),
+      axios.get(`http://localhost:8000/api/categories`),
     ]);
 
     return processProductDetail(
@@ -28,29 +28,29 @@ export const getProductById = async (id: string): Promise<Product> => {
     );
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
-    throw error;
+    throw error as any;
   }
 };
 
 // ======================= GET ALL PRODUCTS ========================
 export const getAllProducts = async (): Promise<Product[]> => {
-  const { data } = await axios.get(`http://localhost:3000/products`);
-  return data;
+  const { data } = await axios.get(`http://localhost:8000/api/products`);
+  return data as Product[];
 };
 
 // ======================= GET COMMENTS BY PRODUCT ========================
 export const getProductReviews = async (productId: number) => {
-  return await axios.get(`http://localhost:3000/comments?product_id=${productId}`);
+  return await axios.get(`http://localhost:8000/api/comments/product/${productId}`);
 };
 
 // ======================= GET USERS ========================
 export const getAllUsers = async () => {
-  return await axios.get(`http://localhost:3000/users`);
+  return await axios.get(`http://localhost:8000/api/users`);
 };
 
 // ======================= CART ========================
 export const getCart = async () => {
-  const { data } = await axios.get("http://localhost:3000/cart");
+  const { data } = await axios.get("http://localhost:8000/api/cart");
   return data;
 };
 
@@ -60,20 +60,20 @@ export const addToCart = async (item: {
   color?: string;
   size?: string;
 }) => {
-  return await axios.post("http://localhost:3000/cart", item);
+  return await axios.post("http://localhost:8000/api/cart", item);
 };
 
 export const updateCartItem = async (id: number, quantity: number) => {
-  return await axios.patch(`http://localhost:3000/cart/${id}`, { quantity });
+  return await axios.patch(`http://localhost:8000/api/cart/${id}`, { quantity });
 };
 
 export const removeCartItem = async (id: number) => {
-  return await axios.delete(`http://localhost:3000/cart/${id}`);
+  return await axios.delete(`http://localhost:8000/api/cart/${id}`);
 };
 
 // ======================= ORDERS ========================
 export const getAllOrders = async () => {
-  const { data } = await axios.get("http://localhost:3000/orders");
+  const { data } = await axios.get("http://localhost:8000/api/orders");
   return data;
 };
 
@@ -84,10 +84,10 @@ export const createOrder = async (orderData: {
   address: string;
   phone: string;
 }) => {
-  return await axios.post("http://localhost:3000/orders", orderData);
+  return await axios.post("http://localhost:8000/api/orders", orderData);
 };
 
 export const getOrderById = async (id: number) => {
-  const { data } = await axios.get(`http://localhost:3000/orders/${id}`);
+  const { data } = await axios.get(`http://localhost:8000/api/orders/${id}`);
   return data;
 };

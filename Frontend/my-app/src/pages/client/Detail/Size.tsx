@@ -15,12 +15,10 @@ type SizeProps = {
 };
 
 const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
-  // DEBUG: In ra danh sách variants để kiểm tra dữ liệu
-  console.log("[DEBUG] Component 'Size' nhận được variants:", variants);
-
+  
   // BƯỚC 1: Lọc ra các size duy nhất và hợp lệ
   const availableSizes = [
-    ...new Set(variants.map((v) => v.size).filter(Boolean) as string[]),
+    ...new Set(variants.map((v) => v.size?.name).filter(Boolean) as string[]),
   ];
 
   // Không có size nào hợp lệ thì không hiển thị
@@ -34,7 +32,7 @@ const Size = ({ variants, selectedSize, onSelectSize }: SizeProps) => {
           // Kiểm tra xem size này có còn hàng không
           const isOutOfStock = !variants.some(
             (variant) =>
-              variant?.size === size && variant?.stock && variant.stock > 0
+              variant?.size?.name === size && variant?.stock && variant.stock > 0
           );
 
           const isSelected = selectedSize === size;

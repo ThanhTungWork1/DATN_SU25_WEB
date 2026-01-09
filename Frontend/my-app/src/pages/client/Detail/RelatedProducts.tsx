@@ -5,7 +5,6 @@ import { BoxProduct } from "../../../components/BoxProduct";
 import { useCart } from "../../../provider/CartProvider";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toast } from "sonner";
-import "../../../assets/styles/detailProduct.css";
 import type {
   RouteParams,
   RelatedProductsProps,

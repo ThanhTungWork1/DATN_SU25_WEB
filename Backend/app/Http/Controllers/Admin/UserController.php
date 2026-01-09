@@ -62,10 +62,36 @@ class UserController extends Controller
         return $user;
     }
 
-    public function destroy($id)
+    public function unlock($id)
     {
-        return User::destroy($id);
+        $user = User::findOrFail($id);
+
+        $user->status = 1;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Tài khoản đã được mở khoá',
+            'user' => $user
+        ]);
     }
+
+    public function lock($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->role == 1) {
+            return response()->json(['message' => 'Không thể khoá tài khoản admin!'], 403);
+        }
+
+        $user->status = 0; // ⚠️ Khoá tài khoản
+        $user->save();
+
+        return response()->json([
+            'message' => 'Tài khoản đã bị khoá thành công',
+            'user' => $user
+        ]);
+    }
+
     public function listUsers()
     {
         return 'listUsers test';

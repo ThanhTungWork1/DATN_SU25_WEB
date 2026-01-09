@@ -1,4 +1,3 @@
-import "../../../assets/styles/detailProduct.css";
 
 type AsideProps = {
   images: string[];
