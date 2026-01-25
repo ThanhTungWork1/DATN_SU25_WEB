@@ -14,8 +14,10 @@
               $table->id();
               $table->unsignedBigInteger('category_id'); // Sửa từ integer thành unsignedBigInteger
               $table->string('name', 255);
-              $table->text('description');
+              $table->string('slug')->unique();
+              $table->text('description')->nullable();
               $table->decimal('price', 10, 2);
+              $table->string('image')->nullable(); // Thêm dòng này
               $table->boolean('status')->default(true);
               $table->timestamps();
 
@@ -31,3 +33,4 @@
           Schema::dropIfExists('products');
       }
   };
+  

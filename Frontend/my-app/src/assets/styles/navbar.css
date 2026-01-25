@@ -1,0 +1,808 @@
+/* ========== 2. NAVBAR & NAVIGATION ========== */
+.navbar-custom {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  background: linear-gradient(90deg, #000000) !important;
+  color: white !important;
+  padding: 0 20px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.4s ease !important;
+  min-height: 70px !important;
+  height: 70px !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Navbar container layout */
+.navbar-custom>* {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Cải thiện spacing cho menu items */
+.menu-links-custom li {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  margin: 0 5px !important;
+}
+
+.menu-links-custom li a,
+.menu-links-custom li button {
+  color: #ffffff !important;
+  text-decoration: none !important;
+  padding: 10px 16px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.menu-links-custom li a:hover,
+.menu-links-custom li button:hover {
+  color: #00c6ab !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-2px) !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.menu-links-custom li a.active,
+.menu-links-custom li button.active {
+  color: #00c6ab !important;
+  background: rgba(0, 198, 171, 0.1) !important;
+  border: 1px solid rgba(0, 198, 171, 0.3) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Loại bỏ viền xanh khi focus */
+.menu-links-custom li a:focus,
+.menu-links-custom li button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Loại bỏ viền xanh khi hover */
+.menu-links-custom li a:hover,
+.menu-links-custom li button:hover {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Nếu muốn shadow đậm hơn khi cuộn, có thể dùng JS thêm class .scrolled cho .navbar */
+
+.navbar-logo-custom {
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 1.8rem !important;
+  font-family: 'Poppins', 'Segoe UI', sans-serif !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  letter-spacing: 1px !important;
+  user-select: none !important;
+  height: 70px !important;
+  margin-right: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.logo-text-custom,
+.logo-x-custom {
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.logo-text-custom {
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 1px !important;
+  font-family: 'Poppins', 'Segoe UI', sans-serif !important;
+  white-space: nowrap !important;
+}
+
+.logo-x-custom {
+  color: #00c6ab !important;
+  font-weight: 900 !important;
+  font-size: 1.8rem !important;
+  margin-left: 2px !important;
+  font-family: 'Poppins', 'Segoe UI', sans-serif !important;
+  white-space: nowrap !important;
+}
+
+/* Icon yêu thích trên navbar */
+.icon-favorite-navbar-custom {
+  color: #00c6ab !important;
+  font-size: 18px !important;
+  transition: color 0.3s, transform 0.2s !important;
+  display: flex !important;
+  align-items: center !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.icon-favorite-navbar-custom:hover {
+  color: #e63946 !important;
+  transform: scale(1.18) !important;
+}
+
+.icon-favorite-navbar-custom i {
+  font-size: 1em !important;
+}
+
+.icon-group-custom {
+  display: flex !important;
+  align-items: center !important;
+  height: 70px !important;
+  gap: 10px !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+/* Menu toggle (hamburger menu) - ẩn trên desktop */
+.menu-toggle-custom {
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 20px !important;
+  color: white !important;
+  cursor: pointer !important;
+  background: none !important;
+  border: none !important;
+}
+
+/* Desktop: Menu links luôn hiển thị */
+.navbar-custom .menu-links-custom {
+  display: flex !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 16px !important;
+  align-items: center !important;
+  height: 70px !important;
+  flex: 1 !important;
+  justify-content: center !important;
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  width: auto !important;
+  background: transparent !important;
+  flex-direction: row !important;
+  z-index: auto !important;
+  overflow: visible !important;
+}
+
+/* Menu overlay cho mobile */
+.menu-overlay-custom {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 999 !important;
+}
+
+.icon-group-custom>* {
+  vertical-align: middle !important;
+  align-items: center !important;
+  display: flex !important;
+  height: 100% !important;
+}
+
+.icon-favorite-navbar-custom,
+.icon-btn-custom {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+button.searchbar-icon-custom {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 34px !important;
+  height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  font-size: 18px !important;
+  transition: background 0.2s, box-shadow 0.2s !important;
+}
+
+button.searchbar-icon-custom:active,
+button.searchbar-icon-custom:focus,
+button.searchbar-icon-custom:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+main {
+  margin-top: 0 !important;
+}
+
+.main-content,
+.container {
+  margin-top: 0 !important;
+}
+
+.menu-container {
+  position: sticky !important;
+  /* Giữ khi cuộn */
+  top: 0 !important;
+  /* Dính ở trên cùng */
+  background: rgba(255, 255, 255, 0.8) !important;
+  /* Nền trắng mờ */
+  backdrop-filter: blur(6px) !important;
+  /* Làm mờ nội dung phía sau */
+  z-index: 1000 !important;
+  /* Luôn nằm trên */
+  padding: 10px 0 !important;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Container bao MegaMenu */
+.dropdown-wrapper-custom {
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+/* MegaMenu */
+.mega-menu-custom {
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: max-content !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  overflow: visible !important;
+  max-height: none !important;
+  min-width: 200px !important;
+  z-index: 1001 !important;
+}
+
+/* Text trong mega menu - màu đen */
+.mega-menu-custom * {
+  color: #000000 !important;
+}
+
+.mega-menu-custom a,
+.mega-menu-custom button,
+.mega-menu-custom span,
+.mega-menu-custom div {
+  color: #000000 !important;
+}
+
+.mega-menu-custom .mega-menu-title {
+  color: #00c6ab !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  margin-bottom: 12px !important;
+}
+
+.mega-menu-custom .mega-menu-list li a {
+  color: #000000 !important;
+  text-decoration: none !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  border-radius: 6px !important;
+  display: block !important;
+}
+
+.mega-menu-custom .mega-menu-list li a:hover {
+  color: #00c6ab !important;
+  background: rgba(0, 198, 171, 0.1) !important;
+}
+
+.navbar-custom .menu-links-custom,
+.header {
+  overflow: visible !important;
+}
+
+/* Loại bỏ viền xanh cho tất cả các element */
+* {
+  outline: none !important;
+}
+
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Đặc biệt cho NavLink */
+a:focus,
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Tablet và iPad (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .navbar-custom {
+    padding: 0 20px !important;
+    min-height: 70px !important;
+    height: 70px !important;
+  }
+
+  .navbar-logo-custom {
+    font-size: 1.8rem !important;
+    height: 70px !important;
+    margin-right: 0 !important;
+  }
+
+  .logo-text-custom {
+    font-size: 1.8rem !important;
+  }
+
+  .navbar-custom .menu-links-custom {
+    height: 70px !important;
+    gap: 16px !important;
+    flex: 1 !important;
+    justify-content: center !important;
+    display: flex !important;
+  }
+
+  .menu-links-custom li a,
+  .menu-links-custom li button {
+    font-size: 15px !important;
+    padding: 10px 16px !important;
+  }
+
+  .icon-group-custom {
+    height: 70px !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Tablet: Menu toggle vẫn ẩn */
+  .menu-toggle-custom {
+    display: none !important;
+  }
+}
+
+/* Tablet và iPad (769px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .navbar-custom {
+    padding: 0 16px !important;
+    height: 72px !important;
+  }
+
+  .navbar-logo-custom {
+    font-size: 1.8rem !important;
+    height: 72px !important;
+    margin-right: 0 !important;
+  }
+
+  .logo-text-custom {
+    font-size: 1.8rem !important;
+  }
+
+  .navbar-custom .menu-links-custom {
+    gap: 14px !important;
+    height: 72px !important;
+    flex: 1 !important;
+    justify-content: center !important;
+    display: flex !important;
+  }
+
+  .menu-links-custom li a,
+  .menu-links-custom li button {
+    font-size: 15px !important;
+    padding: 8px 14px !important;
+  }
+
+  .icon-group-custom {
+    gap: 10px !important;
+    height: 72px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Tablet: Menu toggle vẫn ẩn */
+  .menu-toggle-custom {
+    display: none !important;
+  }
+}
+
+/* Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  .navbar-custom {
+    padding: 0 16px !important;
+    height: 60px !important;
+    justify-content: space-between !important;
+    background: linear-gradient(90deg, #000000) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .navbar-logo-custom {
+    font-size: 1.3rem !important;
+    height: 60px !important;
+    margin-right: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .logo-text-custom {
+    font-size: 1.3rem !important;
+  }
+
+  /* Mobile: Icon group tối ưu */
+  .icon-group-custom {
+    gap: 10px !important;
+    height: 60px !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+  }
+
+  /* Mobile: Ẩn một số icon không cần thiết trên mobile */
+  .icon-favorite-navbar-custom {
+    display: none !important;
+  }
+
+  /* Mobile: Menu toggle đẹp hơn */
+  .menu-toggle-custom {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 24px !important;
+    color: white !important;
+    cursor: pointer !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .menu-toggle-custom:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05) !important;
+  }
+
+  /* Mobile: Menu links - thiết kế mới hoàn toàn */
+  .navbar-custom .menu-links-custom {
+    display: none !important;
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: calc(100vh - 60px) !important;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    flex-direction: column !important;
+    padding: 24px 20px !important;
+    gap: 16px !important;
+    overflow-y: auto !important;
+    z-index: 9999 !important;
+    animation: slideDown 0.3s ease forwards !important;
+  }
+
+  /* Mobile: Menu links hiển thị khi active */
+  .navbar-custom .menu-links-custom.active {
+    display: flex !important;
+  }
+
+  /* Mobile: Menu items thiết kế mới */
+  .menu-links-custom li {
+    width: 100% !important;
+    text-align: left !important;
+    margin: 0 !important;
+  }
+
+  .menu-links-custom li a,
+  .menu-links-custom li button {
+    width: 100% !important;
+    font-size: 18px !important;
+    font-weight: 500 !important;
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    text-align: left !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .menu-links-custom li a:hover,
+  .menu-links-custom li button:hover {
+    background: rgba(0, 198, 171, 0.15) !important;
+    border-color: rgba(0, 198, 171, 0.3) !important;
+    color: #00c6ab !important;
+    transform: translateX(8px) !important;
+  }
+
+  .menu-links-custom li a.active,
+  .menu-links-custom li button.active {
+    background: rgba(0, 198, 171, 0.2) !important;
+    border-color: #00c6ab !important;
+    color: #00c6ab !important;
+  }
+
+  /* Mobile: Dropdown menu thiết kế mới */
+  .menu-links-custom .dropdown {
+    width: 100% !important;
+  }
+
+  .menu-links-custom .dropdown-wrapper-custom {
+    width: 100% !important;
+  }
+
+  .menu-links-custom .dropdown button {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .menu-links-custom .dropdown button::after {
+    content: '▼' !important;
+    font-size: 12px !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .menu-links-custom .dropdown:hover button::after {
+    transform: rotate(180deg) !important;
+  }
+
+  /* Mobile: Mega menu thiết kế mới */
+  .mega-menu-custom {
+    position: static !important;
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 8px !important;
+    margin-top: 8px !important;
+    padding: 16px !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .mega-menu-nam {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    min-width: auto !important;
+    max-width: none !important;
+  }
+
+  .mega-menu-cols {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .mega-menu-col {
+    min-width: auto !important;
+  }
+
+  .mega-menu-title {
+    color: #00c6ab !important;
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .mega-menu-list li a {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 6px !important;
+  }
+
+  .mega-menu-list li a:hover {
+    background: rgba(0, 198, 171, 0.1) !important;
+    color: #00c6ab !important;
+  }
+
+  /* Mobile: Animation mới */
+  @keyframes slideDown {
+    from {
+      opacity: 0 !important;
+      transform: translateY(-20px) !important;
+    }
+
+    to {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+  }
+
+  /* Mobile: Thanh cuộn ẩn */
+  .menu-links-custom::-webkit-scrollbar {
+    width: 0px !important;
+    background: transparent !important;
+  }
+
+  /* Mobile: Menu overlay */
+  .menu-overlay-custom {
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+}
+
+/* Mobile nhỏ (max-width: 480px) */
+@media (max-width: 480px) {
+  .navbar-custom {
+    padding: 0 12px !important;
+    height: 56px !important;
+  }
+
+  .navbar-logo-custom {
+    font-size: 1.2rem !important;
+    height: 56px !important;
+  }
+
+  .logo-text-custom {
+    font-size: 1.2rem !important;
+  }
+
+  .icon-group-custom {
+    gap: 8px !important;
+    height: 56px !important;
+  }
+
+  .menu-toggle-custom {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 20px !important;
+  }
+
+  .navbar-custom .menu-links-custom {
+    top: 56px !important;
+    height: calc(100vh - 56px) !important;
+    padding: 20px 16px !important;
+  }
+
+  .menu-links-custom li a,
+  .menu-links-custom li button {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+  }
+
+  .mega-menu-custom {
+    padding: 12px !important;
+  }
+
+  .mega-menu-nam {
+    padding: 12px !important;
+  }
+
+  .mega-menu-title {
+    font-size: 14px !important;
+  }
+
+  .mega-menu-list li a {
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+  }
+}
+
+/* FINAL OVERRIDE - Đảm bảo menu luôn căn giữa */
+.navbar-custom .menu-links-custom,
+nav.navbar-custom .menu-links-custom,
+.navbar-custom ul.menu-links-custom,
+.navbar-custom #navLinks {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex: 1 !important;
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  width: auto !important;
+  background: transparent !important;
+  flex-direction: row !important;
+  z-index: auto !important;
+  overflow: visible !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  list-style: none !important;
+  gap: 16px !important;
+  height: 70px !important;
+}
+
+/* Đảm bảo logo và icon group không bị ảnh hưởng */
+.navbar-custom .navbar-logo-custom {
+  flex-shrink: 0 !important;
+  margin-right: 0 !important;
+}
+
+.navbar-custom .icon-group-custom {
+  flex-shrink: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Đảm bảo menu toggle chỉ hiển thị trên mobile */
+.menu-toggle-custom {
+  display: none !important;
+}
+
+/* Chỉ hiển thị menu toggle trên mobile */
+@media (max-width: 768px) {
+  .menu-toggle-custom {
+    display: flex !important;
+  }
+
+  /* Mobile: Tối ưu icon group */
+  .icon-btn-custom {
+    font-size: 18px !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .icon-btn-custom:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: scale(1.1) !important;
+  }
+
+  /* Mobile: Tối ưu search icon */
+  button.searchbar-icon-custom {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+  }
+
+  button.searchbar-icon-custom:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Mobile: Ẩn một số icon không cần thiết */
+  .icon-favorite-navbar-custom {
+    display: none !important;
+  }
+
+  /* Mobile: Tối ưu user icon */
+  .icon-btn-custom:last-child {
+    font-size: 16px !important;
+    padding: 6px 10px !important;
+    background: rgba(0, 198, 171, 0.1) !important;
+    border: 1px solid rgba(0, 198, 171, 0.2) !important;
+    border-radius: 6px !important;
+  }
+
+  .icon-btn-custom:last-child:hover {
+    background: rgba(0, 198, 171, 0.2) !important;
+  }
+}

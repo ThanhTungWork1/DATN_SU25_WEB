@@ -1,139 +1,79 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
-import "../assets/styles/detailProduct.css";
+import "../assets/styles/action.css";
 
 type ProductActionsProps = {
-  onAddToCart: (quantity: number) => void;
-  onBuyNow?: () => void;
   maxQuantity: number;
+  disabled?: boolean;
+  onAddToCart: (quantity: number) => void;
+  onBuyNow: (quantity: number) => void;
 };
 
-const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
+const ProductActions = ({
+  maxQuantity,
+  disabled = false,
+  onAddToCart,
+  onBuyNow,
+}: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
 
+  // Giới hạn tối đa 10 sản phẩm cho bán lẻ
+  const maxAllowedQuantity = Math.min(maxQuantity, 10);
+
   const increase = () =>
-    setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
+    setQuantity((q) => (q < maxAllowedQuantity ? q + 1 : maxAllowedQuantity));
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
+  const handleAddToCart = () => {
+    onAddToCart(quantity);
+  };
+
+  const handleBuyNow = () => {
+    onBuyNow(quantity);
+  };
 
   return (
     <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
-      {/* Bộ đếm số lượng */}
-      <div className="d-flex align-items-center border rounded px-2">
-        <button onClick={decrease} className="btn-quantity" type="button">
+      <div className="quantity-control">
+        <button onClick={decrease} className="quantity-btn" type="button">
           −
         </button>
         <input
           type="number"
           min={1}
-          max={maxQuantity}
+          max={maxAllowedQuantity}
           value={quantity}
           onChange={(e) => {
             const val = parseInt(e.target.value, 10);
             if (!isNaN(val)) {
-              setQuantity(Math.min(Math.max(val, 1), maxQuantity));
+              setQuantity(Math.min(Math.max(val, 1), maxAllowedQuantity));
             }
           }}
-          className="form-control form-control-sm text-center border-0"
-          style={{ width: 60 }}
+          className="quantity-input"
         />
-        <button onClick={increase} className="btn-quantity" type="button">
+        <button onClick={increase} className="quantity-btn" type="button">
           +
         </button>
       </div>
 
-      {/* Nút thêm giỏ hàng */}
-      <button className="btn-add-cart" onClick={() => onAddToCart(quantity)}>
-        <FaShoppingCart className="me-1" /> Thêm
-      </button>
-
-      {/* Nút mua ngay */}
-      <button className="btn-buy-now">Mua ngay</button>
-    </div>
-  );
-=======
-=======
-import { useState } from 'react';
-import { FaShoppingCart } from 'react-icons/fa';
-import '../assets/styles/detailProduct.css';
->>>>>>> f51a0d77 (trang detail hoan thien)
-=======
-import { useState } from "react";
-import { FaShoppingCart } from "react-icons/fa";
-import "../assets/styles/detailProduct.css";
->>>>>>> a8244187 (giao dien list sp)
-
-type ProductActionsProps = {
-  onAddToCart: (quantity: number) => void;
-  onBuyNow?: () => void;
-  maxQuantity: number;
-};
-
-const ProductActions = ({ onAddToCart, maxQuantity }: ProductActionsProps) => {
-  const [quantity, setQuantity] = useState(1);
-
-  const increase = () =>
-    setQuantity((q) => (q < maxQuantity ? q + 1 : maxQuantity));
-  const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
-
-  return (
-    <div className="mt-3 d-flex align-items-center gap-3 flex-wrap">
-      {/* Bộ đếm số lượng */}
-      <div className="d-flex align-items-center border rounded px-2">
-        <button
-          onClick={decrease}
-          className="btn btn-sm btn-light px-2"
-          type="button"
-        >
-          −
-        </button>
-        <input
-          type="number"
-          min={1}
-          max={maxQuantity}
-          value={quantity}
-          onChange={(e) => {
-            const val = parseInt(e.target.value, 10);
-            if (!isNaN(val)) {
-              setQuantity(Math.min(Math.max(val, 1), maxQuantity));
-            }
-          }}
-          className="form-control form-control-sm text-center border-0"
-          style={{ width: 60 }}
-        />
-        <button
-          onClick={increase}
-          className="btn btn-sm btn-light px-2"
-          type="button"
-        >
-          +
-        </button>
-      </div>
-
-      {/* Nút thêm giỏ hàng */}
       <button
-        className="btn btn-outline-primary btn-sm d-flex align-items-center"
-        onClick={() => onAddToCart(quantity)}
+        className={`btn-add-cart d-flex align-items-center${disabled ? " disabled" : ""}`}
+        onClick={handleAddToCart}
+        disabled={disabled}
+        title="Tối đa 10 sản phẩm cho mỗi mẫu"
       >
         <FaShoppingCart className="me-1" /> Thêm
       </button>
 
-<<<<<<< HEAD
-            {/* Nút mua ngay */}
-            <button className="btn btn-danger btn-sm">
-                Mua ngay
-            </button>
-        </div>
-    );
->>>>>>> 6a994c6e (giao dien detail)
-=======
-      {/* Nút mua ngay */}
-      <button className="btn btn-danger btn-sm">Mua ngay</button>
+      <button
+        className={`btn-buy-now${disabled ? " disabled" : ""}`}
+        onClick={handleBuyNow}
+        disabled={disabled}
+      >
+        Mua ngay
+      </button>
     </div>
   );
->>>>>>> a8244187 (giao dien list sp)
 };
 
 export default ProductActions;

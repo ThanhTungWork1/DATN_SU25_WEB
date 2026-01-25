@@ -1,72 +1,193 @@
-import { useEffect } from "react";
-import { FilteProducts } from "./FilteProducts";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { FilterProducts } from "./FilterProducts";
 import { BoxProduct } from "../../../components/BoxProduct";
-import "../../../assets/styles/ListProducts.css";
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
 import { Pagination } from "./Pagination";
-import { useProductList } from "../../../hook/useProductList";
 import { useLocation } from "react-router-dom";
-import { Section } from "../../../components/Section";
-import { useProductFilter } from "../../../hook/useProductFilter";
 import { Breadcrumb } from "../../../components/Breadcrumb";
+import {
+  getAllCategories,
+  getAllColors,
+  getAllSizes,
+  getProductsPaginatedAndFiltered,
+} from "../../../api/ApiProduct";
+import { SkeletonProduct } from "../../../components/SkeletonProduct";
+import NoData from "../../../components/NoData";
+import "../../../assets/styles/filte.css";
+import "../../../assets/styles/bodyListSP.css";
+import banner4 from "../../../assets/image/banner4 (3).png";
 
-// Số sản phẩm mỗi trang
 const PAGE_SIZE = 15;
 
 /**
  * Trang danh sách sản phẩm với phân trang và bộ lọc
  */
 export const ListProduct = () => {
-  // Fetch dữ liệu sản phẩm + danh mục
-  const { products, categories, colors, sizes, loading, error } =
-    useProductList(1, PAGE_SIZE);
+  // State filter và page
+  const [filter, setFilter] = useState<any>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter hook
-  const {
-    currentPage,
-    setCurrentPage,
-    filter,
-    setFilter,
-    applyFilter,
-    clearFilter,
-    pagedProducts,
-    pageCount,
-    isCategoryMenu,
-  } = useProductFilter(products, PAGE_SIZE);
+  // State cho categories, colors, sizes
+  const [categories, setCategories] = useState<any[]>(() => {
+    const cached = localStorage.getItem("categories");
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [colors, setColors] = useState<any[]>(() => {
+    const cached = localStorage.getItem("colors");
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [sizes, setSizes] = useState<any[]>(() => {
+    const cached = localStorage.getItem("sizes");
+    return cached ? JSON.parse(cached) : [];
+  });
 
-  // Lấy category từ query string
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const hasCategory = params.has("category");
+  const [products, setProducts] = useState<any[]>(() => {
+    const cached = localStorage.getItem(`products_page_${1}`);
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    per_page: PAGE_SIZE,
+    total: 0,
+    total_pages: 1,
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(products.length === 0);
 
-  // Tự động lọc khi filter thay đổi
+  const [loadingCategories, setLoadingCategories] = useState(
+    categories.length === 0
+  );
+  const [loadingColors, setLoadingColors] = useState(colors.length === 0);
+  const [loadingSizes, setLoadingSizes] = useState(sizes.length === 0);
+
   useEffect(() => {
-    const hasFilter =
-      (filter.categories && filter.categories.length > 0) ||
-      filter.name ||
-      filter.priceRange ||
-      (filter.colors && filter.colors.length > 0) ||
-      (filter.sizes && filter.sizes.length > 0) ||
-      (filter.materials && filter.materials.length > 0);
+    getAllCategories().then((data) => {
+      setCategories(data);
+      localStorage.setItem("categories", JSON.stringify(data));
+      setLoadingCategories(false);
+    });
+    getAllColors().then((colors) => {
+      setColors(
+        colors.map((c: any) => ({
+          ...c,
+          code: c.hex_code,
+        }))
+      );
+      localStorage.setItem("colors", JSON.stringify(colors));
+      setLoadingColors(false);
+    });
+    getAllSizes().then((data) => {
+      setSizes(data);
+      localStorage.setItem("sizes", JSON.stringify(data));
+      setLoadingSizes(false);
+    });
+  }, []);
 
-    if (hasFilter) {
-      applyFilter();
+  // Params truyền vào hook
+  const params = {
+    page: currentPage,
+    per_page: PAGE_SIZE,
+    ...filter,
+  };
+
+  // Lấy sản phẩm từ backend
+  useEffect(() => {
+    setLoading(products.length === 0);
+    setError(null);
+    getProductsPaginatedAndFiltered(params)
+      .then((res) => {
+        const result = res as ProductApiResponse;
+        setProducts(result.data);
+        setPagination(
+          result.pagination || {
+            current_page: 1,
+            per_page: PAGE_SIZE,
+            total: 0,
+            total_pages: 1,
+          }
+        );
+        localStorage.setItem(
+          `products_page_${params.page || 1}`,
+          JSON.stringify(result.data)
+        );
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Lỗi khi tải dữ liệu: " + (err?.message || ""));
+        setProducts([]);
+        setPagination({
+          current_page: 1,
+          per_page: PAGE_SIZE,
+          total: 0,
+          total_pages: 1,
+        });
+        setLoading(false);
+      });
+  }, [JSON.stringify(params)]);
+
+  // Lấy category từ query string (nếu cần cho breadcrumb)
+  const location = useLocation();
+  const paramsUrl = new URLSearchParams(location.search);
+  const hasCategory = paramsUrl.has("category");
+  const categoryFromUrl = paramsUrl.get("category");
+  const isOnlyProductsPage =
+    location.pathname === "/products" && !paramsUrl.has("category");
+
+  // Đồng bộ filter.category_id với URL param
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setFilter((prev: any) => ({
+        ...prev,
+        category_id: Number(categoryFromUrl),
+      }));
+    } else {
+      setFilter((prev: any) => {
+        const { category_id, ...rest } = prev;
+        return rest;
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    filter.categories,
-    filter.name,
-    filter.priceRange,
-    filter.colors,
-    filter.sizes,
-    filter.materials,
-  ]);
+    setCurrentPage(1);
+  }, [categoryFromUrl]);
+
+  const applyFilter = useCallback(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
+  const clearFilter = useCallback(() => {
+    setFilter({});
+    setCurrentPage(1);
+  }, []);
+
+  const memoizedFilterProducts = useMemo(
+    () => (
+      <FilterProducts
+        filter={filter}
+        setFilter={setFilter}
+        onApply={applyFilter}
+        onClear={clearFilter}
+        categories={categories}
+        colors={colors}
+        sizes={sizes}
+        loadingCategories={loadingCategories}
+        loadingColors={loadingColors}
+        loadingSizes={loadingSizes}
+      />
+    ),
+    [
+      filter,
+      setFilter,
+      applyFilter,
+      clearFilter,
+      categories,
+      colors,
+      sizes,
+      loadingCategories,
+      loadingColors,
+      loadingSizes,
+    ]
+  );
 
   return (
     <>
-      <Navbar />
-
       {/* Bộ lọc offcanvas */}
       <div
         className="offcanvas offcanvas-start border-end"
@@ -75,49 +196,44 @@ export const ListProduct = () => {
         tabIndex={-1}
         id="offcanvasFilter"
       >
-        <FilteProducts
-          filter={filter}
-          setFilter={setFilter}
-          onApply={applyFilter}
-          onClear={clearFilter}
-          categories={categories}
-          colors={colors}
-          sizes={sizes}
-        />
+        {memoizedFilterProducts}
       </div>
 
-      <Section />
+      {/* <Section /> */}
 
       {/* Breadcrumb */}
-      {hasCategory && (
-        <div className="container breadcrumb-container-list">
-          <Breadcrumb
-            items={[
-              { label: "Trang chủ", to: "/" },
-              { label: "Sản phẩm", to: "/products" },
-              ...((filter.categories ?? []).length > 0 && categories.length > 0
-                ? (() => {
-                    const cat = categories.find(
-                      (cat) => cat.id === (filter.categories ?? [])[0]
-                    );
-                    return cat && cat.name ? [{ label: cat.name }] : [];
-                  })()
-                : []),
-            ]}
-          />
-        </div>
-      )}
-
       {/* Nội dung chính */}
-      <div className="container my-4 product-list-container">
+      <div className="product-list-container">
         {error && <div className="alert alert-danger">{error}</div>}
         {loading ? (
-          <div>Đang tải sản phẩm...</div>
+          <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+            {[...Array(PAGE_SIZE)].map((_, i) => (
+              <div className="col" key={i}>
+                <SkeletonProduct />
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <NoData text="Hiện không có sản phẩm nào trong shop hoặc đã hết hàng." />
         ) : (
           <>
-            <div className="product-section-container">
-              {!isCategoryMenu && (
-                <div className="d-flex align-items-center mb-3">
+            <div className="product-list-section">
+              <div className="bannerListSP">
+                <img src={banner4} alt="banner4" />
+              </div>
+              {/* Breadcrumb chuyển xuống dưới banner */}
+              {hasCategory && (
+                <div className="container breadcrumb-container-list">
+                  <Breadcrumb
+                    items={[
+                      { label: "Trang chủ", to: "/" },
+                      { label: "Sản phẩm", to: "/products" },
+                    ]}
+                  />
+                </div>
+              )}
+              <div className="d-flex align-items-center mb-3">
+                {isOnlyProductsPage && (
                   <button
                     className="btn btn-filter"
                     type="button"
@@ -126,26 +242,37 @@ export const ListProduct = () => {
                   >
                     Bộ lọc
                   </button>
-                </div>
-              )}
-              <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
-                {pagedProducts.map((product) => (
+                )}
+              </div>
+              <div className="product-list-grid">
+                {products.map((product: any) => (
                   <BoxProduct key={product.id} product={product} />
                 ))}
               </div>
             </div>
-
             {/* Phân trang */}
             <Pagination
-              currentPage={currentPage}
-              totalPages={pageCount}
+              currentPage={pagination.current_page}
+              totalPages={pagination.total_pages}
               onPageChange={setCurrentPage}
+              totalItems={pagination.total}
+              itemsPerPage={pagination.per_page}
             />
           </>
         )}
       </div>
-
-      <Footer />
     </>
   );
+};
+
+type ProductApiResponse = {
+  data: any[];
+  pagination: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+    [key: string]: any;
+  };
+  [key: string]: any;
 };

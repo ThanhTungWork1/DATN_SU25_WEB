@@ -1,29 +1,56 @@
-import axios from "axios"
+import axiosInstance from "../utils/axiosInstance";
+// dùng đúng axiosInstance từ utils/axios.ts
+import type { IUser } from "../types/users";
 
+type AuthParams = {
+  resource: string;
+  variables: {
+    login: string;
+    password: string;
+  };
+};
 
-const API_URL = `http://localhost:3000`
+type LoginResponse = {
+  token: string;
+  user: IUser;
+};
 
-type signupParams = {
-    resource: string,
-    variables: any,
-}
-type signinParams = {
-    resource: string,
-    variables: any,
-}
-const dataProvider = {
-    signup: async ({ resource, variables }: signupParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return {
-            data: response.data
-        }
-    },
-    signin: async ({ resource, variables }: signinParams) => {
-        const response = await axios.post(`${API_URL}/${resource}`, variables);
-        return {
-            data: response.data
-        }
-    },
-}
+export const login = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
+  console.log("🌐 authProvider - Gọi API login với:", { resource, variables });
 
-export const { signup } = dataProvider;
+  try {
+    const { data } = await axiosInstance.post<LoginResponse>(
+      `/${resource}`,
+      variables
+    );
+    console.log("🌐 authProvider - Response từ server:", data);
+    return data;
+  } catch (error: any) {
+    console.error("❌ authProvider - Login API error:", error);
+    console.error("❌ authProvider - Error response:", error.response);
+    console.error("❌ authProvider - Error data:", error.response?.data);
+    throw error;
+  }
+};
+
+export const register = async ({
+  resource,
+  variables,
+}: AuthParams): Promise<LoginResponse> => {
+  try {
+    const { data } = await axiosInstance.post<LoginResponse>(
+      `/${resource}`,
+      variables
+    );
+    return data;
+  } catch (error: any) {
+    console.error(
+      "❌ Register API error:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

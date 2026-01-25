@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             OrderItemSeeder::class,
             PaymentSeeder::class,
             VoucherSeeder::class,
+            ShippingZonesSeeder::class,
             ComplaintSeeder::class,
             CommentSeeder::class,
             NotificationSeeder::class,
@@ -26,6 +27,8 @@ class DatabaseSeeder extends Seeder
             CartItemSeeder::class,
             BannerSeeder::class,
             ProductVariantSeeder::class,
+            HomeSectionSeeder::class
+
         ]);
     }
 }

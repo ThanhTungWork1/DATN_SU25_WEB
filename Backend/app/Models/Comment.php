@@ -8,6 +8,7 @@ class Comment extends Model
 {
     protected $fillable = [
         'product_id',
+        'order_id',
         'user_id',
         'content',
         'rating',
@@ -22,5 +23,10 @@ class Comment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }

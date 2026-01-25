@@ -5,35 +5,52 @@ import type { Banner } from "../types/BannerType";
 export const Section = () => {
   const [bannerUrl, setBannerUrl] = useState<string>("");
 
-  useEffect(() => {
+  const fetchBanners = () => {
     getBanners()
       .then((data: Banner[]) => {
+        console.log('Banner data from API:', data);
         if (Array.isArray(data) && data.length > 0 && data[0].image_url) {
+          console.log('Setting banner URL:', data[0].image_url);
           setBannerUrl(data[0].image_url);
+        } else {
+          console.log('No banner data or empty array');
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error('Error fetching banners:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchBanners();
+    
+    // Refresh banner mỗi 15 giây để nhận cập nhật mới
+    const interval = setInterval(fetchBanners, 15000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <section className="banner">
-      <div className="banner-info">
-        <h1>Bộ Sưu Tập Quần Áo Mới</h1>
-        <p>
-          Khám phá những xu hướng thời trang mới nhất, chất liệu thoáng mát,
-          thiết kế hiện đại phù hợp cho mọi lứa tuổi. Ưu đãi giảm giá lên đến
-          30% cho các sản phẩm hot nhất!
-        </p>
-        <button className="banner-btn">Xem ngay</button>
-      </div>
-      <img
-        className="banner-img"
-        src={
-          bannerUrl ||
-          "https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/CcnQdpiJAgHxf3wEB4JiQ5lXtngat92T_cover.jpg"
-        }
-        alt="Banner Quần Áo"
-      />
-    </section>
+    <div className="banner-outer">
+      <section className="banner">
+        <div className="banner-info">
+          <h1>Bộ Sưu Tập Quần Áo Mới</h1>
+          <p>
+            Khám phá những xu hướng thời trang mới nhất, chất liệu thoáng mát,
+            thiết kế hiện đại phù hợp cho mọi lứa tuổi. Ưu đãi giảm giá lên đến
+            30% cho các sản phẩm hot nhất!
+          </p>
+          <button className="banner-btn">Xem ngay</button>
+        </div>
+        <img
+          className="banner-img"
+          src={
+            bannerUrl ||
+            "https://1557691689.e.cdneverest.net/fast/747x0/filters:format(webp)/static.5sfashion.vn/storage/product/CcnQdpiJAgHxf3wEB4JiQ5lXtngat92T_cover.jpg"
+          }
+          alt="Banner Quần Áo"
+        />
+      </section>
+    </div>
   );
 };

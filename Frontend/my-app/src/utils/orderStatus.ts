@@ -1,0 +1,129 @@
+// src/utils/orderStatus.ts
+
+import { UseOrder } from "../types/UseOrder";
+import { TagProps } from "antd";
+
+// Danh sách trạng thái đơn hàng
+export const ORDER_STATUS_OPTIONS = [
+  { value: "pending", label: "Chờ xác nhận" }, // Đã sửa từ pending_confirmation
+  { value: "confirmed", label: "Đã xác nhận" },
+  { value: "processing", label: "Đang xử lý" },
+  { value: "shipping", label: "Đang giao hàng" },
+  { value: "delivered", label: "Đã giao hàng" },
+  { value: "cancelled", label: "Đã huỷ" },
+  { value: "completed", label: "Đã hoàn thành" }, // Thêm trạng thái 'completed'
+  { value: "refunded", label: "Đã hoàn tiền" }, // Thêm trạng thái 'refunded'
+  { value: "waiting_for_payment", label: "Chờ thanh toán" }, // Thêm trạng thái 'waiting_for_payment'
+];
+
+// Hàm lấy màu cho Tag trạng thái đơn hàng
+export const getOrderStatusColor = (
+  status: UseOrder["status"] | string
+): TagProps["color"] => {
+  switch (status) {
+    case "pending":
+      return "default"; // Màu xám nhạt (cho 'pending')
+    case "confirmed":
+      return "blue"; // Màu xanh dương
+    case "processing":
+      return "processing"; // Ant Design có màu 'processing'
+    case "shipping":
+      return "warning"; // Màu cam/vàng
+    case "delivered":
+      return "success"; // Màu xanh lá cây
+    case "completed":
+      return "green"; // Màu xanh lá cây (cho 'completed')
+    case "cancelled":
+      return "error"; // Màu đỏ
+    case "refunded":
+      return "green"; // Màu xanh lá cây (cho 'refunded')
+    case "waiting_for_payment":
+      return "orange"; // Màu cam cho 'waiting_for_payment'
+    default:
+      return "default";
+  }
+};
+
+// Hàm hiển thị văn bản cho trạng thái đơn hàng
+export const getOrderStatusText = (
+  status: UseOrder["status"] | string
+): string => {
+  switch (status) {
+    case "pending":
+      return "Chờ xác nhận";
+    case "confirmed":
+      return "Đã xác nhận";
+    case "processing":
+      return "Đang xử lý";
+    case "shipping":
+      return "Đang giao hàng";
+    case "delivered":
+      return "Đã giao hàng";
+    case "completed":
+      return "Đã hoàn thành";
+    case "cancelled":
+      return "Đã huỷ";
+    case "refunded":
+      return "Đã hoàn tiền";
+    case "waiting_for_payment":
+      return "Chờ thanh toán";
+    default:
+      return "Không rõ";
+  }
+};
+
+// Danh sách phương thức thanh toán
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: "COD", label: "Thanh toán khi nhận hàng (COD)" },
+  { value: "Bank Transfer", label: "Chuyển khoản ngân hàng" },
+  { value: "Credit Card", label: "Thẻ tín dụng" },
+];
+
+// Danh sách trạng thái thanh toán
+export const PAYMENT_STATUS_OPTIONS = [
+  { value: true, label: "Đã thanh toán" },
+  { value: false, label: "Chưa thanh toán" },
+];
+
+// Hàm hiển thị text cho payment status
+export const getPaymentStatusDisplayText = (
+  isPaid: boolean | number,
+  orderStatus?: string
+): string => {
+  // 🔧 FIX: Kiểm tra trạng thái refunded trước
+  if (orderStatus === "refunded") {
+    return "Đã hoàn tiền";
+  }
+
+  if (isPaid === true || isPaid === 1) {
+    return "Đã thanh toán";
+  }
+  if (isPaid === false || isPaid === 0) {
+    return "Chưa thanh toán";
+  }
+  return "Chưa thanh toán"; // Default
+};
+
+// Hàm lấy màu cho Tag trạng thái thanh toán
+export const getPaymentStatusColor = (
+  isPaid: boolean | number
+): TagProps["color"] => {
+  if (isPaid === true || isPaid === 1) {
+    return "green"; // Đã thanh toán
+  }
+  if (isPaid === false || isPaid === 0) {
+    return "red"; // Chưa thanh toán
+  }
+  return "default"; // Mặc định nếu không rõ
+};
+
+// Hàm hiển thị văn bản cho trạng thái thanh toán
+export const getPaymentStatusText = (isPaid: boolean | number): string => {
+  if (isPaid === true || isPaid === 1) {
+    return "Đã thanh toán";
+  }
+  if (isPaid === false || isPaid === 0) {
+    return "Chưa thanh toán";
+  }
+  return "Không rõ";
+};

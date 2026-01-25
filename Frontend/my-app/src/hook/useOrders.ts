@@ -1,0 +1,237 @@
+// import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+// import { UseOrder } from '../types/UseOrder';
+// import { transformOrders, transformOrder } from '../utils/orderTransform';
+// import axiosInstance from '../utils/axiosInstance';
+// import { ApiResponse } from '../types/ApiResponse';
+
+// export const useOrders = () => {
+//   const queryClient = useQueryClient();
+
+//   const getOrders = (enabled: boolean = true) =>
+//     useQuery<UseOrder[]>({
+//       queryKey: ['orders'],
+//       queryFn: async () => {
+
+//         try {
+//           const response = await axiosInstance.get<ApiResponse<any[]>>('/client/orders');
+
+//           if (!response.data.data) {
+//             return [];
+//           }
+
+//           return transformOrders(response.data.data);
+//         } catch (error: any) {
+//           console.error('❌ Error fetching orders:', error);
+//           throw error;
+//         }
+//       },
+//       enabled,
+//     });
+
+//   const getOrdersByStatus = (status: string) =>
+//     useQuery<UseOrder[]>({
+//       queryKey: ['orders', status],
+//       queryFn: async () => {
+
+//         try {
+//           const response = await axiosInstance.get<ApiResponse<any[]>>(`/client/orders/status/${status}`);
+
+//           if (!response.data.data) {
+//             return [];
+//           }
+
+//           return transformOrders(response.data.data);
+//         } catch (error: any) {
+//           console.error(`❌ Error fetching orders with status ${status}:`, error);
+//           throw error;
+//         }
+//       },
+//       // Tránh gọi API khi status là 'all' (đã có getOrders xử lý)
+//       enabled: !!status && status !== 'all',
+//     });
+
+//   const cancelOrder = useMutation({
+//     mutationFn: async (orderId: number) => {
+//       await axiosInstance.delete(`/client/orders/${orderId}`);
+//     },
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ['orders'] });
+//     },
+//   });
+
+//   const getOrderDetail = (id: number) =>
+//     useQuery<UseOrder>({
+//       queryKey: ['order', id],
+//       queryFn: async () => {
+//         try {
+//           const response = await axiosInstance.get<ApiResponse<any>>(`/client/orders/${id}`);
+
+//           if (!response.data.data) {
+//             throw new Error('Order not found');
+//           }
+
+//           return transformOrder(response.data.data);
+//         } catch (error) {
+//           console.error(`❌ Error fetching order ${id}:`, error);
+//           throw error;
+//         }
+//       },
+//       enabled: !!id,
+//     });
+
+//   // Thêm chức năng mua lại
+//   const reorder = useMutation({
+//     mutationFn: async (order: UseOrder) => {
+//       // Thêm tất cả sản phẩm từ đơn hàng vào giỏ hàng
+//       const addToCartPromises = order.items.map(item =>
+//         axiosInstance.post('/cart', {
+//           product_id: item.product_id,
+//           quantity: item.quantity
+//         })
+//       );
+
+//       await Promise.all(addToCartPromises);
+//     },
+//     onSuccess: () => {
+//       // Invalidate cart queries để cập nhật giỏ hàng
+//       queryClient.invalidateQueries({ queryKey: ['cart'] });
+//     },
+//   });
+
+//   return {
+//     getOrders,
+//     getOrdersByStatus,
+//     cancelOrder,
+//     getOrderDetail,
+//     reorder,
+//   };
+// };
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { UseOrder } from "../types/UseOrder";
+import { transformOrders, transformOrder } from "../utils/orderTransform";
+import axiosInstance from "../utils/axiosInstance";
+import { ApiResponse } from "../types/ApiResponse";
+
+export const useOrders = () => {
+  const queryClient = useQueryClient();
+
+  const getOrders = (enabled: boolean = true) =>
+    useQuery<UseOrder[]>({
+      queryKey: ["orders"],
+      queryFn: async () => {
+        try {
+          const response =
+            await axiosInstance.get<ApiResponse<any[]>>("/client/orders");
+
+          if (!response.data.data) {
+            return [];
+          }
+
+          return transformOrders(response.data.data);
+        } catch (error: any) {
+          console.error("❌ Error fetching orders:", error);
+          throw error;
+        }
+      },
+      enabled,
+    });
+
+  const getOrdersByStatus = (status: string) =>
+    useQuery<UseOrder[]>({
+      queryKey: ["orders", status],
+      queryFn: async () => {
+        try {
+          const response = await axiosInstance.get<ApiResponse<any[]>>(
+            `/client/orders/status/${status}`
+          );
+
+          if (!response.data.data) {
+            return [];
+          }
+
+          return transformOrders(response.data.data);
+        } catch (error: any) {
+          console.error(
+            `❌ Error fetching orders with status ${status}:`,
+            error
+          );
+          throw error;
+        }
+      },
+      // Tránh gọi API khi status là 'all' (đã có getOrders xử lý)
+      enabled: !!status && status !== "all",
+    });
+
+  const cancelOrder = useMutation({
+    mutationFn: async (orderId: number) => {
+      await axiosInstance.delete(`/client/orders/${orderId}`);
+    },
+    onSuccess: () => {
+      // Force refresh toàn bộ cache orders
+      queryClient.removeQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
+  const getOrderDetail = (id: number) =>
+    useQuery<UseOrder>({
+      queryKey: ["order", id],
+      queryFn: async () => {
+        try {
+          const response = await axiosInstance.get<ApiResponse<any>>(
+            `/client/orders/${id}`
+          );
+
+          if (!response.data.data) {
+            throw new Error("Order not found");
+          }
+
+          return transformOrder(response.data.data);
+        } catch (error) {
+          console.error(`❌ Error fetching order ${id}:`, error);
+          throw error;
+        }
+      },
+      enabled: !!id,
+    });
+
+  // Thêm chức năng mua lại
+  const reorder = useMutation({
+    mutationFn: async (order: UseOrder) => {
+      const cartItems = order.items.map((item) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        price: item.price, // Gửi cả giá để backend không cần truy vấn lại
+      }));
+
+      // Gửi một yêu cầu duy nhất với tất cả các sản phẩm
+      await axiosInstance.post("/cart", { cartItems });
+    },
+    onSuccess: () => {
+      // Invalidate cart queries để cập nhật giỏ hàng
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+
+  // Xác nhận đã nhận hàng
+  const confirmReceived = useMutation({
+    mutationFn: async (orderId: number) => {
+      await axiosInstance.post(`/client/orders/${orderId}/confirm-received`);
+    },
+    onSuccess: () => {
+      // Invalidate orders queries để cập nhật danh sách
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
+  return {
+    getOrders,
+    getOrdersByStatus,
+    cancelOrder,
+    getOrderDetail,
+    reorder,
+    confirmReceived,
+  };
+};

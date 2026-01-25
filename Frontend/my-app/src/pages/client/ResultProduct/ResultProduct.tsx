@@ -1,40 +1,46 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BoxProduct } from "../../../components/BoxProduct";
-import { useProductList } from "../../../hook/useProductList";
-import { filterProducts } from "../../../utils/productFilter";
-import type { Product } from "../../../types/ProductType";
-import "../../../assets/styles/ListProducts.css";
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
-import { Section } from "../../../components/Section";
+import { useProductPagination } from "../../../hook/useProductList";
+import "../../../assets/styles/resultSerch.css";
+
+// Helpers to normalize search query (embedded here)
+function removeDiacritics(input: string) {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
+function normalizeQuery(raw: string) {
+  const trimmed = raw.trim().replace(/\s+/g, " ");
+  const lower = trimmed.toLowerCase();
+  const unaccent = removeDiacritics(lower);
+  return unaccent.replace(/[^a-z0-9\s]/g, "");
+}
 
 // Trang kết quả tìm kiếm sản phẩm
 const ResultProduct = () => {
   // Lấy query từ URL (?query=...)
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const query = params.get("query")?.trim() || "";
+  const query = params.get("query")?.trim() || ""; // giữ để hiển thị UI
+  const queryForApi = normalizeQuery(query); // dùng cho API
 
-  // Lấy toàn bộ sản phẩm (có thể dùng custom hook, không phân trang)
-  // Nếu muốn tối ưu, có thể fetch riêng API search ở đây
-  const { products, loading, error } = useProductList(1, 9999); // lấy tất cả sản phẩm
+  // State page
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
-  // State lưu kết quả lọc
-  const [result, setResult] = useState<Product[]>([]);
+  // Gọi API backend để tìm kiếm sản phẩm
+  const { products, pagination, loading, error, isInitialLoad } =
+    useProductPagination({
+      page: currentPage,
+      per_page: PAGE_SIZE,
+      search: queryForApi,
+    });
 
   const navigate = useNavigate();
-
-  // Lọc sản phẩm khi có query hoặc products thay đổi
-  useEffect(() => {
-    if (!query) {
-      setResult([]);
-      return;
-    }
-    // Dùng lại filterProducts, chỉ lọc theo tên
-    const filtered = filterProducts(products, { name: query });
-    setResult(filtered);
-  }, [query, products]);
 
   // Hàm quay về trang tổng sản phẩm
   const handleBackToAll = () => {
@@ -43,8 +49,6 @@ const ResultProduct = () => {
 
   return (
     <>
-      <Navbar />
-      <Section />
       <div className="container my-4 search-result-container">
         {/* Nút quay về trang tổng sản phẩm */}
         <h4 className="mb-3">
@@ -62,17 +66,21 @@ const ResultProduct = () => {
               padding: 0,
             }}
           >
-            {/* <span style={{fontSize: 18, marginRight: 6}}>&larr;</span> */}
             <span style={{ fontSize: 14 }}>Xem tất cả sản phẩm</span>
           </button>
         </div>
         {/* Hiển thị lỗi hoặc loading nếu có */}
         {error && <div className="alert alert-danger">{error}</div>}
-        {loading ? (
-          <div>Đang tải sản phẩm...</div>
+        {loading && isInitialLoad ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Đang tải...</span>
+            </div>
+            <div className="mt-3">Đang tìm kiếm sản phẩm...</div>
+          </div>
         ) : !query ? (
           <div>Vui lòng nhập từ khóa tìm kiếm.</div>
-        ) : result.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="search-empty">
             <img
               src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png"
@@ -84,14 +92,60 @@ const ResultProduct = () => {
         ) : (
           <div className="product-section-container">
             <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
-              {result.map((product) => (
+              {products.map((product: any) => (
                 <BoxProduct key={product.id} product={product} />
               ))}
+            </div>
+            {/* Phân trang */}
+            <div className="mt-4">
+              {pagination.total_pages > 1 && (
+                <nav className="pagination-nav">
+                  <ul className="pagination justify-content-center">
+                    <li
+                      className={`page-item${currentPage === 1 ? " disabled" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        &laquo;
+                      </button>
+                    </li>
+                    {Array.from(
+                      { length: pagination.total_pages },
+                      (_, i) => i + 1
+                    ).map((page) => (
+                      <li
+                        key={page}
+                        className={`page-item${page === currentPage ? " active" : ""}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+                    <li
+                      className={`page-item${currentPage === pagination.total_pages ? " disabled" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === pagination.total_pages}
+                      >
+                        &raquo;
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
             </div>
           </div>
         )}
       </div>
-      <Footer />
     </>
   );
 };

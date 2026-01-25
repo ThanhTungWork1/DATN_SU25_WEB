@@ -20,8 +20,10 @@ class UserController extends Controller
         return User::findOrFail($id);
     }
 
+    // ✅ Đặt đúng tên hàm store user hoặc chuyển qua OrderController
     public function store(Request $request)
     {
+        // Nếu đây là tạo order, nên tách ra một controller khác
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'status' => 'required|string',
@@ -43,32 +45,52 @@ class UserController extends Controller
         ]);
 
         foreach ($data['items'] as $item) {
+            $variant = \App\Models\ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
             \App\Models\OrderItem::create([
                 'order_id' => $order->id,
                 'variant_id' => $item['variant_id'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'price' => $item['price'],
+                // Lưu snapshot thông tin sản phẩm
+                'product_name' => $variant->product->name ?? 'Không có tên',
+                'variant_color_name' => $variant->color->name ?? 'Không có',
+                'variant_size_name' => $variant->size->name ?? 'Không có',
+                'variant_sku' => $variant->sku ?? 'Không có',
+                'variant_image' => $variant->image ?? null,
             ]);
         }
 
         return response()->json($order->load('items'), 201);
     }
 
-
     public function update(Request $request, $id)
     {
+        // Kiểm tra xem user có quyền cập nhật thông tin này không
+        $currentUser = $request->user();
+        if ($currentUser->id != $id && $currentUser->role != 1) {
+            return response()->json([
+                'message' => 'Không có quyền cập nhật thông tin người dùng khác'
+            ], 403);
+        }
+
         $user = User::findOrFail($id);
 
         $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'birthdate' => 'nullable|date',
             'address' => 'nullable|string|max:255',
-            'role' => 'sometimes|in:0,1',
-            'status' => 'nullable|boolean',
-            'is_verified' => 'nullable|boolean',
             'password' => 'nullable|min:6'
         ]);
+
+        // Chỉ admin mới có thể cập nhật role và status
+        if ($currentUser->role != 1) {
+            unset($data['role']);
+            unset($data['status']);
+            unset($data['is_verified']);
+        }
 
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
@@ -77,7 +99,7 @@ class UserController extends Controller
         $user->update($data);
 
         return response()->json([
-            'message' => 'User updated successfully',
+            'message' => 'Cập nhật thông tin thành công',
             'data' => $user
         ]);
     }

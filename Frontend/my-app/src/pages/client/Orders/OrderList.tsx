@@ -1,0 +1,165 @@
+import React, { useState, useEffect } from "react";
+import { Spin, Empty, message, Modal } from "antd";
+import "../../../assets/styles/responsive.css";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useOrders } from "../../../hook/useOrders";
+import OrderItem from "./OrderItem";
+import { UseOrder } from "../../../types/UseOrder";
+import "../../../assets/styles/OrderList.css";
+
+const OrderList = () => {
+  const [status, setStatus] = useState<string>("all");
+  const navigate = useNavigate();
+  const { getOrders, getOrdersByStatus, cancelOrder, reorder } = useOrders();
+
+  const allOrdersQuery = getOrders(status === "all");
+  const statusOrdersQuery = getOrdersByStatus(status);
+  const activeQuery = status === "all" ? allOrdersQuery : statusOrdersQuery;
+  const orders = Array.isArray(activeQuery.data) ? activeQuery.data : [];
+  const isLoading = activeQuery.isLoading;
+  const isError = activeQuery.isError;
+
+  // 🔍 DEBUG: Log dữ liệu orders để debug
+  console.log("📋 === ORDER LIST DEBUG ===");
+  console.log("📋 orders:", orders);
+  console.log("📋 orders length:", orders?.length);
+
+  if (orders && orders.length > 0) {
+    orders.forEach((order, index) => {
+      console.log(`📋 Order ${index + 1} (ID: ${order.id}):`, order);
+      console.log(`📋 Order ${index + 1} items:`, order.items);
+
+      if (order.items && order.items.length > 0) {
+        order.items.forEach((item, itemIndex) => {
+          console.log(`📋 Order ${index + 1} - Item ${itemIndex + 1}:`, {
+            id: item.id,
+            product_name: item.product_name,
+            image_url: item.image_url,
+            variant_image_url: item.variant_image_url,
+            product_image: item.product_image,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+            price: item.price,
+            all_keys: Object.keys(item),
+          });
+        });
+      }
+    });
+  }
+
+  const handleCancel = (id: number) => {
+    Modal.confirm({
+      title: "Xác nhận hủy đơn hàng",
+      content:
+        "Bạn chắc chắn muốn huỷ đơn hàng này? Hành động này không thể hoàn tác.",
+      okText: "Xác nhận hủy",
+      cancelText: "Không",
+      okButtonProps: { danger: true },
+      onOk: () => {
+        cancelOrder.mutate(id, {
+          onSuccess: () => {
+            toast.success("Đã hủy đơn hàng thành công!");
+          },
+          onError: (error: any) => {
+            const errorMessage =
+              error?.response?.data?.message ||
+              "Có lỗi xảy ra khi hủy đơn hàng!";
+            toast.error(errorMessage);
+          },
+        });
+      },
+    });
+  };
+
+  const handleReorder = (order: UseOrder) => {
+    Modal.confirm({
+      title: "Xác nhận mua lại",
+      content: "Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?",
+      okText: "Mua lại",
+      cancelText: "Không",
+      onOk: () => {
+        reorder.mutate(order, {
+          onSuccess: () => {
+            toast.success("Đã thêm sản phẩm vào giỏ hàng thành công!");
+            navigate("/cart");
+          },
+          onError: () => {
+            toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+          },
+        });
+      },
+    });
+  };
+
+  if (isLoading)
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <span className="loading-text">Đang tải đơn hàng...</span>
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="error-message">
+        <p>Lỗi tải đơn hàng!</p>
+      </div>
+    );
+
+  return (
+    <div className="order-list-container">
+      <div className="order-list-header">
+        <h1 className="order-list-title">Lịch sử đơn hàng</h1>
+        <p className="order-list-subtitle">
+          Theo dõi trạng thái và quản lý đơn hàng của bạn
+        </p>
+      </div>
+
+      <div className="order-list-filter">
+        <select
+          onChange={(e) => setStatus(e.target.value)}
+          value={status}
+          className="order-list-select"
+        >
+          <option value="all">Tất cả đơn hàng</option>
+          <option value="waiting_for_payment">Chờ thanh toán</option>
+          <option value="pending">Chờ xác nhận</option>
+          <option value="confirmed">Đã xác nhận</option>
+          <option value="processing">Đang xử lý</option>
+          <option value="shipping">Đang giao hàng</option>
+          <option value="delivered">Đã giao</option>
+          <option value="completed">Đã hoàn thành</option>
+          <option value="cancelled">Đã hủy</option>
+          <option value="refunded">Đã hoàn tiền</option>
+        </select>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="order-empty">
+          <div className="order-empty-icon">📦</div>
+          <h3 className="order-empty-title">Chưa có đơn hàng nào</h3>
+          <p className="order-empty-subtitle">
+            Hãy mua sắm để tạo đơn hàng đầu tiên của bạn!
+          </p>
+          <button onClick={() => navigate("/")} className="order-empty-button">
+            Mua sắm ngay
+          </button>
+        </div>
+      ) : (
+        <div className="orders-list">
+          {orders.map((order) => (
+            <OrderItem
+              key={order.id}
+              order={order}
+              onCancel={handleCancel}
+              onReorder={handleReorder}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default OrderList;

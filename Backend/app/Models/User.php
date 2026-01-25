@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
-class User extends Authenticatable
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, HasApiTokens, Notifiable;
 
@@ -21,6 +21,8 @@ class User extends Authenticatable
         'role',
         'status',
         'is_verified',
+        'gender',
+        'birthdate',
     ];
 
     protected $hidden = [
@@ -30,11 +32,14 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'status' => 'boolean',
+        'is_verified' => 'boolean',
+        'role' => 'integer',
     ];
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        // return $this->hasMany(Comment::class);
     }
     public function favorites()
     {

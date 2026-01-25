@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import "../../../assets/styles/responsive.css";
 import { useProductDetail } from "../../../hook/ClientHookDetail";
-import Navbar from "../../../components/Navbar";
 import Aside from "./Aside";
 import MainImage from "./MainImage";
 import ProductInfo from "./ProductInfo";
@@ -10,17 +10,15 @@ import Color from "../../../components/Color";
 import ProductActions from "../../../components/ProductActions";
 import ProductTabs from "./ProductTabs";
 import RelatedProducts from "./RelatedProducts";
-import Footer from "../../../components/Footer";
 import { useProductDetailLogic } from "../../../hook/useProductDetailLogic";
-import "../../../assets/styles/detailProduct.css";
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import Banner from "../../../components/Banner";
 import { getBanners } from "../../../api/ApiBanner";
 import type { Banner as BannerType } from "../../../types/BannerType";
-
-// =============================
-// Trang chi tiết sản phẩm
-// =============================
+import type { Product, Variant } from "../../../types/DetailType"; // Thêm Variant
+import type { ColorType } from "../../../types/ColorType";
+import "../../../assets/styles/color.css";
+import "../../../assets/styles/productDetail.css";
 
 type RouteParams = {
   id: string;
@@ -28,7 +26,18 @@ type RouteParams = {
 
 const ProductDetail = () => {
   const { id } = useParams<RouteParams>();
-  const { data: product, isLoading, isError } = useProductDetail(id!);
+
+  const { data: productRaw, isLoading, isError } = useProductDetail(id!);
+
+  // ✅ Sửa lại logic: sử dụng product_full từ API response
+  const product: Product | undefined = (productRaw as any)?.data?.data;
+
+  // ✅ Thêm image_url và hover_image_url từ response vào product object
+  if (product && productRaw) {
+    product.image_url = (productRaw as any)?.image_url || product.image_url;
+    product.hover_image_url =
+      (productRaw as any)?.hover_image_url || product.hover_image_url;
+  }
 
   const {
     selectedImage,
@@ -42,32 +51,243 @@ const ProductDetail = () => {
   } = useProductDetailLogic(product);
 
   const [banner2, setBanner2] = useState<BannerType | null>(null);
+
   useEffect(() => {
     getBanners().then((banners) => {
-      const found = banners.find((b) => Number(b.id) === 2);
+      const found = banners.find((b) => b.public_id === "banner2");
       setBanner2(found || null);
     });
   }, []);
 
-  useEffect(() => {}, [id]);
+  // ✅ Tự động về ảnh chính khi không có variant được chọn
+  useEffect(() => {
+    if (product && (!selectedSize || !selectedColor)) {
+      setSelectedImage(product.image_url || product.image || "");
+    }
+  }, [selectedSize, selectedColor, product?.image_url, product?.image]);
 
   if (isLoading) return <p>Đang tải...</p>;
-  if (isError || !product) return <p>Lỗi hoặc không có sản phẩm.</p>;
+  if (isError) {
+    return <p>Lỗi khi tải sản phẩm.</p>;
+  }
+  if (!product) {
+    return <p>Không tìm thấy sản phẩm.</p>;
+  }
 
   const selectedVariant = product.variants?.find(
-    (v) => v.size === selectedSize && v.color === selectedColor?.name,
+    (v: Variant) =>
+      v.size?.name === selectedSize && v.color?.id === selectedColor?.id
   );
   const selectedVariantStock = selectedVariant?.stock;
   const selectedVariantSku = selectedVariant?.sku;
 
-  const thumbnailImages =
-    (product.colors?.map((color) => color.image).filter(Boolean) as string[]) ||
-    [];
+  // ✅ Logic tạo thumbnails từ variants (tối đa 6 ảnh - 1 ảnh cho mỗi màu)
+  let colorThumbnails: string[] = [];
+  const colorIdSet = new Set(); // Sử dụng color ID thay vì color object
+
+  if (product?.variants) {
+    for (const variant of product.variants) {
+      // Chỉ lấy 1 ảnh cho mỗi màu (dựa trên color ID)
+      if (variant.color?.id && !colorIdSet.has(variant.color.id)) {
+        if (variant.image_url) {
+          colorThumbnails.push(variant.image_url);
+          colorIdSet.add(variant.color.id);
+        } else if (variant.image) {
+          // Fallback nếu không có image_url
+          colorThumbnails.push(variant.image);
+          colorIdSet.add(variant.color.id);
+        }
+      }
+
+      // ✅ Giới hạn tối đa 6 ảnh ngay từ đầu
+      if (colorThumbnails.length >= 6) break;
+    }
+  }
+
+  // Debug: Kiểm tra thumbnails được tạo
+  console.log("🔍 ProductDetail - Color thumbnails:", colorThumbnails);
+  console.log("🔍 ProductDetail - Color IDs used:", Array.from(colorIdSet));
+
+  // ✅ Sửa lại logic: ưu tiên sử dụng image_url từ backend và GIỚI HẠN TỐI ĐA 6 ẢNH
+  const thumbnailImages: string[] = colorThumbnails.length
+    ? colorThumbnails.slice(0, 6) // Giới hạn tối đa 6 ảnh
+    : product?.images && product.images.length
+      ? product.images.map((img) => img.image_url).slice(0, 6) // Giới hạn tối đa 6 ảnh
+      : product?.image_url
+        ? [product.image_url]
+        : product?.image
+          ? [product.image]
+          : [];
+
+  // Kiểm tra xem sản phẩm có đủ thông tin cần thiết không
+  if (!product.name || !product.price) {
+    return <p>Sản phẩm thiếu thông tin cần thiết.</p>;
+  }
+
+  // Nếu không có image nào, sử dụng placeholder
+  if (thumbnailImages.length === 0) {
+    thumbnailImages.push("/placeholder-image.jpg");
+  }
+
+  // Nếu không có description, sử dụng description mặc định
+  if (!product.description) {
+    product.description = "Mô tả sản phẩm sẽ được cập nhật sớm.";
+  }
+
+  // Nếu không có image_url và image, sử dụng image mặc định
+  if (!product.image_url && !product.image) {
+    product.image_url = "/placeholder-image.jpg";
+    product.image = "/placeholder-image.jpg";
+  }
+
+  // Nếu không có material, sử dụng material mặc định
+  if (!product.material) {
+    product.material = "Chất liệu cao cấp";
+  }
+
+  // Nếu không có sold, sử dụng sold mặc định
+  if (!product.sold) {
+    product.sold = 0;
+  }
+
+  // Nếu không có status, sử dụng status mặc định
+  if (product.status === undefined || product.status === null) {
+    product.status = true;
+  }
+
+  // Nếu không có discount, sử dụng discount mặc định
+  if (product.discount === undefined || product.discount === null) {
+    product.discount = 0;
+  }
+
+  // Nếu không có original_price, sử dụng original_price mặc định
+  if (!product.original_price) {
+    product.original_price = product.price;
+  }
+
+  // Nếu không có slug, sử dụng slug mặc định
+  if (!product.slug) {
+    product.slug = `product-${product.id}`;
+  }
+
+  // Nếu không có created_at và updated_at, sử dụng mặc định
+  if (!product.created_at) {
+    product.created_at = new Date().toISOString();
+  }
+  if (!product.updated_at) {
+    product.updated_at = new Date().toISOString();
+  }
+
+  // Nếu không có category, sử dụng category mặc định
+  if (!product.category) {
+    product.category = { id: 1, name: "Default Category" };
+  }
+
+  // Nếu không có comments, sử dụng comments mặc định
+  if (!product.comments) {
+    product.comments = [];
+  }
+
+  // Nếu không có images, sử dụng images mặc định
+  if (!product.images) {
+    product.images = [];
+  }
+
+  // Nếu không có hover_image_url và hover_image, sử dụng hover_image mặc định
+  if (!product.hover_image_url && !product.hover_image) {
+    product.hover_image_url = product.image_url || product.image;
+    product.hover_image = product.image;
+  }
+
+  // Nếu không có image_url, sử dụng image làm fallback
+  if (!product.image_url && product.image) {
+    product.image_url = product.image;
+  }
+  // Nếu không có hover_image_url, sử dụng hover_image hoặc image_url làm fallback
+  if (!product.hover_image_url) {
+    product.hover_image_url =
+      product.hover_image || product.image_url || product.image;
+  }
+
+  // Nếu không có final_price, xác định hợp lý để tránh giảm giá 2 lần
+  if (!product.final_price) {
+    const priceNum = Number(product.price || 0);
+    const origNum = Number(
+      (product as any).original_price || (product as any).old_price || 0
+    );
+    const discountNum = Number(product.discount || 0);
+
+    if (origNum > 0 && priceNum > 0 && priceNum < origNum) {
+      // Giá hiện tại đã là giá sau giảm (nhỏ hơn giá gốc) => dùng trực tiếp
+      product.final_price = priceNum;
+    } else if (discountNum > 0 && priceNum > 0) {
+      // Áp dụng giảm giá từ discount nếu có
+      product.final_price = priceNum - (priceNum * discountNum) / 100;
+    } else {
+      // Mặc định
+      product.final_price = priceNum;
+    }
+  }
+
+  // Nếu không có average_rating, sử dụng average_rating mặc định
+  if (!product.average_rating) {
+    product.average_rating = 0;
+  }
+
+  // Nếu không có old_price, sử dụng old_price mặc định
+  if (!product.old_price) {
+    product.old_price = product.price;
+  }
+
+  // Nếu không có hex_code, sử dụng hex_code mặc định
+
+  // Nếu không có public_id, sử dụng public_id mặc định
+
+  // Nếu không có success, sử dụng success mặc định
+
+  // Nếu không có message, sử dụng message mặc định
+
+  // Nếu không có pagination, sử dụng pagination mặc định
+
+  // Nếu không có status_code, sử dụng status_code mặc định
+
+  // Nếu không có error, sử dụng error mặc định
+
+  // Nếu không có data, sử dụng data mặc định
+
+  // Nếu không có id, sử dụng id mặc định
+  if (!product.id) {
+    product.id = parseInt(id || "1");
+  }
+
+  // Nếu không có category_id, sử dụng category_id mặc định
+  if (!product.category_id) {
+    product.category_id = 1;
+  }
+
+  // Nếu không có name, sử dụng name mặc định
+  if (!product.name) {
+    product.name = "Sản phẩm mặc định";
+  }
+
+  // Lọc màu chỉ từ variants của sản phẩm này
+  const productColors: ColorType[] = [];
+  const seenColorIds = new Set<number>();
+
+  (product.variants || []).forEach((variant: Variant) => {
+    if (variant.color && !seenColorIds.has(variant.color.id)) {
+      productColors.push(variant.color);
+      seenColorIds.add(variant.color.id);
+    }
+  });
+
+  const mappedColors = productColors.map((c: ColorType) => ({
+    ...c,
+    code: c.code || (c as any).hex_code || "",
+  }));
 
   return (
     <>
-      <Navbar />
-
       {/* Breadcrumb */}
       <div className="container py-2 breadcrumb-container-detail">
         <Breadcrumb
@@ -82,21 +302,19 @@ const ProductDetail = () => {
       <div className="container py-5 product-detail-container">
         <div className="product-detail-wrapper">
           <div className="row g-4">
-            <div className="col-lg-2 col-md-3 d-none d-md-block">
+            <div className="col-12 col-md-6 col-lg-6 d-flex">
               <Aside
                 images={thumbnailImages}
-                onSelect={setSelectedImage}
+                onSelect={(image: string) => setSelectedImage(image)}
                 selectedImage={selectedImage}
               />
-            </div>
-
-            <div className="col-lg-5 col-md-9 col-12">
               <MainImage imageUrl={selectedImage} />
             </div>
 
-            <div className="col-lg-5 col-md-4 col-12">
+            <div className="col-12 col-md-6 col-lg-6 product-info-col">
               <ProductInfo
                 product={product}
+                selectedVariant={selectedVariant}
                 selectedVariantStock={selectedVariantStock}
                 sku={selectedVariantSku}
               />
@@ -110,56 +328,47 @@ const ProductDetail = () => {
               <hr />
 
               <Color
-                colors={product.colors || []}
+                colors={mappedColors}
                 selectedColor={selectedColor}
-                onSelectColor={(color) => {
+                onSelectColor={(color: ColorType) => {
                   handleColorSelect(color);
                   const variant = product.variants?.find(
-                    (v) => v.color === color.name && v.size === selectedSize,
+                    (v: Variant) =>
+                      v.color?.id === color.id && v.size?.name === selectedSize
                   );
-                  if (variant?.image) {
+                  if (variant?.image_url) {
+                    setSelectedImage(variant.image_url);
+                  } else if (variant?.image) {
                     setSelectedImage(variant.image);
-                  } else if (color.image) {
-                    setSelectedImage(color.image);
+                  } else {
+                    setSelectedImage(product.image_url || product.image || "");
                   }
                 }}
               />
               <hr />
 
               <ProductActions
+                maxQuantity={selectedVariantStock || 10}
+                disabled={!selectedSize || !selectedColor}
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
-                maxQuantity={10}
               />
-              <hr />
 
-              {product.discount &&
-              product.discount > 0 &&
-              product.discount < 100 ? (
-                <p className="price text-danger">
-                  {Math.max(
-                    0,
-                    Math.round(product.price * (1 - product.discount / 100)),
-                  ).toLocaleString()}
-                  đ
-                </p>
-              ) : null}
+              <hr />
             </div>
           </div>
 
           <ProductTabs product={product} />
 
+          <RelatedProducts categoryId={product.category_id || 1} />
+
           {banner2 && (
-            <div className="container banner-detail-middle">
+            <div className="banner-detail-middle">
               <Banner imageUrl={banner2.image_url} />
             </div>
           )}
-
-          <RelatedProducts categoryId={product.category_id} />
         </div>
       </div>
-
-      <Footer />
     </>
   );
 };

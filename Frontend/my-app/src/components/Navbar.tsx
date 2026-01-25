@@ -1,257 +1,296 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+import { useRef, useEffect, useState } from "react";
+import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import SearchBar from "./SearchBar";
-import { useNavigate, useLocation } from "react-router-dom";
+import MegaMenu from "./MegaMenu";
+import useCurrentUser from "../hook/useCurrentUser";
 import { CATEGORY_MENU } from "../utils/categoryMenu";
+import "../assets/styles/menu.css";
+import "../assets/styles/navbar.css";
+import "../assets/styles/navbar-override.css";
+import { MEGA_MENU_NAM, MEGA_MENU_NU, MEGA_MENU_PHUKIEN } from "./megaMenuData";
 
-/**
- * Navbar hiển thị menu và xử lý chuyển trang theo danh mục
- */
+const MENU = [{ label: "Nam" }, { label: "Nữ" }, { label: "Phụ kiện" }];
+
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Lấy category từ query string
   const params = new URLSearchParams(location.search);
   const categoryParam = params.get("category");
-  
-  const isPhuKien =
-    categoryParam === CATEGORY_MENU.PHU_KIEN.join(",") ||
-    categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH) ||
-    categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU);
+  const { data: user, isLoading } = useCurrentUser();
+  const isProductsPage =
+    location.pathname === "/products" &&
+    ![
+      ...CATEGORY_MENU.NAM_IDS,
+      ...CATEGORY_MENU.NU_IDS,
+      ...CATEGORY_MENU.PHU_KIEN,
+    ].includes(Number(categoryParam));
 
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      navigate(`/products/search?query=${encodeURIComponent(query)}`);
-    }
-  };
+  // Nam: active khi category thuộc NAM_IDS
+  const isNamActive = CATEGORY_MENU.NAM_IDS.includes(Number(categoryParam));
+  // Nữ: active khi category thuộc NU_IDS
+  const isNuActive = CATEGORY_MENU.NU_IDS.includes(Number(categoryParam));
+  // Phụ kiện: active khi category là PHU_KIEN, PHU_KIEN_KINH, PHU_KIEN_MU
+  const isPhuKienActive = [
+    ...CATEGORY_MENU.PHU_KIEN,
+    CATEGORY_MENU.PHU_KIEN_KINH,
+    CATEGORY_MENU.PHU_KIEN_MU,
+  ].includes(Number(categoryParam));
 
-  // Xử lý click menu Phụ kiện (lọc cả Kính và Mũ)
-  const handleClickPhuKien = () => {
-    // Truyền mảng categoryId lên query string, ví dụ: ?category=3,4
-    navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
-  };
-
-  // Xử lý click menu Mũ (phụ kiện)
-  const handleClickPhuKienMu = () => {
-    navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN_MU}`);
-  };
-
-  // Xử lý click menu Kính (phụ kiện)
-  const handleClickPhuKienKinh = () => {
-    navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN_KINH}`);
-  };
-
-  return (
-    <nav className="navbar">
-      <div className="logo" onClick={() => navigate("/")}>
-        <img
-          src="https://i.imgur.com/9Og6FJC.jpeg"
-          alt="Logo Shop"
-          style={{ width: "90px", height: "50px", objectFit: "contain", cursor: "pointer" }}
-        />
-      </div>
-
-      <ul className="nav-links" id="navLinks">
-        <li>
-          <a href="#">Trang chủ</a>
-        </li>
-        <li className="dropdown">
-          <a
-            href="#"
-            className={categoryParam === "1" || categoryParam === "2" ? "active" : ""}
-          >
-            Nam <span className="dropdown-icon">▼</span>
-          </a>
-          <ul className="dropdown-menu">
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=1`)}>
-                Áo
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=2`)}>
-                Quần
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li className="dropdown">
-          <a
-            href="#"
-            className={categoryParam === "5" || categoryParam === "6" ? "active" : ""}
-          >
-            Nữ <span className="dropdown-icon">▼</span>
-          </a>
-          <ul className="dropdown-menu">
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=5`)}>
-                Áo
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => navigate(`/products?category=6`)}>
-                Quần
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a href="#">Trend</a>
-        </li>
-        <li className="dropdown">
-          <a
-            href="#"
-            onClick={handleClickPhuKien}
-            className={isPhuKien ? "active" : ""}
-          >
-            Phụ kiện <span className="dropdown-icon">▼</span>
-          </a>
-          <ul className="dropdown-menu">
-            <li>
-              <a
-                href="#"
-                onClick={handleClickPhuKienMu}
-                className={
-                  categoryParam === String(CATEGORY_MENU.PHU_KIEN_MU)
-                    ? "active"
-                    : ""
-                }
-              >
-                Mũ
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                onClick={handleClickPhuKienKinh}
-                className={
-                  categoryParam === String(CATEGORY_MENU.PHU_KIEN_KINH)
-                    ? "active"
-                    : ""
-                }
-              >
-                Kính
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        {/* ✅ Thêm mục Đơn hàng */}
-        <li>
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            navigate("/orders");
-          }}>Đơn hàng</a>
-        </li>
-      </ul>
-
-      <div className="icon-group">
-        <SearchBar onSearch={handleSearch} />
-        
-        <div className="icon-btn" title="Tài khoản">
-          &#128100;
-        </div>
-
-        <div className="icon-btn" title="Giỏ hàng" onClick={goToCart} style={{ cursor: "pointer" }}>
-          &#128722;
-        </div>
-
-        <button className="login-btn">Đăng nhập</button>
-      </div>
-
-      <div className="menu-toggle" id="menuToggle">
-        &#9776;
-      </div>
-    </nav>
-  );
-=======
-
-=======
-import SearchBar from './SearchBar';
-import { useNavigate } from 'react-router-dom';
->>>>>>> b255043f (Hoàn thiện chi tiết sản phẩm 70%, chưa có validate)
-=======
-import SearchBar from "./SearchBar";
-import { useNavigate } from "react-router-dom";
->>>>>>> a8244187 (giao dien list sp)
-
-const Navbar = () => {
-  const navigate = useNavigate();
   const handleSearch = (query: string) => {
     if (query.trim()) {
       navigate(`/search?query=${encodeURIComponent(query)}`);
     }
   };
+
+  const handleClickPhuKien = () => {
+    navigate(`/products?category=${CATEGORY_MENU.PHU_KIEN.join(",")}`);
+  };
+
+  const goToCart = () => {
+    navigate("/cart");
+  };
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showMegaMenuNam, setShowMegaMenuNam] = useState(false);
+  const [showMegaMenuNu, setShowMegaMenuNu] = useState(false);
+  const [showMegaMenuPhuKien, setShowMegaMenuPhuKien] = useState(false);
+  const hideMenuNamTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hideMenuNuTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hideMenuPhuKienTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const iconGroupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showSearch) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        iconGroupRef.current &&
+        !iconGroupRef.current.contains(event.target as Node)
+      ) {
+        setShowSearch(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSearch]);
+
+  const handleMouseEnterNam = () => {
+    if (hideMenuNamTimeout.current) clearTimeout(hideMenuNamTimeout.current);
+    setShowMegaMenuNam(true);
+  };
+
+  const handleMouseLeaveNam = () => {
+    hideMenuNamTimeout.current = setTimeout(() => {
+      setShowMegaMenuNam(false);
+    }, 150);
+  };
+
+  const handleMouseEnterNu = () => {
+    if (hideMenuNuTimeout.current) clearTimeout(hideMenuNuTimeout.current);
+    setShowMegaMenuNu(true);
+  };
+
+  const handleMouseLeaveNu = () => {
+    hideMenuNuTimeout.current = setTimeout(() => {
+      setShowMegaMenuNu(false);
+    }, 150);
+  };
+
+  const handleMouseEnterPhuKien = () => {
+    if (hideMenuPhuKienTimeout.current)
+      clearTimeout(hideMenuPhuKienTimeout.current);
+    setShowMegaMenuPhuKien(true);
+  };
+
+  const handleMouseLeavePhuKien = () => {
+    hideMenuPhuKienTimeout.current = setTimeout(() => {
+      setShowMegaMenuPhuKien(false);
+    }, 150);
+  };
+
   return (
-    <nav className="navbar">
-      <div className="logo">
-        <img
-          src="https://i.imgur.com/9Og6FJC.jpeg"
-          alt="Logo Shop"
-          style={{ width: "90px", height: "50px", objectFit: "contain" }}
-        />
+    <nav className="navbar-custom">
+      <div
+        className="navbar-logo-custom"
+        onClick={() => {
+          navigate("/");
+          setMenuOpen(false);
+        }}
+      >
+        <span className="logo-text-custom">
+          Stride<span className="logo-x-custom">X</span>
+        </span>
       </div>
 
-      <ul className="nav-links" id="navLinks">
+      {menuOpen && (
+        <div
+          className="menu-overlay-custom"
+          onClick={() => setMenuOpen(false)}
+        ></div>
+      )}
+
+      <ul
+        className={`menu-links-custom${menuOpen ? " active" : ""}`}
+        id="navLinks"
+      >
         <li>
-          <a href="#">Trang chủ</a>
+          <NavLink
+            to="/"
+            className={({ isActive }) => (isActive ? "active" : "")}
+            end
+            onClick={() => setMenuOpen(false)}
+          >
+            Trang chủ
+          </NavLink>
         </li>
+
+        {MENU.map((menu) => (
+          <li className="dropdown" key={menu.label}>
+            <div
+              className="dropdown-wrapper-custom"
+              onMouseEnter={
+                menu.label === "Nam"
+                  ? handleMouseEnterNam
+                  : menu.label === "Nữ"
+                    ? handleMouseEnterNu
+                    : menu.label === "Phụ kiện"
+                      ? handleMouseEnterPhuKien
+                      : undefined
+              }
+              onMouseLeave={
+                menu.label === "Nam"
+                  ? handleMouseLeaveNam
+                  : menu.label === "Nữ"
+                    ? handleMouseLeaveNu
+                    : menu.label === "Phụ kiện"
+                      ? handleMouseLeavePhuKien
+                      : undefined
+              }
+              style={{ position: "relative" }}
+            >
+              <button
+                className={
+                  menu.label === "Nam"
+                    ? isNamActive
+                      ? "active"
+                      : ""
+                    : menu.label === "Nữ"
+                      ? isNuActive
+                        ? "active"
+                        : ""
+                      : menu.label === "Phụ kiện"
+                        ? isPhuKienActive
+                          ? "active"
+                          : ""
+                        : ""
+                }
+              >
+                {menu.label}
+              </button>
+              {menu.label === "Nam" && showMegaMenuNam && (
+                <MegaMenu menuData={MEGA_MENU_NAM} />
+              )}
+              {menu.label === "Nữ" && showMegaMenuNu && (
+                <MegaMenu menuData={MEGA_MENU_NU} />
+              )}
+              {menu.label === "Phụ kiện" && showMegaMenuPhuKien && (
+                <MegaMenu menuData={MEGA_MENU_PHUKIEN} />
+              )}
+            </div>
+          </li>
+        ))}
         <li>
-          <a href="#">Nam</a>
-        </li>
-        <li>
-          <a href="#">Nữ</a>
-        </li>
-        <li>
-          <a href="#">Trend</a>
-        </li>
-        <li className="dropdown">
-          <a href="#">Phụ kiện ▾</a>
-          <ul className="dropdown-menu">
-            <li>
-              <a href="#">Giày thể thao</a>
-            </li>
-            <li>
-              <a href="#">Mũ</a>
-            </li>
-            <li>
-              <a href="#">Kính</a>
-            </li>
-            <li>
-              <a href="#">Tất/Vớ</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a href="#">Liên hệ</a>
+          <NavLink
+            to="/contact"
+            className={({ isActive }) => (isActive ? "active" : "")}
+            onClick={() => setMenuOpen(false)}
+          >
+            Liên hệ
+          </NavLink>
         </li>
       </ul>
-
-      <div className="icon-group">
-        <SearchBar onSearch={handleSearch} />
-        <div className="icon-btn" title="Tài khoản">
-          &#128100;
+      <div className="icon-group-custom" ref={iconGroupRef}>
+        {showSearch && <SearchBar onSearch={handleSearch} autoFocus />}
+        <button
+          className="searchbar-icon-custom"
+          aria-label="Tìm kiếm"
+          type="button"
+          onClick={() => setShowSearch((prev) => !prev)}
+        >
+          <span role="img" aria-label="search" style={{ fontSize: 20 }}>
+            🔍
+          </span>
+        </button>
+        <div
+          className="icon-btn-custom icon-favorite-navbar-custom"
+          title="Yêu thích"
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            navigate("/wishlist");
+            setMenuOpen(false);
+          }}
+        >
+          <i className="far fa-heart"></i>
         </div>
-        <div className="icon-btn" title="Giỏ hàng">
-          &#128722;
+        <div
+          className="icon-btn-custom"
+          title="Giỏ hàng"
+          onClick={() => {
+            goToCart();
+            navigate("/cart");
+            setMenuOpen(false);
+          }}
+        >
+          🛒
         </div>
 
-        <button className="login-btn">Đăng nhập</button>
-      </div>
+        {isLoading ? (
+          <div className="icon-btn-custom" style={{ cursor: "wait" }}>
+            Đang tải...
+          </div>
+        ) : user ? (
+          <div
+            className="icon-btn-custom"
+            title="Hồ sơ cá nhân"
+            onClick={() => {
+              const role = localStorage.getItem("role");
+              if (role === "0") {
+                // User - navigate to profile
+                navigate("/profile");
+              } else if (role === "1" || role === "2") {
+                // Admin/Moderator - navigate to admin dashboard
+                navigate("/admin/dashboard");
+              }
+              setMenuOpen(false);
+            }}
+          >
+            👤 {user.name}
+          </div>
+        ) : (
+          <div
+            className="icon-btn-custom"
+            title="Tài khoản"
+            onClick={() => {
+              navigate("/login");
+              setMenuOpen(false);
+            }}
+          >
+            👤
+          </div>
+        )}
 
-<<<<<<< HEAD
-            <div className="menu-toggle" id="menuToggle">&#9776;</div>
-        </nav>
-    );
->>>>>>> 6a994c6e (giao dien detail)
-=======
-      <div className="menu-toggle" id="menuToggle">
-        &#9776;
+        <div
+          className="menu-toggle-custom"
+          id="menuToggle"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          ☰
+        </div>
       </div>
     </nav>
   );
->>>>>>> a8244187 (giao dien list sp)
 };
 
 export default Navbar;

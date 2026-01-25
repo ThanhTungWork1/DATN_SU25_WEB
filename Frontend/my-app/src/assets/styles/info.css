@@ -1,0 +1,89 @@
+/* ProductInfo Component Styles */
+
+.product-info {
+  padding: 20px 0;
+}
+
+.product-info h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+/* Price Display Section */
+.product-info .d-flex.align-items-end.gap-2 {
+  margin: 25px 0;
+  align-items: baseline !important;
+}
+
+.product-info h2.text-danger {
+  font-size: 48px !important; /* force override bootstrap */
+  font-weight: 900;
+  color: #e53935 !important;
+  margin: 0;
+  line-height: 1.05;
+}
+
+/* Tăng độ ưu tiên cho đúng H2 hiển thị giá */
+.product-info .text-danger.fw-bolder.mb-0 {
+  font-size: 48px !important;
+  line-height: 1.05;
+}
+
+/* Original Price with Strike-through */
+.price-original {
+  font-size: 20px;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* Product Status and Info */
+.product-info .mb-3 p {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.product-info .mb-3 span {
+  font-weight: 600;
+  color: #222;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-info h3 {
+    font-size: 24px;
+  }
+
+  .product-info h2.text-danger {
+    font-size: 40px !important; /* tablet */
+  }
+  .product-info .text-danger.fw-bolder.mb-0 { 
+    font-size: 40px !important; 
+  }
+
+  .price-original {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-info h3 {
+    font-size: 22px;
+  }
+
+  .product-info h2.text-danger {
+    font-size: 32px !important; /* mobile */
+  }
+  .product-info .text-danger.fw-bolder.mb-0 { 
+    font-size: 32px !important; 
+  }
+
+  .price-original {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,79 @@
+/* ===== CUSTOM TOAST STYLES ===== */
+
+/* Override Sonner toast colors */
+[data-sonner-toaster][data-theme="light"] {
+    --normal-bg: #20c997 !important;
+    --normal-border: #1ba085 !important;
+    --normal-text: white !important;
+
+    --success-bg: #20c997 !important;
+    --success-border: #1ba085 !important;
+    --success-text: white !important;
+
+    --error-bg: #dc3545 !important;
+    --error-border: #c82333 !important;
+    --error-text: white !important;
+
+    --warning-bg: #ffc107 !important;
+    --warning-border: #e0a800 !important;
+    --warning-text: #212529 !important;
+}
+
+/* Toast container styling - STRONG SELECTORS */
+body [data-sonner-toaster],
+html [data-sonner-toaster],
+#root [data-sonner-toaster],
+.App [data-sonner-toaster] {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    top: 80px !important;
+    right: 0px !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+}
+
+/* Ensure toasts are not cut off - STRONG SELECTORS */
+body [data-sonner-toaster][data-position="top-right"],
+html [data-sonner-toaster][data-position="top-right"],
+#root [data-sonner-toaster][data-position="top-right"],
+.App [data-sonner-toaster][data-position="top-right"] {
+    top: 80px !important;
+    right: 0px !important;
+    max-width: 400px !important;
+    width: auto !important;
+}
+
+/* Individual toast styling */
+[data-sonner-toast] {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+/* Success toast specific */
+[data-sonner-toast][data-type="success"] {
+    background: #20c997 !important;
+    color: white !important;
+    border: 1px solid #1ba085 !important;
+}
+
+/* Error toast specific */
+[data-sonner-toast][data-type="error"] {
+    background: #dc3545 !important;
+    color: white !important;
+    border: 1px solid #c82333 !important;
+}
+
+/* Warning toast specific */
+[data-sonner-toast][data-type="warning"] {
+    background: #ffc107 !important;
+    color: #212529 !important;
+    border: 1px solid #e0a800 !important;
+}
+
+/* Info toast specific */
+[data-sonner-toast][data-type="info"] {
+    background: #20c997 !important;
+    color: white !important;
+    border: 1px solid #1ba085 !important;
+}

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import type { Product } from "../../../types/DetailType";
-import { useProductReviews } from "../../../hook/useProductReviews";
+import { useReviewSystem } from "../../../hook/useReviewSystem";
 import { FaStar } from "react-icons/fa";
+import ReviewForm from "../../../components/ReviewForm";
+import "../../../assets/styles/productTabs.css";
 
 type ProductTabsProps = {
   product: Product;
 };
 
-/* Component hiển thị sao đánh giá */
 const StarRating = ({ rating }: { rating: number }) => {
   return (
     <div className="d-flex align-items-center">
@@ -25,9 +26,19 @@ const StarRating = ({ rating }: { rating: number }) => {
 
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const [activeTab, setActiveTab] = useState<"desc" | "review">("desc");
-  const { reviews, isLoading } = useProductReviews(product.id);
+  const {
+    reviews,
+    eligibility,
+    reviewsLoading,
+    eligibilityLoading,
+    isSubmitting,
+    isFormVisible,
+    setIsFormVisible,
+    handleSubmitReview,
+    canShowForm,
+    isLoggedIn,
+  } = useReviewSystem(product.id);
 
-  // Render mô tả sản phẩm
   const renderDescription = () => (
     <>
       <p className="mt-3">{product.description}</p>
@@ -45,19 +56,82 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     </>
   );
 
-  // Render đánh giá sản phẩm
-  const renderReview = () => {
-    if (isLoading) return <p>Đang tải đánh giá...</p>;
+  const renderReviewHeader = () => (
+    <div className="d-flex justify-content-between align-items-center mb-4">
+      <h5 className="mb-0">Đánh giá sản phẩm</h5>
+      {canShowForm && !isFormVisible && (
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={() => setIsFormVisible(true)}
+        >
+          Viết đánh giá
+        </button>
+      )}
+    </div>
+  );
+
+  const renderEligibilityMessage = () => {
+    if (eligibilityLoading) return null;
+
+    if (!isLoggedIn) {
+      return (
+        <div className="alert alert-info">
+          <strong>Thông báo:</strong> Bạn cần đăng nhập để xem và viết đánh giá.
+        </div>
+      );
+    }
+
+    // Chỉ hiển thị thông báo khi có lý do cụ thể và không phải lỗi "Thiếu thông tin đơn hàng"
+    if (
+      !eligibility.can_review &&
+      eligibility.reason !== "already_reviewed" &&
+      eligibility.reason !== "missing_order_id" &&
+      eligibility.message !== "Thiếu thông tin đơn hàng."
+    ) {
+      return (
+        <div className="alert alert-warning">
+          <strong>Thông báo:</strong> {eligibility.message}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const renderReviewForm = () => {
+    if (!isFormVisible || !canShowForm) return null;
+
+    return (
+      <div className="mb-4">
+        <ReviewForm
+          onSubmit={handleSubmitReview}
+          onCancel={() => setIsFormVisible(false)}
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    );
+  };
+
+  const renderReviewList = () => {
+    if (reviewsLoading) return <p>Đang tải đánh giá...</p>;
+
     if (!reviews || reviews.length === 0) {
       return (
-        <p className="text-muted mt-3">
-          Chưa có đánh giá nào cho sản phẩm này.
-        </p>
+        <div className="text-center py-4">
+          <p className="text-muted mb-0">
+            Chưa có đánh giá nào cho sản phẩm này.
+          </p>
+          {canShowForm && (
+            <small className="text-muted">
+              Hãy là người đầu tiên đánh giá sản phẩm này!
+            </small>
+          )}
+        </div>
       );
     }
 
     return (
-      <div>
+      <div className="review-scroll-container">
         {reviews.map((review) => {
           const reviewDate = new Date(review.created_at).toLocaleDateString(
             "vi-VN",
@@ -71,7 +145,9 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
             <div key={review.id} className="mb-4 border-bottom pb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <strong className="text-dark">
-                  {review.user?.username || "Người dùng ẩn danh"}
+                  {review.user?.username ||
+                    review.user?.name ||
+                    "Người dùng ẩn danh"}
                 </strong>
                 <small className="text-muted">{reviewDate}</small>
               </div>
@@ -86,9 +162,17 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
     );
   };
 
+  const renderReview = () => (
+    <div>
+      {renderReviewHeader()}
+      {renderEligibilityMessage()}
+      {renderReviewForm()}
+      {renderReviewList()}
+    </div>
+  );
+
   return (
     <>
-      {/* Tabs điều hướng */}
       <ul className="nav nav-tabs">
         <li className="nav-item">
           <button
@@ -108,8 +192,7 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
         </li>
       </ul>
 
-      {/* Nội dung tab */}
-      <div className="tab-content mt-3 tab-content-scrollable">
+      <div className="tab-content mt-3">
         {activeTab === "desc" && <div>{renderDescription()}</div>}
         {activeTab === "review" && <div>{renderReview()}</div>}
       </div>

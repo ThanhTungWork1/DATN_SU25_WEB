@@ -1,0 +1,103 @@
+/* aside.css */
+
+.aside-thumbnails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+  margin-top: 8px;
+  margin-right: 16px;
+  padding: 12px 8px;
+  background: #f8f9fa;
+  border-radius: 12px;
+
+  /* Giới hạn chiều cao cho tối đa 6 ảnh */
+  max-height: 520px;
+  /* 6 ảnh x 80px + 5 gap x 12px + padding */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  /* Firefox */
+}
+
+.aside-thumbnails::-webkit-scrollbar {
+  width: 4px;
+}
+
+.aside-thumbnails::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+/* Ảnh nhỏ - SỬA: aspect ratio vuông cho đẹp */
+.thumbnail-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border 0.2s, filter 0.2s, transform 0.2s;
+  background: #fff;
+  display: block;
+  padding: 4px;
+}
+
+/* Ảnh được chọn */
+.thumbnail-img.selected {
+  border: 3px solid #e30613;
+  filter: brightness(1.05);
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.3);
+}
+
+/* Hover ảnh chưa chọn */
+.thumbnail-img:not(.selected):hover {
+  border: 2px solid #ddd;
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Trạng thái không chọn được */
+.thumbnail-img.inactive {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .aside-thumbnails {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+    margin-right: 12px;
+    padding: 8px 4px;
+    gap: 8px;
+  }
+
+  .thumbnail-img {
+    width: 70px;
+    height: 70px;
+    padding: 2px;
+  }
+}
+
+@media (max-width: 576px) {
+  .aside-thumbnails {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    margin-right: 8px;
+    padding: 6px 2px;
+    gap: 6px;
+  }
+
+  .thumbnail-img {
+    width: 55px;
+    height: 55px;
+    padding: 2px;
+  }
+}

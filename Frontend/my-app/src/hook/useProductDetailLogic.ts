@@ -1,67 +1,149 @@
 import { useState, useEffect } from "react";
-import type { ColorType, Product } from "../types/DetailType";
-import { useCart } from "../provider/CartProvider";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { validateProductDetail } from "../validation/productDetailValidation";
+import type { Product } from "../types/DetailType";
+import type { ColorType } from "../types/ColorType"; // Sửa đường dẫn import
+import type { CartItem } from "../types/CartType";
+import { useCart } from "../provider/CartProvider";
+import { validateProductDetail } from "../validation/productDetailValidation"; // Sửa đường dẫn import
 
-export function useProductDetailLogic(product: Product | undefined) {
+export const useProductDetailLogic = (product: Product | undefined) => {
   const { addToCart } = useCart();
-  const [selectedImage, setSelectedImage] = useState("");
+  const navigate = useNavigate();
+
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ColorType | null>(null);
 
   useEffect(() => {
-    const initialImage =
-      product?.image || (product?.images && product.images[0]) || "";
-    setSelectedImage(initialImage);
-    setSelectedSize(null);
-    setSelectedColor(null);
+    if (product) {
+      // Ưu tiên ảnh của biến thể đầu tiên, nếu không có thì lấy ảnh chính của sản phẩm
+      const initialImage =
+        product.variants?.[0]?.image_url || product.image_url || "";
+      setSelectedImage(initialImage);
+
+      // Thiết lập các lựa chọn biến thể ban đầu
+      if (product.variants && product.variants.length > 0) {
+        const firstVariant = product.variants[0];
+        setSelectedSize(firstVariant.size?.name || "");
+        setSelectedColor(firstVariant.color || null);
+      } else {
+        // Reset nếu không có biến thể
+        setSelectedSize(null);
+        setSelectedColor(null);
+      }
+    }
   }, [product]);
 
-  const handleAddToCart = (quantity: number) => {
+  const handleAddToCart = async (quantity: number) => {
     if (!product) return;
-    // Validate chọn size và màu
+
     const { valid, message } = validateProductDetail(
       selectedSize,
-      selectedColor,
+      selectedColor
     );
     if (!valid) {
       toast.error(message);
       return;
     }
-    const fallbackImage =
-      product.image || (product.images && product.images[0]) || "";
-    addToCart({
+
+    const selectedVariant = product.variants?.find(
+      (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
+    );
+
+    console.log(
+      "[DEBUG] Biến thể được chọn khi thêm vào giỏ hàng:",
+      selectedVariant
+    );
+
+    if (
+      !selectedVariant ||
+      !selectedVariant.color ||
+      !selectedVariant.color.hex_code ||
+      !selectedVariant.size
+    ) {
+      toast.error(
+        "Không tìm thấy biến thể sản phẩm phù hợp hoặc dữ liệu biến thể không đầy đủ."
+      );
+      return;
+    }
+
+    const payload: CartItem = {
+      id: selectedVariant.id, // ID tạm thời, sẽ được ghi đè bởi ID của cart_item từ backend
+      name: product.name,
+      price: selectedVariant.price || product.price,
+      quantity: quantity,
+      product_variant_id: selectedVariant.id,
+      product_variant: {
+        id: selectedVariant.id,
+        color: {
+          id: selectedVariant.color.id,
+          name: selectedVariant.color.name,
+          hex_code: selectedVariant.color.hex_code, // TypeScript giờ đã biết đây là string
+        },
+        size: {
+          id: selectedVariant.size.id,
+          name: selectedVariant.size.name,
+        },
+        product: {
+          id: product.id,
+          name: product.name,
+        },
+      },
+    };
+
+    await addToCart(payload);
+  };
+
+  const handleBuyNow = (quantity: number) => {
+    if (!product) return;
+
+    const { valid, message } = validateProductDetail(
+      selectedSize,
+      selectedColor
+    );
+    if (!valid) {
+      toast.error(message);
+      return;
+    }
+
+    const selectedVariant = product.variants?.find(
+      (v) => v.size?.name === selectedSize && v.color?.id === selectedColor?.id
+    );
+
+    if (!selectedVariant) {
+      toast.error("Không tìm thấy biến thể sản phẩm phù hợp.");
+      return;
+    }
+
+    const itemToCheckout = {
       id: product.id,
       name: product.name,
-      price:
-        product.discount && product.discount > 0 && product.discount < 100
-          ? Math.max(
-              0,
-              Math.round(product.price * (1 - product.discount / 100)),
-            )
-          : product.price,
-      image: selectedImage || fallbackImage,
-      quantity,
-      color: selectedColor!.name,
-      size: selectedSize!,
+      price: selectedVariant.price || product.price,
+      quantity: quantity,
+      image: selectedImage || product.image_url || "",
+      variant_id: selectedVariant.id, // ← Đã đúng rồi
+      product_id: product.id,
+    };
+
+    const totalAmount = itemToCheckout.price * quantity;
+
+    navigate("/checkout", {
+      state: {
+        selectedProducts: [itemToCheckout],
+        totalAmount: totalAmount,
+        fromBuyNow: true,
+      },
     });
-    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
-  const handleBuyNow = () => {
-    // Logic mua ngay nếu cần
-  };
-
-  // Hàm xử lý chọn size (cho phép bỏ chọn)
   const handleSizeSelect = (size: string) => {
     setSelectedSize((prevSize) => (prevSize === size ? null : size));
   };
 
-  // Hàm xử lý chọn màu (cho phép bỏ chọn)
   const handleColorSelect = (color: ColorType) => {
     setSelectedColor((prevColor) =>
-      prevColor?.id === color.id ? null : color,
+      prevColor?.id === color.id ? null : color
     );
   };
 
@@ -72,7 +154,7 @@ export function useProductDetailLogic(product: Product | undefined) {
     selectedColor,
     handleAddToCart,
     handleBuyNow,
-    handleSizeSelect, // Trả ra hàm mới
-    handleColorSelect, // Trả ra hàm mới
+    handleSizeSelect,
+    handleColorSelect,
   };
-}
+};

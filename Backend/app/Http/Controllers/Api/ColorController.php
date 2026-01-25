@@ -5,22 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Color;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ColorController extends Controller
 {
     public function index()
     {
-        $colors = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách màu sắc thành công',
-            'data' => $colors
-        ]);
+        $colors = Cache::remember('colors_all', 3600, function () {
+            return Color::all();
+        });
+        return response()->json(['data' => $colors]);
     }
 
     /**
@@ -28,11 +22,15 @@ class ColorController extends Controller
      */
     public function show($id)
     {
-        $color = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])->findOrFail($id);
+        $color = Color::withCount([
+            'productVariants' => function ($query) {
+
+                $query->whereHas('product', function ($q) {
+                    $q->where('status', true);
+                });
+            }
+        ])->findOrFail($id);
+
 
         return response()->json([
             'success' => true,
@@ -46,11 +44,14 @@ class ColorController extends Controller
      */
     public function withProducts()
     {
-        $colors = Color::withCount(['variants' => function ($query) {
-            $query->whereHas('product', function ($q) {
-                $q->where('status', true);
-            });
-        }])
+        $colors = Color::withCount([
+            'productVariants' => function ($query) {
+
+                $query->whereHas('product', function ($q) {
+                    $q->where('status', true);
+                });
+            }
+        ])
             ->having('variants_count', '>', 0)
             ->get();
 

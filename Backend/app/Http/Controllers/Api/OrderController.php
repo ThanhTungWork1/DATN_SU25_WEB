@@ -7,10 +7,12 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\OrderStatus;
 
 class OrderController extends Controller
 {
-
     public function __construct(
         protected OrderService $orderService
     ) {
@@ -18,9 +20,9 @@ class OrderController extends Controller
 
     public function index()
     {
-
-        return Order::with('items.variant.product')->paginate();
+        return Order::with('items.variant.product')->orderBy('created_at', 'desc')->paginate(20);
     }
+
     public function add(Request $request)
     {
         return $this->store($request);
@@ -30,25 +32,23 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'status' => 'required|string',
+            'status' => 'required|string|in:' . implode(',', OrderStatus::all()),
             'is_paid' => 'required|boolean',
             'total_amount' => 'required|numeric',
             'shipping_fee' => 'required|numeric',
+            'sold_number' => 'nullable|numeric',
             'items' => 'required|array',
             'items.*.variant_id' => 'required|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric'
         ]);
 
-        // Kiểm tra tồn kho cho từng sản phẩm
+        // Kiểm tra tồn kho
         foreach ($data['items'] as $item) {
             $variant = \App\Models\ProductVariant::find($item['variant_id']);
-            if (!$variant) {
-                return response()->json(['message' => 'Không tìm thấy biến thể sản phẩm!'], 404);
-            }
-            if ($variant->stock < $item['quantity']) {
+            if (!$variant || $variant->stock < $item['quantity']) {
                 return response()->json([
-                    'message' => 'Sản phẩm ' . ($variant->product->name ?? '') . ' (màu: ' . ($variant->color->name ?? '') . ', size: ' . ($variant->size->name ?? '') . ') không đủ tồn kho!'
+                    'message' => 'Sản phẩm không đủ tồn kho hoặc không tồn tại'
                 ], 422);
             }
         }
@@ -59,26 +59,62 @@ class OrderController extends Controller
             'status' => $data['status'],
             'is_paid' => $data['is_paid'],
             'total_amount' => $data['total_amount'],
-            'shipping_fee' => $data['shipping_fee']
+            'shipping_fee' => $data['shipping_fee'],
+            'sold_number' => $data['sold_number'] ?? null,
         ]);
 
         foreach ($data['items'] as $item) {
+            // Trừ tồn kho variant
+            $variant = \App\Models\ProductVariant::with('product')->find($item['variant_id']);
+
             // Trừ tồn kho
-            $variant = \App\Models\ProductVariant::find($item['variant_id']);
+            $variant = \App\Models\ProductVariant::with(['product', 'color', 'size'])->find($item['variant_id']);
+
             $variant->stock -= $item['quantity'];
             $variant->save();
+
+            if ($data['status'] === OrderStatus::CONFIRMED) {
+                $variant->decrement('stock', $item['quantity']);
+            }
+
 
             OrderItem::create([
                 'order_id' => $order->id,
                 'variant_id' => $item['variant_id'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'price' => $item['price'],
+                // Lưu snapshot thông tin sản phẩm
+                'product_name' => $variant->product->name ?? 'Không có tên',
+                'variant_color_name' => $variant->color->name ?? 'Không có',
+                'variant_size_name' => $variant->size->name ?? 'Không có',
+                'variant_sku' => $variant->sku ?? 'Không có',
+                'variant_image' => $variant->image ?? null,
             ]);
         }
 
-        return response()->json($order->load('items.variant.product'), 201);
-    }
+        // // QR thanh toán MB Bank
+        // $mbBankCode = '970422';
+        // $mbAccount = '0050051668899';
+        // $mbAccountName = 'PHAM VAN DUONG';
+        // $transferNote = 'ORDER_' . $order->id;
+        // $qrTemplate = 'compact'; // Hoặc 'print', 'vertical'
+        // $amount = $order->total_amount + $order->shipping_fee;
+        // $qrImageUrl = "https://img.vietqr.io/image/{$mbBankCode}-{$mbAccount}-{$qrTemplate}.png?amount={$amount}&addInfo={$transferNote}";
 
+        // return response()->json([
+        //     'message' => 'Đặt hàng thành công, vui lòng chuyển khoản đúng thông tin bên dưới',
+        //     'order_id' => $order->id,
+        //     'amount' => $amount,
+        //     'bank_transfer' => [
+        //         'bank_name' => 'MB Bank',
+        //         'account_number' => $mbAccount,
+        //         'account_name' => $mbAccountName,
+        //         'transfer_note' => $transferNote,
+        //         'qr_code_url' => $qrImageUrl
+        //     ],
+        //     'order' => $order->load('items.variant.product')
+        // ], 201);
+    }
     public function show($id)
     {
         return Order::with('items.variant.product')->findOrFail($id);
@@ -86,8 +122,23 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
+        $data = $request->validate([
+            'status' => 'sometimes|string|in:' . implode(',', OrderStatus::all()),
+            'is_paid' => 'sometimes|boolean',
+        ]);
+
         $order = Order::findOrFail($id);
-        $order->update($request->only(['status', 'is_paid']));
+        
+        // Logic auto update order status khi thanh toán
+        if (isset($data['is_paid']) && $order->status === 'delivered') {
+            // Nếu đã giao hàng và thanh toán → tự động chuyển "Đã hoàn thành"
+            if ($data['is_paid'] === true) {
+                $data['status'] = 'completed';
+            }
+        }
+        
+        $order->update($data);
+
         return $order->load('items.variant.product');
     }
 
@@ -95,4 +146,85 @@ class OrderController extends Controller
     {
         return Order::destroy($id);
     }
-}
+
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::with('items.variant')->findOrFail($id);
+
+        $oldStatus = $order->status;
+        $newStatus = $request->input('status');
+
+        if (!in_array($newStatus, OrderStatus::all())) {
+            return response()->json(['message' => 'Trạng thái không hợp lệ'], 400);
+        }
+
+        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
+            if ($oldStatus === OrderStatus::PENDING && $newStatus === OrderStatus::CONFIRMED) {
+                foreach ($order->items as $item) {
+                    $item->variant->decrement('stock', $item->quantity);
+                }
+            }
+
+            if ($oldStatus === OrderStatus::CONFIRMED && $newStatus === OrderStatus::CANCELED) {
+                foreach ($order->items as $item) {
+                    $item->variant->increment('stock', $item->quantity);
+                }
+            }
+
+            $order->update(['status' => $newStatus]);
+        });
+
+        return response()->json(['message' => 'Cập nhật trạng thái thành công']);
+    }
+
+    public function markAsPaid($id)
+    {
+        $order = Order::findOrFail($id);
+
+        if ($order->is_paid) {
+            return response()->json(['message' => 'Đơn hàng đã được thanh toán'], 400);
+        }
+
+        $order->update([
+            'is_paid' => true,
+            'status' => OrderStatus::CONFIRMED
+        ]);
+
+        return response()->json([
+            'message' => 'Xác nhận thanh toán thành công',
+            'order' => $order->load('items.variant.product')
+        ]);
+    }
+
+    public function getOrderReviews($id)
+    {
+        try {
+            $userId = Auth::id();
+            
+            // Verify order belongs to user
+            $order = Order::where('id', $id)->where('user_id', $userId)->first();
+            
+            if (!$order) {
+                return response()->json(['message' => 'Đơn hàng không tồn tại'], 404);
+            }
+
+            // Chỉ lấy đánh giá cho đơn hàng cụ thể này
+            $reviews = \App\Models\Comment::where('order_id', $id)
+                ->where('user_id', $userId)
+                ->with(['user', 'product'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json($reviews);
+        } catch (\Exception $e) {
+            \Log::error("Get order reviews error", [
+                'error' => $e->getMessage(),
+                'order_id' => $id,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json(['message' => 'Có lỗi xảy ra khi lấy đánh giá'], 500);
+        }
+    }
+    }
+
